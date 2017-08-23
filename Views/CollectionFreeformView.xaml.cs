@@ -40,7 +40,7 @@ namespace Dash
 
 
         #region LinkingVariables
-        
+
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
@@ -119,6 +119,7 @@ namespace Dash
             {
                 MakeInkCanvas();
             }
+            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
         }
 
 
@@ -161,6 +162,22 @@ namespace Dash
                     _linesToBeDeleted.Add(pair.Key, pair.Value);
                 }
             }
+        }
+
+        private List<KeyValuePair<FieldReference, Path>> GetLinesToDelete()
+        {
+            var result = new List<KeyValuePair<FieldReference, Path>>();
+            //var views = new HashSet<DocumentView>(_payload.Keys);
+            foreach (var pair in _refToLine)
+            {
+                var converter = _lineToConverter[pair.Value];
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                //if (views.Contains(view1) || views.Contains(view2))
+                if (view1 == null || view2 == null) // because at time of drop document disappears from VisualTree
+                    result.Add(pair);
+            }
+            return result;
         }
 
         /// <summary>
@@ -234,7 +251,7 @@ namespace Dash
                     ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                     _connectionLine = line;
                     _converter.Element2 = null;
-                    _converter.Pos2 = dropPoint; 
+                    _converter.Pos2 = dropPoint;
                     _currReference = ioReference;
                     ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
@@ -245,7 +262,7 @@ namespace Dash
                     if (rawField as ReferenceFieldModelController != null)
                         rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
                     inputController.SetField(refField.FieldKey, rawField, false);
-                    _refToLine.Remove(refField); 
+                    _refToLine.Remove(refField);
                 }
             }
         }
@@ -263,7 +280,7 @@ namespace Dash
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
+            //itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
@@ -271,17 +288,18 @@ namespace Dash
             {
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
-                IsHoldingEnabled = false, 
+                IsHoldingEnabled = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
-                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                                                                //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
+            // set up for manipulation on lines 
             _connectionLine.Tapped += (s, e) =>
             {
                 e.Handled = true;
-                var line = s as Path; 
+                var line = s as Path;
                 var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
                 line.IsHoldingEnabled = !line.IsHoldingEnabled;
@@ -290,12 +308,12 @@ namespace Dash
             _connectionLine.Holding += (s, e) =>
             {
                 ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
-            }; 
-            
+            };
+
             _connectionLine.PointerPressed += (s, e) =>
             {
                 if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
-                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference); 
+                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
             };
 
             Canvas.SetZIndex(_connectionLine, -1);
@@ -344,7 +362,7 @@ namespace Dash
 
             // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null) return; 
+            if (_connectionLine == null) return;
 
             // only allow input-output pairs to be connected 
             if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
@@ -424,7 +442,7 @@ namespace Dash
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
-                _converter.UpdateLine(); 
+                _converter.UpdateLine();
                 //_lineBinding.ForceUpdate();
             }
         }
@@ -710,8 +728,25 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            // if dropping back to the original collection, just reset the payload 
             if (ItemsCarrier.Instance.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
+            else
+            {
+                // delete connection lines logically and graphically 
+                var startingCol = ItemsCarrier.Instance.StartingCollection;
+                if (startingCol != null)
+                {
+                    var linesToDelete = startingCol.GetLinesToDelete();
+                    foreach (var pair in linesToDelete)
+                    {
+                        startingCol._refToLine.Remove(pair.Key);
+                        startingCol._lineToConverter.Remove(pair.Value);
+                        startingCol.itemsPanelCanvas.Children.Remove(pair.Value); 
+                    }
+                    startingCol._payload = new Dictionary<DocumentView, DocumentController>();
+                }
+            }
 
             ViewModel.CollectionViewOnDrop(sender, e);
         }
@@ -809,10 +844,8 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
-
         }
 
-        //TODO how to implement deletion or add these docs to the SelectionGroup in CollectionView?
         public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
@@ -850,7 +883,7 @@ namespace Dash
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
 
-            _payload = new Dictionary<DocumentView, DocumentController>();
+            //_payload = new Dictionary<DocumentView, DocumentController>();
         }
 
         private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
@@ -885,7 +918,7 @@ namespace Dash
             {
                 var view = new DocumentView(new DocumentViewModel(cont));
                 _documentViews.Add(view);
-                _payload.Add(view, cont);
+                //_payload.Add(view, cont);
             }
         }
 
