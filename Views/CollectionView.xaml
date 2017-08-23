@@ -12,7 +12,7 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-    <Grid x:Name="xOuterGrid" BorderThickness="5">
+    <Grid x:Name="xOuterGrid" BorderThickness="8">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
