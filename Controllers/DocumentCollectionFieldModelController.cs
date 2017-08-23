@@ -122,13 +122,11 @@ namespace Dash
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
         }
 
-        public delegate void ContainedDocumentFieldUpdatedHandler(DocumentCollectionFieldModelController collection, DocumentController doucment, DocumentFieldUpdatedEventArgs args);
-        public event ContainedDocumentFieldUpdatedHandler ContainedDocumentFieldUpdatedEvent;
-
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
-            if (ContainedDocumentFieldUpdatedEvent != null)
-                ContainedDocumentFieldUpdatedEvent(this, sender, args);
+            var keylist = (sender.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                OnFieldModelUpdated(args.FieldArgs);
         }
 
         public void RemoveDocument(DocumentController doc)
