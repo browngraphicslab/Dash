@@ -27,6 +27,7 @@ namespace Dash
         public object ConverterParameter;
         
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property)
+        {
             var field = Document.GetDereferencedField<T>(Key, Context);
             if (field != null)
             {
