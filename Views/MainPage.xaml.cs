@@ -322,7 +322,7 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);
 
-            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
             DisplayDocument(doc);
         }

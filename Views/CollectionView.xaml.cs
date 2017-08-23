@@ -41,9 +41,9 @@ namespace Dash
 
         private CollectionViewType _viewType;
 
-        private CollectionFreeformView _freeformView; 
+        private CollectionFreeformView _freeformView;
 
-        public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Grid)
+        public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             InitializeComponent();
             _viewType = viewType;

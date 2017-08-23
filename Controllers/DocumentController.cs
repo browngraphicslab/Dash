@@ -311,7 +311,7 @@ namespace Dash
                             }
                         }
                     }
-                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
             }
             else
@@ -498,7 +498,8 @@ namespace Dash
             if (!IsOperatorTypeCompatible(key, field))
                 return false;
             var cont = GetField(key);
-            if (cont == null) return true;
+            if (cont is ReferenceFieldModelController) cont = cont.DereferenceToRoot(null);
+            if (cont == null) return true; 
             var rawField = field.DereferenceToRoot(null);
 
             return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;

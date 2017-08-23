@@ -25,6 +25,9 @@ namespace Dash
                 .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
         }
 
+        public Point StartPoint { get { return _figure.StartPoint; } }
+        public Point EndPoint { get { return _bezier.Point3; } }
+
         public FrameworkElement Element1 { get; set; }
         public FrameworkElement Element2 { get; set; }
         public FrameworkElement ToElement { get; set; }

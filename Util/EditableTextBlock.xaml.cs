@@ -140,7 +140,10 @@ namespace Dash
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            SetExpression(XTextBox.Text);
+            if (TextBoxLoaded)
+            {
+                SetExpression(XTextBox.Text);
+            }
         }
     }
 }

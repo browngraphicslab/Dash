@@ -41,17 +41,6 @@ namespace Dash
 
         #region LinkingVariables
 
-        public class LinePackage
-        {
-            public Path Line;
-            public BezierConverter Converter;
-            public LinePackage(BezierConverter converter, Path line)
-            {
-                Converter = converter;
-                Line = line;
-            }
-        }
-
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
@@ -59,7 +48,11 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private Dictionary<FieldReference, LinePackage> _lineDict = new Dictionary<FieldReference, LinePackage>();
+
+        private Dictionary<FieldReference, Path> _refToLine = new Dictionary<FieldReference, Path>();
+        private Dictionary<Path, BezierConverter> _lineToConverter = new Dictionary<Path, BezierConverter>();
+        private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
+
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -103,14 +96,6 @@ namespace Dash
 
             if (vm != null)
             {
-                //var itemsBinding = new Binding
-                //{
-                //    Source = vm,
-                //    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
-                //    Mode = BindingMode.OneWay
-                //};
-                //xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
-
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
             }
@@ -134,12 +119,20 @@ namespace Dash
             {
                 MakeInkCanvas();
             }
+            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
         }
 
 
         #endregion
 
         #region DraggingLinesAround
+
+        private void DeleteLine(FieldReference reff, Path line)
+        {
+            itemsPanelCanvas.Children.Remove(line);
+            _refToLine.Remove(reff);
+            _lineToConverter.Remove(line);
+        }
 
         /// <summary>
         /// Called when documentview is deleted; delete all connections coming from it as well  
@@ -149,36 +142,46 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var package = _linesToBeDeleted[refs[i]];
-                itemsPanelCanvas.Children.Remove(package.Line);
-                _lineDict.Remove(refs[i]);
+                DeleteLine(refs[i], _linesToBeDeleted[refs[i]]);
             }
-            _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+            _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
-
-        private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
-
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
         /// </summary>
         /// <param name="fadeout"></param>
         public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
         {
-            foreach (var pair in _lineDict)
+            foreach (var pair in _refToLine)
             {
-                var line = pair.Value;
-                var converter = line.Converter;
+                var converter = _lineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
                 if (view1 == docView || view2 == docView)
                 {
                     var animation = new Windows.UI.Xaml.Media.Animation.FadeOutThemeAnimation();
-                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, line.Line);
+                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, pair.Value);
                     fadeout.Children.Add(animation);
                     _linesToBeDeleted.Add(pair.Key, pair.Value);
                 }
             }
+        }
+
+        private List<KeyValuePair<FieldReference, Path>> GetLinesToDelete()
+        {
+            var result = new List<KeyValuePair<FieldReference, Path>>();
+            //var views = new HashSet<DocumentView>(_payload.Keys);
+            foreach (var pair in _refToLine)
+            {
+                var converter = _lineToConverter[pair.Value];
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                //if (views.Contains(view1) || views.Contains(view2))
+                if (view1 == null || view2 == null) // because at time of drop document disappears from VisualTree
+                    result.Add(pair);
+            }
+            return result;
         }
 
         /// <summary>
@@ -188,9 +191,8 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var package in _lineDict.Values)
+            foreach (var converter in _lineToConverter.Values)
             {
-                var converter = package.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 Debug.Assert(view1 != null);
@@ -205,7 +207,6 @@ namespace Dash
                     else
                     {
                         converter.Element1 = converter.Temp1;
-                        //converter.Temp1 = converter.Element1;
                     }
                 }
                 else if (view2 == docView)
@@ -218,8 +219,54 @@ namespace Dash
                     else
                     {
                         converter.Element2 = converter.Temp2;
-                        //converter.Temp2 = converter.Element2;
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method used to determine with end of the line to manipulate upon drag 
+        /// </summary>
+        private static bool IsCloserToStart(Point point, Point start, Point end)
+        {
+            var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
+            var d2 = Math.Pow(point.X - end.X, 2) + Math.Pow(point.Y - end.Y, 2);
+            return d1 < d2;
+        }
+
+        /// <summary>
+        /// Helper method to start changing the connectionLines upon drag 
+        /// </summary>
+        /// <param name="dropPoint"> origin of manipulation </param>
+        /// <param name="line"> the connection line to change </param>
+        /// <param name="ioReference"> the reference for starting field </param>
+        private void ChangeLineConnection(Point dropPoint, Path line, IOReference ioReference)
+        {
+            if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
+            {
+                _converter = _lineToConverter[line];
+                //if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
+                //{
+                //                                                               // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
+                //}
+                //else
+                {
+                    //set up to manipulate connection line again 
+                    ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+                    _connectionLine = line;
+                    _converter.Element2 = null;
+                    _converter.Pos2 = dropPoint;
+                    _currReference = ioReference;
+                    ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+
+                    //remove binding 
+                    var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                    DocumentController inputController = refField.GetDocumentController(null);
+                    var rawField = inputController.GetField(refField.FieldKey);
+                    if (rawField as ReferenceFieldModelController != null)
+                        rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
+                    inputController.SetField(refField.FieldKey, rawField, false);
+                    _refToLine.Remove(refField);
                 }
             }
         }
@@ -234,12 +281,10 @@ namespace Dash
             }
 
             if (ioReference.PointerArgs == null) return;
-
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
+            //itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
@@ -247,19 +292,39 @@ namespace Dash
             {
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
-                IsHitTestVisible = false,
+                IsHoldingEnabled = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-                CompositeMode =
-                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
-                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                                                                //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+
+            // set up for manipulation on lines 
+            _connectionLine.Tapped += (s, e) =>
+            {
+                e.Handled = true;
+                var line = s as Path;
+                var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+                line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+                line.IsHoldingEnabled = !line.IsHoldingEnabled;
+            };
+
+            _connectionLine.Holding += (s, e) =>
+            {
+                ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
+            };
+
+            _connectionLine.PointerPressed += (s, e) =>
+            {
+                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
+                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
+            };
+
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
             _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
-            _lineBinding =
-                new MultiBinding<PathFigureCollection>(_converter, null);
+            _lineBinding = new MultiBinding<PathFigureCollection>(_converter, null);
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
@@ -273,21 +338,20 @@ namespace Dash
             _connectionLine.Data = pathGeo;
 
             itemsPanelCanvas.Children.Add(_connectionLine);
-
-            //if (!ioReference.IsOutput)
-            //{
-            //CheckLinePresence(_converter);
-            //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
-            //}
         }
 
         public void CancelDrag(Pointer p)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+            ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             if (p != null) _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
 
+        /// <summary>
+        /// Frees references and removes the line graphically 
+        /// </summary>
         private void UndoLine()
         {
             if (_connectionLine != null) itemsPanelCanvas.Children.Remove(_connectionLine);
@@ -302,10 +366,7 @@ namespace Dash
 
             // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null)
-            {
-                return;
-            }
+            if (_connectionLine == null) return;
 
             // only allow input-output pairs to be connected 
             if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
@@ -352,8 +413,10 @@ namespace Dash
 
             if (_connectionLine != null)
             {
+                _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, new LinePackage(_converter, _connectionLine));
+                _refToLine.Add(ioReference.FieldReference, _connectionLine);
+                if (!_lineToConverter.ContainsKey(_connectionLine)) _lineToConverter.Add(_connectionLine, _converter);
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -374,14 +437,13 @@ namespace Dash
         /// <summary>
         /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         private void CheckLinePresence(FieldReference reference)
         {
-            if (!_lineDict.ContainsKey(reference)) return;
-            var line = _lineDict[reference];
-            itemsPanelCanvas.Children.Remove(line.Line);
-            _lineDict.Remove(reference);
+            if (!_refToLine.ContainsKey(reference)) return;
+            var line = _refToLine[reference];
+            itemsPanelCanvas.Children.Remove(line);
+            _refToLine.Remove(reference);
+            _lineToConverter.Remove(line);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -390,7 +452,8 @@ namespace Dash
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
-                _lineBinding.ForceUpdate();
+                _converter.UpdateLine();
+                //_lineBinding.ForceUpdate();
             }
         }
 
@@ -440,8 +503,8 @@ namespace Dash
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
             {
-                foreach (var line in _lineDict.Values)
-                    line.Converter.UpdateLine();
+                foreach (var converter in _lineToConverter.Values)
+                    converter.UpdateLine();
             }
         }
 
@@ -675,12 +738,27 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            // if dropping back to the original collection, just reset the payload 
             if (ItemsCarrier.Instance.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
+            else
+            {
+                // delete connection lines logically and graphically 
+                var startingCol = ItemsCarrier.Instance.StartingCollection;
+                if (startingCol != null)
+                {
+                    var linesToDelete = startingCol.GetLinesToDelete();
+                    foreach (var pair in linesToDelete)
+                    {
+                        startingCol.DeleteLine(pair.Key, pair.Value); 
+                    }
+                    startingCol._payload = new Dictionary<DocumentView, DocumentController>();
+                }
+            }
 
             ViewModel.CollectionViewOnDrop(sender, e);
         }
-        
+
 
         #endregion
 
@@ -774,10 +852,8 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
-
         }
 
-        //TODO how to implement deletion or add these docs to the SelectionGroup in CollectionView?
         public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
@@ -814,8 +890,6 @@ namespace Dash
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
-
-            _payload = new Dictionary<DocumentView, DocumentController>();
         }
 
         private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
@@ -850,7 +924,6 @@ namespace Dash
             {
                 var view = new DocumentView(new DocumentViewModel(cont));
                 _documentViews.Add(view);
-                _payload.Add(view, cont);
             }
         }
 
