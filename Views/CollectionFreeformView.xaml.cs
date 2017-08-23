@@ -127,6 +127,13 @@ namespace Dash
 
         #region DraggingLinesAround
 
+        private void DeleteLine(FieldReference reff, Path line)
+        {
+            itemsPanelCanvas.Children.Remove(line);
+            _refToLine.Remove(reff);
+            _lineToConverter.Remove(line);
+        }
+
         /// <summary>
         /// Called when documentview is deleted; delete all connections coming from it as well  
         /// </summary>
@@ -135,10 +142,7 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var line = _linesToBeDeleted[refs[i]];
-                itemsPanelCanvas.Children.Remove(line);
-                _refToLine.Remove(refs[i]);
-                _lineToConverter.Remove(line);
+                DeleteLine(refs[i], _linesToBeDeleted[refs[i]]);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -740,9 +744,7 @@ namespace Dash
                     var linesToDelete = startingCol.GetLinesToDelete();
                     foreach (var pair in linesToDelete)
                     {
-                        startingCol._refToLine.Remove(pair.Key);
-                        startingCol._lineToConverter.Remove(pair.Value);
-                        startingCol.itemsPanelCanvas.Children.Remove(pair.Value); 
+                        startingCol.DeleteLine(pair.Key, pair.Value); 
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
                 }
@@ -882,8 +884,6 @@ namespace Dash
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
-
-            //_payload = new Dictionary<DocumentView, DocumentController>();
         }
 
         private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
@@ -918,7 +918,6 @@ namespace Dash
             {
                 var view = new DocumentView(new DocumentViewModel(cont));
                 _documentViews.Add(view);
-                //_payload.Add(view, cont);
             }
         }
 
