@@ -33,7 +33,7 @@
         <SymbolIcon Symbol="{x:Bind OpacitySymbol}" Grid.Row="1" Grid.Column="4" VerticalAlignment="Top" Margin="0,20,0,0"></SymbolIcon>
         <Slider x:Name="OpacitySlider" Grid.Row="1" Grid.Column="4" Orientation="Vertical" Margin="6,50,0,10" TickPlacement="None" Minimum="0" Maximum="100" ValueChanged="OpacitySlider_OnValueChanged" StepFrequency="1"></Slider>
         <Grid Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" BorderThickness="1" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Height="45">
-            <Ellipse x:Name="ExampleEllipse" HorizontalAlignment="Center"></Ellipse>
+            <InkCanvas x:Name="XInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
         </Grid>
         <!--<Grid Grid.Column="0" Grid.Row="1">
             <Grid.RowDefinitions>

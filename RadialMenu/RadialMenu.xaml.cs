@@ -55,6 +55,10 @@ namespace RadialMenuControl.UserControl
         private double _startAngle = 22.5;
         public ObservableCollection<MenuBase> DisplayMenus = new ObservableCollection<MenuBase>();
 
+        public delegate void ExpansionHandler(bool isOpen);
+
+        public event ExpansionHandler MenuOpenedOrClosed;
+
         /// <summary>
         ///     Initializes the RadialMenu. The constructrer doesn't accept any parameters.
         /// </summary>
@@ -201,13 +205,13 @@ namespace RadialMenuControl.UserControl
             Width = Diameter;
             Height = Diameter;
             // Check if we're floating
-            floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
-            Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
-            Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
-            Pie.Visibility = Visibility.Visible;
+            //floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
+            //Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
+            //Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
+            //Pie.Visibility = Visibility.Visible;
 
             await OpenStoryboard.PlayAsync();
-
+            MenuOpenedOrClosed?.Invoke(true);
             BackgroundEllipse.Visibility = Visibility.Visible;
 
         }
@@ -224,10 +228,11 @@ namespace RadialMenuControl.UserControl
             Width = CenterButton.ActualWidth;
             Height = CenterButton.ActualHeight;
             // Check if we're floating
-            floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
-            Canvas.SetTop(CenterButton, 0);
-            Canvas.SetLeft(CenterButton, 0);
+            //floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
+            //Canvas.SetTop(CenterButton, 0);
+            //Canvas.SetLeft(CenterButton, 0);
             Visibility = Visibility.Collapsed;
+            MenuOpenedOrClosed?.Invoke(false);
         }
 
         /// <summary>
@@ -247,27 +252,27 @@ namespace RadialMenuControl.UserControl
                 BackgroundEllipse.Visibility = Visibility.Collapsed;
 
                 await CloseStoryboard.PlayAsync();
-
+                MenuOpenedOrClosed?.Invoke(false);
                 Pie.Visibility = Visibility.Collapsed;
-                Width = CenterButton.ActualWidth;
-                Height = CenterButton.ActualHeight;
-                // Check if we're floating
-                floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
-                Canvas.SetTop(CenterButton, 0);
-                Canvas.SetLeft(CenterButton, 0);
+                //Width = CenterButton.ActualWidth;
+                //Height = CenterButton.ActualHeight;
+                //// Check if we're floating
+                //floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
+                //Canvas.SetTop(CenterButton, 0);
+                //Canvas.SetLeft(CenterButton, 0);
             }
             else
             {
                 Width = Diameter;
                 Height = Diameter;
                 // Check if we're floating
-                floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
-                Canvas.SetTop(CenterButton, Diameter/2 - CenterButton.ActualHeight/2);
-                Canvas.SetLeft(CenterButton, Diameter/2 - CenterButton.ActualWidth/2);
+                //floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
+                //Canvas.SetTop(CenterButton, Diameter/2 - CenterButton.ActualHeight/2);
+                //Canvas.SetLeft(CenterButton, Diameter/2 - CenterButton.ActualWidth/2);
                 Pie.Visibility = Visibility.Visible;
 
                 await OpenStoryboard.PlayAsync();
-
+                MenuOpenedOrClosed?.Invoke(true);
                 BackgroundEllipse.Visibility = Visibility.Visible;
             }
         }
@@ -360,7 +365,7 @@ namespace RadialMenuControl.UserControl
                 backupPie.SelectedItem = Pie.SelectedItem;
                 PreviousPies.Add(backupPie);
             }
-
+            Pie.SourceRadialMenu.FireMenuOpenedOrClosed(false);
             // Delete the current slices
             Pie.Slices.Clear();
             CustomRadialControlRoot.Children.Clear();
@@ -414,6 +419,7 @@ namespace RadialMenuControl.UserControl
         /// <param name="storePrevious">Should we store the previous pie (for back navigation)?</param>
         public async void ChangePie(object s, Pie newPie, bool storePrevious)
         {
+            _currMenu?.FireMenuOpenedOrClosed(false);
             BackgroundEllipse.Visibility = Visibility.Visible;
 
             foreach (var ps in Pie.PieSlices)
@@ -430,6 +436,7 @@ namespace RadialMenuControl.UserControl
             {
                 if (IsMenuChangeAnimated) await PieExitForChangeStoryboard.PlayAsync();
             }
+            
 
             _clearPie(storePrevious);
             // Add the new ones
@@ -441,7 +448,8 @@ namespace RadialMenuControl.UserControl
             // Redraw
             Pie.Draw();
             Pie.UpdateLayout();
-
+            newPie.SourceRadialMenu?.FireMenuOpenedOrClosed(true);
+            _currMenu = newPie.SourceRadialMenu;
             // Ensure that we remember what the last selected item was
             Pie.SelectedItem = newPie.SelectedItem ?? null;
 
@@ -715,6 +723,8 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("BackgroundEllipseFill", typeof (Color), typeof (RadialMenu),
                 new PropertyMetadata(Colors.Transparent));
 
+        private RadialMenu _currMenu;
+
         /// <summary>
         ///     Background Ellpise, drawn behind the whole menu. Ignored if set on a submenu.
         /// </summary>
@@ -735,9 +745,9 @@ namespace RadialMenuControl.UserControl
 
         #endregion
 
-        private void RadialMenu_OnDragEnter(object sender, DragEventArgs e)
+        public void FireMenuOpenedOrClosed(bool b)
         {
-            throw new System.NotImplementedException();
+            MenuOpenedOrClosed?.Invoke(b);
         }
     }
 }

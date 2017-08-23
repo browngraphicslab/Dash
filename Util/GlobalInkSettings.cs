@@ -138,6 +138,10 @@ namespace Dash
             {
                 foreach (var presenter in Presenters)
                     presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
+                OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
+                {
+                    Opacity = Opacity
+                });
                 return;
             }
             var attributes = new InkDrawingAttributes();
@@ -149,13 +153,13 @@ namespace Dash
                 attributes = InkDrawingAttributes.CreateForPencil();
                 if (!IsRecognitionEnabled) attributes.PencilProperties.Opacity = Opacity;
             }
-            if (IsRecognitionEnabled)
-            {
-                attributes.Color = ((SolidColorBrush) Application.Current.Resources["WindowsBlue"]).Color;
-                attributes.Size = new Size(4, 4);
-                Attributes = attributes;
-                return;
-            }
+            //if (IsRecognitionEnabled)
+            //{
+            //    attributes.Color = ((SolidColorBrush) Application.Current.Resources["WindowsBlue"]).Color;
+            //    attributes.Size = new Size(4, 4);
+            //    Attributes = attributes;
+            //    return;
+            //}
             attributes.Color = Color;
             attributes.Size = new Size(Size, Size);
             Attributes = attributes;

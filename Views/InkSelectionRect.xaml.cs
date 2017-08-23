@@ -183,12 +183,14 @@ namespace Dash.Views
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             FreeformView.InkControl.UpdateInkFieldModelController();
+            FreeformView.InkControl.InkRecognitionHelper.AddStrokeData(new List<InkStroke>(StrokeContainer.GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
 
         private void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            FreeformView.InkControl.InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(StrokeContainer.GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
             e.Handled = true;

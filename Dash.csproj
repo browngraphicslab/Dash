@@ -106,7 +106,10 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
-    <Compile Include="InkSettingsPane.xaml.cs">
+    <Compile Include="RadialColorPicker.xaml.cs">
+      <DependentUpon>RadialColorPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InkSettingsPane.xaml.cs">
       <DependentUpon>InkSettingsPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\FreeformInkControl.cs" />
@@ -497,6 +500,7 @@
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\operator_bg.png" />
     <Content Include="Assets\ppsqft.txt" />
+    <Content Include="Assets\radial_color_wheel.png" />
     <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
@@ -522,7 +526,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="InkSettingsPane.xaml">
+    <Page Include="RadialColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InkSettingsPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -15,6 +15,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Flurl;
@@ -79,8 +80,9 @@ namespace Dash
             _radialMenu.Loaded += delegate
             {
                 _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
+                
             };
-            xCanvas.Children.Add(_radialMenu);
+            //xCanvas.Children.Add(_radialMenu);
         }
 
         public CollectionView GetMainCollectionView()

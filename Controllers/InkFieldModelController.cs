@@ -106,6 +106,7 @@ namespace Dash
             InkData = JsonConvert.SerializeObject(stream.ToArray());
             _redoStack.Clear();
             _undoStack.Push(InkData);
+            Debug.WriteLine(InkData);
             stream.Dispose();
             var args = new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Update);
             OnFieldModelUpdated(args);
