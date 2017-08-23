@@ -5,19 +5,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-    <Grid x:Name="xOuterGrid" BorderThickness="3">
+    <Grid x:Name="xOuterGrid" BorderThickness="5">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            
+
+
+            <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
 

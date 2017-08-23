@@ -186,7 +186,6 @@
 
         <!--Collection Grid View--> 
         <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
-            <Setter Property="Background" Value="#FFE5E5E5"/>
             <Setter Property="Opacity" Value=".7"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
@@ -196,7 +195,6 @@
 
         <!--Collection List View-->
         <Style x:Key="xCollectionListViewStyle" TargetType="ListView">
-            <Setter Property="Background" Value="#FFE5E5E5"/>
             <Setter Property="Opacity" Value=".7"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>

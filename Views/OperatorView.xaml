@@ -12,7 +12,7 @@
     <Grid>
         <!-- Makes the blue background shape-->
 
-        <Border VerticalAlignment="Top" Grid.ColumnSpan="3" Margin="15,0" BorderThickness="0,0,0,1" >
+        <Border VerticalAlignment="Top" Grid.ColumnSpan="3" BorderThickness="0,0,0,1" >
             <TextBlock x:Name="xTitle" Style="{StaticResource xTitleStyle}" Padding="10,10,5,0" HorizontalAlignment="Center">Operator</TextBlock>
         </Border>
         <!-- Content containing grid -->

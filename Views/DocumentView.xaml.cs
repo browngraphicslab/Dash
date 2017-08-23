@@ -106,7 +106,6 @@ namespace Dash
             var brush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
             Color c = brush.Color;
             c.A = 204;
-            xGradientOverlay.Background = new SolidColorBrush(Colors.Transparent);
             xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
         }
 

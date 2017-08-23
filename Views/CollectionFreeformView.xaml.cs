@@ -73,12 +73,16 @@ namespace Dash
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private CollectionView ParentCollection;
         #endregion
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
 
-        public CollectionFreeformView()
+        public CollectionFreeformView() {
+        }
+
+        public CollectionFreeformView(CollectionView parentCollection)
         {
             InitializeComponent();
             Loaded += Freeform_Loaded;
@@ -89,6 +93,7 @@ namespace Dash
 
             DragLeave += Collection_DragLeave;
             DragEnter += Collection_DragEnter;
+            ParentCollection = parentCollection;
         }
 
         public IOReference GetCurrentReference()
@@ -435,90 +440,7 @@ namespace Dash
             composite.Children.Add(translate);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            SetTransformOnBackground(composite);
-        }
-
-        #endregion
-
-        #region BackgroundTiling
-
-
-        private void SetTransformOnBackground(TransformGroup composite)
-        {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
-
-            if (_resourcesLoaded)
-            {
-                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)composite.Value.M12,
-                    (float)composite.Value.M21,
-                    (float)aliasSafeScale,
-                    (float)composite.Value.OffsetX,
-                    (float)composite.Value.OffsetY);
-                xBackgroundCanvas.Invalidate();
-            }
-        }
-
-        private void SetInitialTransformOnBackground()
-        {
-            var composite = new TransformGroup();
-            var scale = new ScaleTransform
-            {
-                CenterX = 0,
-                CenterY = 0,
-                ScaleX = CanvasScale,
-                ScaleY = CanvasScale
-            };
-
-            composite.Children.Add(scale);
-            SetTransformOnBackground(composite);
-        }
-
-        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
-        {
-            var task = Task.Run(async () =>
-            {
-                // Load the background image and create an image brush from it
-                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
-                _bgBrush = new CanvasImageBrush(sender, _bgImage)
-                {
-                    Opacity = _backgroundOpacity
-                };
-
-                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
-                _resourcesLoaded = true;
-            });
-            args.TrackAsyncAction(task.AsAsyncAction());
-
-            task.ContinueWith(continuationTask =>
-            {
-                SetInitialTransformOnBackground();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
-        {
-            if (!_resourcesLoaded) return;
-
-            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
-            var session = args.DrawingSession;
-            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
-        }
-
-        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
-        {
-            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
-            {
-                currentScale /= numberOfBackgroundRows;
-            }
-
-            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
-            {
-                currentScale *= numberOfBackgroundRows;
-            }
-            return currentScale;
+            ParentCollection.SetTransformOnBackground(composite);
         }
 
         #endregion

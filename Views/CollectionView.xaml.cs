@@ -16,6 +16,12 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using System.Numerics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -51,6 +57,15 @@ namespace Dash
             Unloaded += CollectionView_Unloaded;
         }
 
+        #region Background Translation Variables
+        private CanvasBitmap _bgImage;
+        private bool _resourcesLoaded;
+        private CanvasImageBrush _bgBrush;
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private float _backgroundOpacity = .95f;
+        #endregion
+
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -73,7 +88,7 @@ namespace Dash
                 switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
+                    CurrentView = new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -145,7 +160,8 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
+            CurrentView = new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
+
             xContentControl.Content = CurrentView;
             _toggleDrawButton.Visibility = Visibility.Visible;
             if((_toggleDrawButton.Background as SolidColorBrush).Color == Colors.Gray) (CurrentView as CollectionFreeformView).InkControls.ToggleDraw();
@@ -306,5 +322,86 @@ namespace Dash
         }
 
         #endregion
+
+
+
+        private void SetInitialTransformOnBackground()
+        {
+            var composite = new TransformGroup();
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = 1,
+                ScaleY = 1
+            };
+
+            composite.Children.Add(scale);
+            SetTransformOnBackground(composite);
+        }
+
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            var task = Task.Run(async () =>
+            {
+                // Load the background image and create an image brush from it
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+            });
+            args.TrackAsyncAction(task.AsAsyncAction());
+
+            task.ContinueWith(continuationTask =>
+            {
+                SetInitialTransformOnBackground();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+
+        public void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+        }
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+            return currentScale;
+        }
+
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (!_resourcesLoaded) return;
+
+            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+            var session = args.DrawingSession;
+            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+        }
     }
 }

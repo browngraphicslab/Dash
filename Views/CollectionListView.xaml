@@ -13,7 +13,6 @@
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped">
     <Grid x:Name="Grid"
-          Background="Transparent"
           >
         <ListView x:Name="xListView"
                   ItemsSource="{Binding DocumentViewModels}"
@@ -22,7 +21,7 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionListViewStyle}"
-                  ShowsScrollingPlaceholders ="False">
+                  ShowsScrollingPlaceholders ="False" Background="Transparent">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
