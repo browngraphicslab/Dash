@@ -39,15 +39,17 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
+
+        public static int dvCount = 0;
         public DocumentView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            manipulator = new ManipulationControls(this, true, true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
 
             // set bounds
@@ -65,6 +67,7 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
@@ -76,6 +79,12 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += ExpandContract_DoubleTapped;
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
@@ -130,8 +139,8 @@ namespace Dash
                 Mode = BindingMode.OneWay
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
+
             xMenuCanvas.Children.Add(_docMenu);
-            ViewModel.OpenMenu();
         }
 
 
@@ -269,17 +278,9 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            // if _vm has already been set return
-            if (ViewModel != null || DataContext == null)
-                return;
-
             ViewModel = DataContext as DocumentViewModel;
-            // if new _vm is not correct return
-            if (ViewModel == null)
-                return;
-            initDocumentOnDataContext();
-            SetUpMenu();
-            ViewModel.CloseMenu();
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -441,9 +442,17 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
 
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            {
+                if (_docMenu == null)
+                {
+                    SetUpMenu();
+                }
                 ViewModel?.OpenMenu();
+            }
             else
+            {
                 ViewModel?.CloseMenu();
+            }
         }
 
         #endregion

@@ -32,8 +32,7 @@
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{Binding DocumentViewModels}"   
-                      IsHitTestVisible="{Binding IsSelected}"
-                      >
+                      IsHitTestVisible="{Binding IsSelected}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="CollectionCanvas"
@@ -48,8 +47,8 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
-                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
+                    <dash:DocumentView
+                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                                        Loaded="DocumentViewOnLoaded" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

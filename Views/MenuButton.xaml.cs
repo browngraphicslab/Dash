@@ -60,10 +60,9 @@ namespace Dash
         /// </summary>
         private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
         {
+            int i = 0;
             foreach (Symbol icon in icons)
             {
-                var i = icons.IndexOf(icon); // have to do this for eventhandling 
-
                 // create symbol for button
                 var symbol = new SymbolIcon()
                 {
@@ -103,17 +102,20 @@ namespace Dash
                 xButtonStackPanel.Children.Add(button);
                 _buttons.Add(button);
 
+                //Capture the right value for i
+                int j = i;
                 //events 
                 button.Tapped += (s, e) =>
                 {
                     e.Handled = true;
                     foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
                     (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
-                    buttonActions[i]?.Invoke();
+                    buttonActions[j]?.Invoke();
 
-                    _selectedInd = i; 
+                    _selectedInd = j; 
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
+                i++;
             }
         }
 

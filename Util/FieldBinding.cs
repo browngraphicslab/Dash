@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Data;
 using DashShared;
 using Windows.UI.Xaml;
 using System.Diagnostics;
+using Windows.UI.Xaml.Controls;
 using Dash.Converters;
 
 namespace Dash
