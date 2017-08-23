@@ -36,7 +36,26 @@ namespace Dash
         {
             return new NumberFieldModelController(0);
         }
-        
+
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            var data = value as double?;
+            if (data != null)
+            {
+                Data = (double)data.Value;
+                return true;
+            }
+            if (value is double)
+            {
+                Data = (double)data;
+                return true;
+            }
+            return false;
+        }
 
         public double Data
         {

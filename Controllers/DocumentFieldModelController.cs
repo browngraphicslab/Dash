@@ -28,6 +28,18 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModelFieldModel.Data" />. Change this to propagate changes
         ///     to the server
         /// </summary>
+        /// 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is DocumentController))
+                return false;
+            Data = value as DocumentController;
+            return true;
+        }
         public DocumentController Data
         {
             get { return _data; }

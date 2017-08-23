@@ -42,6 +42,14 @@ namespace Dash
         {
             return new ImageOperatorFieldModelController(OperatorFieldModel);
         }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
     }
     /* 
     public class ImageOperatorModel : OperatorFieldModel

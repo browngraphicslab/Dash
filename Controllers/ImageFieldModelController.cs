@@ -66,6 +66,26 @@ namespace Dash
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+
+        public override bool SetValue(object value)
+        {
+            if (value is string)
+            {
+                Data.UriSource = new Uri(value as string);
+                return true;
+            }
+            else if (value is BitmapImage)
+            {
+                Data = value as BitmapImage;
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         ///     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
         ///     the <see cref="ImageFieldModel.Data" />

@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml;
+﻿using Dash.Converters;
+using System;
+using Windows.UI;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -12,59 +15,69 @@ namespace Dash
     /// </summary>
     public partial class EditableTextBlock
     {
-        public TextBox Box
-        {
-            get { return xTextBox; }
-        }
-
-        public TextBlock Block
-        {
-            get { return xTextBlock; }
-        }
-
         #region BINDING PROPERTIES 
-        public static readonly DependencyProperty TextDependency = 
-            DependencyProperty.Register("Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(false));
 
         public string Text
         {
-            get { return (string)GetValue(TextDependency); }
-            set { SetValue(TextDependency, value); }
+            get { return (string)xTextBlock.Text; }
+            set { xTextBlock.SetValue(TextBlock.TextProperty, value); }
         }
-#endregion
+
+        public TextBox xTextBox = null;
+
+        public bool IsEditable = true;
+
+        #endregion
+
+        public ReferenceFieldModelController TargetFieldReference = null;
+        public Context                       TargetDocContext = null;
 
         public EditableTextBlock()
         {
             InitializeComponent();
-
-            //events 
-            Box.PointerWheelChanged += (s, e) => e.Handled = true;
-            Box.ManipulationDelta += (s, e) => e.Handled = true;
-
-            // bindings 
-            var textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(Text)),
-                Mode = BindingMode.TwoWay
-            };
-            Block.SetBinding(TextBlock.TextProperty, textBinding);
-            Box.SetBinding(TextBox.TextProperty, textBinding);
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
+            if (xTextBox == null)
+            {
+                xTextBox = new TextBox();
+                xTextBox.HorizontalAlignment = HorizontalAlignment.Stretch;
+                xTextBox.VerticalAlignment = VerticalAlignment.Stretch;
+                xTextBox.TextWrapping = TextWrapping.Wrap;
+                xTextBox.BorderThickness = new Thickness(0);
+                xTextBox.Background = new SolidColorBrush(Colors.Transparent);
+                xTextBox.LostFocus += xTextBox_LostFocus;
+                xTextBox.PointerWheelChanged += (s, ev) => e.Handled = true;
+                xTextBox.ManipulationDelta += (s, ev) => e.Handled = true;
+                xTextBox.KeyDown += (s, ev) =>
+                {
+                    if (ev.Key == Windows.System.VirtualKey.Enter)
+                        xTextBox_LostFocus(s, null);
+                };
+                this.Children.Add(xTextBox);
+            }
             e.Handled = true;
-            Block.Visibility = Visibility.Collapsed;
-            Box.Visibility = Visibility.Visible;
-            Box.Focus(FocusState.Programmatic);
-            Box.SelectAll();
+
+            xTextBox.Text = TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString() ?? xTextBlock.Text;
+
+            xTextBlock.Visibility = Visibility.Collapsed;
+            xTextBox.Visibility = Visibility.Visible;
+            xTextBox.Focus(FocusState.Programmatic);
+            xTextBox.SelectAll();
         }
 
         private void xTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            Box.Visibility = Visibility.Collapsed;
-            Block.Visibility = Visibility.Visible;
+            if (xTextBox.Visibility == Visibility.Visible)
+            {
+                xTextBox.Visibility = Visibility.Collapsed;
+                xTextBlock.Visibility = Visibility.Visible;
+
+                // if textBox specifies a field reference, then TextBlock's bindings will convert it to a ReferenceField 
+                // which will then trigger the TextBlock to display the dereferenced value
+                xTextBlock.Text = xTextBox.Text; 
+            }
         }
     }
 }
