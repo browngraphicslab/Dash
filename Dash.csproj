@@ -67,7 +67,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
@@ -108,6 +108,9 @@
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadialMenuSlider.xaml.cs">
+      <DependentUpon>RadialMenuSlider.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InkSettingsPane.xaml.cs">
       <DependentUpon>InkSettingsPane.xaml</DependentUpon>
@@ -527,6 +530,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="RadialColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RadialMenuSlider.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

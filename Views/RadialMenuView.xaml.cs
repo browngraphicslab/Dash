@@ -1,6 +1,7 @@
 ﻿using RadialMenuControl.Components;
 using RadialMenuControl.UserControl;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -107,6 +108,9 @@ namespace Dash
         private MeterSubMenu _strokeMeter;
         private MeterSubMenu _opacityMeter;
         private InkSettingsPane _settingsPane;
+        private List<RadialMenuButton> _inputButtons;
+
+        private List<RadialMenuButton> _strokeButtons;
 
         /// <summary>
         /// Default radial menu with certain menu items
@@ -117,7 +121,19 @@ namespace Dash
             this.InitializeComponent();
             _parentCanvas = canvas;
             this.SetUpBaseMenu();
-            Loaded += (sender, args) => InkSubMenu.MenuOpenedOrClosed += InkSubMenu_OnMenuOpenedOrClosed;
+            Loaded += (sender, args) =>
+            {
+                InkSubMenu.MenuOpenedOrClosed += InkSubMenu_OnMenuOpenedOrClosed;
+                CloseInkMenu();
+            };
+            _strokeButtons = new List<RadialMenuButton>
+            {
+                SetPenInkButton, SetPencilInkButton, SetEraserButton, SelectButton
+            };
+            _inputButtons = new List<RadialMenuButton>
+            {
+                SetPenInputButton, SetMouseInputButton, SetTouchInputButton, DisableButton
+            };
         }
 
 
@@ -145,10 +161,11 @@ namespace Dash
         {
             SettingsPane.Visibility = Visibility.Collapsed;
             ColorPicker.Visibility = Visibility.Collapsed;
-            Grid.Height = 250;
-            Column0.Width = new GridLength(250);
+            Grid.Height = 215;
+            Column0.Width = new GridLength(215);
             Column1.Width = new GridLength(0);
-            Grid.Width = 250;
+            Grid.Width = 215;
+            Floating.ManipulateControlPosition(16,16); //fixes jerkiness when closing menu...
         }
 
         /// <summary>
@@ -161,10 +178,12 @@ namespace Dash
         {
             SettingsPane.Visibility = Visibility.Visible;
             ColorPicker.Visibility = Visibility.Visible;
-            Grid.Height = 327;
-            Column0.Width = new GridLength(327);
+            Grid.Height = 279;
+            Column0.Width = new GridLength(279);
             Column1.Width = GridLength.Auto;
             Grid.Width = double.NaN;
+            Floating.ManipulateControlPosition(-32, -32); //...and fixes jerkiness when opening it
+
         }
 
         /// <summary>
@@ -172,7 +191,7 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
-            RadialMenu.Diameter = 250;
+            RadialMenu.Diameter = 215;
             RadialMenu.StartAngle = 0;
             RadialMenu.CenterButtonIcon = "🛠️";
             RadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
@@ -191,8 +210,8 @@ namespace Dash
             RadialMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             RadialMenu.OuterDisabledColor = ((SolidColorBrush) App.Instance.Resources["WindowsBlue"]).Color;
             RadialMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.OuterThickness = 15;
-            RadialMenu.CenterButtonSize = 60;
+            RadialMenu.OuterThickness = 10;
+            RadialMenu.CenterButtonSize = 45;
         }
         
 
@@ -207,12 +226,20 @@ namespace Dash
             Action<object> chooseEraser = Actions.ChooseEraser;
             Action<object> toggleSelect = Actions.ToggleSelectionMode;
             Action<object> toggleInkRecognition = Actions.ToggleInkRecognition;
-            var penInk = new RadialActionModel("", (Symbol) 0xEE56) {GenericAction = choosePen};
-            var pencilInk = new RadialActionModel("", (Symbol) 0xED63) {GenericAction = choosePencil};
-            var eraserInkModel = new RadialActionModel("", (Symbol) 0xED60) {GenericAction = chooseEraser};
+            var penInk = new RadialActionModel("", (Symbol) 0xEE56) {GenericAction = choosePen,
+                IsToggle = true
+            };
+            var pencilInk = new RadialActionModel("", (Symbol) 0xED63) {GenericAction = choosePencil,
+                IsToggle = true
+            };
+            var eraserInkModel = new RadialActionModel("", (Symbol) 0xED60) {GenericAction = chooseEraser,
+                IsToggle = true
+            };
             //var toggleInkRecognitionModel = new RadialActionModel("", (Symbol) 0xE945) {GenericAction = toggleInkRecognition, IsToggle = true};
             var selectModel =
-                new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect};
+                new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect,
+                    IsToggle = true
+                };
             SetActionModel(penInk, SetPenInkButton);
             SetActionModel(pencilInk, SetPencilInkButton);
             SetActionModel(eraserInkModel, SetEraserButton);
@@ -224,19 +251,23 @@ namespace Dash
             Action<object> setNoInput = Actions.SetNoInput;
             var setPenModel = new RadialActionModel("Pen", (Symbol) 0xEDC6)
             {
-                GenericAction = setPenInput
+                GenericAction = setPenInput,
+                IsToggle = true
             };
             var setTouchModel = new RadialActionModel("Touch", (Symbol) 0xED5F)
             {
-                GenericAction = setTouchInput
+                GenericAction = setTouchInput,
+                IsToggle = true
             };
             var setMouseModel = new RadialActionModel("Mouse", (Symbol) 0xE962)
             {
-                GenericAction = setMouseInput
+                GenericAction = setMouseInput,
+                IsToggle = true
             };
             var disableModel = new RadialActionModel("Disable", Symbol.Clear)
             {
-                GenericAction = setNoInput
+                GenericAction = setNoInput,
+                IsToggle = true
             };
             SetActionModel(setPenModel, SetPenInputButton);
             SetActionModel(setTouchModel, SetTouchInputButton);
@@ -272,10 +303,10 @@ namespace Dash
             }
         }
 
-        private void InputSubMenuButton_OnInnerArcReleased(object sender, PointerRoutedEventArgs e)
-        {
-            RadialMenu.ChangeMenu(null, InputSubMenu);
-        }
+        //private void InputSubMenuButton_OnInnerArcReleased(object sender, PointerRoutedEventArgs e)
+        //{
+        //    RadialMenu.ChangeMenu(null, InputSubMenu);
+        //}
 
         private void InkSubMenu_OnMenuOpenedOrClosed(bool isopen)
         {
@@ -291,6 +322,32 @@ namespace Dash
         private void InkSubMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
         {
             CloseInkMenu();
+        }
+
+        private void InputTypeOnTapped(object sender, PointerRoutedEventArgs e)
+        {
+            if (e == null) return;
+            var tappedButton = sender as RadialMenuButton;
+            ToggleButtonGroup(_inputButtons, tappedButton);
+        }
+
+        private void ToggleButtonGroup(List<RadialMenuButton> group, RadialMenuButton selected)
+        {
+            foreach (var button in group)
+            {
+                if (button.Value is bool && (bool) button.Value)
+                {
+                    RadialMenu.ClickInnerRadialMenuButton(button);
+                }
+            }
+            RadialMenu.ClickInnerRadialMenuButton(selected);
+        }
+
+        private void InkTypeOnTapped(object sender, PointerRoutedEventArgs e)
+        {
+            if (e == null) return;
+            var tappedButton = sender as RadialMenuButton;
+            ToggleButtonGroup(_strokeButtons, tappedButton);
         }
     }
 }

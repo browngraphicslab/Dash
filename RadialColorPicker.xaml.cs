@@ -28,6 +28,13 @@ namespace Dash
         public RadialColorPicker()
         {
             this.InitializeComponent();
+            Loaded += RadialColorPicker_Loaded;
+        }
+
+        private void RadialColorPicker_Loaded(object sender, RoutedEventArgs e)
+        {
+            _trackerPoint = Util.PointTransformFromVisual(new Point(5, 15), RotationGrid, ColorEllipse);
+            SetRotationFromPoint(_trackerPoint);
         }
 
         private void UpdateColor()
@@ -41,7 +48,6 @@ namespace Dash
 
         private void IndicatorRectangle_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            
             _trackerPoint.X += e.Delta.Translation.X;
             _trackerPoint.Y += e.Delta.Translation.Y;
             SetRotationFromPoint(_trackerPoint);

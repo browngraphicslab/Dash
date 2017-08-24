@@ -74,8 +74,6 @@ namespace Dash
             set
             {
                 _attributes = value;
-                foreach (var presenter in Presenters)
-                    presenter.UpdateDefaultDrawingAttributes(_attributes);
             }
         }
 
@@ -129,23 +127,7 @@ namespace Dash
 
         public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
-            if (isSelectionEnabled != null) IsSelectionEnabled = (bool) isSelectionEnabled;
-            foreach (var cntrls in FreeformInkControls)
-                cntrls.UpdateSelectionMode();
-            if (IsSelectionEnabled)
-                return;
-            if (StrokeType == StrokeTypes.Eraser)
-            {
-                foreach (var presenter in Presenters)
-                    presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
-                OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                {
-                    Opacity = Opacity
-                });
-                return;
-            }
             var attributes = new InkDrawingAttributes();
-
             foreach (var presenter in Presenters)
                 presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
             if (StrokeType == StrokeTypes.Pencil)
@@ -167,6 +149,20 @@ namespace Dash
             {
                 Opacity = Opacity
             });
+            //Check other settings before updating attributes of all presenters.
+            if (isSelectionEnabled != null) IsSelectionEnabled = (bool)isSelectionEnabled;
+            foreach (var cntrls in FreeformInkControls)
+                cntrls.UpdateSelectionMode();
+            if (IsSelectionEnabled)
+                return;
+            if (StrokeType == StrokeTypes.Eraser)
+            {
+                foreach (var presenter in Presenters)
+                    presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
+                return;
+            }
+            foreach (var presenter in Presenters)
+                presenter.UpdateDefaultDrawingAttributes(_attributes);
         }
     }
 }

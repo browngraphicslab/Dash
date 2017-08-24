@@ -2,24 +2,23 @@
     x:Class="Dash.RadialColorPicker"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="327"
-    d:DesignWidth="327">
+    d:DesignHeight="280"
+    d:DesignWidth="280">
 
-    <Grid>
-        <Ellipse x:Name="ColorEllipse" Width="327" Height="327" Tapped="ColorEllipse_OnTapped"  ManipulationMode="TranslateY, TranslateX" ManipulationStarted="IndicatorRectangle_OnManipulationStarted" ManipulationDelta="IndicatorRectangle_OnManipulationDelta">
+    <Grid Width="280" Height="280">
+        <Ellipse x:Name="ColorEllipse" VerticalAlignment="Center" HorizontalAlignment="Center" Width="279" Height="279" Tapped="ColorEllipse_OnTapped"  ManipulationMode="TranslateY, TranslateX" ManipulationStarted="IndicatorRectangle_OnManipulationStarted" ManipulationDelta="IndicatorRectangle_OnManipulationDelta">
             <Ellipse.Fill>
                 <ImageBrush ImageSource="Assets/radial_color_wheel.png"></ImageBrush>
             </Ellipse.Fill>
         </Ellipse>
-        <Grid x:Name="RotationGrid" Width="30"  RenderTransformOrigin="0.5,1" Margin="148.5,-10,148.5,163.5" Background="Transparent">
+        <Grid x:Name="RotationGrid" Width="10"  RenderTransformOrigin="0.5,1" Margin="134.5,0,134.5,139.5" >
             <Grid.RenderTransform>
-                <CompositeTransform Rotation="0"/>
+                <CompositeTransform Rotation="38.314"/>
             </Grid.RenderTransform>
-            <Rectangle x:Name="IndicatorRectangle"  Stroke="White" StrokeThickness="2" Width="10" Margin="0,10,0,0"  Fill="Transparent" Height="39" VerticalAlignment="Top">
+            <Rectangle x:Name="IndicatorRectangle"  Stroke="White" StrokeThickness="2" Width="10" Margin="0,0,0,0" Height="45" VerticalAlignment="Top" IsHitTestVisible="False">
             </Rectangle>
         </Grid>
     </Grid>
