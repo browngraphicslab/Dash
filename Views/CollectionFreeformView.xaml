@@ -14,7 +14,7 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
-    DragLeave="ColectionViewOnDragLeave"
+    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"

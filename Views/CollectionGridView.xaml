@@ -11,7 +11,7 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
-    DragLeave="CollectionViewOnLeave"
+    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     >
     <Grid x:Name="Grid" Background="Transparent">

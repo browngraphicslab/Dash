@@ -6,8 +6,10 @@ using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -19,6 +21,7 @@ namespace Dash
         private ObservableCollection<DocumentViewModelParameters> _documentViewModels;
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
+        private static SelectionElement _previousDragEntered;
 
         public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
 
@@ -49,10 +52,6 @@ namespace Dash
         public abstract void RemoveDocuments(List<DocumentController> documents);
         public abstract void RemoveDocument(DocumentController document);
 
-        /// <summary>
-        /// stores the previous drop target (the previous element that fired the drag entered event)
-        /// </summary>
-        private SelectionElement _previousDropTarget;
         private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
@@ -183,17 +182,7 @@ namespace Dash
                 carrier.Destination = null;
             }
             SetGlobalHitTestVisiblityOnSelectedItems(false);
-
-            // remove drop target indication when item is dropped 
-            (SelectionElement.DropTarget as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            (SelectionElement.DropTarget as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            (SelectionElement.DropTarget as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            SelectionElement.DropTarget = null;
-
-            // remove border from DocumentView once it is dropped onto a collection
-            if (DocumentView.DragDocumentView != null)
-                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
-            DocumentView.DragDocumentView = null;
+            this.RemoveDragDropIndication(sender as SelectionElement);
         }
 
         /// <summary>
@@ -201,6 +190,8 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            this.HighlightPotentialDropTarget(sender as SelectionElement);
+
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
@@ -215,7 +206,6 @@ namespace Dash
                 
             }
                 
-
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
             {
@@ -234,25 +224,7 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
 
-            // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
-            var element = sender as SelectionElement;
-            if (element != null)
-            {
-                // DropTarget should only be not null when this drag entered event is fired without the previous target firing the DragLeave event, which should only happen to nested collections
-                if (SelectionElement.DropTarget != null)
-                {
-                    var target = SelectionElement.DropTarget;
-                    (target as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-                    (target as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-                    (target as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-                    // store the outer collection
-                    _previousDropTarget = target;
-                }
-                SelectionElement.DropTarget = element;
-                (SelectionElement.DropTarget as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(Colors.LightSteelBlue));
-                (SelectionElement.DropTarget as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(Colors.LightSteelBlue));
-                (SelectionElement.DropTarget as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(Colors.LightSteelBlue));
-            }
+            e.Handled = true; 
         }
 
         /// <summary>
@@ -262,17 +234,65 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            (SelectionElement.DropTarget as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            (SelectionElement.DropTarget as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            (SelectionElement.DropTarget as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(Colors.Transparent));
-            SelectionElement.DropTarget = null;
-            if (_previousDropTarget != null)
+            var element = sender as SelectionElement;
+            if (element != null)
             {
-                // dropping an item into a nested collection only works with the freeform view
-                (_previousDropTarget as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(Colors.LightSteelBlue));
-                SelectionElement.DropTarget = _previousDropTarget;
-                _previousDropTarget = null;
+                this.ChangeIndicationColor(element, Colors.Transparent);
+                element.HasDragLeft = true;
+                var parent = element.ParentSelectionElement;
+                // if the current collection fires a dragleave event and its parent hasn't
+                if (!parent.HasDragLeft)
+                {
+                    this.ChangeIndicationColor(parent, Colors.LightSteelBlue);
+                }
             }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
+        /// </summary>
+        /// <param name="element"></param>
+        private void HighlightPotentialDropTarget(SelectionElement element)
+        {
+            // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
+            if (element != null)
+            {
+                // only one collection should be highlighted at a time
+                if (_previousDragEntered != null)
+                {
+                    this.ChangeIndicationColor(_previousDragEntered, Colors.Transparent);
+                }
+                element.HasDragLeft = false;
+                _previousDragEntered = element;
+                this.ChangeIndicationColor(element, Colors.LightSteelBlue);
+            }
+        }
+
+        /// <summary>
+        /// Remove highlight from target drop collection and border from DocumentView being dragged
+        /// </summary>
+        /// <param name="element"></param>
+        private void RemoveDragDropIndication(SelectionElement element)
+        {
+            // remove drop target indication when doc is dropped
+            if (element != null)
+            {
+                this.ChangeIndicationColor(element, Colors.Transparent);
+                _previousDragEntered = null;
+            }
+
+            // remove border from DocumentView once it is dropped onto a collection
+            if (DocumentView.DragDocumentView != null)
+                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
+            DocumentView.DragDocumentView = null;
+        }
+
+        private void ChangeIndicationColor(SelectionElement element, Color fill)
+        {
+            (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
 
         #endregion

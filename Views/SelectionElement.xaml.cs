@@ -24,7 +24,7 @@ namespace Dash
 
         public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
         public SelectionElement CurrentSelectedElement { get; private set; }
-        public static SelectionElement DropTarget;
+        public bool HasDragLeft;
         public bool IsSelected
         {
             get => _isSelected;

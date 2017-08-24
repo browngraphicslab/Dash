@@ -659,7 +659,7 @@ namespace Dash
             ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
-        private void ColectionViewOnDragLeave(object sender, DragEventArgs e)
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragLeave(sender, e);
         }
@@ -866,5 +866,6 @@ namespace Dash
             }
         }
         #endregion
+
     }
 }
