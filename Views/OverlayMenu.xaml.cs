@@ -127,6 +127,28 @@ namespace Dash
             }
         }
 
+        public void AddAndPlayOpenAnimation()
+        {
+            foreach (var button in _documentButtons)
+            {
+                button.CreateAndRunInstantiationAnimation(false);
+            }
+            if (_collectionButtons != null)
+            {
+                foreach (var button in _collectionButtons)
+                {
+                    if (button.IsComposite)
+                    {
+                        button.CreateAndRunInstantiationAnimation(true);
+                    }
+                    else
+                    {
+                        button.CreateAndRunInstantiationAnimation(false);
+                    }
+                }
+            }
+        }
+
         public void AddAndPlayCloseMenuAnimation()
         {
             foreach (var button in _documentButtons)

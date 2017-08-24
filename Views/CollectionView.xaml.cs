@@ -260,6 +260,7 @@ namespace Dash
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
+            _collectionMenu.AddAndPlayOpenAnimation();
         }
 
         private void GetJson()

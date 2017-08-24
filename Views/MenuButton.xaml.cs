@@ -21,13 +21,14 @@ namespace Dash
         private double _verticalOffset;
 
         public bool RotateOnTap = false;
-
+        public bool IsComposite;
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
             this.CreateAndRunInstantiationAnimation(false);
+            IsComposite = false;
         }
 
         private int _selectedInd; 
@@ -53,6 +54,7 @@ namespace Dash
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
+            IsComposite = true;
         }
 
         /// <summary>
@@ -274,7 +276,7 @@ namespace Dash
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
-        private void CreateAndRunInstantiationAnimation(bool isComposite)
+        public void CreateAndRunInstantiationAnimation(bool isComposite)
         {
             if (isComposite)
             {
@@ -330,7 +332,7 @@ namespace Dash
         /// </summary>
         private void CreateAndRunReverseVerticalTranslationAnimation()
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.1));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
             if (_button != null)
