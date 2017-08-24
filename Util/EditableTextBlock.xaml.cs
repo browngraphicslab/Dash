@@ -1,9 +1,14 @@
+﻿using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Windows.UI;
+using Windows.UI.Text;
 ﻿using Dash.Converters;
 using System;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
@@ -13,71 +18,122 @@ namespace Dash
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public partial class EditableTextBlock
+    public partial class EditableTextBlock : INotifyPropertyChanged
     {
         #region BINDING PROPERTIES 
 
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            "Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(default(string)));
+
         public string Text
         {
-            get { return (string)xTextBlock.Text; }
-            set { xTextBlock.SetValue(TextBlock.TextProperty, value); }
+            get { return (string) GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
         }
 
-        public TextBox xTextBox = null;
+        public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
+            "TextAlignment", typeof(TextAlignment), typeof(EditableTextBlock), new PropertyMetadata(default(TextAlignment)));
 
-        public bool IsEditable = true; 
+        public TextAlignment TextAlignment
+        {
+            get { return (TextAlignment)GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
+        }
 
         #endregion
 
+        private bool _textBoxLoaded = false;
+
+        private bool TextBoxLoaded
+        {
+            get => _textBoxLoaded;
+            set
+            {
+                _textBoxLoaded = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool Not(bool b)
+        {
+            return b != true;
+        }
+
         public ReferenceFieldModelController TargetFieldReference = null;
-        public Context                       TargetDocContext = null;
+        public Context TargetDocContext = null;
 
         public EditableTextBlock()
         {
             InitializeComponent();
+
+            RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
-        private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        private void XTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
-            if (!IsEditable) return; 
-            if (xTextBox == null)
-            {
-                xTextBox = new TextBox();
-                xTextBox.HorizontalAlignment = HorizontalAlignment.Stretch;
-                xTextBox.VerticalAlignment = VerticalAlignment.Stretch;
-                xTextBox.TextWrapping = TextWrapping.Wrap;
-                xTextBox.BorderThickness = new Thickness(0);
-                xTextBox.Background = new SolidColorBrush(Colors.Transparent);
-                xTextBox.LostFocus += xTextBox_LostFocus;
-                xTextBox.PointerWheelChanged += (s, ev) => e.Handled = true;
-                xTextBox.ManipulationDelta += (s, ev) => e.Handled = true;
-                xTextBox.KeyDown += (s, ev) =>
-                {
-                    if (ev.Key == Windows.System.VirtualKey.Enter)
-                        xTextBox_LostFocus(s, null);
-                };
-                Children.Add(xTextBox);
-            }
             e.Handled = true;
-
-            xTextBox.Text = TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString() ?? xTextBlock.Text;
-
-            xTextBlock.Visibility = Visibility.Collapsed;
-            xTextBox.Visibility = Visibility.Visible;
-            xTextBox.Focus(FocusState.Programmatic);
-            xTextBox.SelectAll();
+            TextBoxLoaded = true;
         }
 
-        private void xTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            if (xTextBox.Visibility == Visibility.Visible)
+            if (TextBoxLoaded)
             {
-                xTextBox.Visibility = Visibility.Collapsed;
-                xTextBlock.Visibility = Visibility.Visible;
+                SetExpression(XTextBox.Text);
+                TextBoxLoaded = false;
+                XTextBlock.Visibility = Visibility.Visible;
+            }
+        }
 
-                // if textBox specifies a field reference, then TextBlock's bindings will convert it to a ReferenceField 
-                // which will then trigger the TextBlock to display the dereferenced value
-                xTextBlock.Text = xTextBox.Text; 
+        private void XTextBox_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void XTextBox_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void XTextBox_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            XTextBlock.Visibility = Visibility.Collapsed;
+            XTextBox.Focus(FocusState.Programmatic);
+            XTextBox.Text = GetExpression() ?? XTextBlock.Text;
+            XTextBox.SelectAll();
+        }
+
+        private string GetExpression()
+        {
+            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
+        }
+
+        private void SetExpression(string expression)
+        {
+             Text = expression;
+             //if (TargetFieldReference?.SetValue(Tuple.Create(TargetDocContext, expression)) == false)
+             //    Text = GetExpression() ?? XTextBlock.Text;
+            //TargetFieldReference?.Dereference(TargetDocContext)?.SetValue(expression);
+        }
+
+        private void XTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+                SetExpression(XTextBox.Text);
+        }
+
+        private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (TextBoxLoaded)
+            {
+                SetExpression(XTextBox.Text);
             }
         }
     }

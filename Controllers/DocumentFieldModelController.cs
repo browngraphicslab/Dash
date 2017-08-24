@@ -40,13 +40,24 @@ namespace Dash
             Data = value as DocumentController;
             return true;
         }
+        OnDocumentFieldUpdatedHandler primaryKeyHandler;
         public DocumentController Data
         {
             get { return _data; }
             set
             {
+                var oldData = _data;
                 if (SetProperty(ref _data, value))
                 {
+                    if (oldData != null)
+                        oldData.DocumentFieldUpdated -= primaryKeyHandler;
+                    primaryKeyHandler = (sender, args) =>
+                    {
+                        var keylist = (_data.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data.Select((d) => (d as TextFieldModelController).Data));
+                        if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                            OnFieldModelUpdated(null);
+                    };
+                    value.DocumentFieldUpdated += primaryKeyHandler;
                     OnFieldModelUpdated(null);
                     // update local
                     // update server

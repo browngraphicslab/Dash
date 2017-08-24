@@ -106,8 +106,10 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
     <Compile Include="Views\CollectionTextView.xaml.cs">
       <DependentUpon>CollectionTextView.xaml</DependentUpon>
@@ -206,6 +208,9 @@
     </Compile>
     <Compile Include="Views\IOReference.cs" />
     <Compile Include="Util\OperationCreationHelper.cs" />
+    <Compile Include="Views\MenuButtonList.xaml.cs">
+      <DependentUpon>MenuButtonList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -592,6 +597,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MenuButtonList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

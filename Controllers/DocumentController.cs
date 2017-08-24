@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using DashShared;
-using Dash.Controllers.Operators;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -105,7 +106,7 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            LayoutName = model.DocumentType.Type; 
+            LayoutName = model.DocumentType.Type;
             // Add Events
         }
 
@@ -279,7 +280,7 @@ namespace Dash
                 {
                     var opModel = lookupOperator(strings[0]);
                     var opFieldController = (opModel.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController);
-                    var args  = strings[1].TrimEnd(')').Split(',');
+                    var args = strings[1].TrimEnd(')').Split(',');
                     int count = 0;
                     foreach (var a in args)
                     {
@@ -463,7 +464,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask"></param>
-        public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck=true)
+        public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck = true)
         {
             // check field type compatibility
             if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;
@@ -473,6 +474,9 @@ namespace Dash
             {
                 return false;
             }
+
+            // check field type compatibility if operator  
+            //if (!IsTypeCompatible(key, field)) return false;
 
             SetupNewFieldListeners(key, field, oldField, new Context(this));
 
@@ -495,7 +499,7 @@ namespace Dash
             if (cont == null) return true; 
             var rawField = field.DereferenceToRoot(null);
 
-            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo; 
+            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;
         }
 
         /// <summary>
@@ -510,7 +514,7 @@ namespace Dash
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
             var rawField = field.DereferenceToRoot(null);
-            return rawField == null || opCont.Inputs[key] == rawField.TypeInfo;
+            return rawField == null || (opCont.Inputs[key] & rawField.TypeInfo) != 0;
         }
 
 
@@ -658,7 +662,7 @@ namespace Dash
         }
 
 
-        private bool ShouldExecute(Context context, KeyController updatedKey)
+        public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
@@ -670,10 +674,10 @@ namespace Dash
             {
                 return true;
             }
-            //if (opField.Outputs.ContainsKey(updatedKey))
-            //{
-            //    return true;
-            //}
+            if (opField.Outputs.ContainsKey(updatedKey))
+            {
+                return true;
+            }
             return false;
         }
 
@@ -746,59 +750,78 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
-            var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
-            var source = new ObservableCollection<FrameworkElement>();
-            sp.ItemsSource = source;
+            //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
+            var sp = new StackPanel();
+            var source = new List<FrameworkElement>();
 
             var isInterfaceBuilder = false; // TODO make this a parameter
 
-            foreach (var f in EnumFields())
-            {
-                if (f.Key.Equals(KeyStore.DelegatesKey) ||
-                    f.Key.Equals(KeyStore.PrototypeKey) ||
-                    f.Key.Equals(KeyStore.LayoutListKey) ||
-                    f.Key.Equals(KeyStore.ActiveLayoutKey))
+            Action<KeyValuePair<KeyController, FieldModelController>> a =
+                delegate (KeyValuePair<KeyController, FieldModelController> f)
                 {
-                    continue;
-                }
-
-                if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
-                {
-                    var hstack = new StackPanel { Orientation = Orientation.Horizontal };
-                    var label = new TextBlock { Text = f.Key.Name + ": " };
-                    var refField = new ReferenceFieldModelController(GetId(), f.Key);
-                    var dBox = f.Value is ImageFieldModelController ? new ImageBox(refField).Document : new TextingBox(refField).Document;
-
-                    hstack.Children.Add(label);
-
-                    var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
-
-                    //ele.MaxWidth = 200;
-                    hstack.Children.Add(ele);
-
-                    source.Add(hstack);
-                }
-                else if (f.Value is DocumentFieldModelController)
-                {
-                    var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                    var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
-                    source.Add(view);
-                }
-                else if (f.Value is DocumentCollectionFieldModelController)
-                {
-                    var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
-
-                    var border = new Border
+                    if (f.Key.Equals(KeyStore.DelegatesKey) ||
+                        f.Key.Equals(KeyStore.PrototypeKey) ||
+                        f.Key.Equals(KeyStore.LayoutListKey) ||
+                        f.Key.Equals(KeyStore.ActiveLayoutKey))
                     {
-                        BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
-                        BorderThickness = new Thickness(1),
-                        CornerRadius = new CornerRadius(3),
-                        Child = colView
-                    };
-                    source.Add(border);
-                }
-            }
+                        return;
+                    }
+
+                    if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
+                    {
+                        var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+                        var label = new TextBlock { Text = f.Key.Name + ": " };
+                        var refField = new ReferenceFieldModelController(GetId(), f.Key);
+                        var dBox = f.Value is ImageFieldModelController ? new ImageBox(refField).Document : new TextingBox(refField).Document;
+
+                        hstack.Children.Add(label);
+
+                        var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
+
+                        //ele.MaxWidth = 200;
+                        hstack.Children.Add(ele);
+                        sp.Children.Add(hstack);
+                        //source.Add(hstack);
+                    }
+                    else if (f.Value is DocumentFieldModelController)
+                    {
+                        var fieldDoc = (f.Value as DocumentFieldModelController).Data;
+                        // bcz: commented this out because it generated exceptions after making a search List of Umpires
+                        var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
+                        sp.Children.Add(view);
+                        //source.Add(view);
+                    }
+                    else if (f.Value is DocumentCollectionFieldModelController)
+                    {
+                        var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
+
+                        var border = new Border
+                        {
+                            BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
+                            BorderThickness = new Thickness(1),
+                            CornerRadius = new CornerRadius(3),
+                            Child = colView
+                        };
+                        border.Width = 500;
+                        border.Height = 500;
+                        sp.Children.Add(border);
+                        //source.Add(border);
+                    }
+                };
+
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                CoreDispatcherPriority.Low,
+                async () =>
+                {
+                    foreach (var f in EnumFields().ToList())
+                    {
+                        a(f);
+                        await Task.Delay(5);
+                    }
+                });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
             return sp;
         }
 

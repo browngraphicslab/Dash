@@ -130,7 +130,7 @@ namespace Dash
         private void AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            KeyController key = new KeyController((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
 
             _documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
@@ -369,6 +369,14 @@ namespace Dash
         {
             for (int i = 0; i < 3; i++)
                 xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
+        }
+
+        private void Border_Loaded(object sender, RoutedEventArgs e)
+        {
+            if ((sender as Border).Child is TextBlock)
+            {
+
+            }
         }
     }
 }

@@ -14,7 +14,6 @@ namespace Dash
     {
         private bool _canDragItems;
         private double _cellSize;
-        private ObservableCollection<DocumentViewModelParameters> _documentViewModels;
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
@@ -23,7 +22,6 @@ namespace Dash
         protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
-            _documentViewModels = new ObservableCollection<DocumentViewModelParameters>();
             SelectionGroup = new List<DocumentViewModelParameters>();
         }
 
@@ -33,11 +31,7 @@ namespace Dash
             private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
-        public ObservableCollection<DocumentViewModelParameters> DocumentViewModels
-        {
-            get { return _documentViewModels; }
-            protected set { SetProperty(ref _documentViewModels, value); } 
-        }
+        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         // used to keep track of groups of the currently selected items in a collection
         public List<DocumentViewModelParameters> SelectionGroup { get; set; }
@@ -249,68 +243,62 @@ namespace Dash
 
         public void ContainerContentChangingPhaseZero(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            args.Handled = true;
-            if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (FrameworkElement)rootGrid?.FindName("xBorder");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            backdrop.Visibility = Visibility.Visible;
-            backdrop.ClearValue(FrameworkElement.WidthProperty);
-            backdrop.ClearValue(FrameworkElement.HeightProperty);
-            backdrop.Width = backdrop.Height = 250;
-            backdrop.xProgressRing.Visibility = Visibility.Visible;
-            backdrop.xProgressRing.IsActive = true;
-            Debug.Assert(border != null, "border != null");
-            border.Visibility = Visibility.Collapsed;
-            args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+            //args.Handled = true;
+            //if (args.Phase != 0) throw new Exception("Please start in stage 0");
+            //var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            //var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            //var border = (Viewbox)rootGrid?.FindName("xBorder");
+            //Debug.Assert(backdrop != null, "backdrop != null");
+            //backdrop.Visibility = Visibility.Visible;
+            //backdrop.ClearValue(FrameworkElement.WidthProperty);
+            //backdrop.ClearValue(FrameworkElement.HeightProperty);
+            //backdrop.Width = backdrop.Height = 250;
+            //backdrop.xProgressRing.Visibility = Visibility.Visible;
+            //backdrop.xProgressRing.IsActive = true;
+            //Debug.Assert(border != null, "border != null");
+            //border.Visibility = Visibility.Collapsed;
+            //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+
+            //if (args.Phase != 0)
+            //{
+            //    throw new Exception("We should be in phase 0 but we are not");
+            //}
+
+            //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+            //args.Handled = true;
         }
 
         private void ContainerContentChangingPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (FrameworkElement)rootGrid?.FindName("xBorder");
-            var docDisplay = border?.FindName("xDocumentDisplay");
-            if (docDisplay is TextBox)
-            {
-                backdrop.Visibility = Visibility.Collapsed;
-                backdrop.xProgressRing.IsActive = false;
-                border.Visibility = Visibility.Visible;
-                var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
-                
-                (docDisplay as TextBox).DataContext =
-                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            }
-            else if (docDisplay != null)
-            {
-                var document = (DocumentView)border?.FindName("xDocumentDisplay");
-                Debug.Assert(backdrop != null, "backdrop != null");
-                Debug.Assert(border != null, "border != null");
-                Debug.Assert(document != null, "document != null");
-                backdrop.Visibility = Visibility.Collapsed;
-                backdrop.xProgressRing.IsActive = false;
-                border.Visibility = Visibility.Visible;
-                document.IsHitTestVisible = false;
-                var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+            //if (args.Phase != 1) throw new Exception("Please start in phase 1");
+            //var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            //var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            //var border = (Viewbox)rootGrid?.FindName("xBorder");
+            //var document = (DocumentView)border?.FindName("xDocumentDisplay");
+            //Debug.Assert(backdrop != null, "backdrop != null");
+            //Debug.Assert(border != null, "border != null");
+            //Debug.Assert(document != null, "document != null");
+            //backdrop.Visibility = Visibility.Collapsed;
+            //backdrop.xProgressRing.IsActive = false;
+            //border.Visibility = Visibility.Visible;
+            //document.IsHitTestVisible = false;
+            //var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
 
-                if (document.ViewModel == null)
-                {
-                    document.DataContext =
-                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-                }
-                else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
-                {
-                    document.ViewModel.Dispose();
-                    document.DataContext =
-                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-                }
-                else
-                {
-                    document.ViewModel.Dispose();
-                }
-            }
+            //if (document.ViewModel == null)
+            //{
+            //    document.DataContext =
+            //        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);               
+            //}
+            //else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
+            //{
+            //    document.ViewModel.Dispose();
+            //    document.DataContext =
+            //        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            //}
+            //else
+            //{
+            //    document.ViewModel.Dispose();
+            //}
         }
 
         #endregion
