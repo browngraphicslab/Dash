@@ -373,11 +373,8 @@ namespace Dash
 
         private void Border_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Border).Child is EditableTextBlock)
-            {
-                var child = (sender as Border).Child as EditableTextBlock;
-                child.TextAlignment = TextAlignment.Left;
-            }
+            var child = (sender as Border).Child as EditableTextBlock;
+            if (child != null) child.TextAlignment = TextAlignment.Left;
         }
     }
 }
