@@ -101,8 +101,6 @@ namespace Dash
             {
                 if (!button.RotateOnTap)
                 {
-                    //var transform = button.TransformToVisual(parent);
-                    //var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
                     var yOffset = Util.PointTransformFromVisual(new Point(0, 0), button, parent).Y; 
                     button.AddAndRunCollapseAnimation(yOffset);
                 }
