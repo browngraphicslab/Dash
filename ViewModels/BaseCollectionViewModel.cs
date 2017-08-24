@@ -28,7 +28,7 @@ namespace Dash
         public bool IsInterfaceBuilder
         {
             get { return _isInterfaceBuilder; }
-            private set { SetProperty(ref _isInterfaceBuilder, value); } 
+            private set { SetProperty(ref _isInterfaceBuilder, value); }
         }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -72,20 +72,20 @@ namespace Dash
         public double CellSize
         {
             get { return _cellSize; }
-            protected set { SetProperty(ref _cellSize, value); } 
+            protected set { SetProperty(ref _cellSize, value); }
         }
 
         public bool CanDragItems
         {
-            get { return _canDragItems; } 
-            set { SetProperty(ref _canDragItems, value); } 
-// 
+            get { return _canDragItems; }
+            set { SetProperty(ref _canDragItems, value); }
+            // 
         }
 
         public ListViewSelectionMode ItemSelectionMode
         {
-            get { return _itemSelectionMode; } 
-            set { SetProperty(ref _itemSelectionMode, value); } 
+            get { return _itemSelectionMode; }
+            set { SetProperty(ref _itemSelectionMode, value); }
         }
 
         #endregion
@@ -109,7 +109,7 @@ namespace Dash
         /// <summary>
         /// fired by the starting collection when a drag event is over
         /// </summary>
-        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
 
@@ -118,7 +118,7 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-            if (args.DropResult == DataPackageOperation.Move)
+            if (e.DropResult == DataPackageOperation.Move)                             
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
@@ -155,7 +155,6 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                carrier.Destination = this;
                 if (carrier.Source.Equals(carrier.Destination))
                 {
                     return; // we don't want to drop items on ourself
@@ -166,9 +165,6 @@ namespace Dash
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
-                carrier.Payload.Clear();
-                carrier.Source = null;
-                carrier.Destination = null;
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -182,7 +178,6 @@ namespace Dash
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-
             if (sourceIsRadialMenu)
             {
                 e.AcceptedOperation = DataPackageOperation.Move;

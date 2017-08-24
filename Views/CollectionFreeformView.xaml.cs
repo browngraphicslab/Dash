@@ -723,13 +723,17 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDrop(sender, e);
+
+            var carrier = ItemsCarrier.Instance; 
+            
             // if dropping back to the original collection, just reset the payload 
-            if (ItemsCarrier.Instance.StartingCollection == this)
+            if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
                 // delete connection lines logically and graphically 
-                var startingCol = ItemsCarrier.Instance.StartingCollection;
+                var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
                 {
                     var linesToDelete = startingCol.GetLinesToDelete();
@@ -740,8 +744,9 @@ namespace Dash
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
-
-            ViewModel.CollectionViewOnDrop(sender, e);
+            carrier.Payload.Clear();
+            carrier.Source = null;
+            carrier.Destination = null;
         }
 
 
@@ -872,6 +877,7 @@ namespace Dash
 
         private void Collection_DragLeave(object sender, DragEventArgs args)
         {
+            if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
@@ -882,7 +888,6 @@ namespace Dash
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-
             if (sourceIsRadialMenu)
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
