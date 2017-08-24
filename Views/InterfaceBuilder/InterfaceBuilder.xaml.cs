@@ -85,7 +85,7 @@ namespace Dash
         private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            if (documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            if (documentView.ViewModel == null || documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
             {
                 return;
             }
@@ -98,12 +98,12 @@ namespace Dash
                 _editingDocView.DragEnter += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
-                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
-                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged += OnActiveLayoutChanged;
             }
         }
 
-        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, Context context)
         {
             UpdateRootLayout();
         }

@@ -154,26 +154,16 @@ namespace Dash {
             var point = e.GetCurrentPoint(_element);
 
             // get the scale amount
-            var scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+            float scaleAmount = (float) Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
-            // Set up the scale transform
-            var scale = new ScaleTransform
-            {
-                CenterX = point.Position.X,
-                CenterY = point.Position.Y,
-                ScaleX = scaleAmount,
-                ScaleY = scaleAmount
-            };
-
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
-            ClampScale(newScale, scale);
+            ClampScale(newScale, ref scaleAmount);
 
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, 0),
-                new Point(scale.CenterX, scale.CenterY),
-                new Point(scale.ScaleX, scale.ScaleY)));
+                point.Position, new Point(scaleAmount, scaleAmount)));
         }
 
         /// <summary>
@@ -188,25 +178,17 @@ namespace Dash {
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
-            // set up the scale transform
-            var scale = new ScaleTransform {
-                CenterX = e.Position.X,
-                CenterY = e.Position.Y,
-                ScaleX = e.Delta.Scale,
-                ScaleY = e.Delta.Scale
-            };
-            
             // set up translation transform
             var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
-            
+
             //Clamp the scale factor 
-            var newScale = ElementScale * e.Delta.Scale;
-            ClampScale(newScale, scale);
+            var scaleFactor = e.Delta.Scale;
+            var newScale = ElementScale * scaleFactor;
+            ClampScale(newScale, ref scaleFactor);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                new Point(scale.CenterX, scale.CenterY),
-                new Point(scale.ScaleX, scale.ScaleY)));
+                e.Position, new Point(scaleFactor, scaleFactor)));
         }
 
         public void Dispose()
@@ -217,18 +199,16 @@ namespace Dash {
             _element.PointerWheelChanged -= EmptyPointerWheelChanged;
         }
 
-        private void ClampScale(double newScale, ScaleTransform scale)
+        private void ClampScale(double newScale, ref float scale)
         {
             if (newScale > MaxScale)
             {
-                scale.ScaleX = MaxScale / ElementScale;
-                scale.ScaleY = MaxScale / ElementScale;
+                scale = (float) (MaxScale / ElementScale);
                 ElementScale = MaxScale;
             }
             else if (newScale < MinScale)
             {
-                scale.ScaleX = MinScale / ElementScale;
-                scale.ScaleY = MinScale / ElementScale;
+                scale = (float) (MinScale / ElementScale);
                 ElementScale = MinScale;
             }
             else

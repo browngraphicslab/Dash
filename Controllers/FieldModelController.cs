@@ -40,6 +40,10 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
+        public abstract bool SetValue(object value);
+
+        public abstract object GetValue(Context context);
+
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
@@ -91,7 +95,13 @@ namespace Dash
         /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
         /// <returns></returns>
-        public abstract FrameworkElement GetTableCellView(Context context);
+        public virtual FrameworkElement GetTableCellView(Context context)
+        {
+            var tb = new TextingBox(this);
+            tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
+            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true); 
+            return tb.makeView(tb.Document, context);
+        }
 
         /// <summary>
         /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll

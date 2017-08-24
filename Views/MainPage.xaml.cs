@@ -39,7 +39,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
-        
+
 
         public DocumentController MainDocument { get; private set; }
 
@@ -78,17 +78,17 @@ namespace Dash
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
 
-            var matrix = new Matrix3x2(1,0,0,1,1,1);
+            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
             Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
             Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2,2,0,0,1,1);
-            TestMatrix(2,2,1,1,1,1);
-            TestMatrix(2,2,2,2,1,1);
-            TestMatrix(2,2,4,4,1,1);
-            TestMatrix(4, 4, 0, 0,2,2);
-            TestMatrix(4, 4, 1, 1,2,2);
-            TestMatrix(4, 4, 2, 2,2,2);
-            TestMatrix(4, 4, 4, 4,2,2);
+            TestMatrix(2, 2, 0, 0, 1, 1);
+            TestMatrix(2, 2, 1, 1, 1, 1);
+            TestMatrix(2, 2, 2, 2, 1, 1);
+            TestMatrix(2, 2, 4, 4, 1, 1);
+            TestMatrix(4, 4, 0, 0, 2, 2);
+            TestMatrix(4, 4, 1, 1, 2, 2);
+            TestMatrix(4, 4, 2, 2, 2, 2);
+            TestMatrix(4, 4, 4, 4, 2, 2);
 
         }
 
@@ -109,8 +109,9 @@ namespace Dash
             return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
-        public void AddOperatorsFilter(object o, DragEventArgs e)
+        public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView; 
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);
@@ -155,7 +156,7 @@ namespace Dash
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
             //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
-            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas); 
+            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
@@ -291,7 +292,7 @@ namespace Dash
 
         private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollection;
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollectionTEST;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
 
@@ -299,6 +300,70 @@ namespace Dash
         {
             Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void TestEnvOnButtonTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int numDocuments = 1000;
+            int numFields = 50;
+
+            var docs = new List<DocumentController>();
+            for (int i = 0; i < numDocuments; ++i)
+            {
+                if (i % 20 == 0)
+                {
+                    Debug.WriteLine($"Generated {i} documents");
+                }
+                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
+            }
+
+            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+            }, DocumentType.DefaultType);
+
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            doc.SetActiveLayout(colBox, true, false);
+            DisplayDocument(doc);
+        }
+
+        private void UIElementTest(object sender, TappedRoutedEventArgs e)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            //var sp = new StackPanel
+            //{
+            //    Orientation = Orientation.Vertical,
+            //    Width = 400,
+            //    Height = 1000
+            //};
+            Grid g = new Grid
+            {
+                Name = "XTestGrid",
+                ColumnDefinitions = { new ColumnDefinition{Width = new GridLength(400)}, new ColumnDefinition{Width = new GridLength(400)}},
+                Height = 900
+            };
+            //List<FrameworkElement> elements = new List<FrameworkElement>();
+            //GridView gv = new GridView();
+            //Canvas.SetLeft(g, 200);
+            //Grid.SetColumn(gv, 0);
+            //for (int i = 0; i < 50; ++i)
+            //{
+            //    var tb = new EditableTextBlock();
+            //    TextingBox.SetupBindings(tb, new TextingBox(new TextFieldModelController("Test " + i)).Document, new Context());
+            //    //sp.Children.Add(tb);
+            //    elements.Add(tb);
+            //}
+            //gv.ItemsSource = elements;
+            //g.Children.Add(gv);
+            //sw.Stop();
+            //Debug.WriteLine($"Phase 1 took {sw.ElapsedMilliseconds} ms");
+            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
+            Grid.SetColumn(documentView, 1);
+            g.Children.Add(documentView);
+            sw.Stop();
+            Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
+            xCanvas.Children.Add(g);
         }
     }
 }

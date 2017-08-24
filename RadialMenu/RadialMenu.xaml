@@ -186,7 +186,6 @@
                  Stroke="{Binding OuterDisabledBrush}" />
         
         <components:CenterButton x:Name="CenterButton"
-                Content="{Binding CenterButtonIcon}"
                 Canvas.ZIndex="100"
                 FontFamily="Segoe Ui Symbol"
                 Style="{StaticResource RoundedCenterButton}"

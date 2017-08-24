@@ -159,7 +159,9 @@ namespace Dash
                 }
                 else
                 {
-                    fields[kvp.Key] = kvp.Value.Copy();
+                    if (kvp.Key.KeyModel == DashConstants.KeyStore.ThisKey)
+                        fields[kvp.Key] = new DocumentFieldModelController(copy);
+                    else fields[kvp.Key] = kvp.Value.Copy();
                 }
             }
             copy.SetFields(fields, true);

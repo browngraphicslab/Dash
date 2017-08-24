@@ -221,6 +221,10 @@ namespace RadialMenuControl.UserControl
                     OuterAccessKey = slice.OuterAccessKey,
                     InnerAccessKey = slice.InnerAccessKey
                 };
+                if (slice.IconSymbol != null)
+                {
+                    pieSlice.IconSymbol = (Symbol) slice.IconSymbol;
+                }
 
                 if (slice.Type == RadialMenuButton.ButtonType.Custom)
                 {

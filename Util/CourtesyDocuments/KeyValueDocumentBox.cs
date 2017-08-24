@@ -42,7 +42,8 @@ namespace Dash
 
             var border = new Border();
 
-            var docView = new KeyValuePane();
+            var docView = new KeyValuePane() { TypeColumnWidth = new GridLength(0) };
+            docView.SetHeaderVisibility(DashShared.Visibility.Collapsed);
             docView.SetDataContextToDocumentController(documentfieldModelController.Data);
 
             border.Child = docView;

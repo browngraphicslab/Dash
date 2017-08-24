@@ -20,9 +20,6 @@ namespace Dash
     public class DocumentViewModel : BaseSelectionElementViewModel, IDisposable
     {
 
-        public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
-        public event OnContentChangedHandler OnContentChanged;
-
         // == MEMBERS, GETTERS, SETTERS ==
         private ManipulationModes _manipulationMode;
         private double _height;
@@ -32,11 +29,10 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private Visibility _docMenuVisibility;
+        private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
-        private FrameworkElement _content;
         private WidthAndMenuOpenWrapper _widthBinding;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
@@ -62,15 +58,6 @@ namespace Dash
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
-
-        public FrameworkElement Content
-        {
-            get { return _content; }
-            set
-            {
-                SetProperty(ref _content, value);
-            }
-        }
 
         public double Width
         {
@@ -188,13 +175,31 @@ namespace Dash
             set { SetProperty(ref _docMenuVisibility, value); }
         }
 
+        private FrameworkElement _content = null;
+        public FrameworkElement Content
+        {
+            get
+            {
+                if (_content == null)
+                {
+                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
+                }
+                return _content;
+            }
+        }
+
+        public void UpdateContent()
+        {
+            _content = null;
+            OnPropertyChanged(nameof(Content));
+        }
+
         public readonly bool IsInInterfaceBuilder;
 
-        public static int count = 0;
+        public Context  Context { get; set; }
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            //Debug.WriteLine($"DVM: {count++}");
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
@@ -207,6 +212,7 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
+            Context = newContext;
         }
 
         private void SetUpSmallIcon()
@@ -249,10 +255,14 @@ namespace Dash
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
 
+        public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
+
+        public event OnLayoutChangedHandler LayoutChanged;
+
         private void OnActiveLayoutChanged(Context context)
         {
-            Content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
-            OnContentChanged?.Invoke(this, Content);
+            UpdateContent();
+            LayoutChanged?.Invoke(this, context);
 
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
@@ -433,7 +443,11 @@ namespace Dash
 
         public void Dispose()
         {
-            RemoveListenersFromLayout(DocumentController.GetActiveLayout().Data);
+            var layoutDoc = DocumentController.GetActiveLayout()?.Data;
+            if (layoutDoc != null)
+            {
+                RemoveListenersFromLayout(layoutDoc);
+            } 
             RemoveControllerListeners();
         }
     }

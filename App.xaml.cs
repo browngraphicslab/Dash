@@ -39,6 +39,7 @@ namespace Dash
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 //this.DebugSettings.EnableFrameRateCounter = true;
+                //this.DebugSettings.IsTextPerformanceVisualizationEnabled = true;
             }
 #endif
 

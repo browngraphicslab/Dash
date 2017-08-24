@@ -70,7 +70,7 @@
         <!-- blue (default) button with white text -->
         <Style TargetType="Button">
             <!-- prevents node from moving while mouse is over UI element-->
-            <Setter Property="ManipulationMode" Value="Scale"></Setter> 
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
             <Setter Property="Foreground" Value="White" />
@@ -79,6 +79,12 @@
 
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="#FF656973"></Setter>
+        </Style>
+
+        <Style TargetType="local:EditableTextBlock">
+            <Setter Property="Foreground" Value="#FF656973" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono" />
         </Style>
 
         <!-- GLOBAL STYLES -->
@@ -201,7 +207,7 @@
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-        <local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>
+        <!--<local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>-->
 
         <!-- SAMPLE NODE HERE-->
 

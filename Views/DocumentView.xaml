@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
+    xmlns:localConverters="using:Dash.Converters"
     Width="{Binding Width}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
@@ -19,6 +20,7 @@
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
+        <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter"/>
     </UserControl.Resources>
     
     <!-- Main document view -->
@@ -33,6 +35,9 @@
         <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#99FFFFFF"/> <!--Fill="{StaticResource TranslucentWhite}"-->
 
+        <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
+            <TextBox x:Name="xDocumentDisplay" Text="{Binding Converter={StaticResource DocumentViewModelToStringConverter}}"></TextBox>
+        </Viewbox>
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid.RowDefinitions>

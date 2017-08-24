@@ -32,14 +32,17 @@
                       >
                     <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
-                <Ellipse x:Name="ConnectionEllipse"
-                         x:FieldModifier="public"
-                         Style="{StaticResource xLinkHandle}"
-                         HorizontalAlignment="Right"
-                         PointerPressed="ConnectionEllipse_OnPointerPressed"
-                         PointerReleased="ConnectionEllipse_OnPointerReleased"
-                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
-                         />
+                <Grid HorizontalAlignment="Right"
+                      PointerPressed="ConnectionEllipse_OnPointerPressed"
+                      PointerReleased="ConnectionEllipse_OnPointerReleased"
+                      ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
+                      Width="50" Height="50" Background="Transparent"
+                      ManipulationMode="None">
+                    <Ellipse x:Name="ConnectionEllipse"
+                             x:FieldModifier="public"
+                             Style="{StaticResource xLinkHandle}"
+                             VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

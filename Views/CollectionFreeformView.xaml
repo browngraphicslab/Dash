@@ -10,7 +10,6 @@
     mc:Ignorable="d"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
-    RightTapped="CollectionView_OnRightTapped"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
@@ -25,6 +24,7 @@
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
+
         <InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
         <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"  ></Canvas>
         
@@ -32,11 +32,12 @@
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
 
+        <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"></Canvas>
+
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{Binding DocumentViewModels}"   
-                      IsHitTestVisible="{Binding IsSelected}"
-                      >
+                      IsHitTestVisible="{Binding IsSelected}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="CollectionCanvas"
@@ -51,8 +52,8 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
-                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
+                    <dash:DocumentView
+                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                                        Loaded="DocumentViewOnLoaded" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

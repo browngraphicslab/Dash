@@ -105,15 +105,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate(NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double) value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
@@ -126,15 +118,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
@@ -162,16 +146,7 @@ namespace Dash
                 Document = docController,
                 Key = HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (TextFieldModelController field, object value)
-                {
-                    var s = value as string;
-                    if (s != null)
-                    {
-                        field.Data = s;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
@@ -186,16 +161,7 @@ namespace Dash
                 Document = docController,
                 Key = VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (TextFieldModelController field, object value)
-                {
-                    var s = value as string;
-                    if (s != null)
-                    {
-                        field.Data = s;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
@@ -208,15 +174,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.RowProperty, binding);
@@ -229,15 +187,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.ColumnProperty, binding);
@@ -250,15 +200,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowSpanKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.RowSpanProperty, binding);
@@ -271,15 +213,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnSpanKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.ColumnSpanProperty, binding);
@@ -341,8 +275,8 @@ namespace Dash
         /// </summary>
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
         {
+            //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;
-            //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
@@ -363,7 +297,7 @@ namespace Dash
                 var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = true;
-                (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                freeform?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
@@ -373,14 +307,10 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.PointerArgs = args;
                 args.Handled = true;
-                if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsLeftButtonPressed)
-                {
-
-                }
-                else if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsRightButtonPressed)
+                if (args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
-                    (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
+                    freeform?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -392,8 +322,7 @@ namespace Dash
                 if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
-                (view as CollectionFreeformView)?.EndDrag(
-                    new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
+                freeform?.EndDrag(new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };
