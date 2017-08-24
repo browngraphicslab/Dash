@@ -295,17 +295,17 @@ namespace Dash
                         else
                         {
                             var target = opFieldController.Inputs[count++];
-                            if (target.Value == TypeInfo.Number)
+                            if (target.Value.Type == TypeInfo.Number)
                             {
                                 var res = 0.0;
                                 if (double.TryParse(a.Trim(' '), out res))
                                     opModel.SetField(target.Key, new NumberFieldModelController(res), true);
                             }
-                            else if (target.Value == TypeInfo.Text)
+                            else if (target.Value.Type == TypeInfo.Text)
                             {
                                 opModel.SetField(target.Key, new TextFieldModelController(a), true);
                             }
-                            else if (target.Value == TypeInfo.Image)
+                            else if (target.Value.Type == TypeInfo.Image)
                             {
                                 opModel.SetField(target.Key, new ImageFieldModelController(new Uri(a)), true);
                             }
@@ -499,7 +499,7 @@ namespace Dash
                 return false;
             var cont = GetField(key);
             if (cont is ReferenceFieldModelController) cont = cont.DereferenceToRoot(null);
-            if (cont == null) return true; 
+            if (cont == null) return true;
             var rawField = field.DereferenceToRoot(null);
 
             return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;
@@ -517,7 +517,7 @@ namespace Dash
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
             var rawField = field.DereferenceToRoot(null);
-            return rawField == null || (opCont.Inputs[key] & rawField.TypeInfo) != 0;
+            return rawField == null || (opCont.Inputs[key].Type & rawField.TypeInfo) != 0;
         }
 
 
@@ -693,34 +693,34 @@ namespace Dash
             {
                 return context;
             }
-            try
+            var inputs = new Dictionary<KeyController, FieldModelController>(opField.Inputs.Count);
+            var outputs = new Dictionary<KeyController, FieldModelController>(opField.Outputs.Count);
+            foreach (var opFieldInput in opField.Inputs)
             {
-                var inputs = new Dictionary<KeyController, FieldModelController>(opField.Inputs.Count);
-                var outputs = new Dictionary<KeyController, FieldModelController>(opField.Outputs.Count);
-                foreach (var opFieldInput in opField.Inputs.Keys)
+                var field = GetField(opFieldInput.Key);
+                field = field?.DereferenceToRoot(context);
+                if (field == null)
                 {
-                    var field = GetField(opFieldInput);
-                    field = field?.DereferenceToRoot(context);
-                    if (field != null)
+                    if (opFieldInput.Value.IsRequired)
                     {
-                        inputs[opFieldInput] = field;
+                        return context;
                     }
                 }
-                opField.Execute(inputs, outputs);
-                foreach (var fieldModel in outputs)
+                else
                 {
-                    var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
-                    context.AddData(reference, fieldModel.Value);
-                    if (update)
-                    {
-                        OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Replace, reference, null, context, false), true);
-                    }
+                    inputs[opFieldInput.Key] = field;
                 }
             }
-            catch (KeyNotFoundException e)
+            opField.Execute(inputs, outputs);
+            foreach (var fieldModel in outputs)
             {
-                Debug.WriteLine("Operator Execution failed: Input not set" + e);
+                var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
+                context.AddData(reference, fieldModel.Value);
+                if (update)
+                {
+                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
+                        FieldUpdatedAction.Replace, reference, null, context, false), true);
+                }
             }
             return context;
         }
