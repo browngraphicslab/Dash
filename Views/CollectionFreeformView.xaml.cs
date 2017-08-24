@@ -143,7 +143,7 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var fieldRef = refs[i]; 
+                var fieldRef = refs[i];
                 DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
@@ -299,7 +299,7 @@ namespace Dash
 
             _connectionLine.Holding += (s, e) =>
             {
-                if (_connectionLine != null) return; 
+                if (_connectionLine != null) return;
                 ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
             };
 
@@ -725,8 +725,8 @@ namespace Dash
         {
             ViewModel.CollectionViewOnDrop(sender, e);
 
-            var carrier = ItemsCarrier.Instance; 
-            
+            var carrier = ItemsCarrier.Instance;
+
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
@@ -742,11 +742,13 @@ namespace Dash
                         startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
+
+                    carrier.Payload.Clear();
+                    carrier.Source = null;
+                    carrier.Destination = null;
                 }
             }
-            carrier.Payload.Clear();
-            carrier.Source = null;
-            carrier.Destination = null;
+
         }
 
 
@@ -885,22 +887,26 @@ namespace Dash
 
         private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+            //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-            if (sourceIsRadialMenu)
-            {
-                e.AcceptedOperation = DataPackageOperation.Move;
-                e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
+            //var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            //if (sourceIsRadialMenu)
+            //{
+            //    e.AcceptedOperation = DataPackageOperation.Move;
+            //    e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
 
-            }
+            //}
+            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
+
 
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
+            if (carrier.StartingCollection == null)
+            {
+                return;
+            }
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
