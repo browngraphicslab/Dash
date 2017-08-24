@@ -42,7 +42,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged">
+                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged" Loaded="xContentGrid_Loaded">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>

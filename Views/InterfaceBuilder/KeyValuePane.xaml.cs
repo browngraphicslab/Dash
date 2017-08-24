@@ -116,10 +116,13 @@ namespace Dash
             var icon = ((SymbolIcon)view.Child).Symbol;
             if (icon == Symbol.Accept)
             {
-                // only execute if all fields are specified 
+                // only execute if all fields are specified and reset  
                 if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
                 {
                     AddKeyValuePair();
+                    xNewKeyField.Text = "";
+                    xNewValueField.Text = "";
+                    xTypeComboBox.SelectedIndex = 0;
                 }
             }
             ToggleAddKVPane();
@@ -133,10 +136,11 @@ namespace Dash
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
 
-            _documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
-            fmController = _documentControllerDataContext.GetField(key);
+            //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
+            //fmController = _documentControllerDataContext.GetField(key);
 
-            /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
+            ///*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
+            ///                                         // and can't create image fields ? 
             if (item == TypeInfo.Number)
             {
                 double number;
@@ -156,7 +160,7 @@ namespace Dash
             }
             ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
             _documentControllerDataContext.SetField(key, fmController, true);
-            */ 
+            //*/ 
         }
 
         /// <summary>
@@ -363,13 +367,21 @@ namespace Dash
 
 
         /// <summary>
-        /// Corrects the column widths upon load 
+        /// Corrects the column widths of headers upon load 
         /// </summary>
         private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             for (int i = 0; i < 3; i++)
                 xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
         }
-       
+
+        /// <summary>
+        /// Corrects the column widths of new grid list items 
+        /// </summary>
+        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < 3; i++)
+                (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth); 
+        }
     }
 }

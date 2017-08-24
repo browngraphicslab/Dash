@@ -210,8 +210,11 @@ namespace Dash
             if (!BuildParamList(inputs, Parameters, parameters)) return;
             if (!BuildParamList(inputs, Headers, headers)) return;
 
-            var request = new Request(httpMethod, new Uri(url))
-                .SetHeaders(headers)
+            Uri uri; 
+            try { uri = new Uri(url); }
+            catch (UriFormatException) { return; }
+
+            var request = new Request(httpMethod, uri).SetHeaders(headers)
                 .SetMessageBody(new HttpFormUrlEncodedContent(parameters));
 
             if (useAuth)

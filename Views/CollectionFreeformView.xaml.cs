@@ -104,7 +104,7 @@ namespace Dash
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
-            ManipulationControls.Dispose();
+            ManipulationControls?.Dispose();
         }
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
@@ -364,6 +364,7 @@ namespace Dash
                 return;
             }
 
+            // type checking 
             if ((inputReference.Type & outputReference.Type) == 0)
             {
                 UndoLine();
@@ -380,18 +381,11 @@ namespace Dash
             if (!isCompoundOperator)
             {
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
-                bool canLink = true;
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
-                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
-
-                if (!canLink)
-                {
-                    UndoLine();
-                    return;
-                }
+                    inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
             }
 
             //binding line position 

@@ -9,7 +9,7 @@
     d:DesignHeight="800"
     d:DesignWidth="300">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" Background="LightSteelBlue" BorderBrush="Transparent">
+    <Grid Width="250" HorizontalAlignment="Stretch" Background="LightSteelBlue" BorderBrush="Transparent" Padding="9,0,10,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <!--"settings"-->

@@ -496,10 +496,10 @@ namespace Dash
                 return false;
             var cont = GetField(key);
             if (cont is ReferenceFieldModelController) cont = cont.DereferenceToRoot(null);
-            if (cont == null) return true; 
+            if (cont == null) return true;
             var rawField = field.DereferenceToRoot(null);
 
-            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;
+            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
 
         /// <summary>
