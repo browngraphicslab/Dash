@@ -20,6 +20,9 @@ namespace Dash
         private Button _button;
         private Action _buttonAction;
         private double _verticalOffset;
+        private Storyboard OpacityAnimation;
+        private Storyboard TranslationAnimation;
+        private MenuButtonContainer content;
 
         public bool RotateOnTap = false;
 
@@ -134,6 +137,7 @@ namespace Dash
             _button = content.Button;
             _border = content.Border;
             content.Border.Background = new SolidColorBrush(background);
+            this.content = content;
 
             // add all content to stack panel
             xButtonStackPanel.Children.Add(content);
@@ -246,10 +250,19 @@ namespace Dash
         {
             OpactiyAnimationHelper(1,0);
         }
+
+        /// <summary>
+        /// Runs the instantiation animations again.
+        /// </summary>
+        public void AnimateAppearance() {
+            OpacityAnimation.Begin();
+            TranslationAnimation.Begin();
+        }
+
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
-        private void CreateAndRunInstantiationAnimation(bool isComposite)
+        public void CreateAndRunInstantiationAnimation(bool isComposite)
         {
             if (isComposite)
             {
@@ -260,11 +273,16 @@ namespace Dash
                 }
                 return;
             }
-            this.CreateAndRunRepositionAnimation(_button, 200, 0);
-            this.CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
 
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            TranslationAnimation = CreateAndRunRepositionAnimation(content, 100, 0);
+            OpacityAnimation = CreateAndRunOpacityAnimation(content, 0, 1);
+            /*
+            CreateAndRunRepositionAnimation(_button, 200, 0);
+            CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
+
+            CreateAndRunOpacityAnimation(_button, 0, 1);
+            CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            */
         }
 
         /// <summary>
@@ -332,7 +350,7 @@ namespace Dash
 
         }
 
-        private void CreateAndRunRepositionAnimation(UIElement target, double horizontalOffset, double verticalOffset)
+        private Storyboard CreateAndRunRepositionAnimation(UIElement target, double horizontalOffset, double verticalOffset)
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
@@ -351,9 +369,10 @@ namespace Dash
             repositionStoryboard.Children.Add(repositionAnimation);
             Storyboard.SetTarget(repositionAnimation, target);
             repositionStoryboard.Begin();
+            return repositionStoryboard;
         }
 
-        private void CreateAndRunOpacityAnimation(UIElement target, double from, double to)
+        private Storyboard CreateAndRunOpacityAnimation(UIElement target, double from, double to)
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
@@ -374,6 +393,7 @@ namespace Dash
             Storyboard.SetTarget(opacityAnimation, target);
             Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
             opacityStoryboard.Begin();
+            return opacityStoryboard;
         }
     }
 }

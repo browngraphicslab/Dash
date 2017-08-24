@@ -132,8 +132,9 @@ namespace Dash
         /// the selected document changes & the options needs to be updated.
         /// </summary>
         /// <param name="menu"></param>
-        public void SetOptionsMenu(FrameworkElement menu)
+        public void SetOptionsMenu(OverlayMenu menu)
         {
+            menu.CreateAndRunInstantiationAnimation(true);
             xMenuCanvas.Content = menu;
         }
 
