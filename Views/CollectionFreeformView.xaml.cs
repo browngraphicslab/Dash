@@ -149,7 +149,7 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var fieldRef = refs[i]; 
+                var fieldRef = refs[i];
                 DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
@@ -305,7 +305,7 @@ namespace Dash
 
             _connectionLine.Holding += (s, e) =>
             {
-                if (_connectionLine != null) return; 
+                if (_connectionLine != null) return;
                 ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
             };
 
@@ -645,13 +645,17 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDrop(sender, e);
+
+            var carrier = ItemsCarrier.Instance;
+
             // if dropping back to the original collection, just reset the payload 
-            if (ItemsCarrier.Instance.StartingCollection == this)
+            if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
                 // delete connection lines logically and graphically 
-                var startingCol = ItemsCarrier.Instance.StartingCollection;
+                var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
                 {
                     var linesToDelete = startingCol.GetLinesToDelete();
@@ -660,12 +664,29 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
                         startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
+
+                    carrier.Payload.Clear();
+                    carrier.Source = null;
+                    carrier.Destination = null;
                 }
             }
 
-            ViewModel.CollectionViewOnDrop(sender, e);
         }
 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
+        }
+
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
 
         #endregion
 
@@ -793,30 +814,37 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void Collection_DragLeave(object sender, DragEventArgs args)
         {
+            if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
+                
+            _payload = new Dictionary<DocumentView, DocumentController>();
+            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
         private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+            //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            //var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            //if (sourceIsRadialMenu)
+            //{
+            //    e.AcceptedOperation = DataPackageOperation.Move;
+            //    e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
 
-            if (sourceIsRadialMenu)
-            {
-                e.AcceptedOperation = DataPackageOperation.Move;
-                e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
+            //}
+            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
 
-            }
 
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
+            if (carrier.StartingCollection == null)
+            {
+                return;
+            }
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
@@ -852,8 +880,6 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        public InkCanvas XInkCanvas;
-        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {
@@ -868,5 +894,6 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
+
     }
 }

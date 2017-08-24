@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 namespace Dash
@@ -23,10 +24,10 @@ namespace Dash
 
         public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
         public SelectionElement CurrentSelectedElement { get; private set; }
-
+        public bool HasDragLeft;
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             private set
             {
                 if (_isSelected == value) return;
@@ -38,7 +39,7 @@ namespace Dash
 
         public bool IsLowestSelected
         {
-            get { return _isLowestSelected; }
+            get => _isLowestSelected;
             protected set
             {
                 if (_isLowestSelected == value) return;

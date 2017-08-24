@@ -12,8 +12,10 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
+    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped">
     <Grid x:Name="Grid"
+          Background="Transparent"
           >
         <ListView x:Name="xListView"
                   ItemsSource="{Binding DocumentViewModels}"
@@ -22,12 +24,13 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionListViewStyle}"
-                  ShowsScrollingPlaceholders ="False" Background="Transparent">
+                  ShowsScrollingPlaceholders ="False">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
+                    <local:DocumentView x:Name="xDocumentDisplay" Height="300" Width="300" IsHitTestVisible="False"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xListView, Path=Width}" Height="{Binding ElementName=xListView, Path=Height}" IsHitTestVisible="False"></Rectangle>
     </Grid>
 </local:SelectionElement>

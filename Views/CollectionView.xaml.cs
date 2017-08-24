@@ -90,7 +90,8 @@ namespace Dash
                 switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = _freeformView != null ? _freeformView : _freeformView = new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
+
+                    CurrentView = /*_freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
 
                     break;
                 case CollectionViewType.Grid:
@@ -153,7 +154,7 @@ namespace Dash
         {
             if (CurrentView is CollectionFreeformView) return;
 
-            CurrentView = _freeformView != null ? _freeformView : _freeformView = new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView =/* _freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
         }
 

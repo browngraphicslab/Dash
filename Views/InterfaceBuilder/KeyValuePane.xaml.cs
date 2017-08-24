@@ -370,11 +370,6 @@ namespace Dash
             for (int i = 0; i < 3; i++)
                 xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
         }
-
-        private void Border_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            var child = (sender as Border).Child as EditableTextBlock;
-            if (child != null) child.TextAlignment = TextAlignment.Left;
-        }
+       
     }
 }
