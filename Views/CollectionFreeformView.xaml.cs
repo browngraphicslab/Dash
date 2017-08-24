@@ -751,6 +751,11 @@ namespace Dash
 
         }
 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
+        }
+
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragLeave(sender, e);
@@ -954,8 +959,6 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        public InkCanvas XInkCanvas;
-        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {
