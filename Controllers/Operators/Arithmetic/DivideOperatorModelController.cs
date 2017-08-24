@@ -35,10 +35,13 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
+        public static int numExecutions = 0;
+
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             var numberA = (NumberFieldModelController)inputs[AKey];
             var numberB = (NumberFieldModelController)inputs[BKey];
+            Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
 
             var a = numberA.Data;
             var b = numberB.Data;

@@ -14,6 +14,7 @@
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Background="{StaticResource WindowsBlue}">
             <Button Tapped="TwitterTestButtonOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TEST ENV</Button>
+            <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >DELEGATE TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" >UIELEMENT TEST</Button>
             <TextBlock TextAlignment="Center" Foreground="White">--drag--</TextBlock>
             <TextBlock DragStarting="DocumentTest_OnDragStarting" CanDrag="True" Foreground="White">DOC TEST</TextBlock>
