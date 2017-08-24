@@ -207,7 +207,7 @@
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-        <local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>
+        <!--<local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>-->
 
         <!-- SAMPLE NODE HERE-->
 

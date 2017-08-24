@@ -94,7 +94,7 @@ namespace Dash
             SelectionGroup.Clear();
             foreach (var vmp in itemsToDelete)
             {
-                _collectionFieldModelController.RemoveDocument(vmp.Controller);
+                _collectionFieldModelController.RemoveDocument(vmp.DocumentController);
             }
         }
 

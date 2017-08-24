@@ -753,6 +753,14 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
+            TextBlock block = new TextBlock
+            {
+                Text = DocumentType.Type,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            return block;
+
             //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
             var sp = new StackPanel();
             var source = new List<FrameworkElement>();

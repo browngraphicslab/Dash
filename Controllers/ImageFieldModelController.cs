@@ -29,10 +29,10 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server    
                 }
-                OnFieldModelUpdated(null);
             }
         }
 

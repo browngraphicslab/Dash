@@ -65,10 +65,10 @@ namespace Dash
             {
                 if (SetProperty(ref PointFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }
-                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;
