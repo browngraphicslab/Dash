@@ -31,6 +31,7 @@ namespace RadialMenuControl.Components
         public RadialMenuButton()
         {
             InitializeComponent();
+            Icon = string.Empty;
         }
 
         /// <summary>
@@ -129,7 +130,7 @@ namespace RadialMenuControl.Components
         /// </summary>
         public string Icon
         {
-            get { return (string) GetValue(IconProperty); }
+            get { return string.Empty; }
             set { SetValue(IconProperty, value); }
         }
 
@@ -420,6 +421,19 @@ namespace RadialMenuControl.Components
             set { SetValue(InnerAccessKeyProperty, value); }
         }
 
+        public static readonly DependencyProperty SymbolProperty =
+            DependencyProperty.Register("IconSymbol", typeof(Symbol), typeof(RadialMenuButton), new PropertyMetadata(""));
+
+        public Symbol? IconSymbol
+        {
+            get
+            {
+                if (!(GetValue(SymbolProperty) is Symbol)) return null;
+                return (Symbol) GetValue(SymbolProperty);
+            }
+            set { SetValue(SymbolProperty, value);}
+        }
+
         #endregion properties
 
         #region events
@@ -477,6 +491,7 @@ namespace RadialMenuControl.Components
             if (Type == ButtonType.Toggle)
             {
                 Value = (Value == null || !(bool) Value);
+                ActionModel.GenericAction.Invoke(Value);
             }
         }
 
@@ -504,7 +519,7 @@ namespace RadialMenuControl.Components
             if (ActionModel != null)
             {
                 ActionModel.ColorAction?.Invoke(InnerNormalColor.Value, RadialMenuView.MainMenu);
-                ActionModel.GenericAction?.Invoke(null);
+                if(Type != ButtonType.Toggle) ActionModel.GenericAction?.Invoke(null);
             }
             InnerArcReleased?.Invoke(this, e);
         }

@@ -14,10 +14,6 @@ using Windows.UI.Xaml.Media.Animation;
 
 namespace Dash
 {
-    /// <summary>
-    /// Represents an entire menu of buttons for the Document Menu. Includes code to create new buttons and
-    /// add them to a menu.
-    /// </summary>
     public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
@@ -27,17 +23,12 @@ namespace Dash
 
         public bool RotateOnTap = false;
 
-        public MenuButton()
-        {
-            this.InitializeComponent();
-        }
-
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
-            this.CreateAndRunInstantiationAnimation(true);
+            this.CreateAndRunInstantiationAnimation(false);
         }
 
         private int _selectedInd; 

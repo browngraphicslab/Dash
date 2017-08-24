@@ -19,7 +19,6 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-
             <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
 
@@ -37,14 +36,18 @@
                       >
                     <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
-                <Ellipse x:Name="ConnectionEllipse"
-                         x:FieldModifier="public"
-                         Style="{StaticResource xLinkHandle}"
-                         HorizontalAlignment="Right"
-                         PointerPressed="ConnectionEllipse_OnPointerPressed"
-                         PointerReleased="ConnectionEllipse_OnPointerReleased"
-                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
-                         />
+                <Grid HorizontalAlignment="Right"
+                      PointerPressed="ConnectionEllipse_OnPointerPressed"
+                      PointerReleased="ConnectionEllipse_OnPointerReleased"
+                      ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
+                      VerticalAlignment="Center"
+                      Background="Transparent"
+                      ManipulationMode="None">
+                    <Ellipse x:Name="ConnectionEllipse"
+                             x:FieldModifier="public"
+                             Style="{StaticResource xLinkHandle}"
+                             VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

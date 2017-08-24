@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -19,29 +21,22 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Views;
 using Windows.UI;
+using Windows.UI.Input;
+using Windows.UI.Input.Inking.Analysis;
+using DashShared;
+using Microsoft.Graphics.Canvas.Brushes;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class FreeformInkControls : UserControl
+    public class FreeformInkControl
     {
+        public InkCanvas TargetCanvas { get; set; }
+        public InkFieldModelController InkFieldModelController;
         public CollectionFreeformView FreeformView;
         public Canvas SelectionCanvas;
-        private InkCanvas _inkCanvas;
-        public InkCanvas TargetCanvas
-        {
-            get { return _inkCanvas; }
-            set
-            {
-                _inkCanvas = value;
-                InkToolbar.TargetInkCanvas = value;
-            }
-        }
-
-        public InkFieldModelController InkFieldModelController;
-        Symbol SelectIcon = (Symbol)0xEF20;
-        Symbol TouchIcon = Symbol.TouchPointer;
         private enum InkSelectionMode
         {
             Document, Ink
@@ -50,105 +45,72 @@ namespace Dash
         private Polygon _lasso;
         private Rect _boundingRect;
         private InkSelectionRect _rectangle;
-        private LassoSelectHelper _lassoHelper;
+        public LassoSelectHelper LassoHelper;
+        public InkRecognitionHelper InkRecognitionHelper { get; }
+        public Point PressedPoint = new Point(0, 0);
+        public Point DoubleTapPoint = new Point(0, 0);
 
-        public FreeformInkControls(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
+        public bool IsPressed
         {
-            this.InitializeComponent();
+            get { return _isPressed; }
+            set
+            {
+                _isPressed = value;
+            }
+        }
+
+
+        private bool _isPressed;
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
+
+        public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
+        {
             TargetCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
             InkFieldModelController = view.InkFieldModelController;
-            IsDrawing = true;
-            _lassoHelper = new LassoSelectHelper(FreeformView);
+            LassoHelper = new LassoSelectHelper(FreeformView);
+            InkRecognitionHelper = new InkRecognitionHelper(this);
+            GlobalInkSettings.FreeformInkControls.Add(this);
+            GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
+            GlobalInkSettings.UpdateInkPresenters();
             UpdateStrokes();
-            ToggleDraw();
-            AddEventHandlers();
+            ClearSelection();
             UpdateInputType();
+            AddEventHandlers();
 
         }
+
 
         private void AddEventHandlers()
         {
             TargetCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             TargetCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             TargetCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
+            TargetCanvas.PointerPressed += TargetCanvasOnPointerPressed;
+            TargetCanvas.Holding += TargetCanvasOnHolding;
+            TargetCanvas.PointerReleased += TargetCanvasOnPointerReleased;
+            TargetCanvas.PointerExited += TargetCanvas_PointerExited;
+            TargetCanvas.PointerMoved += TargetCanvasOnPointerMoved;
+            TargetCanvas.DoubleTapped += TargetCanvasOnDoubleTapped;
+            TargetCanvas.PointerCaptureLost += TargetCanvasOnPointerCaptureLost;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
-            InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
-            InkToolbar.ActiveToolChanged += InkToolbarOnActiveToolChanged;
         }
 
-        private void Paste_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            TargetCanvas.InkPresenter.StrokeContainer.PasteFromClipboard(e.GetPosition(TargetCanvas));
-        }
+        #region Documents From Drawings
 
-        private void InkSelect_OnChecked(object sender, RoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
+        #endregion
 
+        #region Updating State
 
-        private void DocumentSelect_OnChecked(object sender, RoutedEventArgs e)
+        public void UpdateSelectionMode()
         {
-            UpdateSelectionMode();
-        }
-        private void InkToolbarOnActiveToolChanged(InkToolbar sender, object args)
-        {
-            UpdateSelectionMode();
-            if (TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode == InkInputProcessingMode.Erasing)
+            if (GlobalInkSettings.IsSelectionEnabled)
             {
-                ClearSelection();
-            }
-        }
 
-        private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
-        {
-            ClearSelection();
-        }
-
-        private void ClearSelection()
-        {
-            var strokes = TargetCanvas.InkPresenter.StrokeContainer.GetStrokes();
-            foreach (var stroke in strokes)
-            {
-                stroke.Selected = false;
-            }
-            if (SelectionCanvas.Children.Any())
-            {
-                SelectionCanvas.Children.Clear();
-                _boundingRect = Rect.Empty;
-            }
-        }
-
-        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
-        {
-            if (!sender.Equals(TargetCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
-            {
-                UpdateStrokes();
-            }
-        }
-
-        private void SelectButton_Unchecked(object sender, RoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
-
-        private void UpdateSelectionMode()
-        {
-            if (SelectButton.IsChecked != null && (bool) SelectButton.IsChecked)
-            {
-                if (InkSelect.IsChecked != null && (bool) InkSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Ink;
-                }
-                if (DocumentSelect.IsChecked != null && (bool) DocumentSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Document;                   
-                }
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
                     InkInputRightDragAction.LeaveUnprocessed;
-
+                TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.None;
                 TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
                     UnprocessedInput_PointerPressed;
                 TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
@@ -160,6 +122,7 @@ namespace Dash
             {
                 if (TargetCanvas != null)
                 {
+                    TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
                     TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed -=
                         UnprocessedInput_PointerPressed;
                     TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved -=
@@ -170,43 +133,22 @@ namespace Dash
             }
         }
 
-        public void ToggleDraw()
-        {
-            if (IsDrawing)
-            {
-                InkSettingsPanel.Visibility = Visibility.Collapsed;
-                ClearSelection();
-            }
-            else
-            {
-                InkSettingsPanel.Visibility = Visibility.Visible;
-                UpdateSelectionMode();
-                InkToolbar.ActiveTool = InkToolbar.GetToolButton(InkToolbarTool.BallpointPen);
-            }
-            IsDrawing = !IsDrawing;
-            UpdateInputType();
-
-        }
-
-        public bool IsDrawing { get; set; }
 
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
             TargetCanvas.InkPresenter.InputDeviceTypes = type;
-            TargetCanvas.InkPresenter.IsInputEnabled = true;
+            TargetCanvas.InkPresenter.IsInputEnabled = FreeformView.IsSelected;
+            FreeformView.ManipulationControls.FilterInput = true;
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
                     FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
-                    FreeformView.ManipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Pen:
                     FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Pen;
-                    FreeformView.ManipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Touch:
                     FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Touch;
-                    FreeformView.ManipulationControls.FilterInput = IsDrawing;
                     break;
                 default:
                     FreeformView.ManipulationControls.FilterInput = false;
@@ -221,39 +163,39 @@ namespace Dash
                 InkFieldModelController.UpdateStrokesFromList(TargetCanvas.InkPresenter.StrokeContainer.GetStrokes(), TargetCanvas);
         }
 
-        private void InkToolbarOnEraseAllClicked(InkToolbar sender, object args)
-        {
-            UpdateInkFieldModelController();
-        }
-
-        private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            InkFieldModelController?.Undo(TargetCanvas);
-            ClearSelection();
-        }
-
-        private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            InkFieldModelController?.Redo(TargetCanvas);
-            ClearSelection();
-        }
-
         private void UpdateStrokes()
         {
             TargetCanvas.InkPresenter.StrokeContainer.Clear();
             if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
-                TargetCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+                TargetCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes()
+                    .Select(stroke => stroke.Clone()));
+            InkRecognitionHelper.AddAnalyzerData(TargetCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
-        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
+
+
+        public void UpdateInputType()
         {
-            UpdateInkFieldModelController();
+            SetInkInputType(GlobalInkSettings.InkInputType);
         }
 
-        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
+        #endregion
+
+        #region Selection
+        public void ClearSelection()
         {
-            UpdateInkFieldModelController();
+            var strokes = TargetCanvas.InkPresenter.StrokeContainer.GetStrokes();
+            foreach (var stroke in strokes)
+            {
+                stroke.Selected = false;
+            }
+            if (SelectionCanvas.Children.Any())
+            {
+                SelectionCanvas.Children.Clear();
+                _boundingRect = Rect.Empty;
+            }
         }
+
 
         private void SelectDocs(PointCollection selectionPoints)
         {
@@ -264,16 +206,12 @@ namespace Dash
             }
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
-            var selectionList =  _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
+            var selectionList = LassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000))));
             foreach (var docView in selectionList)
             {
-                //FreeformView.Select(docView);
+                FreeformView.Select(docView);
+                FreeformView.AddToPayload(docView);
             }
-        }
-
-        private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            UpdateSelectionMode();
         }
 
         private void DrawBoundingRect()
@@ -299,13 +237,86 @@ namespace Dash
             }
         }
 
+        #endregion
+
+        #region Event Handlers
+
+        private void TargetCanvasOnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                IsPressed = false;
+            }
+        }
+
+        private void TargetCanvasOnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            DoubleTapPoint = e.GetPosition(SelectionCanvas);
+            if(GlobalInkSettings.IsRecognitionEnabled) InkRecognitionHelper.RecognizeInk(true);
+        }
+
+        private void TargetCanvasOnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                PressedPoint = e.GetCurrentPoint(SelectionCanvas).Position;
+                IsPressed = true;
+                Debug.WriteLine(IsPressed);
+            }
+        }
+
+        private void TargetCanvasOnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                PressedPoint = e.GetPosition(SelectionCanvas);
+                IsPressed = true;
+                Debug.WriteLine(IsPressed);
+            }
+        }
+
+        private void TargetCanvas_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                //IsPressed = false;
+                Debug.WriteLine(IsPressed);
+            }
+        }
+
+        private void TargetCanvasOnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                IsPressed = false;
+                Debug.WriteLine(IsPressed);
+            }
+        }
+
+        private void TargetCanvasOnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && IsPressed)
+            {
+                PressedPoint = e.GetCurrentPoint(SelectionCanvas).Position;
+            }
+        }
+
+
         // Handle unprocessed pointer events from modifed input.
         // The input is used to provide selection functionality.
         // Selection UI is drawn on a canvas under the InkCanvas.
         private void UnprocessedInput_PointerPressed(
             InkUnprocessedInput sender, PointerEventArgs args)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 0);
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 0);
+            if (args.CurrentPoint.Properties.IsBarrelButtonPressed || args.CurrentPoint.Properties.IsRightButtonPressed)
+            {
+                _inkSelectionMode = InkSelectionMode.Document;
+            }
+            else
+            {
+                _inkSelectionMode = InkSelectionMode.Ink;
+            }
             // Initialize a selection lasso.
             _lasso = new Polygon()
             {
@@ -345,19 +356,35 @@ namespace Dash
             else if (_inkSelectionMode == InkSelectionMode.Document) SelectDocs(_lasso.Points);
         }
 
-        private void TouchInputToggle_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
         {
-            UpdateInputType();
+            if (!sender.Equals(TargetCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
+            {
+                UpdateStrokes();
+            }
         }
 
-        public void UpdateInputType()
+        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
-            if (IsDrawing && FreeformView.IsLowestSelected)
-            { 
-                if(TouchInputToggle.IsChecked != null && (bool)TouchInputToggle.IsChecked) SetInkInputType(CoreInputDeviceTypes.Touch);
-                else SetInkInputType(CoreInputDeviceTypes.Pen);
-            }
-            else SetInkInputType(CoreInputDeviceTypes.None);
+            InkRecognitionHelper.Analyzer.RemoveDataForStrokes(e.Strokes.Select(stroke => stroke.Id));
+            UpdateInkFieldModelController();
         }
+
+        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
+        {
+            InkRecognitionHelper.Analyzer.AddDataForStrokes(e.Strokes);
+            UpdateInkFieldModelController();
+            if (GlobalInkSettings.IsRecognitionEnabled) InkRecognitionHelper.RecognizeInk(false, e.Strokes.Last());
+        }
+
+
+        private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
+        {
+            ClearSelection();
+        }
+
+        #endregion
+
+
     }
 }

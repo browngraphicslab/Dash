@@ -20,22 +20,20 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionListView : SelectionElement, ICollectionView
+    public sealed partial class CollectionTextView : SelectionElement, ICollectionView
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
 
-        public double ItemHeight { get; set; } = 250;
 
-        public CollectionListView()
+        public CollectionTextView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionListView_Unloaded;
-            xListView.ManipulationDelta += (s, e) => e.Handled = true; 
         }
 
 
-        public CollectionListView(BaseCollectionViewModel viewModel) : this()
+        public CollectionTextView(BaseCollectionViewModel viewModel) : this()
         {
             DataContext = viewModel;
         }

@@ -48,11 +48,11 @@
 
                     <local:KeyValuePane x:Name="xKeyValuePane" Grid.Column="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:KeyValuePane>
 
-                    <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1" Loaded="xDocumentPane_Loaded"></local:CollectionFreeformView>
+                    <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1" ></local:CollectionFreeformView>
 
                     <Grid Grid.Column="2">
                         <Grid x:Name="xSettingsPane"
-                      Background="Transparent" BorderThickness="1,0,0,0">
+                      Background="Transparent" BorderThickness="1,0,0,0" HorizontalAlignment="Stretch">
                         </Grid>
                         <StackPanel x:Name="xLayoutNamePanel"  Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5" >
                             <TextBlock Padding="0,0,8,0" VerticalAlignment="Top" FontWeight="Medium" >Layout: </TextBlock>

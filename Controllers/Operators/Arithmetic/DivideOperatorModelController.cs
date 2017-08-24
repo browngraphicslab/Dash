@@ -51,5 +51,13 @@ namespace Dash
         {
             return new DivideOperatorFieldModelController();
         }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
     }
 }

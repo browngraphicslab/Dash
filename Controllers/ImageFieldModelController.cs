@@ -29,10 +29,10 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server    
                 }
-                OnFieldModelUpdated(null);
             }
         }
 
@@ -64,6 +64,26 @@ namespace Dash
         public override FieldModelController GetDefaultController()
         {
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
+        }
+
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+
+        public override bool SetValue(object value)
+        {
+            if (value is string)
+            {
+                Data.UriSource = new Uri(value as string);
+                return true;
+            }
+            else if (value is BitmapImage)
+            {
+                Data = value as BitmapImage;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

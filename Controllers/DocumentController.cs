@@ -10,8 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using DashShared;
-using Dash.Controllers.Operators;
-using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -107,7 +106,7 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            LayoutName = model.DocumentType.Type; 
+            LayoutName = model.DocumentType.Type;
             // Add Events
         }
 
@@ -218,114 +217,130 @@ namespace Dash
                 return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
             return null;
         }
+
+        public FieldModelController ParseDocumentReference(string textInput, bool searchAllDocsIfFail)
+        {
+            var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]
+
+            var docName = path[0];                       //search for <DocName=a>[.<FieldName=b>]
+            var fieldName = (path.Count() > 1 ? path[1] : "");
+            var refDoc = docName == "Proto" ? GetPrototype() : docName == "This" ? this : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+            if (refDoc != null)
+            {
+                if (path.Count() == 1)
+                {
+                    return refDoc.GetField(KeyStore.ThisKey);  // found <DocName=a>
+                }
+                else
+                    foreach (var e in refDoc.EnumFields())
+                        if (e.Key.Name == path[1])
+                        {
+                            return new ReferenceFieldModelController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
+                        }
+            }
+
+            foreach (var e in this.EnumFields())
+                if (e.Key.Name == path[0])
+                {
+                    return new ReferenceFieldModelController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
+                }
+
+            //if (searchAllDocsIfFail)
+            //{
+            //    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+            //    return new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey); // return  {AllDocs}.<FieldName=a> = this
+            //}
+            return null;
+        }
+
         /// <summary>
         /// parses text input into a field controller
         /// </summary>
-        /// <param name="docController"></param>
-        /// <param name="key"></param>
-        /// <param name="textInput"></param>
-        public void ParseDocField(KeyController key, string textInput)
+        public bool ParseDocField(KeyController key, string textInput, FieldModelController curField = null)
         {
             textInput = textInput.Trim(' ');
-            if (textInput.StartsWith("@"))
+            if (textInput.StartsWith("="))
             {
-                var proto = GetPrototype() == null ? this : GetPrototype();
-                if (proto.GetField(KeyStore.PrimaryKeyKey) == null)
-                    proto.SetField(KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
                 var fieldStr = textInput.Substring(1, textInput.Length - 1);
-                if (textInput.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
-                {                       // @ FieldName = FieldValue
-                    var eqPos2 = fieldStr.IndexOfAny(new char[] { '=' });
-                    var fieldValue = fieldStr.Substring(eqPos2 + 1, System.Math.Max(0, fieldStr.Length - eqPos2 - 1)).Trim(' ', '\r');
-                    var fieldName = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
-
-                    foreach (var doc in ContentController.GetControllers<DocumentController>())
-                        foreach (var field in doc.EnumFields())
-                            if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
-                            {
-                                SetField(key, new DocumentFieldModelController(doc), true);
-                                break;
-                            }
-                }
-                else // search for documents that have a field matching FieldName.
-                {    // #newField = @ func( @ doc.field, @ doc.field )
-                    var strings = fieldStr.Split('(');
-                    if (strings.Count() == 2)
-                    {
-                        var opModel = lookupOperator(strings[0]);
-                        var args = strings[1].TrimEnd(')').Split(',');
-                        var refs = new List<ReferenceFieldModelController>();
-                        bool useProto = false;
-                        foreach (var a in args)
-                        {
-                            if (a.Trim(' ').StartsWith("@"))
-                            {
-                                var path = a.Substring(1, a.Length - 1).Split('.');
-                                useProto |= path[0] == "This";
-                                var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
-                                if (theDoc != null)
-                                {
-                                    if (path.Count() > 1)
-                                    {
-                                        KeyController foundKey = null;
-                                        foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
-                                            if (e.Key.Name == path[1])
-                                            {
-                                                foundKey = e.Key;
-                                                break;
-                                            }
-                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), foundKey));
-                                    }
-                                    else
-                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), KeyStore.ThisKey));
-                                }
-                            }
-                        }
-                        int count = 0;
-                        var opFieldController = (opModel.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController);
-                        foreach (var i in opFieldController.Inputs.ToArray())
-                            if (count < refs.Count())
-                                opModel.SetField(i.Key, refs[count++], true);
-                        (useProto ? proto : this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
-                        Debug.WriteLine("Value = " + (useProto ? proto : this).GetDereferencedField(key, null));
-                    }
+                var strings = fieldStr.Split('(');
+                if (strings.Count() == 1)  //  a document from input <DocName>[.<FieldName>]  if no document matches DocName, search for This.<FieldName>  if still no document, search for {AllDocs}.<FieldName> = this
+                {
+                    var parse = ParseDocumentReference(strings[0], true);
+                    if (parse != null)
+                        SetField(key, parse, true, false);
                     else
                     {
-                        var path = strings[0].Trim(' ').Split('.');
-                        var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
-                        if (theDoc != null)
-                        {
-                            if (path.Count() > 1)
-                            {
-                                foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
-                                    if (e.Key.Name == path[1])
-                                    {
-                                        ((path[0] == "This") ? proto : this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
-                                        break;
-                                    }
-                            }
-                            else
-                                SetField(key, new ReferenceFieldModelController(theDoc.GetId(), KeyStore.ThisKey), true);
-                        }
-                        else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
-                        {
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, strings[0], strings[0]);
-                            SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
-                        }
-                        Debug.WriteLine("Value = " + GetDereferencedField(key, null));
+                        double num;
+                        if (double.TryParse(fieldStr, out num))
+                            SetField(key, new NumberFieldModelController(num), true, false);
+                        else SetField(key, new TextFieldModelController(fieldStr), true, false);
                     }
+                }
+                else
+                {
+                    var opModel = lookupOperator(strings[0]);
+                    var opFieldController = (opModel.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController);
+                    var args = strings[1].TrimEnd(')').Split(',');
+                    int count = 0;
+                    foreach (var a in args)
+                    {
+                        var docRef = ParseDocumentReference(a, false);
+                        if (docRef != null)
+                        {
+                            opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
+                        }
+                        else
+                        {
+                            var target = opFieldController.Inputs[count++];
+                            if (target.Value == TypeInfo.Number)
+                            {
+                                var res = 0.0;
+                                if (double.TryParse(a.Trim(' '), out res))
+                                    opModel.SetField(target.Key, new NumberFieldModelController(res), true);
+                            }
+                            else if (target.Value == TypeInfo.Text)
+                            {
+                                opModel.SetField(target.Key, new TextFieldModelController(a), true);
+                            }
+                            else if (target.Value == TypeInfo.Image)
+                            {
+                                opModel.SetField(target.Key, new ImageFieldModelController(new Uri(a)), true);
+                            }
+                        }
+                    }
+                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
             }
             else
             {
-                double num;
-                if (!double.TryParse(textInput, out num))
-                    num = double.NaN;
-                if (!double.IsNaN(num))
-                    SetField(key, new NumberFieldModelController(num), true);
+                if (curField != null && !(curField is ReferenceFieldModelController))
+                {
+                    if (curField is NumberFieldModelController)
+                    {
+                        double num;
+                        if (double.TryParse(textInput, out num))
+                            (curField as NumberFieldModelController).Data = num;
+                        else return false;
+                    }
+                    else if (curField is TextFieldModelController)
+                        (curField as TextFieldModelController).Data = textInput;
+                    else if (curField is ImageFieldModelController)
+                        ((curField as ImageFieldModelController).Data as BitmapImage).UriSource = new Uri(textInput);
+                    else if (curField is DocumentFieldModelController)
+                        (curField as DocumentFieldModelController).Data = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
+                    else if (curField is DocumentCollectionFieldModelController)
+                        (curField as DocumentCollectionFieldModelController).Data = new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    else return false;
+                }
                 else
-                    SetField(key, new TextFieldModelController(textInput), true);
+                {
+                    double num;
+                    if (double.TryParse(textInput, out num))
+                        SetField(key, new NumberFieldModelController(num), true);
+                    else SetField(key, new TextFieldModelController(textInput), true);
+                }
             }
+            return true;
         }
 
         /// <summary>
@@ -418,14 +433,14 @@ namespace Dash
             FieldModelController.FieldModelUpdatedHandler handler =
                 delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
-                    c = c ?? new Context();
-                    c.AddDocumentContext(this);
-                    if (ShouldExecute(c, reference.FieldKey))
+                    var newContext = new Context(c);
+                    newContext.AddDocumentContext(this);
+                    if (ShouldExecute(newContext, reference.FieldKey))
                     {
-                        Execute(c, true);
+                        newContext = Execute(newContext, true);
                     }
                     OnDocumentFieldUpdated(this,
-                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
+                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, newContext, false), true);
                 };
             if (oldField != null)
             {
@@ -449,8 +464,11 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask"></param>
-        public bool SetField(KeyController key, FieldModelController field, bool forceMask)
+        public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck = true)
         {
+            // check field type compatibility
+            if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;
+
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
             {
@@ -472,34 +490,31 @@ namespace Dash
             return true;
         }
 
+        private bool IsTypeCompatible(KeyController key, FieldModelController field)
+        {
+            if (!IsOperatorTypeCompatible(key, field))
+                return false;
+            var cont = GetField(key);
+            if (cont is ReferenceFieldModelController) cont = cont.DereferenceToRoot(null);
+            if (cont == null) return true; 
+            var rawField = field.DereferenceToRoot(null);
+
+            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;
+        }
+
         /// <summary>
         /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
         /// </summary>
         /// <param name="key">key that field is mapped to</param>
         /// <param name="field">reference field model that references the field to connect</param>
-        private bool IsTypeCompatible(KeyController key, FieldModelController field)
+        private bool IsOperatorTypeCompatible(KeyController key, FieldModelController field)
         {
             var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
             if (opCont == null) return true;
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
-            var rawField = field.DereferenceToRoot(null); 
-            switch (opCont.Inputs[key])
-            {
-                case TypeInfo.Number:
-                    return rawField is NumberFieldModelController;
-                case TypeInfo.Text:
-                    return rawField is TextFieldModelController;
-                case TypeInfo.Image:
-                    return rawField is ImageFieldModelController;
-                case TypeInfo.Collection:
-                    return rawField is DocumentCollectionFieldModelController;
-                case TypeInfo.Document:
-                    return rawField is DocumentFieldModelController;
-                case TypeInfo.Operator:
-                    return rawField is OperatorFieldModelController;
-                default: throw new NotImplementedException(); 
-            }
+            var rawField = field.DereferenceToRoot(null);
+            return rawField == null || (opCont.Inputs[key] & rawField.TypeInfo) != 0;
         }
 
 
@@ -666,13 +681,14 @@ namespace Dash
             return false;
         }
 
-        public void Execute(Context context, bool update)
+        public Context Execute(Context oldContext, bool update)
         {
-            context = context ?? new Context(this);
+            var context = new Context(oldContext);
+            context.AddDocumentContext(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
-                return;
+                return context;
             }
             try
             {
@@ -703,6 +719,7 @@ namespace Dash
             {
                 Debug.WriteLine("Operator Execution failed: Input not set" + e);
             }
+            return context;
         }
 
 
@@ -733,6 +750,14 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
+            TextBlock block = new TextBlock
+            {
+                Text = DocumentType.Type,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            return block;
+
             //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
             var sp = new StackPanel();
             var source = new List<FrameworkElement>();
@@ -740,7 +765,7 @@ namespace Dash
             var isInterfaceBuilder = false; // TODO make this a parameter
 
             Action<KeyValuePair<KeyController, FieldModelController>> a =
-                delegate(KeyValuePair<KeyController, FieldModelController> f)
+                delegate (KeyValuePair<KeyController, FieldModelController> f)
                 {
                     if (f.Key.Equals(KeyStore.DelegatesKey) ||
                         f.Key.Equals(KeyStore.PrototypeKey) ||
@@ -754,7 +779,8 @@ namespace Dash
                     {
                         var hstack = new StackPanel { Orientation = Orientation.Horizontal };
                         var label = new TextBlock { Text = f.Key.Name + ": " };
-                        var dBox = new DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                        var refField = new ReferenceFieldModelController(GetId(), f.Key);
+                        var dBox = f.Value is ImageFieldModelController ? new ImageBox(refField).Document : new TextingBox(refField).Document;
 
                         hstack.Children.Add(label);
 
@@ -815,7 +841,7 @@ namespace Dash
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context, isInterfaceBuilder);
+                return TextingBox.MakeView(this, context, isInterfaceBuilder, true);
             }
             if (DocumentType == ImageBox.DocumentType)
             {

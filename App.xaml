@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     xmlns:interop="using:Windows.UI.Xaml.Interop"
-    RequestedTheme="Light">
+    RequestedTheme="Dark">
 
     <!-- Application-wide XAML stylesheet-->
 
@@ -50,16 +50,17 @@
 
         <!-- global colors-->
         <SolidColorBrush x:Key="MainTextColor" Color="#FFAAABB0"></SolidColorBrush>
-        
+
         <!-- background colors -->
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
+        <SolidColorBrush x:Key="RadialMenuBackground"  Color="#FF132D4B" />
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="#CC303030"></SolidColorBrush>
         <SolidColorBrush x:Key="DocumentHighlightBackground" Color="#CC414141"></SolidColorBrush>
         <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
-             <GradientStop Color="Transparent" Offset="0"/>
-             <GradientStop Color="#FFFFFFFF" Offset="1" />
+            <GradientStop Color="Transparent" Offset="0"/>
+            <GradientStop Color="#FFFFFFFF" Offset="1" />
         </LinearGradientBrush>
 
 
@@ -127,7 +128,7 @@
             <Setter Property="FontSize" Value="12"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
-        
+
         <!-- for forcing text styles to apply -->
         <Style TargetType="TextBlock" x:Key="xForceTextBlockDefault">
             <Setter Property="Foreground" Value="{StaticResource MainTextColor}"></Setter>
@@ -185,7 +186,7 @@
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
 
-        <!--Collection Grid View--> 
+        <!--Collection Grid View-->
         <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="VerticalAlignment" Value="Stretch"/>
@@ -235,7 +236,7 @@
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-        <local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>
+        <!--local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></-->
 
         <!-- SAMPLE NODE HERE-->
 
@@ -328,6 +329,3 @@
         </Style>
     </Application.Resources>
 </Application>
-
-
-

@@ -90,8 +90,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <Content Include="Assets\docmenu.png" />
-    <Content Include="Assets\Fonts\BPmono.ttf" />
     <None Include="Assets\richtexttest.rtf" />
   </ItemGroup>
   <ItemGroup>
@@ -109,14 +107,12 @@
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
+    <Compile Include="FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
-    <Compile Include="Views\Document Menu\MenuButtonContainer.xaml.cs">
-      <DependentUpon>MenuButtonContainer.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\FreeformInkControls.xaml.cs">
-      <DependentUpon>FreeformInkControls.xaml</DependentUpon>
+    <Compile Include="Views\CollectionTextView.xaml.cs">
+      <DependentUpon>CollectionTextView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
@@ -173,6 +169,9 @@
     <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\MenuButtonContainer.xaml.cs">
+      <DependentUpon>MenuButtonContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
       <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
     </Compile>
@@ -180,6 +179,7 @@
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
+    <Compile Include="Util\InkRecognitionHelper.cs" />
     <Compile Include="Views\InkSelectionRect.xaml.cs">
       <DependentUpon>InkSelectionRect.xaml</DependentUpon>
     </Compile>
@@ -267,7 +267,6 @@
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
@@ -494,6 +493,7 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
+    <Content Include="Assets\docmenu.png" />
     <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\gridbg2.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
@@ -527,11 +527,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\MenuButtonContainer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FreeformInkControls.xaml">
+    <Page Include="Views\CollectionTextView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -580,6 +576,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\CompoundOperatorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MenuButtonContainer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

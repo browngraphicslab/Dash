@@ -25,9 +25,8 @@ using Newtonsoft.Json.Linq;
 using Visibility = Windows.UI.Xaml.Visibility;
 using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
-using Windows.UI;
-using Windows.ApplicationModel.Core;
 using Windows.UI.Xaml.Media;
+using Windows.ApplicationModel.Core;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -57,7 +56,6 @@ namespace Dash
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
 
-
             InitializeComponent();
 
             // create the collection document model using a request
@@ -86,20 +84,9 @@ namespace Dash
             //DisplayDocument(jsonDoc);
             //sw.Stop();
 
-            // add the radial menu
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
-        }
 
-
-        /// <summary>
-        /// Used to set the top-level options menu. Generally, this is envoked when
-        /// the selected document changes & the options needs to be updated.
-        /// </summary>
-        /// <param name="menu"></param>
-        public void SetOptionsMenu(FrameworkElement menu)
-        {
-            xMenuCanvas.Content = menu;
         }
 
         private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
@@ -119,8 +106,9 @@ namespace Dash
             return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
-        public void AddOperatorsFilter(object o, DragEventArgs e)
+        public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView; 
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);
@@ -137,6 +125,16 @@ namespace Dash
                 Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
                 Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
+        }
+
+        /// <summary>
+        /// Used to set the top-level options menu. Generally, this is envoked when
+        /// the selected document changes & the options needs to be updated.
+        /// </summary>
+        /// <param name="menu"></param>
+        public void SetOptionsMenu(FrameworkElement menu)
+        {
+            xMenuCanvas.Content = menu;
         }
 
         /// <summary>
@@ -301,7 +299,7 @@ namespace Dash
 
         private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollection;
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollectionTEST;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
 
@@ -331,7 +329,7 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);
 
-            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
             DisplayDocument(doc);
         }
@@ -349,11 +347,7 @@ namespace Dash
             Grid g = new Grid
             {
                 Name = "XTestGrid",
-                ColumnDefinitions =
-                {
-                    new ColumnDefinition {Width = new GridLength(400)},
-                    new ColumnDefinition {Width = new GridLength(400)}
-                },
+                ColumnDefinitions = { new ColumnDefinition{Width = new GridLength(400)}, new ColumnDefinition{Width = new GridLength(400)}},
                 Height = 900
             };
             //List<FrameworkElement> elements = new List<FrameworkElement>();

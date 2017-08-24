@@ -70,7 +70,6 @@ namespace Dash
         /// </summary>
         /// <param name="isSelected"></param>
         protected abstract void OnActivated(bool isSelected);
-        
 
         /// <summary>
         /// An abstract method to determine the response when the selected element is/is not the lowest selected element.

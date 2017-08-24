@@ -5,6 +5,7 @@ using DashShared;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
 using System.Linq;
+using static Dash.DocumentController;
 
 namespace Dash
 {
@@ -27,25 +28,54 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModelFieldModel.Data" />. Change this to propagate changes
         ///     to the server
         /// </summary>
+        /// 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is DocumentController))
+                return false;
+            Data = value as DocumentController;
+            return true;
+        }
+        OnDocumentFieldUpdatedHandler primaryKeyHandler;
         public DocumentController Data
         {
             get { return _data; }
             set
             {
+                var oldData = _data;
                 if (SetProperty(ref _data, value))
                 {
+                    if (oldData != null)
+                        oldData.DocumentFieldUpdated -= primaryKeyHandler;
+                    primaryKeyHandler = (sender, args) =>
+                    {
+                        var keylist = (_data.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data.Select((d) => (d as TextFieldModelController).Data));
+                        if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                            OnFieldModelUpdated(null);
+                    };
+                    value.DocumentFieldUpdated += primaryKeyHandler;
                     OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }
             }
         }
+        /// <summary>
+        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        /// </summary>
+        /// <returns></returns>
+        //public override FrameworkElement GetTableCellView(Context context)
+        //{
+        //    var tb = new DocumentView(new DocumentViewModel(Data, false, context));
+        //    tb.Height = 25;
+        //    return tb;
+        //}
         public override TypeInfo TypeInfo => TypeInfo.Document;
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
+        
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return Data;
@@ -55,40 +85,6 @@ namespace Dash
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
                 new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            // if the the Data field on this Controller changes, then this Binding updates the text.
-            Binding textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data"),
-                Converter = new DocumentControllerToStringConverter(),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-
-            // However, the PrimaryKey within the document referenced by the Data field might change, too.  
-            // If it does, we need to forcibly update the Text since the Binding doesn't know that the Doucment has changed.
-            Data.DocumentFieldUpdated += ((sender, ctxt) =>
-            {
-                if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
-                {
-                    textBinding = new Binding
-                    {
-                        Source = this,
-                        Path = new PropertyPath("Data"),
-                        Converter = new DocumentControllerToStringConverter(),
-                        Mode = BindingMode.TwoWay,
-                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                    };
-                    textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-                }
-            });
-          
-            // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

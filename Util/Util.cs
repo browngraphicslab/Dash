@@ -35,7 +35,7 @@ namespace Dash
             // Create a drop shadow
             var dropShadow = compositor.CreateDropShadow();
 
-            dropShadow.Color = Color.FromArgb(90, 0,0,0);
+            dropShadow.Color = Color.FromArgb(90, 0, 0, 0);
             dropShadow.BlurRadius = 15.0f;
             dropShadow.Offset = new Vector3(0f, 0f, 0f);
             // Associate the shape of the shadow with the shape of the target element
@@ -82,13 +82,7 @@ namespace Dash
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
             if (to == null) to = Window.Current.Content;
-            var ttv = from.TransformToVisual(to);
-            Debug.Assert(ttv != null); 
-            return ttv.TransformPoint(p);
-
-            //GeneralTransform r = from.TransformToVisual(Window.Current.Content).Inverse;
-            //Debug.Assert(r != null);
-            //return r.TransformPoint(p);
+            return from.TransformToVisual(to).TransformPoint(p);
         }
 
         /// <summary>
@@ -407,6 +401,57 @@ namespace Dash
                 var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
                 await popup.ShowAsync();
             }
+        }
+
+        /// <summary>
+        /// Fits a line to a collection of (x,y) points.
+        /// </summary>
+        /// <param name="xVals">The x-axis values.</param>
+        /// <param name="yVals">The y-axis values.</param>
+        /// <param name="inclusiveStart">The inclusive inclusiveStart index.</param>
+        /// <param name="exclusiveEnd">The exclusive exclusiveEnd index.</param>
+        /// <param name="rsquared">The r^2 value of the line.</param>
+        /// <param name="yintercept">The y-intercept value of the line (i.e. y = ax + b, yintercept is b).</param>
+        /// <param name="slope">The slop of the line (i.e. y = ax + b, slope is a).</param>
+        public static void LinearRegression(double[] xVals, double[] yVals,
+            int inclusiveStart, int exclusiveEnd,
+            out double rsquared, out double yintercept,
+            out double slope)
+        {
+            Debug.Assert(xVals.Length == yVals.Length);
+            double sumOfX = 0;
+            double sumOfY = 0;
+            double sumOfXSq = 0;
+            double sumOfYSq = 0;
+            double ssX = 0;
+            double ssY = 0;
+            double sumCodeviates = 0;
+            double sCo = 0;
+            double count = exclusiveEnd - inclusiveStart;
+
+            for (int ctr = inclusiveStart; ctr < exclusiveEnd; ctr++)
+            {
+                double x = xVals[ctr];
+                double y = yVals[ctr];
+                sumCodeviates += x * y;
+                sumOfX += x;
+                sumOfY += y;
+                sumOfXSq += x * x;
+                sumOfYSq += y * y;
+            }
+            ssX = sumOfXSq - ((sumOfX * sumOfX) / count);
+            ssY = sumOfYSq - ((sumOfY * sumOfY) / count);
+            double RNumerator = (count * sumCodeviates) - (sumOfX * sumOfY);
+            double RDenom = (count * sumOfXSq - (sumOfX * sumOfX))
+                            * (count * sumOfYSq - (sumOfY * sumOfY));
+            sCo = sumCodeviates - ((sumOfX * sumOfY) / count);
+
+            double meanX = sumOfX / count;
+            double meanY = sumOfY / count;
+            double dblR = RNumerator / Math.Sqrt(RDenom);
+            rsquared = dblR * dblR;
+            yintercept = meanY - ((sCo / ssX) * meanX);
+            slope = sCo / ssX;
         }
     }
 }

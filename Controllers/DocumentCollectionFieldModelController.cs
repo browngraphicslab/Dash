@@ -8,6 +8,8 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Dash.Converters;
 using Windows.UI.Xaml.Data;
+using static Dash.DocumentController;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -51,12 +53,28 @@ namespace Dash
         /// TODO This might be better in a different class
         /// </summary>
         public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public override object GetValue(Context context)
+        {
+            return GetDocuments();
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is List<DocumentController>))
+                return false;
 
-
-        public List<DocumentController> Data {
+            SetDocuments(value as List<DocumentController>);
+            return true;
+        }
+        public List<DocumentController> Data
+        {
             get { return _documents; }
             set
             {
+                if (_documents != null)
+                    foreach (var docController in _documents)
+                        docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+                foreach (var docController in value)
+                    docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
                 if (SetProperty(ref _documents, value))
                 {
                     OnFieldModelUpdated(null);
@@ -78,7 +96,7 @@ namespace Dash
 
         public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
         {
-            _documents = documents.ToList();
+            Data = documents.ToList();
         }
 
         /// <summary>
@@ -100,23 +118,38 @@ namespace Dash
         {
             if (_documents.Contains(docController))
                 return;
+            docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
             _documents.Add(docController);
             DocumentCollectionFieldModel.Data.Add(docController.GetId());
-            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController>{docController}));
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
         }
 
+        void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+        {
+            var keylist = (sender.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                OnFieldModelUpdated(args.FieldArgs);
+        }
 
-        public void RemoveDocument(DocumentController doc) {
+        public void RemoveDocument(DocumentController doc)
+        {
+            doc.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
             var isDocInList = _documents.Remove(doc);
             DocumentCollectionFieldModel.Data.Remove(doc.GetId());
             if (isDocInList)
-                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController>{doc}));
+                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController> { doc }));
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
         {
+            foreach (var docController in Data)
+                docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+
             _documents = new List<DocumentController>(docControllers);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId()).ToList();
+
+            foreach (var docController in Data)
+                docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
 
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace, new List<DocumentController>(docControllers)));
         }
@@ -136,49 +169,11 @@ namespace Dash
             SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 
-        }
-
         public override FieldModelController GetDefaultController()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            // if the the Data field on this Controller changes, then this Binding updates the text.
-            Binding textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data"),
-                Converter = new DocumentCollectionToStringConverter(),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-            // However, the PrimaryKey within the documents referenced by the Data field might change, too.  
-            // If they do, we need to forcibly update the Text since the Binding doesn't know that the Doucment has changed. 
-            // TODO:
-            //Data.DocumentFieldUpdated += ((sender, ctxt) =>
-            //{
-            //    if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
-            //    {
-            //        textBinding = new Binding
-            //        {
-            //            Source = this,
-            //            Path = new PropertyPath("Data"),
-            //            Converter = new DocumentControllerToStringConverter(),
-            //            Mode = BindingMode.TwoWay,
-            //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            //        };
-            //        textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-            //    }
-            //});
-        }
-
-
+        
         public override FieldModelController Copy()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));

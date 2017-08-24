@@ -148,6 +148,14 @@
                 IsHitTestVisible="False"
                 Margin="0, -25, 0, 0">
             </Image>
+            <SymbolIcon
+                x:Name="IconSymbolElement"
+                x:FieldModifier="public"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                Margin="0, 0, 0, 0">
+            </SymbolIcon>
             <TextBlock
                 x:Name="LabelTextElement"
                 HorizontalAlignment="Center"
@@ -156,13 +164,13 @@
                 FontSize="{Binding LabelSize}"
                 Text="{Binding Label}"
                 IsHitTestVisible="False"
-                Margin="0, 25, 0, 0">
+                Margin="0, 30, 0, 0">
             </TextBlock>
 
            
         </Grid>
         <Viewbox Height="15" Width="15" RenderTransformOrigin="0.5, 0.5" IsHitTestVisible="False">
-            <Path Fill="Red"
+            <Path Fill="White"
              VerticalAlignment="Center"         
                   Data="M1408 1216q0 26-19 45t-45 19h-896q-26 0-45-19t-19-45 19-45l448-448q19-19 45-19t45 19l448 448q19 19 19 45z">
             </Path>

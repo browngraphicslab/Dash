@@ -1,4 +1,4 @@
-﻿<Grid MinWidth="200" MinHeight="200" 
+﻿<Grid
     x:Class="Dash.EditableImage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,7 +10,7 @@
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
-    <Grid x:Name="xGrid" Grid.Row="0" MinWidth="200" MinHeight="200">
+    <Grid x:Name="xGrid" Grid.Row="0" MinWidth="5" MinHeight="5">
         <!--image-->
         <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                    DoubleTapped="xImage_DoubleTapped" Source="null" ></Image>

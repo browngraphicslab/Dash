@@ -4,11 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:docmenu="using:Dash.Views.Document_Menu"
     mc:Ignorable="d"
+    d:DesignHeight="80"
     d:DesignWidth="70">
     <!--<Grid Width="55" Height="50">-->
-    <StackPanel x:Name="xButtonStackPanel" Orientation="Vertical">
-    </StackPanel>
+        <StackPanel x:Name="xButtonStackPanel" Orientation="Vertical" >
+        </StackPanel>
     <!--</Grid>-->
 </UserControl>

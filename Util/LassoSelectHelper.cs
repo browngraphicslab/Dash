@@ -42,7 +42,7 @@ namespace Dash
         {
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
-            foreach (var doc in _view.ViewModel.SelectionGroup.Select(doc => doc.Controller))
+            foreach (var doc in _view.ViewModel.SelectionGroup.Select(doc => doc.DocumentController))
             {
                 _view.ViewModel.RemoveDocument(doc);
             }
@@ -263,10 +263,10 @@ namespace Dash
             Canvas.SetTop(_visualHull, pos.Y + delta.Y);
             foreach (var doc in _view.ViewModel.SelectionGroup)
             {
-                var docPos = doc.Controller.GetPositionField().Data;
+                var docPos = doc.DocumentController.GetPositionField().Data;
                 docPos.X += delta.X;
                 docPos.Y += delta.Y;
-                doc.Controller.GetPositionField().Data = docPos;
+                doc.DocumentController.GetPositionField().Data = docPos;
             }
             e.Handled = true;
         }
@@ -277,11 +277,11 @@ namespace Dash
             var selectedDocs = new List<DocumentView>();
             if (_view.xItemsControl.ItemsPanelRoot != null)
             {
-                IEnumerable<DocumentViewModelParameters> parameters =
-                    _view.xItemsControl.Items.OfType<DocumentViewModelParameters>();
+                IEnumerable<DocumentViewModel> parameters =
+                    _view.xItemsControl.Items.OfType<DocumentViewModel>();
                 foreach (var param in parameters)
                 {
-                    var doc = param.Controller;
+                    var doc = param.DocumentController;
                     var position = doc.GetPositionField().Data;
                     var width = doc.GetWidthField().Data;
                     var height = doc.GetHeightField().Data;
@@ -293,13 +293,15 @@ namespace Dash
                         new Point(position.X, position.Y + height)
                     };
                     bool inHull = false;
+                    int containedCount = 0;
                     foreach (var refPoint in points)
                     {
                         if (this.IsPointInHull(refPoint))
                         {
-                            inHull = true;
+                            containedCount++;
                         }
                     }
+                    inHull = containedCount >= 3;
                     if (inHull)
                     {
                         if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl

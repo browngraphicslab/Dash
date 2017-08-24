@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI;
 using Windows.UI.Text;
+using Dash.Converters;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -20,8 +22,8 @@ namespace Dash
     {
         #region BINDING PROPERTIES 
 
-        public static readonly DependencyProperty TextProperty = 
-            DependencyProperty.Register("Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            "Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(default(string)));
 
         public string Text
         {
@@ -34,11 +36,11 @@ namespace Dash
 
         public TextAlignment TextAlignment
         {
-            get { return (TextAlignment) GetValue(TextAlignmentProperty); }
+            get { return (TextAlignment)GetValue(TextAlignmentProperty); }
             set { SetValue(TextAlignmentProperty, value); }
         }
 
-#endregion
+        #endregion
 
         private bool _textBoxLoaded = false;
 
@@ -57,6 +59,9 @@ namespace Dash
             return b != true;
         }
 
+        public ReferenceFieldModelController TargetFieldReference = null;
+        public Context TargetDocContext = null;
+
         public EditableTextBlock()
         {
             InitializeComponent();
@@ -64,20 +69,17 @@ namespace Dash
             RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
-        private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        private void XTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
             e.Handled = true;
             TextBoxLoaded = true;
-            XTextBlock.Visibility = Visibility.Collapsed;
-            
         }
 
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             if (TextBoxLoaded)
             {
-                TextBoxLoaded = false;
-               XTextBlock.Visibility = Visibility.Visible;
+                SetExpression(XTextBox.Text);
             }
         }
 
@@ -100,8 +102,39 @@ namespace Dash
 
         private void XTextBox_OnLoaded(object sender, RoutedEventArgs e)
         {
+            XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Programmatic);
+            XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
+        }
+
+        private string GetExpression()
+        {
+            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
+        }
+
+        private void SetExpression(string expression)
+        {
+            Text = expression;
+            TextBoxLoaded = false;
+            XTextBlock.Visibility = Visibility.Visible;
+            //if (TargetFieldReference?.SetValue(Tuple.Create(TargetDocContext, expression)) == false)
+            //    Text = GetExpression() ?? XTextBlock.Text;
+            //TargetFieldReference?.Dereference(TargetDocContext)?.SetValue(expression);
+        }
+
+        private void XTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+                SetExpression(XTextBox.Text);
+        }
+
+        private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (TextBoxLoaded)
+            {
+                SetExpression(XTextBox.Text);
+            }
         }
     }
 }
