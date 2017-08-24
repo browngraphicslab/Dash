@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.UI;
 using Windows.UI.Text;
-﻿using Dash.Converters;
+using Dash.Converters;
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,7 +27,7 @@ namespace Dash
 
         public string Text
         {
-            get { return (string) GetValue(TextProperty); }
+            get { return (string)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
         }
 
@@ -80,8 +80,6 @@ namespace Dash
             if (TextBoxLoaded)
             {
                 SetExpression(XTextBox.Text);
-                TextBoxLoaded = false;
-                XTextBlock.Visibility = Visibility.Visible;
             }
         }
 
@@ -117,9 +115,11 @@ namespace Dash
 
         private void SetExpression(string expression)
         {
-             Text = expression;
-             //if (TargetFieldReference?.SetValue(Tuple.Create(TargetDocContext, expression)) == false)
-             //    Text = GetExpression() ?? XTextBlock.Text;
+            Text = expression;
+            TextBoxLoaded = false;
+            XTextBlock.Visibility = Visibility.Visible;
+            //if (TargetFieldReference?.SetValue(Tuple.Create(TargetDocContext, expression)) == false)
+            //    Text = GetExpression() ?? XTextBlock.Text;
             //TargetFieldReference?.Dereference(TargetDocContext)?.SetValue(expression);
         }
 

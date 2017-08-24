@@ -42,7 +42,7 @@ namespace Dash
             Document.SetFields(fields, true);
             SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);
             SetFontSizeField(Document, DefaultFontSize, true, null);
-           // SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
+            SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
         }
 
         protected override DocumentController GetLayoutPrototype()

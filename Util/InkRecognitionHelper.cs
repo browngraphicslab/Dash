@@ -140,10 +140,10 @@ namespace Dash
         private Dictionary<Rect, DocumentView> GetDocViewRects()
         {
             Dictionary<Rect, DocumentView> dict = new Dictionary<Rect, DocumentView>();
-            IEnumerable<DocumentViewModelParameters> parameters = _freeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModelParameters>();
+            IEnumerable<DocumentViewModel> parameters = _freeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModel>();
             foreach (var param in parameters)
             {
-                var doc = param.Controller;
+                var doc = param.DocumentController;
                 var position = doc.GetPositionField().Data;
                 var width = doc.GetWidthField().Data;
                 var height = doc.GetHeightField().Data;
