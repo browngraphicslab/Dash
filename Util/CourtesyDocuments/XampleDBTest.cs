@@ -286,17 +286,17 @@ namespace Dash
                 Documents.Add(Ump2Doc);
             }
 
-            for (var i = 0; i < 100; i++)
-            {
-                var udoc = PrototypeUmp.MakeDelegate();
-                udoc.SetField(UmpNameKey, new TextFieldModelController("Matt"+new Random().Next()), true);
-                udoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(udoc), true);
-                udoc.SetField(AgeKey, new NumberFieldModelController(16), true);
-                var ump2Layout = PrototypeUmpLayout.MakeDelegate();
-                ump2Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(udoc, ump2Layout, forceMask: true, addToLayoutList: true);
-                Documents.Add(udoc);
-            }
+            //for (var i = 0; i < 100; i++)
+            //{
+            //    var udoc = PrototypeUmp.MakeDelegate();
+            //    udoc.SetField(UmpNameKey, new TextFieldModelController("Matt"+new Random().Next()), true);
+            //    udoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(udoc), true);
+            //    udoc.SetField(AgeKey, new NumberFieldModelController(16), true);
+            //    var ump2Layout = PrototypeUmpLayout.MakeDelegate();
+            //    ump2Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            //    SetLayoutForDocument(udoc, ump2Layout, forceMask: true, addToLayoutList: true);
+            //    Documents.Add(udoc);
+            //}
 
             {
                 Vol1Doc.SetField(VolNameKey, new TextFieldModelController("Bob"), true);
