@@ -18,7 +18,7 @@
                 <ColumnDefinition x:Name="Column0" Width="250"></ColumnDefinition>
                 <ColumnDefinition x:Name="Column1" Width="0"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <local:RadialColorPicker x:Name="ColorPicker" Grid.Column="0" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" ManipulationMode="None"></local:RadialColorPicker>
+            <local:InkSettingsPane x:Name="SettingsPane" Grid.Column="0" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" ManipulationMode="None" x:DeferLoadStrategy="Lazy"></local:InkSettingsPane>
             <userControl:RadialMenu x:Name="RadialMenu" Grid.Column="0" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
                 <userControl:RadialMenu.Buttons>
                     <components:RadialMenuButton x:Name="Ink" Label="Ink" IconSymbol="{x:Bind InkMenuSymbol}" Type="Simple" InnerArcPressed="Ink_OnInnerArcPressed">
@@ -42,7 +42,6 @@
                     <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
                 </userControl:RadialMenu.Buttons>
             </userControl:RadialMenu>
-            <local:InkSettingsPane x:Name="SettingsPane" Grid.Column="1" Visibility="Collapsed" Margin="15,0,0,0"></local:InkSettingsPane>
         </Grid>
     </userControl:Floating>
 

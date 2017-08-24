@@ -159,11 +159,8 @@ namespace Dash
         /// </summary>
         public void CloseInkMenu()
         {
-            SettingsPane.Visibility = Visibility.Collapsed;
-            ColorPicker.Visibility = Visibility.Collapsed;
+            if (SettingsPane != null) SettingsPane.Visibility = Visibility.Collapsed;
             Grid.Height = 215;
-            Column0.Width = new GridLength(215);
-            Column1.Width = new GridLength(0);
             Grid.Width = 215;
             Floating.ManipulateControlPosition(16,16); //fixes jerkiness when closing menu...
         }
@@ -176,14 +173,11 @@ namespace Dash
         /// <param name="valueSetAction"></param>
         public void OpenInkMenu()
         {
+            if (SettingsPane == null) FindName("SettingsPane");
             SettingsPane.Visibility = Visibility.Visible;
-            ColorPicker.Visibility = Visibility.Visible;
-            Grid.Height = 279;
-            Column0.Width = new GridLength(279);
-            Column1.Width = GridLength.Auto;
-            Grid.Width = double.NaN;
-            Floating.ManipulateControlPosition(-32, -32); //...and fixes jerkiness when opening it
-
+            Grid.Height = 340;
+            Grid.Width = 340;
+            Floating.ManipulateControlPosition(-48, -48); //...and fixes jerkiness when opening it
         }
 
         /// <summary>
@@ -348,6 +342,20 @@ namespace Dash
             if (e == null) return;
             var tappedButton = sender as RadialMenuButton;
             ToggleButtonGroup(_strokeButtons, tappedButton);
+        }
+
+        private void RadialMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (RadialMenu.Pie.Visibility == Visibility.Collapsed)
+            {
+                Grid.Width = Grid.Height = 215;
+                Floating.ManipulateControlPosition(-215 + 45 / 2, -215 + 45 / 2);
+            }
+            else
+            {
+                Grid.Width = Grid.Height = 45;
+                Floating.ManipulateControlPosition(215 - 45/2, 215- 45/2);
+            }
         }
     }
 }

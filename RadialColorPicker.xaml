@@ -4,12 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
     mc:Ignorable="d"
-    d:DesignHeight="280"
-    d:DesignWidth="280">
+    d:DesignHeight="279"
+    d:DesignWidth="279">
 
-    <Grid Width="280" Height="280">
-        <Ellipse x:Name="ColorEllipse" VerticalAlignment="Center" HorizontalAlignment="Center" Width="279" Height="279" Tapped="ColorEllipse_OnTapped"  ManipulationMode="TranslateY, TranslateX" ManipulationStarted="IndicatorRectangle_OnManipulationStarted" ManipulationDelta="IndicatorRectangle_OnManipulationDelta">
+    <Grid Width="279" Height="279">
+        <Ellipse x:Name="ColorEllipse" VerticalAlignment="Center" HorizontalAlignment="Left" Width="279" Height="279" Tapped="ColorEllipse_OnTapped"  ManipulationMode="TranslateY, TranslateX" ManipulationStarted="IndicatorRectangle_OnManipulationStarted" ManipulationDelta="IndicatorRectangle_OnManipulationDelta">
             <Ellipse.Fill>
                 <ImageBrush ImageSource="Assets/radial_color_wheel.png"></ImageBrush>
             </Ellipse.Fill>

@@ -44,16 +44,16 @@ namespace Dash
             var builder = new InkStrokeBuilder();
             var stroke = builder.CreateStrokeFromInkPoints(_strokeBuilderList, new Matrix3x2(1, 0, 0, 1, 0, 0));
             var point1 = stroke.GetInkPoints()[0].Position;
-            XInkCanvas.InkPresenter.StrokeContainer.AddStroke(stroke.Clone());
-            XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0].Selected = true;
-            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(30 - point1.X, 45 - point1.Y));
-            XInkCanvas.InkPresenter.IsInputEnabled = false;
-            ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
+            //XInkCanvas.InkPresenter.StrokeContainer.AddStroke(stroke.Clone());
+            //XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0].Selected = true;
+            //XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(30 - point1.X, 45 - point1.Y));
+            //XInkCanvas.InkPresenter.IsInputEnabled = false;
+            //ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
         }
 
         private void SizeSliderOnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            SizeSlider.SetValue(RangeBase.ValueProperty, 4);
+            SizeSlider.SetValue(RadialMenuSlider.RelativeValueProperty, 0.5);
         }
 
         private void UpdateExample(SolidColorBrush newBrush)
@@ -70,33 +70,40 @@ namespace Dash
             {
                 Visibility = Visibility.Visible;
             }
-            if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.Value != 0)
-            {
-                Column3.Width = new GridLength(0);
-                Column4.Width = new GridLength(0);
-            }
-            else if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.Value == 0)
-            {
-                Column3.Width = new GridLength(5);
-                Column4.Width = new GridLength(30);
-            }
+            //}
+            //if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.RelativeValue != 0)
+            //{
+            //    Column3.Width = new GridLength(0);
+            //    Column4.Width = new GridLength(0);
+            //}
+            //else if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.RelativeValue == 0)
+            //{
+            //    Column3.Width = new GridLength(5);
+            //    Column4.Width = new GridLength(30);
+            //}
         }
-
-        private void OpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            GlobalInkSettings.Opacity = OpacitySlider.Value / 100;
+            GlobalInkSettings.Color = Color.FromArgb(255, 128, 128, 128);
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+        
+
+        private void OpacitySlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
+        {
+            GlobalInkSettings.Opacity = newvalue/100;
             GlobalInkSettings.UpdateInkPresenters();
         }
 
-        private void SizeSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void SizeSlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
-            GlobalInkSettings.Size = SizeSlider.Value;
+            GlobalInkSettings.Size = newvalue;
             GlobalInkSettings.UpdateInkPresenters();
         }
 
-        private void BrightnessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void BrightnessSlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
-            GlobalInkSettings.Brightness = BrightnessSlider.Value;
+            GlobalInkSettings.Brightness = newvalue;
             GlobalInkSettings.UpdateInkPresenters();
         }
 
@@ -209,10 +216,6 @@ namespace Dash
             new InkPoint (new Point(30493.8671875, 30550.013671875), (float)0.2822266, (float)0, (float)0, (ulong)587748951792),
         };
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            GlobalInkSettings.Color = Color.FromArgb(255,128,128,128);
-            GlobalInkSettings.UpdateInkPresenters();
-        }
+       
     }
 }
