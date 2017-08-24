@@ -96,14 +96,17 @@ namespace Dash
         }
 
         #region Xaml Styling Methods (used by operator view)
+        private bool isOperator = false;
         /// <summary>
         /// Applies custom override styles to the operator view
         /// </summary>
         public void StyleOperator(double borderRadiusAmount)
         {
+            isOperator = true;
             xShadowTarget.RadiusX = borderRadiusAmount;
             xShadowTarget.RadiusY = borderRadiusAmount;
-            var brush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
+
+            var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
             Color c = brush.Color;
             c.A = 204;
             xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
@@ -221,6 +224,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Updates the minimized-view icon from the ViewModel's corresponding IconType array.
+        /// </summary>
         private void updateIcon()
         {
             if (ViewModel == null) return;

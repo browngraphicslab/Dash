@@ -24,12 +24,7 @@
                   ShowsScrollingPlaceholders ="False" Background="Transparent">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <local:DocumentView x:Name="XBackdrop" Width="250" Height="250" IsHitTestVisible="False"/>
-                        <Viewbox x:Name="xBorder" Width="250" Height="250">
-                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
-                        </Viewbox>
-                    </Grid>
+                    <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
