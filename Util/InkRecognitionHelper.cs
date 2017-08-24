@@ -93,6 +93,25 @@ namespace Dash
                     if(RegionContainsNewStroke(region)) AddCollectionFromShapeRegion(region);
                     if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
+
+                foreach (InkAnalysisInkDrawing region in shapeRegions)
+                {
+                    if (region.DrawingKind != InkAnalysisDrawingKind.Triangle) continue;
+                    if (RegionContainsNewStroke(region))
+                    {
+                        OperatorSearchView.AddsToThisCollection = _freeformInkControl.FreeformView;
+                        if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) continue;
+                        MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
+                        Point absPos =
+                            Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
+                                _freeformInkControl.TargetCanvas, MainPage.Instance);
+                        Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+                        Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+                        DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
+                        Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+                    }
+                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                }
                 //All of the unused text gets re-added to the InkAnalyzer
                 foreach (var key in _textBoundsDictionary.Keys)
                 {

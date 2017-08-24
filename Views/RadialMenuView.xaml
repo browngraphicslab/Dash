@@ -14,10 +14,6 @@
 
     <userControl:Floating x:Name="Floating" IsBoundByParent="True" IsBoundByScreen="True">
         <Grid x:Name="Grid" Height="250">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="Column0" Width="250"></ColumnDefinition>
-                <ColumnDefinition x:Name="Column1" Width="0"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
             <local:InkSettingsPane x:Name="SettingsPane" Grid.Column="0" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" ManipulationMode="None" x:DeferLoadStrategy="Lazy"></local:InkSettingsPane>
             <userControl:RadialMenu x:Name="RadialMenu" Grid.Column="0" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0">
                 <userControl:RadialMenu.Buttons>
