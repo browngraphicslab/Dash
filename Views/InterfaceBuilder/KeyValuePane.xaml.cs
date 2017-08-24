@@ -365,17 +365,18 @@ namespace Dash
         /// <summary>
         /// Corrects the column widths upon load 
         /// </summary>
-        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
+        private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             for (int i = 0; i < 3; i++)
                 xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
         }
 
-        private void Border_Loaded(object sender, RoutedEventArgs e)
+        private void Border_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if ((sender as Border).Child is TextBlock)
+            if ((sender as Border).Child is EditableTextBlock)
             {
-
+                var child = (sender as Border).Child as EditableTextBlock;
+                child.TextAlignment = TextAlignment.Left;
             }
         }
     }
