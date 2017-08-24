@@ -125,6 +125,15 @@ namespace Dash
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
         #endregion
 
         #region Activation
@@ -147,5 +156,6 @@ namespace Dash
         }
 
         #endregion
+
     }
 }

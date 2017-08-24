@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -35,12 +36,14 @@ namespace Dash
 
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+        // the document view that is being dragged
+        public static DocumentView DragDocumentView;
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
-
         public static int dvCount = 0;
+
         public DocumentView()
         {
             InitializeComponent();
@@ -54,8 +57,14 @@ namespace Dash
 
             // set bounds
             MinWidth = 100;
-            MinHeight = 25;
             
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += ExpandContract_DoubleTapped;
+
+            MinHeight = 25;
+
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
@@ -343,6 +352,7 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
+
         #region Menu
 
         public void DeleteDocument()
@@ -440,7 +450,8 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-
+            this.CanDrag = ViewModel.IsLowestSelected;
+            this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
@@ -456,6 +467,5 @@ namespace Dash
         }
 
         #endregion
-
     }
 }

@@ -12,7 +12,8 @@
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
-    DragEnter="Collection_DragEnter"
+    DragEnter="CollectionViewOnDragEnter"
+    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -24,9 +25,13 @@
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
 
+        <InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
+        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"  ></Canvas>
+        
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
-        
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
+
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"></Canvas>
 
         <ItemsControl x:Name="xItemsControl"
@@ -54,6 +59,5 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        
     </Grid>
 </local:SelectionElement>
