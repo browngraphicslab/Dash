@@ -60,6 +60,30 @@
                 </PathGeometry>
             </Path.Data>
         </Path>
+        <Path x:Name="SliderIndicatorPath" RenderTransformOrigin="0.5,0.5" Stroke="White" StrokeThickness="1"
+              UseLayoutRounding="False" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Margin="0,0,0,-10"
+              Stretch="None">
+            <Path.RenderTransform>
+                <CompositeTransform Rotation="0" />
+            </Path.RenderTransform>
+            <Path.Data>
+                <PathGeometry>
+                    <PathGeometry.Figures>
+                        <PathFigureCollection>
+                            <PathFigure x:Name="SliderIndicatorPathFigure" StartPoint="0,0">
+                                <PathFigure.Segments>
+                                    <PathSegmentCollection>
+                                        <ArcSegment x:Name="SliderIndicatorPathArcSegment" Size="{x:Bind ArcRadius}"
+                                                    IsLargeArc="False" SweepDirection="Clockwise"
+                                                    Point="{x:Bind EndPoint}" />
+                                    </PathSegmentCollection>
+                                </PathFigure.Segments>
+                            </PathFigure>
+                        </PathFigureCollection>
+                    </PathGeometry.Figures>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
         <Grid x:Name="RotationGrid" Width="20" Height="207" RenderTransformOrigin="0.5,1" VerticalAlignment="Top"
               HorizontalAlignment="Left" Margin="-10,0,0,0" IsHitTestVisible="False">
             <Grid.RenderTransform>

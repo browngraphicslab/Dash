@@ -111,6 +111,7 @@ namespace Dash
         private List<RadialMenuButton> _inputButtons;
 
         private List<RadialMenuButton> _strokeButtons;
+        private bool _inkOpened;
 
         /// <summary>
         /// Default radial menu with certain menu items
@@ -159,7 +160,6 @@ namespace Dash
         /// </summary>
         public void CloseInkMenu()
         {
-            Debug.WriteLine(Grid.ActualWidth + ", " + Grid.ActualHeight);
             if (SettingsPane != null) SettingsPane.Visibility = Visibility.Collapsed;
             Grid.Height = 215;
             Grid.Width = 215;
@@ -179,7 +179,18 @@ namespace Dash
             Grid.Height = 340;
             Grid.Width = 345;
             RadialMenu.Margin = new Thickness(29,0,0,0);
-            
+            if (!_inkOpened)
+            {
+                DispatcherTimer timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(300)};
+                timer.Tick += delegate
+                {
+                    RadialMenu.ClickInnerRadialMenuButton(SetPenInputButton);
+                    RadialMenu.ClickInnerRadialMenuButton(SetPenInkButton);
+                    timer.Stop();
+                };
+                timer.Start();
+                _inkOpened = true;
+            }
         }
 
         /// <summary>

@@ -73,7 +73,14 @@ namespace Dash
 
         public double SliderAngle {
             get { return (double)GetValue(SliderAngleProperty); }
-            set { SetValue(SliderAngleProperty, value); }
+            set
+            {
+                SetValue(SliderAngleProperty, value);
+                RotationGrid.RenderTransform = new CompositeTransform { Rotation = value };
+                var theta = value * Math.PI / 360;
+                var indicatorPoint = new Point(ArcRadius.Width * 2 * Math.Cos(theta) * Math.Sin(theta), ArcRadius.Height * Math.Sin(theta) * Math.Sin(theta) * 2);
+                SliderIndicatorPathArcSegment.Point = indicatorPoint;
+            }
         }
 
         public double MinValue { get; set; } = 0;
@@ -85,8 +92,8 @@ namespace Dash
             set
             {
                 SetValue(RelativeValueProperty, value);
-                RotationGrid.RenderTransform = new CompositeTransform { Rotation = value * (MaxAngle - MinAngle) + MinAngle };
                 Value = value * (MaxValue - MinValue) + MinValue;
+                SliderAngle = MinAngle + (MaxAngle - MinAngle) * value;
             }
         }
 
@@ -179,6 +186,9 @@ namespace Dash
             SliderPathArcSegment.Size = ArcRadius;
             SliderPathArcSegment.Point = EndPoint;
             SliderPathFigure.StartPoint = InnerStartPoint;
+            SliderIndicatorPathArcSegment.Size = ArcRadius;
+            SliderIndicatorPathArcSegment.Point = InnerStartPoint;
+            SliderIndicatorPathFigure.StartPoint = InnerStartPoint;
             RotationGrid.Margin = new Thickness(-RotationGrid.Width / 2, -Thickness / 2, 0, 0);
             RotationGrid.Height = InnerRadius + Thickness;
             ReferencePoint.Margin = new Thickness(-RotationGrid.Width / 2, RotationGrid.Height - Thickness / 2, 0, 0);
@@ -195,6 +205,7 @@ namespace Dash
             Canvas.SetLeft(Label, draggerPoint.X + 10);
             Canvas.SetTop(Label, draggerPoint.Y);
             Label.Text = ((int) Value).ToString();
+            
             e.Handled = true;
         }
 
