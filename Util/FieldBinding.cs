@@ -121,7 +121,15 @@ namespace Dash
             where T : FrameworkElement where U : FieldModelController
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler =
-                (sender, args) => binding.ConvertToXaml(element, property);
+                (sender, args) =>
+                {
+                    var prototype = binding.Document.GetPrototype();
+                    if (args.Context.DocContextList.Contains(binding.Document) || prototype == null ||
+                        args.Context.GetDeepestDelegateOf(prototype.GetId()) != prototype.GetId())
+                    {
+                        binding.ConvertToXaml(element, property);
+                    }
+                };
             DependencyPropertyChangedCallback callback =
                 (sender, dp)   =>
                 {

@@ -612,10 +612,17 @@ namespace Dash
             {
                 return;
             }
-            Context c = new Context(this);
-            //c.AddDocumentContext(this);
-            var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, args.FieldArgs, c, false), true);
+            var prototype = GetPrototype();
+            if (args.Context.DocContextList.Contains(this) || prototype == null || 
+                args.Context.GetDeepestDelegateOf(prototype.GetId()) != prototype.GetId())
+            {
+                Context c = new Context(this);
+                //c.AddDocumentContext(this);
+                var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
+                OnDocumentFieldUpdated(this,
+                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
+                        args.FieldArgs, c, false), true);
+            }
         }
 
 
@@ -814,6 +821,7 @@ namespace Dash
                                     isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
                         colView.HorizontalAlignment = HorizontalAlignment.Stretch;
                         colView.VerticalAlignment = VerticalAlignment.Stretch;
+                        colView.Height = 300;
 
                         sp.Children.Add(colView);
                         //source.Add(border);
