@@ -498,13 +498,13 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
             Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
-            Action<ICollectionView, DragEventArgs> onNodeAdd = Actions.OnNodeAdd;
+            Action<ICollectionView, DragEventArgs> addNode = Actions.AddNode;
 
             var operatorButton = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionButton = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentButton = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
             var searchButton = new RadialActionModel("Search", Symbol.Find){CollectionDropAction = onSearchAdd, IsDraggable = true};
-            var addNode = new RadialActionModel("API", Symbol.Switch);
+            var nodeButton = new RadialActionModel("API", Symbol.Switch){CollectionDropAction = addNode, IsDraggable = true};
 
             AddItems(new List<RadialItemModel>
             {
@@ -512,6 +512,7 @@ namespace Dash
                 searchButton,
                 collectionButton,
                 documentButton,
+                nodeButton,
                 inkOptions
             });
         }

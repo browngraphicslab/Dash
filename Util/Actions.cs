@@ -48,10 +48,6 @@ namespace Dash
             MainPage.Instance.AddGenericFilter(o, e);
         }
 
-        public static void OnNodeAdd(ICollectionView collection, DragEventArgs e)
-        {
-        }
-
         public static void ChangeInkColor(Color color, RadialMenu menu = null)
         {
             GlobalInkSettings.Color = color;
@@ -139,6 +135,11 @@ namespace Dash
             {
                 OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
+        }
+
+        public static void AddNode(ICollectionView collection, DragEventArgs e)
+        {
+            // add node?
         }
 
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
