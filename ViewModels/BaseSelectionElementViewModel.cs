@@ -37,6 +37,7 @@ namespace Dash
                 if (SetProperty(ref _isSelected, value || IsInInterfaceBuilder))
                 {
                     OnSelectionSet?.Invoke(value);
+                    Debug.WriteLine("IS SELECTED ?????????????: " + value); 
                 }
             }
         }

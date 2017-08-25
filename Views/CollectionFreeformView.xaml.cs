@@ -117,6 +117,7 @@ namespace Dash
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
+
             if (InkFieldModelController != null)
             {
                 MakeInkCanvas();
@@ -780,7 +781,6 @@ namespace Dash
                 return;
 
             OnSelected();
-
         }
 
         #endregion
