@@ -284,7 +284,7 @@ namespace Dash
             if (_collectionMenu == null) MakeMenu();
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
-            xMenuColumn.Width = new GridLength(50);
+            xMenuColumn.Width = new GridLength(55);
         }
 
         private void GetJson()

@@ -250,26 +250,36 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
-            _mainMenu.Diameter = 250;
+            var gray = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]);
+            var blue = ((SolidColorBrush)App.Instance.Resources["TranslucentWindowsBlue"]);
+            var bg = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]);
+
+            var grayColor = gray.Color;
+            grayColor.A = 224;
+            var blueColor = blue.Color;
+            var bgColor = bg.Color;
+            bgColor.A = 224;
+
+            _mainMenu.Diameter = 240;
             _mainMenu.StartAngle = 0;
+
             _mainMenu.CenterButtonIcon = "🛠️";
             _mainMenu.CenterButtonSymbol = (Symbol) 0xE115;
             _mainMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
-            _mainMenu.CenterButtonBackgroundFill = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
+            _mainMenu.CenterButtonBackgroundFill = blue;
             _mainMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);
-            _mainMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            _mainMenu.UseIndicationArcs = true;
-            _mainMenu.IndicationArcStrokeThickness = 3;
-            _mainMenu.IndicationArcDistanceFromEdge = 20;
-            _mainMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
-            _mainMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            _mainMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            _mainMenu.InnerReleasedColor = ((SolidColorBrush) App.Instance.Resources["SelectedGrey"]).Color;
-            _mainMenu.OuterHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            _mainMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            _mainMenu.OuterDisabledColor = ((SolidColorBrush) App.Instance.Resources["WindowsBlue"]).Color;
-            _mainMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            _mainMenu.OuterThickness = 15;
+
+            _mainMenu.InnerNormalColor = bgColor;
+            _mainMenu.InnerHoverColor = grayColor;
+
+            _mainMenu.InnerTappedColor = grayColor;
+            _mainMenu.InnerReleasedColor = grayColor;
+
+            _mainMenu.OuterHoverColor = blueColor;
+            _mainMenu.OuterNormalColor = blueColor;
+            _mainMenu.OuterDisabledColor = blueColor;
+            _mainMenu.OuterTappedColor = blueColor;
+            _mainMenu.OuterThickness = 10;
             _mainMenu.CenterButtonSize = 60;
         }
 
@@ -296,6 +306,7 @@ namespace Dash
         /// <param name="item"></param>
         private RadialMenuButton AddButton(RadialItemModel item, RadialMenu menu)
         {
+            
             var button = new RadialMenuButton()
             {
                 Label = item.Description,
@@ -326,11 +337,6 @@ namespace Dash
                 button.StrokeColor = item.BackGroundColor;
                 button.StrokeThickness = 1;
                 button.InnerReleasedColor = Colors.AliceBlue;
-            }
-            else
-            {
-                button.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
-                button.OuterDisabledColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             }
             //Construct the associated meter, if there is one
             if ((item as RadialSubmenuModel)?.IsMeter == true)

@@ -39,25 +39,41 @@
     
     -->
     <Application.Resources>
+        <!-- NUMBERS, THICKNESSES --> 
+        <x:Double x:Key="DocumentOpacity">.8</x:Double>
+        <x:Double x:Key="DefaultFontSize">12</x:Double>
+        <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
+
         <!-- COLORS -->
+        <Color x:Key="WindowsBlueColor">#FF17477E</Color>
+        <Color x:Key="AccentGreenColor">#FF698f0f</Color>
+        <Color x:Key="DocumentBackgroundColor">#FF303030</Color>
+        <Color x:Key="DocumentBackgroundSelectedColor">#FF414141</Color>
+        <Color x:Key="MainTextColor">#FFAAABB0</Color>
+
+        <!-- SOLID COLOR BRUSHES -->
         <!-- general colors -->
-        <SolidColorBrush x:Key="WindowsBlue" Color="#FF17477E"/>
-        <SolidColorBrush x:Key="WindowsBlueTranslucent" Color="#CC17477E"/>
-        <SolidColorBrush x:Key="AccentGreen" Color="#FF698f0f"/>
-        <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"/>
-        <SolidColorBrush x:Key="OutputHandleColor" Color="#FF1D5391"/>
-        <SolidColorBrush x:Key="InputHandleColor" Color="#FF698f0f"/>
+        <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
+        <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
+        <SolidColorBrush x:Key="DragHighlight" Color="#FAffffff"/>
+        <SolidColorBrush x:Key="DarkWindowsBlue" Color="#cc103a6a"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
+        <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentBackgroundSelectedColor}" />
+        <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
+        <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
+        <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
+
 
         <!-- global colors-->
-        <SolidColorBrush x:Key="MainTextColor" Color="#FFAAABB0"></SolidColorBrush>
+        <SolidColorBrush x:Key="MainText" Color="{StaticResource MainTextColor}"></SolidColorBrush>
 
         <!-- background colors -->
-        <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
-        <SolidColorBrush x:Key="RadialMenuBackground"  Color="#FF132D4B" />
+        <Color x:Key="TranslucentDocumentBackgroundColor">#CC303030</Color>
+        <SolidColorBrush x:Key="RadialMenuBackground" Color="{StaticResource TranslucentDocumentBackgroundColor}" />
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
-        <SolidColorBrush x:Key="DocumentBackground" Color="#CC303030"></SolidColorBrush>
-        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="#CC414141"></SolidColorBrush>
+        <SolidColorBrush x:Key="DocumentBackground" Color="{StaticResource DocumentBackgroundColor}" Opacity="{StaticResource DocumentOpacity}" />
+        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="{StaticResource DocumentBackgroundSelectedColor}" Opacity="{StaticResource DocumentOpacity}" ></SolidColorBrush>
         <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
             <GradientStop Color="Transparent" Offset="0"/>
             <GradientStop Color="#FFFFFFFF" Offset="1" />
@@ -69,23 +85,87 @@
         <Style TargetType="TextBox">
             <!-- prevents node from moving while mouse is over UI element-->
             <Setter Property="ManipulationMode" Value="None"></Setter>
-            <Setter Property="BorderBrush" Value="#FF474747"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#FF656973"></Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <SolidColorBrush Color="{StaticResource MainTextColor}" Opacity=".5"></SolidColorBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Background" Value="{StaticResource DocumentBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
             <Setter Property="BorderThickness" Value="2"/>
 
-            <Setter Property="Padding" Value="15"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <Grid.Resources>
+                                <Style x:Name="DeleteButtonStyle" TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Disabled" />
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver" />
+                                    <VisualState x:Name="Focused">
+                                        <Storyboard>
+                                            <!--
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="PlaceholderTextContentPresenter">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="BackgroundElement">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="BackgroundElement">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocusedOpacity}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="BorderElement">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAccentBrush}"/>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            -->
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="ButtonStates" />
+                            </VisualStateManager.VisualStateGroups>
+                            <Border x:Name="BackgroundElement" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" Margin="{TemplateBinding BorderThickness}" Opacity="{ThemeResource TextControlBackgroundRestOpacity}" Grid.Row="1" Grid.RowSpan="1"/>
+                            <Border x:Name="BorderElement" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="1"/>
+                            <ContentPresenter x:Name="HeaderContentPresenter" Grid.ColumnSpan="2" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontWeight="Normal" Margin="0,0,0,8" Grid.Row="0" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
+                            <ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw" HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" IsTabStop="False" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}" IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}" IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled"/>
+                            <ContentControl x:Name="PlaceholderTextContentPresenter" Grid.ColumnSpan="2" Content="{TemplateBinding PlaceholderText}" Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" IsHitTestVisible="False" IsTabStop="False" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
 
         <!-- gray border on combobox -->
         <Style TargetType="ComboBox">
             <!-- prevents node from moving while mouse is over UI element-->
             <Setter Property="ManipulationMode" Value="Scale"></Setter>
-            <Setter Property="BorderBrush" Value="#FF474747"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="{StaticResource MainText}"/>
+            <Setter Property="Background" Value="{StaticResource DocumentBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- blue (default) button with white text -->
@@ -97,21 +177,23 @@
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
 
             <Setter Property="Padding" Value="15"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- text styles -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"></Setter>
-            <Setter Property="Padding" Value="15,10,15,10"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="RequestedTheme" Value="Dark"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
+            <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
+
         </Style>
 
         <Style TargetType="local:EditableTextBlock">
-            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
-            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MainText}" />
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono" />
         </Style>
 
@@ -122,18 +204,17 @@
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top"/>
-
             <Setter Property="Foreground" Value="#FFCACBCF"></Setter>
-            <Setter Property="Padding" Value="15,10,15,10"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- for forcing text styles to apply -->
         <Style TargetType="TextBlock" x:Key="xForceTextBlockDefault">
-            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"></Setter>
-            <Setter Property="Padding" Value="15,10,15,10"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
+            <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
@@ -231,14 +312,13 @@
             </Setter>
         </Style>
 
+        <!-- CONVERTERS-->
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
         <!--local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></-->
-
-        <!-- SAMPLE NODE HERE-->
 
         <!-- MISC. STYLES-->
         <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">
@@ -256,76 +336,5 @@
                 <StackPanel Orientation="Vertical"></StackPanel>
             </DataTemplate>
         </ItemsPanelTemplate>
-
-        <Style x:Key="xPlainTextBox" TargetType="TextBox">
-            <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}"/>
-            <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}"/>
-            <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
-            <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundAltHighBrush}"/>
-            <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeDisabledLowBrush}"/>
-            <Setter Property="SelectionHighlightColor" Value="{ThemeResource SystemControlHighlightAccentBrush}"/>
-            <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}"/>
-            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
-            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
-            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
-            <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Grid>
-                            <Grid.Resources>
-                                <Style x:Name="DeleteButtonStyle" TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Grid.Resources>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Disabled" />
-                                    <VisualState x:Name="Normal"/>
-                                    <VisualState x:Name="PointerOver" />
-                                    <VisualState x:Name="Focused">
-                                        <Storyboard>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="PlaceholderTextContentPresenter">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="BackgroundElement">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="Transparent"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="BackgroundElement">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocusedOpacity}"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="BorderElement">
-                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightAccentBrush}"/>
-                                            </ObjectAnimationUsingKeyFrames>
-                                        </Storyboard>
-                                    </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="ButtonStates" />
-                            </VisualStateManager.VisualStateGroups>
-                            <Border x:Name="BackgroundElement" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" Margin="{TemplateBinding BorderThickness}" Opacity="{ThemeResource TextControlBackgroundRestOpacity}" Grid.Row="1" Grid.RowSpan="1"/>
-                            <Border x:Name="BorderElement" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Grid.ColumnSpan="2" Grid.Row="1" Grid.RowSpan="1"/>
-                            <ContentPresenter x:Name="HeaderContentPresenter" Grid.ColumnSpan="2" ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}" FontWeight="Normal" Margin="0,0,0,8" Grid.Row="0" Visibility="Collapsed" x:DeferLoadStrategy="Lazy"/>
-                            <ScrollViewer x:Name="ContentElement" AutomationProperties.AccessibilityView="Raw" HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" IsTabStop="False" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}" IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}" IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" ZoomMode="Disabled"/>
-                            <ContentControl x:Name="PlaceholderTextContentPresenter" Grid.ColumnSpan="2" Content="{TemplateBinding PlaceholderText}" Foreground="{ThemeResource SystemControlPageTextBaseMediumBrush}" IsHitTestVisible="False" IsTabStop="False" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Grid.Row="1"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Application.Resources>
 </Application>
