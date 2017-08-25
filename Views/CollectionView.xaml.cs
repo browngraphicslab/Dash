@@ -16,6 +16,7 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -293,5 +294,19 @@ namespace Dash
         }
 
         #endregion
+
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
+            DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;
+
+            if (datacontext == null) return;
+            var visibilityBinding = new Binding
+            {
+                Source = datacontext,
+                Path = new PropertyPath(nameof(datacontext.IsSelected)) 
+            };
+            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
     }
 }

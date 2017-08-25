@@ -28,8 +28,10 @@
                       HorizontalAlignment="Stretch"
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
-                      > <!--ManipulationMode="All"-->
-                    <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsHitTestVisible="{Binding IsSelected}"/>
+                      ManipulationMode="All"
+                      >
+                    <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded"
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/> <!--IsHitTestVisible="{Binding IsSelected}"-->
                 </Grid>
                 <Grid HorizontalAlignment="Right" 
                       PointerPressed="ConnectionEllipse_OnPointerPressed"
