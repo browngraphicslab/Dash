@@ -14,29 +14,28 @@
 
     <Grid Width="340" Height="350">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30.5"></ColumnDefinition>
             <ColumnDefinition Width="279"></ColumnDefinition>
-            <ColumnDefinition Width="30.5"></ColumnDefinition>
+            <ColumnDefinition Width="40.5"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="30.5"></RowDefinition>
             <RowDefinition Height="279"></RowDefinition>
             <RowDefinition Height="30.5"></RowDefinition>
         </Grid.RowDefinitions>
-        <local:RadialColorPicker Grid.Column="1" Grid.Row="1"></local:RadialColorPicker>
+        <local:RadialColorPicker Grid.Column="0" Grid.Row="1"></local:RadialColorPicker>
         <local:RadialMenuSlider x:Name="SizeSlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="30"
                                     Angle="30"
-                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="1"
+                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="SizeSlider_OnValueChanged" MinValue="2" MaxValue="30" Symbol="{x:Bind SizeSymbol}">
         </local:RadialMenuSlider>
         <local:RadialMenuSlider x:Name="BrightnessSlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="72.5"
                                     Angle="30"
-                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="1"
+                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="BrightnessSlider_OnValueChanged" MinValue="0" MaxValue="100" Symbol="{x:Bind BrightnessSymbol}">
         </local:RadialMenuSlider>
         <local:RadialMenuSlider x:Name="OpacitySlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="115"
                                     Angle="30"
-                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="1"
+                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="OpacitySlider_OnValueChanged" MinValue="0" MaxValue="100" Symbol="{x:Bind OpacitySymbol}">
         </local:RadialMenuSlider>
     </Grid>

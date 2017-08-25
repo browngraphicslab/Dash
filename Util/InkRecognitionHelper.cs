@@ -18,11 +18,91 @@ namespace Dash
         private readonly FreeformInkControl _freeformInkControl;
         private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _textBoundsDictionary;
         private readonly DispatcherTimer _timer;
-        public InkAnalyzer Analyzer;
-        public bool DoubleTapped;
-        public List<Point> DoubleTappedPoints;
-        public List<InkStroke> NewStrokes;
-        public List<InkStroke> StrokesToRemove;
+        private InkAnalyzer analyzer;
+        private bool doubleTapped;
+        private List<Point> doubleTappedPoints;
+        private List<InkStroke> newStrokes;
+        private List<InkStroke> strokesToRemove;
+
+        public FreeformInkControl FreeformInkControl => FreeformInkControl1;
+
+        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary
+        {
+            get => TextBoundsDictionary1;
+            set => TextBoundsDictionary1 = value;
+        }
+
+        public DispatcherTimer Timer => Timer1;
+
+        public InkAnalyzer Analyzer
+        {
+            get => Analyzer1;
+            set => Analyzer1 = value;
+        }
+
+        public bool DoubleTapped
+        {
+            get => DoubleTapped1;
+            set => DoubleTapped1 = value;
+        }
+
+        public List<Point> DoubleTappedPoints
+        {
+            get => DoubleTappedPoints1;
+            set => DoubleTappedPoints1 = value;
+        }
+
+        public List<InkStroke> NewStrokes
+        {
+            get => NewStrokes1;
+            set => NewStrokes1 = value;
+        }
+
+        public List<InkStroke> StrokesToRemove
+        {
+            get => StrokesToRemove1;
+            set => StrokesToRemove1 = value;
+        }
+
+        public FreeformInkControl FreeformInkControl1 => _freeformInkControl;
+
+        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary1
+        {
+            get => _textBoundsDictionary;
+            set => _textBoundsDictionary = value;
+        }
+
+        public DispatcherTimer Timer1 => _timer;
+
+        public InkAnalyzer Analyzer1
+        {
+            get => analyzer;
+            set => analyzer = value;
+        }
+
+        public bool DoubleTapped1
+        {
+            get => doubleTapped;
+            set => doubleTapped = value;
+        }
+
+        public List<Point> DoubleTappedPoints1
+        {
+            get => doubleTappedPoints;
+            set => doubleTappedPoints = value;
+        }
+
+        public List<InkStroke> NewStrokes1
+        {
+            get => newStrokes;
+            set => newStrokes = value;
+        }
+
+        public List<InkStroke> StrokesToRemove1
+        {
+            get => strokesToRemove;
+            set => strokesToRemove = value;
+        }
 
         public InkRecognitionHelper(FreeformInkControl freeformInkControl)
         {
@@ -42,12 +122,12 @@ namespace Dash
             if (!newValue)
             {
                 Analyzer.ClearDataForAllStrokes();
-                _freeformInkControl.ClearSelection();
+                FreeformInkControl.ClearSelection();
                 foreach (var stroke in StrokesToRemove)
                 {
                     stroke.Selected = true;
                 }
-                _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+                FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
             }
         }
 
@@ -61,7 +141,7 @@ namespace Dash
         /// </summary>
         /// <param name="doubleTapped"></param>
         /// <param name="newStroke"></param>
-        public async void RecognizeInk(bool addToRemoveList=true)
+        public async void RecognizeInk(bool addToRemoveList = true)
         {
             if (NewStrokes.Count > 0)
             {
@@ -69,12 +149,11 @@ namespace Dash
                 foreach (var newStroke in NewStrokes)
                     //Done separately because it doesn't require ink analyzer
                     TryDeleteWithStroke(newStroke);
-                
             }
             var result = await Analyzer.AnalyzeAsync();
             if (result.Status == InkAnalysisStatus.Updated)
             {
-                _textBoundsDictionary = GetTextBoundsDictionary();
+                TextBoundsDictionary = GetTextBoundsDictionary();
                 // Find circles and rectangles
                 var shapeRegions = Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
                 foreach (InkAnalysisInkDrawing region in shapeRegions)
@@ -83,28 +162,31 @@ namespace Dash
                     if (region.DrawingKind != InkAnalysisDrawingKind.Rectangle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Square) continue;
                     if (RegionContainsNewStroke(region)) AddDocumentFromShapeRegion(region);
-                    if(addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
                 //If the region is an ellipse, add a collection
                 foreach (InkAnalysisInkDrawing region in shapeRegions)
                 {
                     if (region.DrawingKind != InkAnalysisDrawingKind.Circle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Ellipse) continue;
-                    if(RegionContainsNewStroke(region)) AddCollectionFromShapeRegion(region);
+                    if (RegionContainsNewStroke(region)) AddCollectionFromShapeRegion(region);
                     if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
 
                 foreach (InkAnalysisInkDrawing region in shapeRegions)
                 {
-                    if (region.DrawingKind != InkAnalysisDrawingKind.Triangle) continue;
+                    if (region.DrawingKind != InkAnalysisDrawingKind.Triangle &&
+                        region.DrawingKind != InkAnalysisDrawingKind.EquilateralTriangle &&
+                        region.DrawingKind != InkAnalysisDrawingKind.IsoscelesTriangle &&
+                        region.DrawingKind != InkAnalysisDrawingKind.RightTriangle) continue;
                     if (RegionContainsNewStroke(region))
                     {
-                        OperatorSearchView.AddsToThisCollection = _freeformInkControl.FreeformView;
+                        OperatorSearchView.AddsToThisCollection = FreeformInkControl.FreeformView;
                         if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) continue;
                         MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
                         Point absPos =
                             Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
-                                _freeformInkControl.TargetCanvas, MainPage.Instance);
+                                FreeformInkControl.TargetCanvas, MainPage.Instance);
                         Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
                         Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
                         DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
@@ -113,23 +195,24 @@ namespace Dash
                     if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
                 //All of the unused text gets re-added to the InkAnalyzer
-                foreach (var key in _textBoundsDictionary.Keys)
+                foreach (var key in TextBoundsDictionary.Keys)
                 {
-                    var ids = _textBoundsDictionary[key]?.Item2
-                        ?.Select(id => _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id))
+                    var ids = TextBoundsDictionary[key]?.Item2
+                        ?.Select(id => FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id))
                         .Where(id => id != null);
                     if (ids != null) Analyzer.AddDataForStrokes(ids);
                 }
             }
             if (!addToRemoveList) Analyzer.ClearDataForAllStrokes();
-            _freeformInkControl.UpdateInkFieldModelController();
+            FreeformInkControl.UpdateInkFieldModelController();
             NewStrokes.Clear();
         }
 
         private bool RegionContainsNewStroke(IInkAnalysisNode region)
         {
             return region.GetStrokeIds()
-                .Select(id => _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)).Any(stroke => NewStrokes.Contains(stroke));
+                .Select(id => FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id))
+                .Any(stroke => NewStrokes.Contains(stroke));
         }
 
         private void RemoveStrokeReferences(ICollection<uint> ids)
@@ -140,7 +223,7 @@ namespace Dash
 
         public void AccountForRemovedStrokes(ICollection<uint> ids)
         {
-            var strokes = _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes()
+            var strokes = FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes()
                 .Where(s => ids.Contains(s.Id));
             foreach (var stroke in strokes) StrokesToRemove.Remove(stroke);
         }
@@ -160,8 +243,9 @@ namespace Dash
 
         private void TryDeleteWithStroke(InkStroke newStroke)
         {
-            var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(p.Position, _freeformInkControl.SelectionCanvas,
-                _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot)));
+            var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(
+                p.Position, FreeformInkControl.SelectionCanvas,
+                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot)));
             if (!IsLinear(inkPoints)) return;
             var point1 = inkPoints[0];
             var point2 = inkPoints.Last();
@@ -175,8 +259,8 @@ namespace Dash
                         inkPoints, rect))
                     {
                         docsRemoved = true;
-                        _freeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
-                        _freeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
+                        FreeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
+                        FreeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
                             .DocumentController);
                     }
             }
@@ -184,9 +268,9 @@ namespace Dash
                 docsRemoved = true;
             if (docsRemoved)
             {
-                _freeformInkControl.ClearSelection();
+                FreeformInkControl.ClearSelection();
                 newStroke.Selected = true;
-                _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+                FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                 Analyzer.RemoveDataForStroke(newStroke.Id);
                 StrokesToRemove.Remove(newStroke);
             }
@@ -199,7 +283,7 @@ namespace Dash
             //Calculate line 1
             var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
             var yInt1 = point1.Y - point1.X * slope1;
-            var view = _freeformInkControl.FreeformView;
+            var view = FreeformInkControl.FreeformView;
 
             foreach (var pair in view.LineDict)
             {
@@ -232,7 +316,8 @@ namespace Dash
                         var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
                         if (referenceFieldModelController != null)
                         {
-                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
+                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
+                                .Equals(pair.Key.DereferenceToRoot(null));
                             if (referencesEqual)
                             {
                                 doc2.SetField(field.Key,
@@ -249,7 +334,8 @@ namespace Dash
 
         private bool PointBetween(Point testPoint, Point a, Point b)
         {
-            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
+            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)),
+                new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
             return rect.Contains(testPoint);
         }
 
@@ -279,7 +365,7 @@ namespace Dash
         private Dictionary<Rect, DocumentView> GetDocViewRects()
         {
             var dict = new Dictionary<Rect, DocumentView>();
-            var parameters = _freeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModelParameters>();
+            var parameters = FreeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModelParameters>();
             foreach (var param in parameters)
             {
                 var doc = param.Controller;
@@ -293,7 +379,7 @@ namespace Dash
                     Width = width,
                     Height = height
                 };
-                if (_freeformInkControl.FreeformView.xItemsControl.ItemContainerGenerator != null && _freeformInkControl
+                if (FreeformInkControl.FreeformView.xItemsControl.ItemContainerGenerator != null && FreeformInkControl
                         .FreeformView.xItemsControl
                         .ContainerFromItem(param) is ContentPresenter contentPresenter)
                     dict[rect] =
@@ -305,23 +391,23 @@ namespace Dash
         private void AddCollectionFromShapeRegion(InkAnalysisInkDrawing region)
         {
             var selectionPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
-                .Select(p => Util.PointTransformFromVisual(p, _freeformInkControl.SelectionCanvas,
-                    _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
-            var selectedDocuments = _freeformInkControl.LassoHelper.GetSelectedDocuments(selectionPoints);
+                .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
+                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
+            var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(selectionPoints);
             var docControllers = new List<DocumentController>();
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
-            var position = Util.PointTransformFromVisual(topLeft, _freeformInkControl.SelectionCanvas,
-                _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+            var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
+                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
             foreach (var view in selectedDocuments)
             {
                 var doc = (view.DataContext as DocumentViewModel).DocumentController;
                 var ogPos = doc.GetPositionField().Data;
                 var newPos = Util.PointTransformFromVisual(ogPos,
-                    _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot, _freeformInkControl.SelectionCanvas);
+                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
-                _freeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
+                FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
                 docControllers.Add(doc);
             }
             var fields = new Dictionary<KeyController, FieldModelController>
@@ -335,7 +421,7 @@ namespace Dash
                     new ReferenceFieldModelController(documentController.GetId(),
                         DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, size.Width,
                     size.Height).Document, true, true);
-            _freeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
+            FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
 
@@ -343,7 +429,7 @@ namespace Dash
         {
             var points = new List<Point>();
             foreach (var id in ids)
-                points.AddRange(_freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)
+                points.AddRange(FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)
                     .GetInkPoints().Select(inkPoint => inkPoint.Position));
             return points;
         }
@@ -399,17 +485,17 @@ namespace Dash
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
-            var position = Util.PointTransformFromVisual(topLeft, _freeformInkControl.SelectionCanvas,
-                _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+            var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
+                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
             var fields = new Dictionary<KeyController, FieldModelController>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
-            foreach (var rect in _textBoundsDictionary.Keys)
+            foreach (var rect in TextBoundsDictionary.Keys)
                 if (RectContainsRect(region.BoundingRect, rect))
                 {
-                    DeleteStrokesByID(_textBoundsDictionary[rect].Item2.ToImmutableHashSet());
-                    var str = _textBoundsDictionary[rect].Item1;
+                    DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
+                    var str = TextBoundsDictionary[rect].Item1;
                     var key = TryGetKey(str);
                     var text = TryGetText(str);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
@@ -430,11 +516,11 @@ namespace Dash
                     layoutDocs.Add(textBox.Document);
                     keysToRemove.Add(rect);
                 }
-            foreach (var key in keysToRemove) _textBoundsDictionary.Remove(key);
+            foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
-            _freeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
+            FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
         }
 
         private string TryGetText(string str)
@@ -479,11 +565,11 @@ namespace Dash
 
         private void DeleteStrokesByID(ICollection<uint> IDs)
         {
-            _freeformInkControl.ClearSelection();
-            foreach (var stroke in _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
+            FreeformInkControl.ClearSelection();
+            foreach (var stroke in FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
                 if (IDs.Contains(stroke.Id))
                     stroke.Selected = true;
-            _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+            FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
         }
 
 

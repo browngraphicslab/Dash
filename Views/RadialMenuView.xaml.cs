@@ -159,10 +159,11 @@ namespace Dash
         /// </summary>
         public void CloseInkMenu()
         {
+            Debug.WriteLine(Grid.ActualWidth + ", " + Grid.ActualHeight);
             if (SettingsPane != null) SettingsPane.Visibility = Visibility.Collapsed;
             Grid.Height = 215;
             Grid.Width = 215;
-            Floating.ManipulateControlPosition(16,16); //fixes jerkiness when closing menu...
+            RadialMenu.Margin = new Thickness(0, 0, 0, 0);
         }
 
         /// <summary>
@@ -176,8 +177,9 @@ namespace Dash
             if (SettingsPane == null) FindName("SettingsPane");
             SettingsPane.Visibility = Visibility.Visible;
             Grid.Height = 340;
-            Grid.Width = 340;
-            Floating.ManipulateControlPosition(-48, -48); //...and fixes jerkiness when opening it
+            Grid.Width = 345;
+            RadialMenu.Margin = new Thickness(29,0,0,0);
+            
         }
 
         /// <summary>
