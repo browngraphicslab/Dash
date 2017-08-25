@@ -295,7 +295,11 @@ namespace Dash
 
         #endregion
 
-        private void xContentControl_Loaded(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
+        /// in order to make ellipses hit test visible and the rest not 
+        /// </summary>
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)           // TODO think up a better way to do this 
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;

@@ -31,7 +31,7 @@
                       ManipulationMode="All"
                       >
                     <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded"
-                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/> <!--IsHitTestVisible="{Binding IsSelected}"-->
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/> 
                 </Grid>
                 <Grid HorizontalAlignment="Right" 
                       PointerPressed="ConnectionEllipse_OnPointerPressed"
