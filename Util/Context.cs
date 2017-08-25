@@ -42,6 +42,27 @@ namespace Dash
             }
         }
 
+        public bool IsApplicableTo(DocumentController doc)
+        {
+            var prototype = GetDeepestDelegateOf((doc.GetPrototype() ?? doc).GetId());
+            return DocContextList.Contains(doc) || // document is explicitly in the context 
+                   (prototype == doc.GetId() ||  doc.IsDelegateOf(prototype)); // document is equal to or a delegate of the deepest delegate of its prototype in the context
+         }
+
+        public bool IsContextCompatible(Context context)
+        {
+            bool valid2 = context.DocContextList.Where((doc) => !IsApplicableTo(doc)).Count() == 0;// see if context is valid for every document in the context
+            
+            if (valid2)
+                foreach (var dcb in DocContextList) // if it is, then everything in the context must ...??
+                {
+                    var prototype = dcb.GetPrototype() ?? dcb;
+                    if (!context.DocContextList.Contains(dcb) && context.GetDeepestDelegateOf(prototype.GetId()) != dcb.GetId())
+                        valid2 = false;
+                }
+            return valid2;
+        }
+
         public void AddDocumentContext(DocumentController document)
         {
             _documentContextList.Add(document);

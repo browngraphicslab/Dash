@@ -99,9 +99,13 @@ namespace Dash
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler =
-                delegate
+                (sender, args) =>
                 {
-                    binding.ConvertToXaml(element, property);
+                    var prototype = binding.Document.GetPrototype();
+                    if (args.Context.IsContextCompatible(binding.Context))
+                    {
+                        binding.ConvertToXaml(element, property);
+                    }
                 };
             if (element.IsInVisualTree())
             {
@@ -120,21 +124,29 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
+            bool updateField = true, updateUI = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
                 {
-                    var prototype = binding.Document.GetPrototype();
-                    if (args.Context.DocContextList.Contains(binding.Document) || prototype == null ||
-                        args.Context.GetDeepestDelegateOf(prototype.GetId()) != prototype.GetId())
+                    if (!updateField)
+                        return;
+                    updateUI = false;
+                   
+                    if (args.Context.IsContextCompatible(binding.Context))
                     {
                         binding.ConvertToXaml(element, property);
                     }
+                    updateUI = true;
                 };
             DependencyPropertyChangedCallback callback =
                 (sender, dp)   =>
                 {
+                    if (!updateUI)
+                        return;
+                    updateField = false;
                     if (!binding.ConvertFromXaml( sender.GetValue(dp)))
                         binding.ConvertToXaml(element, property);
+                    updateField = true;
                 };
 
             long token = -1;

@@ -612,12 +612,9 @@ namespace Dash
             {
                 return;
             }
-            var prototype = GetPrototype();
-            if (args.Context.DocContextList.Contains(this) || prototype == null || 
-                args.Context.GetDeepestDelegateOf(prototype.GetId()) != prototype.GetId())
+            if (args.Context.IsApplicableTo(this)) 
             {
                 Context c = new Context(this);
-                //c.AddDocumentContext(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
                     new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
