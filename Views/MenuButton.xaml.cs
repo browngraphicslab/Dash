@@ -385,7 +385,7 @@ namespace Dash
             // create and play opacity animation on button
             DoubleAnimation opacityAnimation = new DoubleAnimation()
             {
-                SpeedRatio = 1,
+                SpeedRatio = 1.3,
                 From = from,
                 To = to,
                 Duration = duration,
@@ -396,7 +396,6 @@ namespace Dash
                 Duration = duration
             };
             opacityStoryboard.Children.Add(opacityAnimation);
-            opacityAnimation.SpeedRatio = 1.3;
             Storyboard.SetTarget(opacityAnimation, target);
             Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
             opacityStoryboard.Begin();

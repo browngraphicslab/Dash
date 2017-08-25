@@ -11,23 +11,45 @@
 
     <!--<Grid x:Name="xMainGrid"></Grid>-->
     <Grid Height="Auto" Width="230">
-        <local:SettingsPaneBlock>
-            <local:SettingsPaneBlock.MainContent>
-                <Grid Width="230">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" Margin="0,5,5,0">
-                        <TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="Auto" BorderBrush="White" Background="White"  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10" FontSize="12"/>
-                    </Grid>
-                    <Grid Grid.Column="1" Margin="5,5,0,0">
-                        <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10" FontSize="12"/>
-                    </Grid>
+        <!--<local:SettingsPaneBlock>
+            <local:SettingsPaneBlock.MainContent>-->
+        <Grid Width="230">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Margin="0,5,5,0">
+                <TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="Auto" BorderBrush="White"
+                         Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10"
+                         FontSize="12"  LostFocus="XPositionTextBox_OnLostFocus"/>
+                <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto" Background="Transparent"
+                      VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped" PointerPressed="XMovementDetectionGrid_OnPointerPressed" PointerReleased="XMovementDetectionGrid_OnPointerReleased" PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All" ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta" ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                    <Border x:Name="xHorizontalDeduct" Tag="Deduct" Width="25" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                        <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue" FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Border>
+                    <Border x:Name="xHorizontalIncrement" Tag="Increment"  Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                        <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue" FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Border>
                 </Grid>
-            </local:SettingsPaneBlock.MainContent>
+            </Grid>
+            <Grid Grid.Column="1" Margin="5,5,0,0">
+                <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="Auto" BorderBrush="White"
+                         Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10"
+                         FontSize="12" LostFocus="XPositionTextBox_OnLostFocus"/>
+                <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto" Background="Transparent"
+                      VerticalAlignment="Stretch"  Tapped="XMovementDetectionGrid_OnTapped" PointerPressed="XMovementDetectionGrid_OnPointerPressed" PointerReleased="XMovementDetectionGrid_OnPointerReleased" PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All" ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta" ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                    <Border x:Name="xVerticalDeduct"  Tag="Deduct" Width="25" Height="25" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                        <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue" FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Border>
+                    <Border x:Name="xVerticalIncrement" Tag="Increment" Width="25" Height="25" HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                        <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"  FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Grid>
+            <!--</local:SettingsPaneBlock.MainContent>
             <local:SettingsPaneBlock.Title>POSITION</local:SettingsPaneBlock.Title>
-        </local:SettingsPaneBlock>
+        </local:SettingsPaneBlock>-->
     </Grid>
     <!--<Grid Width="230" Padding="0">
         <Grid.RowDefinitions>

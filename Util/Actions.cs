@@ -137,11 +137,6 @@ namespace Dash
             }
         }
 
-        public static void AddNode(ICollectionView collection, DragEventArgs e)
-        {
-            // add node?
-        }
-
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
