@@ -364,7 +364,6 @@ namespace Dash
                 return;
             }
 
-            // type checking 
             if ((inputReference.Type & outputReference.Type) == 0)
             {
                 UndoLine();
@@ -381,11 +380,18 @@ namespace Dash
             if (!isCompoundOperator)
             {
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
+                bool canLink = true;
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
-                    inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
+
+                if (!canLink)
+                {
+                    UndoLine();
+                    return;
+                }
             }
 
             //binding line position 

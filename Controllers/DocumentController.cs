@@ -467,7 +467,7 @@ namespace Dash
         public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck = true)
         {
             // check field type compatibility
-            if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;
+            //if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;                                      
 
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
