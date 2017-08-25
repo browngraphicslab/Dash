@@ -12,50 +12,40 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="{StaticResource DarkWindowsBlue}" >
-            <TextBlock Style="{StaticResource xTitleStyle}" Foreground="#59CACBCF">collection</TextBlock>
-        </Grid>
-        <Grid x:Name="xOuterGrid" BorderThickness="8,0,8,8" BorderBrush="{StaticResource DocumentBackground}" Grid.Row="2">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-                <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
 
+            <!-- Options Menu-->
+            <Canvas x:Name="xMenuCanvas"/>
 
-                <!-- Options Menu-->
-                <Canvas x:Name="xMenuCanvas"/>
-
-                <!-- Collectionview Content-->
-                <Grid Grid.Column="1" Background="{StaticResource CollectionViewBackground}">
-                    <Grid x:Name="DocumentViewContainerGrid"
+            <!-- Collectionview Content-->
+            <Grid Grid.Column="1" Background="{StaticResource CollectionViewBackground}">
+                <Grid x:Name="DocumentViewContainerGrid"
                       AllowDrop="True"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
                       >
-                        <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
-                    </Grid>
-                    <Grid HorizontalAlignment="Right"
+                    <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                </Grid>
+                <Grid HorizontalAlignment="Right"
                       PointerPressed="ConnectionEllipse_OnPointerPressed"
                       PointerReleased="ConnectionEllipse_OnPointerReleased"
                       ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
                       VerticalAlignment="Center"
                       Background="Transparent"
                       ManipulationMode="None">
-                        <Ellipse x:Name="ConnectionEllipse"
+                    <Ellipse x:Name="ConnectionEllipse"
                              x:FieldModifier="public"
                              Style="{StaticResource xLinkHandle}"
                              VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Grid>
                 </Grid>
             </Grid>
         </Grid>
