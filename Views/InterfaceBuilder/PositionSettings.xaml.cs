@@ -17,8 +17,6 @@ namespace Dash
 {
     public sealed partial class PositionSettings : UserControl
     {
-        private bool _isPointerReleased;
-
         public PositionSettings()
         {
             this.InitializeComponent();
@@ -61,6 +59,8 @@ namespace Dash
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
         }
 
+        #region ValueSlider
+
         private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (sender == xXMovementDetectionGrid)
@@ -86,17 +86,17 @@ namespace Dash
             {
                 foreach (var child in children)
                 {
-                    this.CreateAndRunOpacityAnimation(child, 0, 0.7);
+                    this.CreateAndRunOpacityAnimation(child, 0, 0.5);
                     if ((string)(child as Border)?.Tag == "Deduct")
                     {
                         this.CreateAndRunRepositionAnimation(child, 100);
-                    } else if ((string) (child as Border)?.Tag == "Increment")
+                    }
+                    else if ((string)(child as Border)?.Tag == "Increment")
                     {
                         this.CreateAndRunRepositionAnimation(child, -100);
                     }
                 }
             }
-            _isPointerReleased = false;
             e.Handled = true;
         }
 
@@ -120,7 +120,8 @@ namespace Dash
             {
                 xXMovementDetectionGrid.IsHitTestVisible = true;
                 xXMovementDetectionGrid.Visibility = Visibility.Visible;
-            } else if (sender == xVerticalPositionTextBox)
+            }
+            else if (sender == xVerticalPositionTextBox)
             {
                 xYMovementDetectionGrid.IsHitTestVisible = true;
                 xYMovementDetectionGrid.Visibility = Visibility.Visible;
@@ -133,7 +134,7 @@ namespace Dash
 
             DoubleAnimation opacityAnimation = new DoubleAnimation()
             {
-                SpeedRatio = 1.5,
+                SpeedRatio = 2,
                 From = from,
                 To = to,
                 Duration = duration,
@@ -176,7 +177,7 @@ namespace Dash
                 if (sender == xXMovementDetectionGrid)
                 {
                     (xHorizontalDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHorizontalDeduct, xHorizontalDeduct.Opacity, 0.7);
+                    this.CreateAndRunOpacityAnimation(xHorizontalDeduct, xHorizontalDeduct.Opacity, 0.5);
                     (xHorizontalIncrement.Child as TextBlock).FontSize = 26;
                     this.CreateAndRunOpacityAnimation(xHorizontalIncrement, xHorizontalIncrement.Opacity, 1);
                     double currentValue = 0;
@@ -190,7 +191,7 @@ namespace Dash
                 else if (sender == xYMovementDetectionGrid)
                 {
                     (xVerticalDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xVerticalDeduct, xVerticalDeduct.Opacity, 0.7);
+                    this.CreateAndRunOpacityAnimation(xVerticalDeduct, xVerticalDeduct.Opacity, 0.5);
                     (xVerticalIncrement.Child as TextBlock).FontSize = 26;
                     this.CreateAndRunOpacityAnimation(xVerticalIncrement, xVerticalIncrement.Opacity, 1);
                     double currentValue = 0;
@@ -207,7 +208,7 @@ namespace Dash
                 if (sender == xXMovementDetectionGrid)
                 {
                     (xHorizontalIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHorizontalIncrement, xHorizontalIncrement.Opacity, 0.7);
+                    this.CreateAndRunOpacityAnimation(xHorizontalIncrement, xHorizontalIncrement.Opacity, 0.5);
                     (xHorizontalDeduct.Child as TextBlock).FontSize = 26;
                     this.CreateAndRunOpacityAnimation(xHorizontalDeduct, xHorizontalDeduct.Opacity, 1);
                     double currentValue = 0;
@@ -221,7 +222,7 @@ namespace Dash
                 else if (sender == xYMovementDetectionGrid)
                 {
                     (xVerticalIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xVerticalIncrement, xVerticalIncrement.Opacity, 0.7);
+                    this.CreateAndRunOpacityAnimation(xVerticalIncrement, xVerticalIncrement.Opacity, 0.5);
                     (xVerticalDeduct.Child as TextBlock).FontSize = 26;
                     this.CreateAndRunOpacityAnimation(xVerticalDeduct, xVerticalDeduct.Opacity, 1);
                     double currentValue = 0;
@@ -257,7 +258,8 @@ namespace Dash
             (xVerticalIncrement.Child as TextBlock).FontSize = 20;
             (xHorizontalDeduct.Child as TextBlock).FontSize = 20;
             (xVerticalDeduct.Child as TextBlock).FontSize = 20;
-            _isPointerReleased = true;
         }
+
+        #endregion
     }
 }
