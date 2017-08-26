@@ -68,15 +68,14 @@ namespace Dash
                 var dcb = docSetList[i];
                 var dcbPrototype = dcb.GetAllPrototypes().First();
                 bool skip = false;
-                for (int j = i+1; j < docSet.Count; j++)
+                for (int j = i+1; j < docSet.Count && !skip; j++)
                     if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
                     {
                         skip = true;
-                        break;
                     }
                 if (!skip)
                 {
-                    var deepestRelative = GetDeepestDelegateOf(dcb.GetAllPrototypes().First().GetId());
+                    var deepestRelative = GetDeepestDelegateOf(dcbPrototype.GetId());
                     if (deepestRelative != null && deepestRelative != dcb.GetId())
                         return false;
                 }
