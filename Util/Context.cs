@@ -43,28 +43,43 @@ namespace Dash
         }
 
         /// <summary>
-        /// Tests if the deepest delegate of the base prototype of the document is an ancestor (or equal to) the document.
+        /// Tests if the deepest delegate of the base prototype of the document is an ancestor the document.
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
         public bool HasAncestorOf(DocumentController doc)
         {
             var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
-            return (deepestRelative == doc.GetId() || doc.IsDelegateOf(deepestRelative)); 
+            return doc.IsDelegateOf(deepestRelative); 
         }
 
         /// <summary>
-        /// Tests if every document in the set is either not in the context, or is a deepest delegate of the context
+        /// Loops through every document in the set:
+        ///    if the document has no delegates within the set, then
+        ///        returns false if the deepest relative of the document in the context is a prototype or delegate of the document
         /// </summary>
         /// <param name="docSet"></param>
         /// <returns></returns>
         public bool IsCompatibleWith(HashSet<DocumentController> docSet)
         {
-            foreach (var dcb in docSet)
+            var docSetList = new List<DocumentController>(docSet);
+            for (int i = 0; i < docSetList.Count; i++)
             {
-                var deepestRelative = GetDeepestDelegateOf(dcb.GetAllPrototypes().First().GetId());
-                if (deepestRelative != null && deepestRelative != dcb.GetId())
-                    return false;
+                var dcb = docSetList[i];
+                var dcbPrototype = dcb.GetAllPrototypes().First();
+                bool skip = false;
+                for (int j = i+1; j < docSet.Count; j++)
+                    if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
+                    {
+                        skip = true;
+                        break;
+                    }
+                if (!skip)
+                {
+                    var deepestRelative = GetDeepestDelegateOf(dcb.GetAllPrototypes().First().GetId());
+                    if (deepestRelative != null && deepestRelative != dcb.GetId())
+                        return false;
+                }
             }
             return true;
         }

@@ -435,9 +435,10 @@ namespace Dash
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
             FieldModelController.FieldModelUpdatedHandler handler =
                 delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
-                {
+                {;
                     var newContext = new Context(c);
-                    newContext.AddDocumentContext(this);
+                    if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0) // don't add This if a delegate of This is already in the Context
+                        newContext.AddDocumentContext(this);
                     if (ShouldExecute(newContext, reference.FieldKey))
                     {
                         newContext = Execute(newContext, true);

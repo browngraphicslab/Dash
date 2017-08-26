@@ -124,14 +124,11 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
-            bool updateField = true, updateUI = true;
+            bool updateUI = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
                 {
-                    if (!updateField)
-                        return;
                     updateUI = false;
-                   
                     if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
                         binding.ConvertToXaml(element, property);
@@ -141,12 +138,11 @@ namespace Dash
             DependencyPropertyChangedCallback callback =
                 (sender, dp)   =>
                 {
-                    if (!updateUI)
-                        return;
-                    updateField = false;
-                    if (!binding.ConvertFromXaml( sender.GetValue(dp)))
-                        binding.ConvertToXaml(element, property);
-                    updateField = true;
+                    if (updateUI)
+                    {
+                        if (!binding.ConvertFromXaml(sender.GetValue(dp)))
+                            binding.ConvertToXaml(element, property);
+                    }
                 };
 
             long token = -1;
