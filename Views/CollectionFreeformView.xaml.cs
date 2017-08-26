@@ -109,6 +109,8 @@ namespace Dash
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
+            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
+
             ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
@@ -119,7 +121,6 @@ namespace Dash
             {
                 MakeInkCanvas();
             }
-            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
         }
 
 
@@ -142,7 +143,8 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                DeleteLine(refs[i], _linesToBeDeleted[refs[i]]);
+                var fieldRef = refs[i];
+                DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -193,11 +195,14 @@ namespace Dash
         {
             foreach (var converter in _lineToConverter.Values)
             {
-                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                Debug.Assert(view1 != null);
-                Debug.Assert(view2 != null);
-                if (view1 == docView)
+                DocumentView view1, view2;
+                try
+                {
+                    view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                    view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                }
+                catch (ArgumentException) { return; }
+                if (docView == view1)
                 {
                     if (becomeSmall)
                     {
@@ -209,7 +214,7 @@ namespace Dash
                         converter.Element1 = converter.Temp1;
                     }
                 }
-                else if (view2 == docView)
+                else if (docView == view2)
                 {
                     if (becomeSmall)
                     {
@@ -225,16 +230,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method used to determine with end of the line to manipulate upon drag 
-        /// </summary>
-        private static bool IsCloserToStart(Point point, Point start, Point end)
-        {
-            var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
-            var d2 = Math.Pow(point.X - end.X, 2) + Math.Pow(point.Y - end.Y, 2);
-            return d1 < d2;
-        }
-
-        /// <summary>
         /// Helper method to start changing the connectionLines upon drag 
         /// </summary>
         /// <param name="dropPoint"> origin of manipulation </param>
@@ -245,29 +240,22 @@ namespace Dash
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
             {
                 _converter = _lineToConverter[line];
-                //if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
-                //{
-                //                                                               // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
-                //}
-                //else
-                {
-                    //set up to manipulate connection line again 
-                    ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-                    _connectionLine = line;
-                    _converter.Element2 = null;
-                    _converter.Pos2 = dropPoint;
-                    _currReference = ioReference;
-                    ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+                //set up to manipulate connection line again 
+                ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+                _connectionLine = line;
+                _converter.Element2 = null;
+                _converter.Pos2 = dropPoint;
+                _currReference = ioReference;
+                ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
-                    //remove binding 
-                    var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
-                    DocumentController inputController = refField.GetDocumentController(null);
-                    var rawField = inputController.GetField(refField.FieldKey);
-                    if (rawField as ReferenceFieldModelController != null)
-                        rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
-                    inputController.SetField(refField.FieldKey, rawField, false);
-                    _refToLine.Remove(refField);
-                }
+                //replace referencefieldmodelcontrollers with the raw fieldmodelcontrollers  
+                var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                DocumentController inputController = refField.GetDocumentController(null);
+                var rawField = inputController.GetField(refField.FieldKey);
+                if (rawField as ReferenceFieldModelController != null)
+                    rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
+                inputController.SetField(refField.FieldKey, rawField, false);
+                _refToLine.Remove(refField);
             }
         }
 
@@ -311,6 +299,7 @@ namespace Dash
 
             _connectionLine.Holding += (s, e) =>
             {
+                if (_connectionLine != null) return;
                 ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
             };
 
@@ -468,16 +457,12 @@ namespace Dash
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
-            var delta = transformationDelta.Translate;
 
             //Create initial translate and scale transforms
-            //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
-                X = delta.X,
-                Y = delta.Y
+                X = transformationDelta.Translate.X,
+                Y = transformationDelta.Translate.Y
             };
 
             var scale = new ScaleTransform
@@ -490,13 +475,13 @@ namespace Dash
 
             //Create initial composite transform
             var composite = new TransformGroup();
+            composite.Children.Add(itemsPanelCanvas.RenderTransform);
             composite.Children.Add(scale);
-            composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
             var matrix = new MatrixTransform { Matrix = composite.Value };
 
-            canvas.RenderTransform = matrix;
+            itemsPanelCanvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
             SetTransformOnBackground(composite);
 
@@ -738,27 +723,43 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDrop(sender, e);
+
+            var carrier = ItemsCarrier.Instance;
+
             // if dropping back to the original collection, just reset the payload 
-            if (ItemsCarrier.Instance.StartingCollection == this)
+            if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
                 // delete connection lines logically and graphically 
-                var startingCol = ItemsCarrier.Instance.StartingCollection;
+                var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
                 {
                     var linesToDelete = startingCol.GetLinesToDelete();
                     foreach (var pair in linesToDelete)
                     {
-                        startingCol.DeleteLine(pair.Key, pair.Value); 
+                        startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
+
+                    carrier.Payload.Clear();
+                    carrier.Source = null;
+                    carrier.Destination = null;
                 }
             }
 
-            ViewModel.CollectionViewOnDrop(sender, e);
         }
 
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
 
         #endregion
 
@@ -887,30 +888,37 @@ namespace Dash
 
         private void Collection_DragLeave(object sender, DragEventArgs args)
         {
+            if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
+                
+            _payload = new Dictionary<DocumentView, DocumentController>();
+            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+            //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            //var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            //if (sourceIsRadialMenu)
+            //{
+            //    e.AcceptedOperation = DataPackageOperation.Move;
+            //    e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
 
-            if (sourceIsRadialMenu)
-            {
-                e.AcceptedOperation = DataPackageOperation.Move;
-                e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
+            //}
+            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
 
-            }
 
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
+            if (carrier.StartingCollection == null)
+            {
+                return;
+            }
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
@@ -946,8 +954,6 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        public InkCanvas XInkCanvas;
-        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {

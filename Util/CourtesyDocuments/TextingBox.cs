@@ -93,7 +93,6 @@ namespace Dash
             var referenceToText = GetTextReference(docController);
 
             // create the textblock
-            //var tb = new TextBlock();
             EditableTextBlock tb = new EditableTextBlock
             {
                 TargetFieldReference = referenceToText,
@@ -112,8 +111,6 @@ namespace Dash
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
                 BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
-
-
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
         #region Bindings

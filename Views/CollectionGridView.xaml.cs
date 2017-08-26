@@ -75,7 +75,7 @@ namespace Dash
                 if (ViewModel != null)
                 {
                     xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                    xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                   // xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                     xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                     xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
                 }
@@ -94,7 +94,7 @@ namespace Dash
             if (ViewModel != null)
             {
                 xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+               // xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
                 xGridView.Loaded -= XGridView_OnLoaded;
@@ -125,6 +125,15 @@ namespace Dash
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
         #endregion
 
         #region Activation
@@ -147,5 +156,6 @@ namespace Dash
         }
 
         #endregion
+
     }
 }

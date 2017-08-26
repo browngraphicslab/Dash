@@ -42,18 +42,18 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped">
+                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="{Binding  ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}"/>
+                            <ColumnDefinition Width="{Binding ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}" MinWidth="50"/> 
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
-                        <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+                        <Border Grid.Column="1" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                         <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Type}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
+                            <TextBlock Text="{x:Bind Path=Type}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="10,0,10,0"/>
                         </ScrollViewer>
                     </Grid>
                 </DataTemplate>

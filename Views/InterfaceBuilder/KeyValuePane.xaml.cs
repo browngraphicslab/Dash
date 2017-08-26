@@ -92,7 +92,7 @@ namespace Dash
         private void FocusOn(TextBox tb)
         {
             tb.Focus(FocusState.Programmatic);
-            tb.SelectAll(); 
+            tb.SelectAll();
         }
 
 
@@ -112,8 +112,8 @@ namespace Dash
         private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             Debug.Assert(xAddButton.Content != null, "xAddButton.Content != null");
-            var view = (Viewbox) xAddButton.Content;
-            var icon = ((SymbolIcon) view.Child).Symbol;
+            var view = (Viewbox)xAddButton.Content;
+            var icon = ((SymbolIcon)view.Child).Symbol;
             if (icon == Symbol.Accept)
             {
                 // only execute if all fields are specified 
@@ -132,33 +132,31 @@ namespace Dash
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
-            if (true)
+
+            _documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
+            fmController = _documentControllerDataContext.GetField(key);
+
+            /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
+            if (item == TypeInfo.Number)
             {
-                _documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
-                fmController = _documentControllerDataContext.GetField(key);
+                double number;
+                // if specified type is number only add a new keyvalue pair if the value is a number 
+                if (double.TryParse(xNewValueField.Text, out number))
+                    fmController = new NumberFieldModelController(number);
+                else
+                    return;
             }
-            else
+            else if (item == TypeInfo.Image)
             {
-                if (item == TypeInfo.Number)
-                {
-                    double number;
-                    // if specified type is number only add a new keyvalue pair if the value is a number 
-                    if (double.TryParse(xNewValueField.Text, out number))
-                        fmController = new NumberFieldModelController(number);
-                    else
-                        return;
-                }
-                else if (item == TypeInfo.Image)
-                {
-                    fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
-                }
-                else if (item == TypeInfo.Text)
-                {
-                    fmController = new TextFieldModelController(xNewValueField.Text);
-                }
+                fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
             }
-            //ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
-            //_documentControllerDataContext.SetField(key, fmController, true);
+            else if (item == TypeInfo.Text)
+            {
+                fmController = new TextFieldModelController(xNewValueField.Text);
+            }
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
+            _documentControllerDataContext.SetField(key, fmController, true);
+            */ 
         }
 
         /// <summary>
@@ -169,7 +167,7 @@ namespace Dash
             _addKVPaneOpen = !_addKVPaneOpen;
             if (_addKVPaneOpen)
             {
-                xAddButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.Accept)};
+                xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Accept) };
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -177,7 +175,7 @@ namespace Dash
             }
             else
             {
-                xAddButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.Add)};
+                xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Add) };
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xTypeComboBox.IsEnabled = false;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
@@ -226,8 +224,8 @@ namespace Dash
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xImageGrid.BorderThickness = new Thickness(0, 3, 0, 0);
-                xNewValueField.Text = "ms-appx://Dash/Assets/DefaultImage.png"; 
-                FocusOn(xNewValueField); 
+                xNewValueField.Text = "ms-appx://Dash/Assets/DefaultImage.png";
+                FocusOn(xNewValueField);
             }
             else if (item == TypeInfo.Text || item == TypeInfo.Number)
             {
@@ -253,17 +251,18 @@ namespace Dash
 
             if (value != "" && (TypeInfo)xTypeComboBox.SelectedItem == TypeInfo.Image)
             {
-                Uri outUri; 
+                Uri outUri;
                 if (Uri.TryCreate(value, UriKind.Absolute, out outUri))
                 {
                     xDefaultImage.Source = new BitmapImage(outUri);
-                } else
+                }
+                else
                 {
-                    xDefaultImage.Source = new BitmapImage(new Uri("ms-appx://Dash/Assets/DefaultImage.png")); 
+                    xDefaultImage.Source = new BitmapImage(new Uri("ms-appx://Dash/Assets/DefaultImage.png"));
                 }
             }
         }
-        
+
         /// <summary>
         /// when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position 
         /// </summary>
@@ -288,10 +287,10 @@ namespace Dash
                 _editKey = false;
             else
                 return;
-            
+
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
-            var p = Util.PointTransformFromVisual(posInKVPane, containerGrid); 
+            var p = Util.PointTransformFromVisual(posInKVPane, containerGrid);
 
             _tb = new TextBox();
 
@@ -307,7 +306,7 @@ namespace Dash
             Canvas.SetTop(_tb, p.Y);
             MainPage.Instance.xCanvas.Children.Add(_tb);
             SetTextBoxEvents();
-            FocusOn(_tb); 
+            FocusOn(_tb);
         }
 
         /// <summary>
@@ -332,7 +331,7 @@ namespace Dash
                 };
                 return;
             }
-            
+
             _tb.KeyDown += (s, e) =>
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
@@ -351,7 +350,7 @@ namespace Dash
         }
 
         private KeyFieldContainer _selectedKV = null;
-        private TextBox _tb = null;           
+        private TextBox _tb = null;
         private bool _editKey = false;
 
         /// <summary>
@@ -360,8 +359,17 @@ namespace Dash
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
-         }
+        }
 
-        
+
+        /// <summary>
+        /// Corrects the column widths upon load 
+        /// </summary>
+        private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            for (int i = 0; i < 3; i++)
+                xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
+        }
+       
     }
 }

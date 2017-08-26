@@ -5,8 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -16,6 +20,7 @@ namespace Dash
         private double _cellSize;
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
+        private static SelectionElement _previousDragEntered;
 
         public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
 
@@ -28,7 +33,7 @@ namespace Dash
         public bool IsInterfaceBuilder
         {
             get { return _isInterfaceBuilder; }
-            private set { SetProperty(ref _isInterfaceBuilder, value); } 
+            private set { SetProperty(ref _isInterfaceBuilder, value); }
         }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -40,7 +45,6 @@ namespace Dash
         public abstract void AddDocument(DocumentController document, Context context);
         public abstract void RemoveDocuments(List<DocumentController> documents);
         public abstract void RemoveDocument(DocumentController document);
-
 
         private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
@@ -72,20 +76,20 @@ namespace Dash
         public double CellSize
         {
             get { return _cellSize; }
-            protected set { SetProperty(ref _cellSize, value); } 
+            protected set { SetProperty(ref _cellSize, value); }
         }
 
         public bool CanDragItems
         {
-            get { return _canDragItems; } 
-            set { SetProperty(ref _canDragItems, value); } 
-// 
+            get { return _canDragItems; }
+            set { SetProperty(ref _canDragItems, value); }
+            // 
         }
 
         public ListViewSelectionMode ItemSelectionMode
         {
-            get { return _itemSelectionMode; } 
-            set { SetProperty(ref _itemSelectionMode, value); } 
+            get { return _itemSelectionMode; }
+            set { SetProperty(ref _itemSelectionMode, value); }
         }
 
         #endregion
@@ -109,7 +113,7 @@ namespace Dash
         /// <summary>
         /// fired by the starting collection when a drag event is over
         /// </summary>
-        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
 
@@ -118,7 +122,7 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-            if (args.DropResult == DataPackageOperation.Move)
+            if (e.DropResult == DataPackageOperation.Move)                             
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
@@ -155,7 +159,6 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                carrier.Destination = this;
                 if (carrier.Source.Equals(carrier.Destination))
                 {
                     return; // we don't want to drop items on ourself
@@ -166,12 +169,9 @@ namespace Dash
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
-                carrier.Payload.Clear();
-                carrier.Source = null;
-                carrier.Destination = null;
             }
-
             SetGlobalHitTestVisiblityOnSelectedItems(false);
+            this.RemoveDragDropIndication(sender as SelectionElement);
         }
 
         /// <summary>
@@ -179,10 +179,11 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            this.HighlightPotentialDropTarget(sender as SelectionElement);
+
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-
             if (sourceIsRadialMenu)
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
@@ -192,6 +193,7 @@ namespace Dash
                 e.DragUIOverride.IsGlyphVisible = false;
                 
             }
+
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
             {
@@ -209,6 +211,76 @@ namespace Dash
                 e.AcceptedOperation = DataPackageOperation.Move;
                 e.DragUIOverride.IsContentVisible = true;
             }
+
+            e.Handled = true; 
+        }
+
+        /// <summary>
+        /// Fired by a collection when the item being dragged is no longer over it
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            var element = sender as SelectionElement;
+            if (element != null)
+            {
+                this.ChangeIndicationColor(element, Colors.Transparent);
+                element.HasDragLeft = true;
+                var parent = element.ParentSelectionElement;
+                // if the current collection fires a dragleave event and its parent hasn't
+                if (!parent.HasDragLeft)
+                {
+                    this.ChangeIndicationColor(parent, Colors.LightSteelBlue);
+                }
+            }
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
+        /// </summary>
+        /// <param name="element"></param>
+        private void HighlightPotentialDropTarget(SelectionElement element)
+        {
+            // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
+            if (element != null)
+            {
+                // only one collection should be highlighted at a time
+                if (_previousDragEntered != null)
+                {
+                    this.ChangeIndicationColor(_previousDragEntered, Colors.Transparent);
+                }
+                element.HasDragLeft = false;
+                _previousDragEntered = element;
+                this.ChangeIndicationColor(element, Colors.LightSteelBlue);
+            }
+        }
+
+        /// <summary>
+        /// Remove highlight from target drop collection and border from DocumentView being dragged
+        /// </summary>
+        /// <param name="element"></param>
+        private void RemoveDragDropIndication(SelectionElement element)
+        {
+            // remove drop target indication when doc is dropped
+            if (element != null)
+            {
+                this.ChangeIndicationColor(element, Colors.Transparent);
+                _previousDragEntered = null;
+            }
+
+            // remove border from DocumentView once it is dropped onto a collection
+            if (DocumentView.DragDocumentView != null)
+                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
+            DocumentView.DragDocumentView = null;
+        }
+
+        private void ChangeIndicationColor(SelectionElement element, Color fill)
+        {
+            (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
 
         #endregion
