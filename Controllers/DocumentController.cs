@@ -612,7 +612,7 @@ namespace Dash
             {
                 return;
             }
-            if (args.Context.IsApplicableTo(this)) 
+            if (args.Context.HasAncestorOf(this)) 
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);

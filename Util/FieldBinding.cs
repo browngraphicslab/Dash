@@ -102,7 +102,7 @@ namespace Dash
                 (sender, args) =>
                 {
                     var prototype = binding.Document.GetPrototype();
-                    if (args.Context.IsContextCompatible(binding.Context))
+                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
                         binding.ConvertToXaml(element, property);
                     }
@@ -132,7 +132,7 @@ namespace Dash
                         return;
                     updateUI = false;
                    
-                    if (args.Context.IsContextCompatible(binding.Context))
+                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
                         binding.ConvertToXaml(element, property);
                     }

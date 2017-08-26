@@ -42,25 +42,31 @@ namespace Dash
             }
         }
 
-        public bool IsApplicableTo(DocumentController doc)
+        /// <summary>
+        /// Tests if the deepest delegate of the base prototype of the document is an ancestor (or equal to) the document.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        public bool HasAncestorOf(DocumentController doc)
         {
-            var prototype = GetDeepestDelegateOf((doc.GetPrototype() ?? doc).GetId());
-            return DocContextList.Contains(doc) || // document is explicitly in the context 
-                   (prototype == doc.GetId() ||  doc.IsDelegateOf(prototype)); // document is equal to or a delegate of the deepest delegate of its prototype in the context
-         }
+            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
+            return (deepestRelative == doc.GetId() || doc.IsDelegateOf(deepestRelative)); 
+        }
 
-        public bool IsContextCompatible(Context context)
+        /// <summary>
+        /// Tests if every document in the set is either not in the context, or is a deepest delegate of the context
+        /// </summary>
+        /// <param name="docSet"></param>
+        /// <returns></returns>
+        public bool IsCompatibleWith(HashSet<DocumentController> docSet)
         {
-            bool valid2 = context.DocContextList.Where((doc) => !IsApplicableTo(doc)).Count() == 0;// see if context is valid for every document in the context
-            
-            if (valid2)
-                foreach (var dcb in DocContextList) // if it is, then everything in the context must ...??
-                {
-                    var prototype = dcb.GetPrototype() ?? dcb;
-                    if (!context.DocContextList.Contains(dcb) && context.GetDeepestDelegateOf(prototype.GetId()) != dcb.GetId())
-                        valid2 = false;
-                }
-            return valid2;
+            foreach (var dcb in docSet)
+            {
+                var deepestRelative = GetDeepestDelegateOf(dcb.GetAllPrototypes().First().GetId());
+                if (deepestRelative != null && deepestRelative != dcb.GetId())
+                    return false;
+            }
+            return true;
         }
 
         public void AddDocumentContext(DocumentController document)
@@ -91,10 +97,14 @@ namespace Dash
 
         public string GetDeepestDelegateOf(string referenceDocId)
         {
+            var found = false;
             foreach (var doc in _documentContextList.Reverse())
-                if (doc.IsDelegateOf(referenceDocId))
+                if (doc.GetId() == referenceDocId || doc.IsDelegateOf(referenceDocId))
+                {
+                    found = true;
                     referenceDocId = doc.GetId();
-            return referenceDocId;
+                }
+            return found ? referenceDocId : null;
         }
 
         public static Context SafeInit(Context context)
