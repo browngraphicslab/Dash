@@ -289,7 +289,7 @@ namespace Dash
             for (var i = 0; i < 100; i++)
             {
                 var udoc = PrototypeUmp.MakeDelegate();
-                udoc.SetField(UmpNameKey, new TextFieldModelController("Matt" + new Random().Next()), true);
+                udoc.SetField(UmpNameKey, new TextFieldModelController("Matt" + i), true);
                 udoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(udoc), true);
                 udoc.SetField(AgeKey, new NumberFieldModelController(16), true);
                 var ump2Layout = PrototypeUmpLayout.MakeDelegate();
