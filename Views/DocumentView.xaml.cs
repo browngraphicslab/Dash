@@ -40,7 +40,6 @@ namespace Dash
         public static DocumentView DragDocumentView;
 
         public bool ProportionalScaling { get; set; }
-        public ManipulationControls Manipulator { get { return manipulator; } }
 
         public static int dvCount = 0;
 
@@ -108,17 +107,17 @@ namespace Dash
         //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         //{
 
-            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            //if (view == null) return; // we can't always assume we're on a collection		
+        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+        //if (view == null) return; // we can't always assume we're on a collection		
 
-            //view.CanLink = false;
-            //args.Handled = true;
+        //view.CanLink = false;
+        //args.Handled = true;
 
-            //view.CancelDrag(args.Pointer); 
+        //view.CancelDrag(args.Pointer); 
 
-            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
         //}
 
@@ -162,7 +161,8 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(0, 0);
+            //var scaleCenter = new Point(0, 0);
+            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2); 
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -301,7 +301,8 @@ namespace Dash
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
                 xTextView.Visibility = Visibility.Visible;
-            } else
+            }
+            else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
@@ -342,7 +343,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(250, 250);
-                IsLowestSelected = false; 
+                IsLowestSelected = false;
             }
             e.Handled = true; // prevent propagating
         }

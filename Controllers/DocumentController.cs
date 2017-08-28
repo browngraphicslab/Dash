@@ -468,7 +468,7 @@ namespace Dash
         public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck = true)
         {
             // check field type compatibility
-            if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;
+            //if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;                                      
 
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
@@ -500,7 +500,7 @@ namespace Dash
             if (cont == null) return true;
             var rawField = field.DereferenceToRoot(null);
 
-            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField.TypeInfo;
+            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
 
         /// <summary>
