@@ -73,18 +73,18 @@ namespace Dash
 
         private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (sender == xXMovementDetectionGrid)
+            if (sender == xWidthMovementDetectionGrid)
             {
                 xWidthTextBox.Focus(FocusState.Programmatic);
-                xXMovementDetectionGrid.IsHitTestVisible = false;
-                xXMovementDetectionGrid.Visibility = Visibility.Collapsed;
+                xWidthMovementDetectionGrid.IsHitTestVisible = false;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Collapsed;
 
             }
-            else if (sender == xYMovementDetectionGrid)
+            else if (sender == xHeightMovementDetectionGrid)
             {
                 xHeightTextBox.Focus(FocusState.Programmatic);
-                xYMovementDetectionGrid.IsHitTestVisible = false;
-                xYMovementDetectionGrid.Visibility = Visibility.Collapsed;
+                xHeightMovementDetectionGrid.IsHitTestVisible = false;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -128,13 +128,13 @@ namespace Dash
         {
             if (sender == xWidthTextBox)
             {
-                xXMovementDetectionGrid.IsHitTestVisible = true;
-                xXMovementDetectionGrid.Visibility = Visibility.Visible;
+                xWidthMovementDetectionGrid.IsHitTestVisible = true;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Visible;
             }
             else if (sender == xHeightTextBox)
             {
-                xYMovementDetectionGrid.IsHitTestVisible = true;
-                xYMovementDetectionGrid.Visibility = Visibility.Visible;
+                xHeightMovementDetectionGrid.IsHitTestVisible = true;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -184,73 +184,81 @@ namespace Dash
             var deltaX = e.Delta.Translation.X;
             if (deltaX > 0)
             {
-                if (sender == xXMovementDetectionGrid)
+                if (sender == xWidthMovementDetectionGrid)
                 {
-                    (xWidthDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xWidthDeduct, xWidthDeduct.Opacity, 0.5);
-                    (xWidthIncrement.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xWidthIncrement, xWidthIncrement.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xWidthTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xWidthTextBox.Text);
-                    }
-                    xWidthTextBox.SetValue(TextBox.TextProperty,
-                        (currentValue + 1).ToString());
+                    this.ChangeTextBoxText(xWidthMovementDetectionGrid, xWidthTextBox, true, false);
                 }
-                else if (sender == xYMovementDetectionGrid)
+                else if (sender == xHeightMovementDetectionGrid)
                 {
-                    (xHeightDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHeightDeduct, xHeightDeduct.Opacity, 0.5);
-                    (xHeightIncrement.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xHeightIncrement, xHeightIncrement.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xHeightTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xHeightTextBox.Text);
-                    }
-                    xHeightTextBox.SetValue(TextBox.TextProperty,
-                        (currentValue + 1).ToString());
+                    this.ChangeTextBoxText(xHeightMovementDetectionGrid, xHeightTextBox, true, false);
                 }
             }
             if (deltaX < 0)
             {
-                if (sender == xXMovementDetectionGrid)
+                if (sender == xWidthMovementDetectionGrid)
                 {
-                    (xWidthIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xWidthIncrement, xWidthIncrement.Opacity, 0.5);
-                    (xWidthDeduct.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xWidthDeduct, xWidthDeduct.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xWidthTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xWidthTextBox.Text);
-                    }
-                    if (currentValue != 0)
-                    {
-                        xWidthTextBox.SetValue(TextBox.TextProperty,
-                            (currentValue - 1).ToString());
-                    }
+                    this.ChangeTextBoxText(xWidthMovementDetectionGrid, xWidthTextBox, false, false);
                 }
-                else if (sender == xYMovementDetectionGrid)
+                else if (sender == xHeightMovementDetectionGrid)
                 {
-                    (xHeightIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHeightIncrement, xHeightIncrement.Opacity, 0.5);
-                    (xHeightDeduct.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xHeightDeduct, xHeightDeduct.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xHeightTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xHeightTextBox.Text);
-                    }
+                    this.ChangeTextBoxText(xHeightMovementDetectionGrid, xHeightTextBox, false, false);
+                }
+            }
+            e.Handled = true;
+        }
+
+        private void ChangeTextBoxText(Grid sender, TextBox textbox, bool isIncrement, bool canBeNegative)
+        {
+            var children = sender.Children;
+            Border increment = null;
+            Border deduct = null;
+            foreach (var child in children)
+            {
+                if ((string)(child as Border).Tag == "Increment")
+                {
+                    increment = child as Border;
+                }
+                else if ((string)(child as Border).Tag == "Deduct")
+                {
+                    deduct = child as Border;
+                }
+            }
+
+
+            double currentValue = 0;
+            if (!textbox.Text.Equals(string.Empty))
+            {
+                currentValue = double.Parse(textbox.Text);
+            }
+            if (isIncrement)
+            {
+                (deduct.Child as TextBlock).FontSize = 20;
+                this.CreateAndRunOpacityAnimation(deduct, deduct.Opacity, 0.5);
+                (increment.Child as TextBlock).FontSize = 26;
+                this.CreateAndRunOpacityAnimation(increment, increment.Opacity, 1);
+                textbox.SetValue(TextBox.TextProperty,
+                    (currentValue + 1).ToString());
+            }
+            else
+            {
+                (increment.Child as TextBlock).FontSize = 20;
+                this.CreateAndRunOpacityAnimation(increment, increment.Opacity, 0.5);
+                (deduct.Child as TextBlock).FontSize = 26;
+                this.CreateAndRunOpacityAnimation(deduct, deduct.Opacity, 1);
+                if (canBeNegative)
+                {
+                    textbox.SetValue(TextBox.TextProperty,
+                        (currentValue - 1).ToString());
+                }
+                else
+                {
                     if (currentValue != 0)
                     {
-                        xHeightTextBox.SetValue(TextBox.TextProperty,
+                        textbox.SetValue(TextBox.TextProperty,
                             (currentValue - 1).ToString());
                     }
                 }
             }
-            e.Handled = true;
         }
 
         private void XMovementDetectionGrid_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
