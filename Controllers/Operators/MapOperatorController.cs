@@ -21,10 +21,10 @@ namespace Dash
         {
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [InputKey] = TypeInfo.List,
-            [OperatorKey] = TypeInfo.Operator
+            [InputKey] = new IOInfo(TypeInfo.List, true),
+            [OperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

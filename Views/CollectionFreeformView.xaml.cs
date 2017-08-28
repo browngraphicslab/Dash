@@ -752,6 +752,15 @@ namespace Dash
 
         }
 
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
 
         #endregion
 
@@ -883,9 +892,12 @@ namespace Dash
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
+                
+            _payload = new Dictionary<DocumentView, DocumentController>();
+            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
             //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
@@ -942,8 +954,6 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        public InkCanvas XInkCanvas;
-        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {

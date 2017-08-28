@@ -42,6 +42,47 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Tests if the deepest delegate of the base prototype of the document is an ancestor the document.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        public bool HasAncestorOf(DocumentController doc)
+        {
+            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
+            return doc.IsDelegateOf(deepestRelative); 
+        }
+
+        /// <summary>
+        /// Loops through every document in the set:
+        ///    if the document has no delegates within the set, then
+        ///        returns false if the deepest relative of the document in the context is a prototype or delegate of the document
+        /// </summary>
+        /// <param name="docSet"></param>
+        /// <returns></returns>
+        public bool IsCompatibleWith(HashSet<DocumentController> docSet)
+        {
+            var docSetList = new List<DocumentController>(docSet);
+            for (int i = 0; i < docSetList.Count; i++)
+            {
+                var dcb = docSetList[i];
+                var dcbPrototype = dcb.GetAllPrototypes().First();
+                bool skip = false;
+                for (int j = i+1; j < docSet.Count && !skip; j++)
+                    if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
+                    {
+                        skip = true;
+                    }
+                if (!skip)
+                {
+                    var deepestRelative = GetDeepestDelegateOf(dcbPrototype.GetId());
+                    if (deepestRelative != null && deepestRelative != dcb.GetId())
+                        return false;
+                }
+            }
+            return true;
+        }
+
         public void AddDocumentContext(DocumentController document)
         {
             _documentContextList.Add(document);
@@ -70,10 +111,14 @@ namespace Dash
 
         public string GetDeepestDelegateOf(string referenceDocId)
         {
+            var found = false;
             foreach (var doc in _documentContextList.Reverse())
-                if (doc.IsDelegateOf(referenceDocId))
+                if (doc.GetId() == referenceDocId || doc.IsDelegateOf(referenceDocId))
+                {
+                    found = true;
                     referenceDocId = doc.GetId();
-            return referenceDocId;
+                }
+            return found ? referenceDocId : null;
         }
 
         public static Context SafeInit(Context context)

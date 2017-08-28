@@ -497,16 +497,22 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
+            Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
+            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
             var operatorButton = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionButton = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentButton = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
+            var searchButton = new RadialActionModel("Search", Symbol.Find){CollectionDropAction = onSearchAdd, IsDraggable = true};
+            var notesButton = new RadialActionModel("Notes", Symbol.Page){CollectionDropAction = addNotes, IsDraggable = true};
 
             AddItems(new List<RadialItemModel>
             {
                 operatorButton,
+                searchButton,
                 collectionButton,
                 documentButton,
+                notesButton,
                 inkOptions
             });
         }

@@ -27,12 +27,12 @@ namespace Dash
         {
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [InputCollection] = TypeInfo.Collection,
-            [FilterTypeKey] = TypeInfo.Text,
-            [KeyNameKey] = TypeInfo.Text,
-            [FilterValueKey] = TypeInfo.Text
+            [InputCollection] = new IOInfo(TypeInfo.Collection, true),
+            [FilterTypeKey] = new IOInfo(TypeInfo.Text, true),
+            [KeyNameKey] = new IOInfo(TypeInfo.Text, true),
+            [FilterValueKey] = new IOInfo(TypeInfo.Text, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -35,11 +36,13 @@ namespace Dash
 
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+        // the document view that is being dragged
+        public static DocumentView DragDocumentView;
 
         public bool ProportionalScaling { get; set; }
 
-
         public static int dvCount = 0;
+
         public DocumentView()
         {
             InitializeComponent();
@@ -53,6 +56,7 @@ namespace Dash
 
             // set bounds
             MinWidth = 100;
+
             MinHeight = 25;
 
             Loaded += This_Loaded;
@@ -79,9 +83,13 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped -= ExpandContract_DoubleTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
@@ -90,10 +98,6 @@ namespace Dash
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
             }
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
 
@@ -344,6 +348,7 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
+
         #region Menu
 
         public void DeleteDocument()
@@ -441,7 +446,9 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-
+            this.CanDrag = ViewModel.IsLowestSelected;
+            this.DragStarting -= ViewModel.DocumentView_DragStarting;
+            this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
@@ -449,6 +456,7 @@ namespace Dash
                     SetUpMenu();
                 }
                 ViewModel?.OpenMenu();
+                _docMenu.AddAndPlayOpenAnimation();
             }
             else
             {
@@ -457,6 +465,5 @@ namespace Dash
         }
 
         #endregion
-
     }
 }
