@@ -34,9 +34,9 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>()
         {
-            [InputOperatorKey] = TypeInfo.Operator
+            [InputOperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
@@ -47,7 +47,7 @@ namespace Dash
         public void ResetInputKeys()
         {
             Inputs.Clear();
-            Inputs[InputOperatorKey] = TypeInfo.Operator;
+            Inputs[InputOperatorKey] = new IOInfo(TypeInfo.Operator, true);
         }
 
         public void UpdateInputs(OperatorFieldModelController controller)
@@ -62,7 +62,7 @@ namespace Dash
             //Inputs[InputOperatorKey] = TypeInfo.Operator;
             foreach (var controllerInput in controller.Inputs)
             {
-                Inputs[controllerInput.Key] = TypeInfo.Collection;
+                Inputs[controllerInput.Key] = new IOInfo(TypeInfo.Collection, true);
             }
         }
 

@@ -902,7 +902,7 @@ namespace Dash
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
             //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
@@ -959,8 +959,6 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        public InkCanvas XInkCanvas;
-        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {
@@ -975,6 +973,5 @@ namespace Dash
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
-
     }
 }

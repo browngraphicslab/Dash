@@ -57,11 +57,6 @@ namespace Dash
 
             // set bounds
             MinWidth = 100;
-            
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
 
             MinHeight = 25;
 
@@ -89,9 +84,13 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped -= ExpandContract_DoubleTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
@@ -100,10 +99,6 @@ namespace Dash
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
             }
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
 
@@ -451,6 +446,7 @@ namespace Dash
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
             this.CanDrag = ViewModel.IsLowestSelected;
+            this.DragStarting -= ViewModel.DocumentView_DragStarting;
             this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
@@ -459,6 +455,7 @@ namespace Dash
                     SetUpMenu();
                 }
                 ViewModel?.OpenMenu();
+                _docMenu.AddAndPlayOpenAnimation();
             }
             else
             {

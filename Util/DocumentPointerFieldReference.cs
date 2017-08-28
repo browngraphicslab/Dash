@@ -23,7 +23,7 @@ namespace Dash
 
         public override FieldReference Resolve(Context context)
         {
-            string docId = context.GetDeepestDelegateOf(GetDocumentController(context).GetId());
+            string docId = context.GetDeepestDelegateOf(GetDocumentController(context).GetId()) ?? GetDocumentController(context).GetId();
             return new DocumentFieldReference(docId, FieldKey);
         }
 
