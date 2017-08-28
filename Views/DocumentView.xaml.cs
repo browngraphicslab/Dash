@@ -455,6 +455,7 @@ namespace Dash
                     SetUpMenu();
                 }
                 ViewModel?.OpenMenu();
+                _docMenu.AddAndPlayOpenAnimation();
             }
             else
             {

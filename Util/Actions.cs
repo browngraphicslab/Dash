@@ -47,6 +47,7 @@ namespace Dash
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
+
         public static void ChangeInkColor(Color color, RadialMenu menu = null)
         {
             GlobalInkSettings.Color = color;
@@ -307,5 +308,6 @@ namespace Dash
         {
             GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
         }
+
     }
 }
