@@ -34,20 +34,20 @@ namespace Dash
         public IValueConverter Converter;
         public object ConverterParameter;
         
-        public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
+        public void ConvertToXaml(FrameworkElement element, DependencyProperty property)
         {
             var refField = Document.GetField(Key) as ReferenceFieldModelController;
-            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
+            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(Context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
             {
-                element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
+                element.SetValue(property, refField.GetDocumentController(Context).GetField(refField.FieldKey).GetValue(Context));
             }
             else
             {
-                var field = Document.GetDereferencedField<T>(Key, context);
+                var field = Document.GetDereferencedField<T>(Key, Context);
                 if (field != null)
                 {
                     var converter = GetConverter != null ? GetConverter(field) : Converter;
-                    var fieldData = field.GetValue(context);
+                    var fieldData = field.GetValue(Context);
                     var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
                     if (xamlData != null)
                     {
@@ -93,7 +93,7 @@ namespace Dash
 
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
-            binding.ConvertToXaml(element, property, binding.Context);
+            binding.ConvertToXaml(element, property);
         }
 
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
@@ -104,8 +104,7 @@ namespace Dash
                     var prototype = binding.Document.GetPrototype();
                     if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                        binding.ConvertToXaml(element, property);
                     }
                 };
             if (element.IsInVisualTree())
@@ -132,8 +131,7 @@ namespace Dash
                     updateUI = false;
                     if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                        binding.ConvertToXaml(element, property);
                     }
                     updateUI = true;
                 };
@@ -143,7 +141,7 @@ namespace Dash
                     if (updateUI)
                     {
                         if (!binding.ConvertFromXaml(sender.GetValue(dp)))
-                            binding.ConvertToXaml(element, property, binding.Context);
+                            binding.ConvertToXaml(element, property);
                     }
                 };
 
@@ -155,7 +153,7 @@ namespace Dash
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                binding.ConvertToXaml(element, property, binding.Context);
+                binding.ConvertToXaml(element, property);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)
