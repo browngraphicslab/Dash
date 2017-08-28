@@ -22,11 +22,12 @@
                     <ColumnDefinition Width="77"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="requestTypePicker" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="77" SelectedIndex="0">
+                <ComboBox x:Name="requestTypePicker" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="77" SelectedIndex="0" Visibility="Collapsed" DropDownClosed="RequestTypePicker_OnDropDownClosed">
                     <ComboBoxItem Content="GET"/>
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
-                <TextBox  Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="#FF474747"  />
+                <Button x:Name="xRequestTypeButton" Background="{StaticResource AccentGreen}" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="77" Content="Get" Tapped="xRequestTypeButton_OnTapped"/>
+                <TextBox  Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0" TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="White"  />
             </Grid>
             <local:ApiCreatorAuthenticationDisplay x:Name="xAuthControl" Margin="0,0,0,12" />
             <local:ApiCreatorPropertyGenerator x:Name="xHeaderControl" Margin="0,0,0,12" TitleTag="HEADERS"/>

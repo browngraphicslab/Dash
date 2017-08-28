@@ -28,10 +28,10 @@ namespace Dash {
         private void collapseStackPanel() {
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
                 xCollapseStackPanel.Visibility = Visibility.Collapsed;
-                xCollapseButtonText.Text = "+";
+                xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
-                xCollapseButtonText.Text = "-";
+                xCollapseButtonText.Text = "6";
             }
         }
 

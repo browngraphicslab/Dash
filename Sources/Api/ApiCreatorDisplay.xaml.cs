@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using RadialMenuControl.UserControl;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -165,6 +166,18 @@ namespace Dash
             var reference = (args.NewValue as FieldReference);
             _operatorDocument = reference.GetDocumentController(null);
             _operatorController = _operatorDocument.GetField(reference.FieldKey) as ApiOperatorController;
+        }
+
+        private void xRequestTypeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            requestTypePicker.IsDropDownOpen = true;
+            requestTypePicker.Visibility = Visibility.Visible;
+        }
+
+        private void RequestTypePicker_OnDropDownClosed(object sender, object e)
+        {
+            requestTypePicker.Visibility = Visibility.Collapsed;
+            xRequestTypeButton.Content = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
         }
     }
 }

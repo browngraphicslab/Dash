@@ -12,7 +12,7 @@
     <StackPanel  Background="Transparent" HorizontalAlignment="Stretch">
         <Grid Background="{StaticResource WindowsBlue}">
             <TextBlock Text="AUTHENTICATION" TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButtonText_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            <TextBlock Name="xCollapseButtonText"  HorizontalAlignment="Right" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped"  Margin="0,0,10,4" Text="-" Foreground="White"></TextBlock>
+            <TextBlock Name="xCollapseButtonText"  HorizontalAlignment="Right" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped"  Margin="0,0,10,4" FontFamily="Marlett" Text="5" Foreground="White"></TextBlock>
         </Grid>
         <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" Margin="10" BorderBrush="DarkSlateGray" BorderThickness="2">
             <Grid Name="xTopAPIURL" Margin="0,0,0,10">
