@@ -9,26 +9,26 @@
     xmlns:generic="using:System.Collections.Generic"
     xmlns:objectModel="using:System.Collections.ObjectModel"
     mc:Ignorable="d"
-    d:DesignHeight="350" d:DesignWidth="340">
+    d:DesignHeight="294" d:DesignWidth="309">
 
 
-    <Grid Width="340" Height="350">
+    <Grid Width="309" Height="294">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="279"></ColumnDefinition>
-            <ColumnDefinition Width="40.5"></ColumnDefinition>
+            <ColumnDefinition Width="30"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30.5"></RowDefinition>
+            <RowDefinition Height="15"></RowDefinition>
             <RowDefinition Height="279"></RowDefinition>
-            <RowDefinition Height="30.5"></RowDefinition>
         </Grid.RowDefinitions>
+        <InkCanvas x:Name="XInkCanvas" Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="2" Margin="-55,-55,0,0"/>
         <local:RadialColorPicker Grid.Column="0" Grid.Row="1"></local:RadialColorPicker>
-        <local:RadialMenuSlider x:Name="SizeSlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="30"
+        <local:RadialMenuSlider x:Name="SizeSlider" Grid.Row="1" Width="200" StartAngle="30"
                                     Angle="30"
                                     InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="SizeSlider_OnValueChanged" MinValue="2" MaxValue="30" Symbol="{x:Bind SizeSymbol}">
         </local:RadialMenuSlider>
-        <local:RadialMenuSlider x:Name="BrightnessSlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="72.5"
+        <local:RadialMenuSlider x:Name="BrightnessSlider" Grid.Row="1" StartAngle="72.5"
                                     Angle="30"
                                     InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="BrightnessSlider_OnValueChanged" MinValue="0" MaxValue="100" Symbol="{x:Bind BrightnessSymbol}">

@@ -15,7 +15,7 @@
     <userControl:Floating x:Name="Floating" IsBoundByParent="True" IsBoundByScreen="True">
         <Grid x:Name="Grid" Height="250">
             <local:InkSettingsPane x:Name="SettingsPane" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Center" ManipulationMode="None" x:DeferLoadStrategy="Lazy"></local:InkSettingsPane>
-            <userControl:RadialMenu x:Name="RadialMenu" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,0">
+            <userControl:RadialMenu x:Name="RadialMenu" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,0" CenterButtonTapped="RadialMenu_OnCenterButtonTapped">
                 <userControl:RadialMenu.Buttons>
                     <components:RadialMenuButton x:Name="Ink" Label="Ink" IconSymbol="{x:Bind InkMenuSymbol}" Type="Simple" InnerArcPressed="Ink_OnInnerArcPressed">
                         <components:RadialMenuButton.Submenu>
@@ -36,8 +36,10 @@
                     <components:RadialMenuButton x:Name="Document" Label="Document" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
                     <components:RadialMenuButton x:Name="Operator" Label="Operator" IconSymbol="{x:Bind OperatorSymbol}"></components:RadialMenuButton>
                     <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
+                    <!--<components:RadialMenuButton x:Name="ImportButton" Label="Import" IconSymbol="{x:Bind FilePickerSymbol}" InnerArcReleased="FilePickerButton_OnInnerArcReleased"></components:RadialMenuButton>-->
                 </userControl:RadialMenu.Buttons>
             </userControl:RadialMenu>
+            
         </Grid>
     </userControl:Floating>
 

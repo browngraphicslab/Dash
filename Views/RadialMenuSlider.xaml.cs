@@ -20,9 +20,7 @@ namespace Dash
 {
     public sealed partial class RadialMenuSlider : UserControl
     {
-        private double MinAngle;
-        private double MaxAngle;
-        public double AngleBuffer = 1.5;
+        
 
         public static readonly DependencyProperty InnerRadiusProperty =
             DependencyProperty.Register("InnerRadius", typeof(double), typeof(RadialMenuSlider), null);
@@ -40,11 +38,6 @@ namespace Dash
             DependencyProperty.Register("RelativeValue", typeof(double), typeof(RadialMenuSlider), null);
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register("Value", typeof(double), typeof(RadialMenuSlider), null);
-
-        private Point _trackerPoint;
-        private double _value;
-        private Symbol? _symbol;
-        private SymbolIcon _icon;
 
 
         public double InnerRadius
@@ -83,9 +76,6 @@ namespace Dash
             }
         }
 
-        public double MinValue { get; set; } = 0;
-        public double MaxValue { get; set; } = 1;
-
         public double RelativeValue
         {
             get { return (double)GetValue(RelativeValueProperty); }
@@ -117,10 +107,6 @@ namespace Dash
 
         public event RadialSliderValueChangedEventHandler ValueChanged;
 
-
-        public Point EndPoint { get; set; }
-        public Point StartPoint { get; set; }
-
         public Symbol? Symbol
         {
             get { return _symbol; }
@@ -131,6 +117,17 @@ namespace Dash
             }
         }
 
+        public double MinValue { get; set; } = 0;
+        public double MaxValue { get; set; } = 1;
+        private Point EndPoint { get; set; }
+        private Point StartPoint { get; set; }
+        private double MinAngle;
+        private double MaxAngle;
+        private double AngleBuffer = 1.5;
+        private Point _trackerPoint;
+        private double _value;
+        private Symbol? _symbol;
+        private SymbolIcon _icon;
 
         public RadialMenuSlider()
         {

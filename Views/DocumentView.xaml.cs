@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Input;
@@ -16,6 +20,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Views;
 using Windows.UI.Xaml.Shapes;
+using Dash.Sources.FilePicker.PDF;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -56,6 +61,7 @@ namespace Dash
             
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
+            this.Drop += DocumentDropHelper.HandleDrop;
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -447,5 +453,13 @@ namespace Dash
 
         #endregion
 
+        private void DocumentView_OnDragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy | DataPackageOperation.Move;
+            }
+        }
+        
     }
 }

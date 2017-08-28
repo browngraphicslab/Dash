@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <Canvas x:Name="Canvas">
-        <Path x:Name="OuterPath" RenderTransformOrigin="0.5,0.5" Stroke="{StaticResource WindowsBlue}"
+        <Path x:Name="OuterPath" RenderTransformOrigin="0.5,0.5" Stroke="LightGray"
               StrokeThickness="{x:Bind Thickness}" UseLayoutRounding="False" Stretch="None" StrokeEndLineCap="Round"
               StrokeStartLineCap="Round" ManipulationStarted="Dragger_OnManipulationStarted"
               ManipulationDelta="Dragger_OnManipulationDelta" ManipulationMode="TranslateX, TranslateY"

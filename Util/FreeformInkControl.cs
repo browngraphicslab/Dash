@@ -323,6 +323,7 @@ namespace Dash
             InkRecognitionHelper.AddStrokeData(new List<InkStroke>(e.Strokes));
             if(_analyzeStrokes) InkRecognitionHelper.RecognizeInk();
             _analyzeStrokes = false;
+            
         }
 
 

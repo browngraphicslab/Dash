@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -12,6 +14,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Models;
 using DashShared;
@@ -25,7 +28,7 @@ namespace Dash
     public static class Actions
     {
         
-       
+
         public static void AddSearch(object o, DragEventArgs e)
         {
             //if (!c.Children.Contains(_searchView))
@@ -47,60 +50,7 @@ namespace Dash
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
-        public static void ChangeInkColor(Color color, RadialMenu menu = null)
-        {
-            GlobalInkSettings.Color = color;
-            GlobalInkSettings.UpdateInkPresenters();
-            //if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
-
-        public static void ChoosePen(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void ChoosePencil(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void ChooseEraser(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void SetOpacity(double opacity)
-        {
-            GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-        public static void SetSize(double size)
-        {
-            GlobalInkSettings.Size = size;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-
-        public static void DisplayBrightnessSlider(RadialMenuView obj)
-        {
-            obj.OpenInkMenu();
-        }
-
-        public static void CloseSliderPanel(RadialMenuView obj)
-        {
-            obj.CloseInkMenu();
-        }
-
-        public static void SetBrightness(double brightness, RadialMenu menu)
-        {
-            GlobalInkSettings.Brightness = brightness;
-            GlobalInkSettings.UpdateInkPresenters();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
+        
 
 
         public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
@@ -167,6 +117,63 @@ namespace Dash
                     .Document, true, true);
 
             collection.ViewModel.AddDocument(documentController, null);
+        }
+
+        public static async void ImportFields(ICollectionView collection, DragEventArgs e)
+        {
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.List;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            StorageFile storageFile = await openPicker.PickSingleFileAsync();
+            if (storageFile != null)
+            {
+                var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                    e.GetPosition(MainPage.Instance));
+                var fields = new Dictionary<KeyController, FieldModelController>()
+                {
+                    [KeyStore.ActiveLayoutKey] =
+                    new DocumentFieldModelController(
+                        new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+                };
+                var doc = new DocumentController(fields, DocumentType.DefaultType);
+                var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
+                var layout = doc.GetActiveLayout();
+                var data =
+                    layout.Data.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
+                if (storageFile.IsOfType(StorageItemTypes.Folder))
+                {
+                    //Add collection of new documents?
+                }
+                else if (storageFile.IsOfType(StorageItemTypes.File))
+                {
+                    switch (storageFile.FileType)
+                    {
+                        case ".jpg":
+                        case ".png":
+                            var imgController = new ImageFieldModelController();
+                            var btmp = new BitmapImage(new Uri(storageFile.Path, UriKind.Absolute));
+                            imgController.Data = btmp;
+                            doc.SetField(key, imgController, true);
+                            var imgBox = new ImageBox(new ReferenceFieldModelController(doc.GetId(), key), 0, 0, btmp.PixelWidth, btmp.PixelHeight);
+                            data?.AddDocument(imgBox.Document);
+                            break;
+                        case ".txt":
+                            var text = await FileIO.ReadTextAsync(storageFile);
+                            var txtController = new TextFieldModelController(text);
+                            doc.SetField(key, txtController, true);
+                            var txtBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), 0, 0, 200, 200);
+                            data?.AddDocument(txtBox.Document);
+                            break;
+                        case ".doc":
+                            // TODO implement for more file types
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                collection.ViewModel.AddDocument(doc, null);
+            }
+            
         }
         
         public static void AddCollectionTEST(ICollectionView collection, DragEventArgs e)
@@ -273,6 +280,8 @@ namespace Dash
             DisplayDocument(collectionView, postitNote, where);
         }
 
+        #region Ink Commands
+
         public static void SetTouchInput(object obj)
         {
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Touch;
@@ -303,5 +312,61 @@ namespace Dash
         {
             GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
         }
+        public static void ChangeInkColor(Color color, RadialMenu menu = null)
+        {
+            GlobalInkSettings.Color = color;
+            GlobalInkSettings.UpdateInkPresenters();
+            //if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        public static void ChoosePen(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void ChoosePencil(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void SetOpacity(double opacity)
+        {
+            GlobalInkSettings.Opacity = opacity;
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+
+        public static void SetSize(double size)
+        {
+            GlobalInkSettings.Size = size;
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+
+
+        public static void DisplayBrightnessSlider(RadialMenuView obj)
+        {
+            obj.OpenInkMenu();
+        }
+
+        public static void CloseSliderPanel(RadialMenuView obj)
+        {
+            obj.CloseInkMenu();
+        }
+
+        public static void SetBrightness(double brightness, RadialMenu menu)
+        {
+            GlobalInkSettings.Brightness = brightness;
+            GlobalInkSettings.UpdateInkPresenters();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        #endregion
     }
 }

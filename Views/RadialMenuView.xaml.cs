@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.ViewManagement;
@@ -55,6 +56,7 @@ namespace Dash
         public Symbol? OperatorSymbol = (Symbol) 0xE8EF;
         public Symbol? CollectionSymbol = (Symbol) 0xE8B7;
         public Symbol? DocumentSymbol = (Symbol) 0xE160;
+        public Symbol? FilePickerSymbol = Symbol.Add;
 
         /// <summary>
         /// Get or set the Diameter of the radial menu
@@ -164,6 +166,7 @@ namespace Dash
             Grid.Height = 215;
             Grid.Width = 215;
             RadialMenu.Margin = new Thickness(0, 0, 0, 0);
+            Floating.ManipulateControlPosition(16, 31.25);
         }
 
         /// <summary>
@@ -174,11 +177,14 @@ namespace Dash
         /// <param name="valueSetAction"></param>
         public void OpenInkMenu()
         {
+            Point pos1 = Util.PointTransformFromVisual(new Point(107.5, 107.5), RadialMenu, _parentCanvas);
             if (SettingsPane == null) FindName("SettingsPane");
             SettingsPane.Visibility = Visibility.Visible;
-            Grid.Height = 340;
-            Grid.Width = 345;
-            RadialMenu.Margin = new Thickness(29,0,0,0);
+            Grid.Height = 294;
+            Grid.Width = 309;
+            RadialMenu.Margin = new Thickness(32, 15, 0, 0);
+
+            //Clicks the pen and ink buttons the first time they are loaded. hacky? yes.
             if (!_inkOpened)
             {
                 DispatcherTimer timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(300)};
@@ -186,11 +192,12 @@ namespace Dash
                 {
                     RadialMenu.ClickInnerRadialMenuButton(SetPenInputButton);
                     RadialMenu.ClickInnerRadialMenuButton(SetPenInkButton);
+                    _inkOpened = true;
                     timer.Stop();
                 };
                 timer.Start();
-                _inkOpened = true;
             }
+            Floating.ManipulateControlPosition(-32, -47);
         }
 
         /// <summary>
@@ -287,6 +294,7 @@ namespace Dash
             var operatorModel = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionModel = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
+
             SetActionModel(operatorModel, Operator);
             SetActionModel(collectionModel, Collection);
             SetActionModel(documentModel, Document);
@@ -362,13 +370,20 @@ namespace Dash
             if (RadialMenu.Pie.Visibility == Visibility.Collapsed)
             {
                 Grid.Width = Grid.Height = 215;
-                Floating.ManipulateControlPosition(-215 + 45 / 2, -215 + 45 / 2);
+                RadialMenu.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else
             {
                 Grid.Width = Grid.Height = 45;
-                Floating.ManipulateControlPosition(215 - 45/2, 215- 45/2);
+                RadialMenu.VerticalAlignment = VerticalAlignment.Center;
+                RadialMenu.HorizontalAlignment = HorizontalAlignment.Center;
             }
+        }
+
+        private void FilePickerButton_OnInnerArcReleased(object sender, PointerRoutedEventArgs e)
+        {
+            FileOpenPicker filePicker = new FileOpenPicker();
+            
         }
     }
 }

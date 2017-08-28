@@ -44,11 +44,21 @@ namespace Dash
             var builder = new InkStrokeBuilder();
             var stroke = builder.CreateStrokeFromInkPoints(_strokeBuilderList, new Matrix3x2(1, 0, 0, 1, 0, 0));
             var point1 = stroke.GetInkPoints()[0].Position;
-            //XInkCanvas.InkPresenter.StrokeContainer.AddStroke(stroke.Clone());
-            //XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0].Selected = true;
-            //XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(30 - point1.X, 45 - point1.Y));
-            //XInkCanvas.InkPresenter.IsInputEnabled = false;
-            //ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
+            XInkCanvas.InkPresenter.StrokeContainer.AddStroke(stroke.Clone());
+            XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0].Selected = true;
+            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(55, 55));
+            XInkCanvas.InkPresenter.IsInputEnabled = false;
+            ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
+            XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
+        }
+
+        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
+        {
+            Debug.WriteLine("new stroke ======");
+            foreach (var point in e.Strokes[0].GetInkPoints())
+            {
+                Debug.WriteLine("new InkPoint( new Point(" + point.Position + "), (float)" + point.Pressure + ", (float)" + point.TiltX + ", (float)" + point.TiltY + ", (ulong)" + point.Timestamp + "),");
+            }
         }
 
         private void SizeSliderOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -70,17 +80,14 @@ namespace Dash
             {
                 Visibility = Visibility.Visible;
             }
-            //}
-            //if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.RelativeValue != 0)
-            //{
-            //    Column3.Width = new GridLength(0);
-            //    Column4.Width = new GridLength(0);
-            //}
-            //else if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.RelativeValue == 0)
-            //{
-            //    Column3.Width = new GridLength(5);
-            //    Column4.Width = new GridLength(30);
-            //}
+            if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && OpacitySlider.Visibility == Visibility.Visible)
+            {
+                OpacitySlider.Visibility = Visibility.Collapsed;
+            }
+            else if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Pencil && OpacitySlider.Visibility == Visibility.Collapsed)
+            {
+                OpacitySlider.Visibility = Visibility.Visible;
+            }
         }
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -109,111 +116,81 @@ namespace Dash
 
         private List<InkPoint> _strokeBuilderList = new List<InkPoint>
         {
-            new InkPoint (new Point(30430.93359375, 30556.953125), (float)0.1015625, (float)0, (float)0, (ulong)587748170684),
-            new InkPoint (new Point(30428.41015625, 30557.63671875), (float)0.1416016, (float)0, (float)0, (ulong)587748170750),
-            new InkPoint (new Point(30427.9375, 30558.05859375), (float)0.1601563, (float)0, (float)0, (ulong)587748170757),
-            new InkPoint (new Point(30427.462890625, 30558.478515625), (float)0.1699219, (float)0, (float)0, (ulong)587748179217),
-            new InkPoint (new Point(30427.462890625, 30558.478515625), (float)0.1933594, (float)0, (float)0, (ulong)587748185748),
-            new InkPoint (new Point(30427.462890625, 30558.478515625), (float)0.2080078, (float)0, (float)0, (ulong)587748194284),
-            new InkPoint (new Point(30427.462890625, 30558.3203125), (float)0.2197266, (float)0, (float)0, (ulong)587748200847),
-            new InkPoint (new Point(30427.779296875, 30557.900390625), (float)0.2285156, (float)0, (float)0, (ulong)587748209295),
-            new InkPoint (new Point(30428.41015625, 30557.48046875), (float)0.2382813, (float)0, (float)0, (ulong)587748215858),
-            new InkPoint (new Point(30429.35546875, 30556.796875), (float)0.2431641, (float)0, (float)0, (ulong)587748224396),
-            new InkPoint (new Point(30430.302734375, 30556.26953125), (float)0.2539063, (float)0, (float)0, (ulong)587748224463),
-            new InkPoint (new Point(30431.197265625, 30555.53515625), (float)0.2685547, (float)0, (float)0, (ulong)587748230716),
-            new InkPoint (new Point(30431.984375, 30555.0078125), (float)0.2783203, (float)0, (float)0, (ulong)587748239342),
-            new InkPoint (new Point(30432.7734375, 30554.4296875), (float)0.2851563, (float)0, (float)0, (ulong)587748245918),
-            new InkPoint (new Point(30433.5625, 30554.16796875), (float)0.2900391, (float)0, (float)0, (ulong)587748254362),
-            new InkPoint (new Point(30434.193359375, 30553.904296875), (float)0.2958984, (float)0, (float)0, (ulong)587748260944),
-            new InkPoint (new Point(30434.666015625, 30553.58984375), (float)0.3007813, (float)0, (float)0, (ulong)587748269301),
-            new InkPoint (new Point(30435.296875, 30553.220703125), (float)0.3134766, (float)0, (float)0, (ulong)587748284361),
-            new InkPoint (new Point(30435.927734375, 30552.80078125), (float)0.3300781, (float)0, (float)0, (ulong)587748290929),
-            new InkPoint (new Point(30436.6640625, 30552.22265625), (float)0.3427734, (float)0, (float)0, (ulong)587748299361),
-            new InkPoint (new Point(30437.453125, 30551.5390625), (float)0.3525391, (float)0, (float)0, (ulong)587748305928),
-            new InkPoint (new Point(30438.2421875, 30550.85546875), (float)0.359375, (float)0, (float)0, (ulong)587748314337),
-            new InkPoint (new Point(30439.03125, 30550.013671875), (float)0.3662109, (float)0, (float)0, (ulong)587748320887),
-            new InkPoint (new Point(30440.134765625, 30549.171875), (float)0.3691406, (float)0, (float)0, (ulong)587748329390),
-            new InkPoint (new Point(30441.080078125, 30548.33203125), (float)0.3720703, (float)0, (float)0, (ulong)587748335912),
-            new InkPoint (new Point(30442.185546875, 30547.0703125), (float)0.3740234, (float)0, (float)0, (ulong)587748344401),
-            new InkPoint (new Point(30443.236328125, 30545.859375), (float)0.3740234, (float)0, (float)0, (ulong)587748350986),
-            new InkPoint (new Point(30444.498046875, 30544.44140625), (float)0.3720703, (float)0, (float)0, (ulong)587748359641),
-            new InkPoint (new Point(30445.759765625, 30542.7578125), (float)0.3710938, (float)0, (float)0, (ulong)587748366134),
-            new InkPoint (new Point(30447.49609375, 30540.970703125), (float)0.3710938, (float)0, (float)0, (ulong)587748374589),
-            new InkPoint (new Point(30449.3359375, 30539.025390625), (float)0.3710938, (float)0, (float)0, (ulong)587748381007),
-            new InkPoint (new Point(30451.0703125, 30537.080078125), (float)0.3710938, (float)0, (float)0, (ulong)587748389476),
-            new InkPoint (new Point(30452.8046875, 30535.134765625), (float)0.3730469, (float)0, (float)0, (ulong)587748396132),
-            new InkPoint (new Point(30454.171875, 30533.453125), (float)0.3740234, (float)0, (float)0, (ulong)587748404604),
-            new InkPoint (new Point(30455.43359375, 30532.0859375), (float)0.3769531, (float)0, (float)0, (ulong)587748411179),
-            new InkPoint (new Point(30456.380859375, 30530.98046875), (float)0.3779297, (float)0, (float)0, (ulong)587748419706),
-            new InkPoint (new Point(30457.169921875, 30530.140625), (float)0.3779297, (float)0, (float)0, (ulong)587748426254),
-            new InkPoint (new Point(30457.642578125, 30529.45703125), (float)0.3916016, (float)0, (float)0, (ulong)587748434669),
-            new InkPoint (new Point(30458.115234375, 30529.03515625), (float)0.4101563, (float)0, (float)0, (ulong)587748441230),
-            new InkPoint (new Point(30458.2734375, 30528.7734375), (float)0.4277344, (float)0, (float)0, (ulong)587748449599),
-            new InkPoint (new Point(30458.2734375, 30528.7734375), (float)0.4453125, (float)0, (float)0, (ulong)587748456323),
-            new InkPoint (new Point(30458.115234375, 30529.03515625), (float)0.4550781, (float)0, (float)0, (ulong)587748464555),
-            new InkPoint (new Point(30457.80078125, 30529.45703125), (float)0.4609375, (float)0, (float)0, (ulong)587748471373),
-            new InkPoint (new Point(30457.169921875, 30530.296875), (float)0.4609375, (float)0, (float)0, (ulong)587748479614),
-            new InkPoint (new Point(30456.5390625, 30531.138671875), (float)0.4609375, (float)0, (float)0, (ulong)587748486344),
-            new InkPoint (new Point(30455.591796875, 30532.34765625), (float)0.4589844, (float)0, (float)0, (ulong)587748494676),
-            new InkPoint (new Point(30454.330078125, 30534.03125), (float)0.4570313, (float)0, (float)0, (ulong)587748501268),
-            new InkPoint (new Point(30453.2265625, 30535.712890625), (float)0.4550781, (float)0, (float)0, (ulong)587748509673),
-            new InkPoint (new Point(30452.017578125, 30537.921875), (float)0.453125, (float)0, (float)0, (ulong)587748516431),
-            new InkPoint (new Point(30450.755859375, 30540.12890625), (float)0.453125, (float)0, (float)0, (ulong)587748524692),
-            new InkPoint (new Point(30449.650390625, 30542.390625), (float)0.453125, (float)0, (float)0, (ulong)587748531174),
-            new InkPoint (new Point(30448.546875, 30545.01953125), (float)0.453125, (float)0, (float)0, (ulong)587748539730),
-            new InkPoint (new Point(30447.65234375, 30547.384765625), (float)0.453125, (float)0, (float)0, (ulong)587748546296),
-            new InkPoint (new Point(30446.70703125, 30549.59375), (float)0.453125, (float)0, (float)0, (ulong)587748554657),
-            new InkPoint (new Point(30445.91796875, 30551.380859375), (float)0.4550781, (float)0, (float)0, (ulong)587748561188),
-            new InkPoint (new Point(30445.4453125, 30552.90625), (float)0.4560547, (float)0, (float)0, (ulong)587748569745),
-            new InkPoint (new Point(30445.12890625, 30554.16796875), (float)0.4560547, (float)0, (float)0, (ulong)587748576222),
-            new InkPoint (new Point(30444.970703125, 30555.0078125), (float)0.4541016, (float)0, (float)0, (ulong)587748584760),
-            new InkPoint (new Point(30444.970703125, 30555.69140625), (float)0.453125, (float)0, (float)0, (ulong)587748591264),
-            new InkPoint (new Point(30445.287109375, 30555.955078125), (float)0.453125, (float)0, (float)0, (ulong)587748599674),
-            new InkPoint (new Point(30445.759765625, 30555.955078125), (float)0.4550781, (float)0, (float)0, (ulong)587748606335),
-            new InkPoint (new Point(30446.548828125, 30555.849609375), (float)0.4580078, (float)0, (float)0, (ulong)587748614699),
-            new InkPoint (new Point(30447.65234375, 30555.166015625), (float)0.4619141, (float)0, (float)0, (ulong)587748621364),
-            new InkPoint (new Point(30449.01953125, 30554.4296875), (float)0.4609375, (float)0, (float)0, (ulong)587748629728),
-            new InkPoint (new Point(30450.28125, 30553.74609375), (float)0.4609375, (float)0, (float)0, (ulong)587748636373),
-            new InkPoint (new Point(30451.38671875, 30553.0625), (float)0.4609375, (float)0, (float)0, (ulong)587748644918),
-            new InkPoint (new Point(30452.490234375, 30552.484375), (float)0.4609375, (float)0, (float)0, (ulong)587748651261),
-            new InkPoint (new Point(30453.541015625, 30551.958984375), (float)0.4609375, (float)0, (float)0, (ulong)587748659912),
-            new InkPoint (new Point(30454.48828125, 30551.5390625), (float)0.4609375, (float)0, (float)0, (ulong)587748666505),
-            new InkPoint (new Point(30455.27734375, 30551.275390625), (float)0.4580078, (float)0, (float)0, (ulong)587748674838),
-            new InkPoint (new Point(30456.064453125, 30551.1171875), (float)0.4570313, (float)0, (float)0, (ulong)587748681221),
-            new InkPoint (new Point(30456.853515625, 30550.9609375), (float)0.4570313, (float)0, (float)0, (ulong)587748689826),
-            new InkPoint (new Point(30457.642578125, 30550.9609375), (float)0.4589844, (float)0, (float)0, (ulong)587748704941),
-            new InkPoint (new Point(30458.2734375, 30551.1171875), (float)0.4599609, (float)0, (float)0, (ulong)587748711529),
-            new InkPoint (new Point(30458.8515625, 30551.380859375), (float)0.4599609, (float)0, (float)0, (ulong)587748719956),
-            new InkPoint (new Point(30459.32421875, 30551.64453125), (float)0.4609375, (float)0, (float)0, (ulong)587748726551),
-            new InkPoint (new Point(30459.798828125, 30552.22265625), (float)0.4609375, (float)0, (float)0, (ulong)587748735017),
-            new InkPoint (new Point(30460.4296875, 30552.642578125), (float)0.4628906, (float)0, (float)0, (ulong)587748741415),
-            new InkPoint (new Point(30460.90234375, 30553.0625), (float)0.4638672, (float)0, (float)0, (ulong)587748749827),
-            new InkPoint (new Point(30461.69140625, 30553.326171875), (float)0.4638672, (float)0, (float)0, (ulong)587748756393),
-            new InkPoint (new Point(30462.48046875, 30553.326171875), (float)0.4667969, (float)0, (float)0, (ulong)587748764801),
-            new InkPoint (new Point(30463.42578125, 30553.0625), (float)0.4716797, (float)0, (float)0, (ulong)587748771379),
-            new InkPoint (new Point(30464.4765625, 30552.642578125), (float)0.4746094, (float)0, (float)0, (ulong)587748779805),
-            new InkPoint (new Point(30465.58203125, 30552.064453125), (float)0.4755859, (float)0, (float)0, (ulong)587748786405),
-            new InkPoint (new Point(30466.685546875, 30551.380859375), (float)0.4785156, (float)0, (float)0, (ulong)587748794894),
-            new InkPoint (new Point(30468.10546875, 30550.5390625), (float)0.4833984, (float)0, (float)0, (ulong)587748801444),
-            new InkPoint (new Point(30469.62890625, 30549.69921875), (float)0.484375, (float)0, (float)0, (ulong)587748809966),
-            new InkPoint (new Point(30471.20703125, 30549.015625), (float)0.4824219, (float)0, (float)0, (ulong)587748816565),
-            new InkPoint (new Point(30472.626953125, 30548.48828125), (float)0.4814453, (float)0, (float)0, (ulong)587748825016),
-            new InkPoint (new Point(30473.888671875, 30548.068359375), (float)0.4804688, (float)0, (float)0, (ulong)587748831526),
-            new InkPoint (new Point(30474.9921875, 30547.6484375), (float)0.4824219, (float)0, (float)0, (ulong)587748839994),
-            new InkPoint (new Point(30475.88671875, 30547.384765625), (float)0.4873047, (float)0, (float)0, (ulong)587748846535),
-            new InkPoint (new Point(30476.83203125, 30547.2265625), (float)0.4882813, (float)0, (float)0, (ulong)587748854974),
-            new InkPoint (new Point(30477.779296875, 30547.2265625), (float)0.4882813, (float)0, (float)0, (ulong)587748861640),
-            new InkPoint (new Point(30478.724609375, 30547.384765625), (float)0.4882813, (float)0, (float)0, (ulong)587748870130),
-            new InkPoint (new Point(30479.830078125, 30547.6484375), (float)0.4882813, (float)0, (float)0, (ulong)587748876744),
-            new InkPoint (new Point(30480.880859375, 30547.91015625), (float)0.4882813, (float)0, (float)0, (ulong)587748885122),
-            new InkPoint (new Point(30482.142578125, 30548.173828125), (float)0.4882813, (float)0, (float)0, (ulong)587748891690),
-            new InkPoint (new Point(30483.404296875, 30548.59375), (float)0.4853516, (float)0, (float)0, (ulong)587748899999),
-            new InkPoint (new Point(30484.82421875, 30549.015625), (float)0.4824219, (float)0, (float)0, (ulong)587748906774),
-            new InkPoint (new Point(30486.19140625, 30549.435546875), (float)0.4746094, (float)0, (float)0, (ulong)587748915003),
-            new InkPoint (new Point(30487.92578125, 30549.85546875), (float)0.4667969, (float)0, (float)0, (ulong)587748921774),
-            new InkPoint (new Point(30489.9765625, 30550.119140625), (float)0.4394531, (float)0, (float)0, (ulong)587748930028),
-            new InkPoint (new Point(30491.974609375, 30550.27734375), (float)0.4033203, (float)0, (float)0, (ulong)587748936570),
-            new InkPoint (new Point(30493.8671875, 30550.013671875), (float)0.2822266, (float)0, (float)0, (ulong)587748951792),
+            new InkPoint( new Point(57.71411,7.072601), (float)0.0703125, (float)0, (float)0, (ulong)1015062801132),
+            new InkPoint( new Point(57.71411,6.651978), (float)0.09960938, (float)0, (float)0, (ulong)1015062801266),
+            new InkPoint( new Point(57.71411,6.651978), (float)0.1132813, (float)0, (float)0, (ulong)1015062801285),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.1367188, (float)0, (float)0, (ulong)1015062809235),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.1757813, (float)0, (float)0, (ulong)1015062816002),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.2167969, (float)0, (float)0, (ulong)1015062824433),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.2587891, (float)0, (float)0, (ulong)1015062831035),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.2890625, (float)0, (float)0, (ulong)1015062839720),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.3154297, (float)0, (float)0, (ulong)1015062846111),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.3261719, (float)0, (float)0, (ulong)1015062854752),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.3408203, (float)0, (float)0, (ulong)1015062854835),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.3583984, (float)0, (float)0, (ulong)1015062861208),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.3789063, (float)0, (float)0, (ulong)1015062869537),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.4013672, (float)0, (float)0, (ulong)1015062876162),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.4228516, (float)0, (float)0, (ulong)1015062884428),
+            new InkPoint( new Point(57.71411,6.546814), (float)0.4423828, (float)0, (float)0, (ulong)1015062901727),
+            new InkPoint( new Point(57.71411,6.809692), (float)0.4599609, (float)0, (float)0, (ulong)1015062902058),
+            new InkPoint( new Point(57.39868,7.072601), (float)0.4785156, (float)0, (float)0, (ulong)1015062906083),
+            new InkPoint( new Point(57.39868,7.388031), (float)0.4931641, (float)0, (float)0, (ulong)1015062914641),
+            new InkPoint( new Point(57.39868,7.388031), (float)0.5087891, (float)0, (float)0, (ulong)1015062921233),
+            new InkPoint( new Point(57.24097,7.65094), (float)0.5283203, (float)0, (float)0, (ulong)1015062929808),
+            new InkPoint( new Point(57.24097,7.808655), (float)0.5498047, (float)0, (float)0, (ulong)1015062936176),
+            new InkPoint( new Point(57.24097,7.808655), (float)0.5712891, (float)0, (float)0, (ulong)1015062944764),
+            new InkPoint( new Point(57.24097,7.913818), (float)0.59375, (float)0, (float)0, (ulong)1015062951147),
+            new InkPoint( new Point(57.24097,7.913818), (float)0.6142578, (float)0, (float)0, (ulong)1015062959762),
+            new InkPoint( new Point(57.24097,8.229279), (float)0.6367188, (float)0, (float)0, (ulong)1015062966193),
+            new InkPoint( new Point(56.92548,8.334412), (float)0.6572266, (float)0, (float)0, (ulong)1015062974861),
+            new InkPoint( new Point(56.92548,8.334412), (float)0.6767578, (float)0, (float)0, (ulong)1015062981240),
+            new InkPoint( new Point(56.76776,8.492157), (float)0.6972656, (float)0, (float)0, (ulong)1015062989740),
+            new InkPoint( new Point(56.76776,8.492157), (float)0.7167969, (float)0, (float)0, (ulong)1015062996230),
+            new InkPoint( new Point(56.61005,8.59729), (float)0.7314453, (float)0, (float)0, (ulong)1015063004826),
+            new InkPoint( new Point(56.61005,8.59729), (float)0.7470703, (float)0, (float)0, (ulong)1015063011500),
+            new InkPoint( new Point(56.45233,8.755035), (float)0.7578125, (float)0, (float)0, (ulong)1015063019851),
+            new InkPoint( new Point(56.29456,8.91275), (float)0.7675781, (float)0, (float)0, (ulong)1015063026460),
+            new InkPoint( new Point(56.13684,9.017914), (float)0.7773438, (float)0, (float)0, (ulong)1015063034671),
+            new InkPoint( new Point(56.13684,9.175629), (float)0.7910156, (float)0, (float)0, (ulong)1015063041374),
+            new InkPoint( new Point(56.13684,9.175629), (float)0.8007813, (float)0, (float)0, (ulong)1015063049354),
+            new InkPoint( new Point(56.13684,9.175629), (float)0.8105469, (float)0, (float)0, (ulong)1015063056445),
+            new InkPoint( new Point(55.97913,9.438507), (float)0.8183594, (float)0, (float)0, (ulong)1015063064740),
+            new InkPoint( new Point(55.82141,9.753967), (float)0.8261719, (float)0, (float)0, (ulong)1015063071320),
+            new InkPoint( new Point(55.82141,9.753967), (float)0.8359375, (float)0, (float)0, (ulong)1015063079815),
+            new InkPoint( new Point(55.66364,9.859131), (float)0.8466797, (float)0, (float)0, (ulong)1015063086200),
+            new InkPoint( new Point(55.55853,10.01685), (float)0.8564453, (float)0, (float)0, (ulong)1015063094752),
+            new InkPoint( new Point(55.24304,10.17459), (float)0.8671875, (float)0, (float)0, (ulong)1015063101200),
+            new InkPoint( new Point(54.7699,10.27972), (float)0.8720703, (float)0, (float)0, (ulong)1015063109940),
+            new InkPoint( new Point(54.13898,10.54263), (float)0.8740234, (float)0, (float)0, (ulong)1015063116353),
+            new InkPoint( new Point(53.50806,10.96323), (float)0.875, (float)0, (float)0, (ulong)1015063124957),
+            new InkPoint( new Point(52.71942,11.27869), (float)0.8769531, (float)0, (float)0, (ulong)1015063131569),
+            new InkPoint( new Point(51.93073,11.69931), (float)0.8798828, (float)0, (float)0, (ulong)1015063139910),
+            new InkPoint( new Point(51.14209,12.06732), (float)0.8837891, (float)0, (float)0, (ulong)1015063146581),
+            new InkPoint( new Point(50.35345,12.48795), (float)0.8876953, (float)0, (float)0, (ulong)1015063154804),
+            new InkPoint( new Point(49.61737,12.90854), (float)0.8916016, (float)0, (float)0, (ulong)1015063161530),
+            new InkPoint( new Point(48.51331,13.224), (float)0.8935547, (float)0, (float)0, (ulong)1015063170021),
+            new InkPoint( new Point(47.25146,13.74976), (float)0.8964844, (float)0, (float)0, (ulong)1015063176591),
+            new InkPoint( new Point(45.98962,14.43326), (float)0.8974609, (float)0, (float)0, (ulong)1015063184668),
+            new InkPoint( new Point(44.72778,15.16934), (float)0.9003906, (float)0, (float)0, (ulong)1015063191377),
+            new InkPoint( new Point(43.20313,15.95798), (float)0.9013672, (float)0, (float)0, (ulong)1015063199808),
+            new InkPoint( new Point(41.46808,17.11465), (float)0.9013672, (float)0, (float)0, (ulong)1015063206624),
+            new InkPoint( new Point(39.57532,18.32391), (float)0.9023438, (float)0, (float)0, (ulong)1015063215053),
+            new InkPoint( new Point(37.57745,19.8486), (float)0.9023438, (float)0, (float)0, (ulong)1015063221531),
+            new InkPoint( new Point(35.36926,21.53107), (float)0.8994141, (float)0, (float)0, (ulong)1015063230047),
+            new InkPoint( new Point(33.21362,23.2135), (float)0.8964844, (float)0, (float)0, (ulong)1015063236563),
+            new InkPoint( new Point(30.68994,25.15881), (float)0.8925781, (float)0, (float)0, (ulong)1015063244844),
+            new InkPoint( new Point(28.32404,27.20929), (float)0.8916016, (float)0, (float)0, (ulong)1015063251257),
+            new InkPoint( new Point(26.01068,29.57523), (float)0.8837891, (float)0, (float)0, (ulong)1015063260115),
+            new InkPoint( new Point(23.80249,31.836), (float)0.8769531, (float)0, (float)0, (ulong)1015063266454),
+            new InkPoint( new Point(21.48914,34.14935), (float)0.8496094, (float)0, (float)0, (ulong)1015063274931),
+            new InkPoint( new Point(19.12317,36.673), (float)0.8134766, (float)0, (float)0, (ulong)1015063281474),
+            new InkPoint( new Point(16.80981,39.5647), (float)0.7529297, (float)0, (float)0, (ulong)1015063289884),
+            new InkPoint( new Point(14.44391,42.66669), (float)0.6816406, (float)0, (float)0, (ulong)1015063296450),
+            new InkPoint( new Point(12.23572,45.979), (float)0.5947266, (float)0, (float)0, (ulong)1015063305007),
+            new InkPoint( new Point(10.39551,49.29129), (float)0.5009766, (float)0, (float)0, (ulong)1015063311484),
+            new InkPoint( new Point(8.345032,52.76132), (float)0.3798828, (float)0, (float)0, (ulong)1015063326715),
+            new InkPoint( new Point(6.189453,56.96744), (float)0.2070313, (float)0, (float)0, (ulong)1015063335230),
+            new InkPoint( new Point(4.296692,61.12097), (float)0.08691406, (float)0, (float)0, (ulong)1015063341877),
         };
 
        
