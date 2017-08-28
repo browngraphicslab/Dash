@@ -55,7 +55,7 @@ namespace Dash
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
-            
+
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
@@ -104,17 +104,17 @@ namespace Dash
         //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         //{
 
-            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            //if (view == null) return; // we can't always assume we're on a collection		
+        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+        //if (view == null) return; // we can't always assume we're on a collection		
 
-            //view.CanLink = false;
-            //args.Handled = true;
+        //view.CanLink = false;
+        //args.Handled = true;
 
-            //view.CancelDrag(args.Pointer); 
+        //view.CancelDrag(args.Pointer); 
 
-            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
         //}
 
@@ -297,7 +297,8 @@ namespace Dash
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
                 xTextView.Visibility = Visibility.Visible;
-            } else
+            }
+            else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
@@ -338,7 +339,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(250, 250);
-                IsLowestSelected = false; 
+                IsLowestSelected = false;
             }
             e.Handled = true; // prevent propagating
         }

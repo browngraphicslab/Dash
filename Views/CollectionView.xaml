@@ -30,7 +30,7 @@
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
                       >
-                    <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded"
+                    <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded" 
                                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/> 
                 </Grid>
                 <Grid HorizontalAlignment="Right" 

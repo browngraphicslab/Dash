@@ -49,7 +49,6 @@ namespace Dash
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
@@ -71,7 +70,7 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = /*_freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
+                    CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -91,6 +90,8 @@ namespace Dash
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
             }
+
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
         }
 
         #endregion
@@ -130,7 +131,7 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView =/* _freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
         }
 
@@ -278,7 +279,7 @@ namespace Dash
 
         #region Collection Activation
 
-        private void OnLowestSelectionSet(bool isLowestSelected)
+        public void OnLowestSelectionSet(bool isLowestSelected)
         {
             // if we're the lowest selected then open the menu
             if (isLowestSelected)
@@ -312,5 +313,6 @@ namespace Dash
             };
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
         }
+       
     }
 }

@@ -780,7 +780,7 @@ namespace Dash
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
-            OnSelected();
+            OnSelected(); 
         }
 
         #endregion
