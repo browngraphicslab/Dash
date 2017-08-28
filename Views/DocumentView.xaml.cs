@@ -37,7 +37,6 @@ namespace Dash
         public DocumentViewModel ViewModel { get; set; }
 
         public bool ProportionalScaling { get; set; }
-        public ManipulationControls Manipulator { get { return manipulator; } }
 
 
         public static int dvCount = 0;
@@ -158,7 +157,8 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(0, 0);
+            //var scaleCenter = new Point(0, 0);
+            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2); 
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);

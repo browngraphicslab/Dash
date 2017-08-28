@@ -117,7 +117,8 @@ namespace Dash
             if (icon == Symbol.Accept)
             {
                 // only execute if all fields are specified and reset  
-                if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
+                var type = (TypeInfo)xTypeComboBox.SelectedItem;
+                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
                 {
                     AddKeyValuePair();
                     xNewKeyField.Text = "";
@@ -139,7 +140,7 @@ namespace Dash
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
             //fmController = _documentControllerDataContext.GetField(key);
 
-            ///*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
+            // /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
             ///                                         // and can't create image fields ? 
             if (item == TypeInfo.Number)
             {
@@ -157,6 +158,18 @@ namespace Dash
             else if (item == TypeInfo.Text)
             {
                 fmController = new TextFieldModelController(xNewValueField.Text);
+            } else if (item == TypeInfo.Collection)
+            {
+                fmController = new DocumentCollectionFieldModelController();
+            }
+            else if (item == TypeInfo.Document)
+            {
+                var fields = new Dictionary<KeyController, FieldModelController>()
+                {
+                    [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
+                };
+
+                fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
             }
             ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
             _documentControllerDataContext.SetField(key, fmController, true);
