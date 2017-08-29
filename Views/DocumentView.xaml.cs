@@ -74,7 +74,6 @@ namespace Dash
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            DoubleTapped -= ExpandContract_DoubleTapped;
             //Loaded -= This_Loaded;
             //Unloaded -= This_Unloaded;
         }
@@ -89,8 +88,6 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped -= ExpandContract_DoubleTapped;
-            DoubleTapped += ExpandContract_DoubleTapped;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
@@ -320,8 +317,8 @@ namespace Dash
                 xTextView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
-                IsLowestSelected = false; // to bring up the menu upon click 
             }
+
         }
 
         /// <summary>
@@ -334,17 +331,6 @@ namespace Dash
             if (view == null) return; // we can't always assume we're on a collection		
 
             (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
-        }
-
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            // if in icon view expand to default size
-            if (xIcon.Visibility == Visibility.Visible)
-            {
-                Resize(250, 250);
-                IsLowestSelected = false;
-            }
-            e.Handled = true; // prevent propagating
         }
 
 
