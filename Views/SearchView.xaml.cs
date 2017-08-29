@@ -119,7 +119,8 @@ namespace Dash
         private void UpdateList(string query)
         {
             var results = GetMatches(query);
-            _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
+            if (xRootPivot.SelectedItem != null)
+                _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
         }
 
         /// <summary>
