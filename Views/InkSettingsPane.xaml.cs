@@ -24,8 +24,8 @@ namespace Dash
 {
     public sealed partial class InkSettingsPane : UserControl
     {
-        public Symbol BrightnessSymbol { get; set; } = (Symbol) 0xE706;
-        public Symbol SizeSymbol { get; set; } = (Symbol)0xEDA8;
+        public Symbol BrightnessSymbol { get; set; } = (Symbol) 0xE793;
+        public Symbol SizeSymbol { get; set; } = (Symbol) 0xEDA8;
         public Symbol OpacitySymbol { get; set; } = (Symbol) 0xEB42;
 
         private InkStroke ExampleStroke;
@@ -79,14 +79,22 @@ namespace Dash
             {
                 OpacitySlider.Visibility = Visibility.Visible;
             }
+            if (OpacitySlider.Value/100 != GlobalInkSettings.Opacity)
+            {
+                OpacitySlider.RelativeValue = GlobalInkSettings.Opacity;
+            }
+            if (BrightnessSlider.Value != GlobalInkSettings.Brightness)
+            {
+                BrightnessSlider.RelativeValue = (GlobalInkSettings.Brightness - BrightnessSlider.MinValue) /
+                                                 (BrightnessSlider.MaxValue - BrightnessSlider.MinValue);
+            }
+            if (SizeSlider.Value != GlobalInkSettings.Size)
+            {
+                SizeSlider.RelativeValue = (GlobalInkSettings.Size - SizeSlider.MinValue) /
+                                                 (SizeSlider.MaxValue - SizeSlider.MinValue);
+            }
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            GlobalInkSettings.Color = Color.FromArgb(255, 128, 128, 128);
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-        
 
         private void OpacitySlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {

@@ -312,12 +312,6 @@ namespace Dash
         {
             GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
         }
-        public static void ChangeInkColor(Color color, RadialMenu menu = null)
-        {
-            GlobalInkSettings.Color = color;
-            GlobalInkSettings.UpdateInkPresenters();
-            //if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
 
         public static void ChoosePen(object o)
         {

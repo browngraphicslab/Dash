@@ -34,6 +34,7 @@ namespace Dash.Views
         private readonly List<Grid> _draggers;
         private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
         private bool _flyoutShowing;
+        public Symbol CopyAttributesSymbol { get; set; } = Symbol.Upload;
 
         private Point Position()
         {
@@ -52,6 +53,7 @@ namespace Dash.Views
             _scroller = scroller;
             _strokeContainer = strokes;
             Loaded += OnLoaded;
+            GlobalInkSettings.OnAttributesUpdated += GlobalInkSettingsOnOnAttributesUpdated;
             if(view != null) _freeformView.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControlsOnOnManipulatorTranslatedOrScaled;
             if(scroller != null) _scroller.ViewChanged += Scroller_ViewChanged;
             _draggers = new List<Grid>
@@ -70,6 +72,17 @@ namespace Dash.Views
             if (_startingTransforms.Keys.Count != 1)
             {
                 CopyAttributesButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void GlobalInkSettingsOnOnAttributesUpdated(SolidColorBrush newAttributes)
+        {
+            if (AdjustSettingsButton.IsChecked)
+            {
+                foreach (var stroke in _startingTransforms.Keys)
+                {
+                    stroke.DrawingAttributes = GlobalInkSettings.Attributes;
+                }
             }
         }
 
@@ -271,6 +284,12 @@ namespace Dash.Views
         private void RecognizeButton_OnClick(object sender, RoutedEventArgs e)
         {
             _freeformView.InkControl.RecognizeSelected();
+        }
+
+        private void CopyAttributesButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var stroke = _strokeContainer.GetStrokes().First(s => s.Selected);
+            GlobalInkSettings.ForceUpdateFromAttributes(stroke.DrawingAttributes);
         }
     }
 }

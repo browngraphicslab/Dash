@@ -23,6 +23,7 @@ namespace Dash
         private Rect _boundingRect;
         private InkSelectionMode _inkSelectionMode;
         private bool _analyzeStrokes;
+        private bool _selectionEnded;
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
@@ -31,7 +32,7 @@ namespace Dash
         public LassoSelectHelper LassoHelper;
 
         public Canvas SelectionCanvas;
-        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
+        
 
         public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
@@ -181,6 +182,7 @@ namespace Dash
             {
                 SelectionCanvas.Children.Clear();
                 _boundingRect = Rect.Empty;
+                _lasso = null;
             }
         }
 
@@ -301,8 +303,15 @@ namespace Dash
                 TargetCanvas.InkPresenter.StrokeContainer.SelectWithPolyLine(
                     _lasso.Points);
 
-            if (_inkSelectionMode == InkSelectionMode.Ink) DrawBoundingRect();
-            else if (_inkSelectionMode == InkSelectionMode.Document) SelectDocs(_lasso.Points);
+            if (_inkSelectionMode == InkSelectionMode.Ink)
+            {
+                DrawBoundingRect();
+            }
+            else if (_inkSelectionMode == InkSelectionMode.Document)
+            {
+                SelectDocs(_lasso.Points);
+            }
+            
         }
 
         private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)

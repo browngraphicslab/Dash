@@ -40,10 +40,9 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
-        
 
+        public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()

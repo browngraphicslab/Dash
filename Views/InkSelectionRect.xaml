@@ -59,8 +59,16 @@
                             <SymbolIcon Symbol="View"></SymbolIcon>
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
-                    <MenuFlyoutItem x:Name="CopyAttributesButton" Text="Copy Attributes"></MenuFlyoutItem>
-                    <MenuFlyoutItem x:Name="AdjustSettingsButton" Text="Change Attributes"></MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CopyAttributesButton" Click="CopyAttributesButton_OnClick" Text="Copy Attributes">
+                        <MenuFlyoutItem.Icon>
+                            <SymbolIcon Symbol="{x:Bind CopyAttributesSymbol}"></SymbolIcon>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <ToggleMenuFlyoutItem x:Name="AdjustSettingsButton" Text="Edit Attributes?" IsChecked="False">
+                        <ToggleMenuFlyoutItem.Icon>
+                            <SymbolIcon Symbol="Edit"></SymbolIcon>
+                        </ToggleMenuFlyoutItem.Icon>
+                    </ToggleMenuFlyoutItem>
                 </MenuFlyoutSubItem>
             </MenuFlyout>
         </Grid.ContextFlyout>

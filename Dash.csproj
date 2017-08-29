@@ -106,11 +106,11 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
-    <Compile Include="DocumentDropHelper.cs" />
-    <Compile Include="InkExampleStroke.xaml.cs">
+    <Compile Include="Util\DocumentDropHelper.cs" />
+    <Compile Include="Views\InkExampleStroke.xaml.cs">
       <DependentUpon>InkExampleStroke.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RadialColorPicker.xaml.cs">
+    <Compile Include="Views\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\RadialMenuSlider.xaml.cs">
@@ -533,11 +533,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="InkExampleStroke.xaml">
+    <Page Include="Views\InkExampleStroke.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="RadialColorPicker.xaml">
+    <Page Include="Views\RadialColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
