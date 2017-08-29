@@ -122,7 +122,7 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-            if (e.DropResult == DataPackageOperation.Move)                             
+            if (e.DropResult == DataPackageOperation.Move)
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
@@ -179,6 +179,8 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("DRAG enterrrrrrrrr");
+
             this.HighlightPotentialDropTarget(sender as SelectionElement);
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -191,7 +193,7 @@ namespace Dash
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
-                
+
             }
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
@@ -200,7 +202,7 @@ namespace Dash
                 var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);
                 e.AcceptedOperation = sourceIsOurself
                     ? DataPackageOperation.None // don't accept drag event from ourself
-                    : DataPackageOperation.Move;
+                                : DataPackageOperation.Move;
 
                 ItemsCarrier.Instance.Destination = this;
             }
@@ -212,7 +214,7 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
 
-            e.Handled = true; 
+            e.Handled = true;
         }
 
         /// <summary>
@@ -222,6 +224,11 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
+            ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
+            ItemsCarrier.Instance.CurrBaseModel = this;
+            ItemsCarrier.Instance.CurrCollection = sender as ICollectionView; 
+
+            Debug.WriteLine("DRAG LEFTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
             var element = sender as SelectionElement;
             if (element != null)
             {

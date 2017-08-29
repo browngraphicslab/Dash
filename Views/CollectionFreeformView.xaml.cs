@@ -899,7 +899,7 @@ namespace Dash
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                   
         {
-            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
+            ViewModel.CollectionViewOnDragEnter(sender, e);                                                       
 
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
