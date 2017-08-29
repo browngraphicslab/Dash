@@ -151,7 +151,7 @@
         /// </summary>
         /// <param name="x">Delta on the X axis</param>
         /// <param name="y">Delta on the Y axis</param>
-        /// <param name="exptectedHeight">Expected heigth of the floating control</param>
+        /// <param name="expectedHeight">Expected heigth of the floating control</param>
         /// <param name="expectedWidth">Expected width of the floating control</param>
         public void ManipulateControlPosition(double x, double y, double expectedHeight, double expectedWidth)
         {

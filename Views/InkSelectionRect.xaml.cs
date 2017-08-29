@@ -26,17 +26,14 @@ namespace Dash.Views
 {
     public sealed partial class InkSelectionRect : UserControl
     {
-        public CollectionFreeformView FreeformView;
-        public ScrollViewer Scroller;
-        public InkStrokeContainer StrokeContainer;
+        private CollectionFreeformView _freeformView;
+        private ScrollViewer _scroller;
+        private InkStrokeContainer _strokeContainer;
         private Size _startSize;
         private Point _startPosition;
-        private List<Grid> _draggers;
+        private readonly List<Grid> _draggers;
         private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
         private bool _flyoutShowing;
-        private double outerMargin = 15;
-        private double innerMargin = 10;
-        //public double TotalMargin = 25;
 
         private Point Position()
         {
@@ -51,12 +48,12 @@ namespace Dash.Views
         public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
         {
             this.InitializeComponent();
-            FreeformView = view;
-            Scroller = scroller;
-            StrokeContainer = strokes;
+            _freeformView = view;
+            _scroller = scroller;
+            _strokeContainer = strokes;
             Loaded += OnLoaded;
-            if(view != null) FreeformView.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControlsOnOnManipulatorTranslatedOrScaled;
-            if(scroller != null) Scroller.ViewChanged += Scroller_ViewChanged;
+            if(view != null) _freeformView.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControlsOnOnManipulatorTranslatedOrScaled;
+            if(scroller != null) _scroller.ViewChanged += Scroller_ViewChanged;
             _draggers = new List<Grid>
             {
                 BottomRightDragger,
@@ -70,6 +67,10 @@ namespace Dash.Views
             };
             UpdateStrokeThickness();
             UpdateStartingTransforms();
+            if (_startingTransforms.Keys.Count != 1)
+            {
+                CopyAttributesButton.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Scroller_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
@@ -85,7 +86,7 @@ namespace Dash.Views
         private void UpdateStartingTransforms()
         {
             _startingTransforms = new Dictionary<InkStroke, Matrix3x2>();
-            foreach (InkStroke stroke in StrokeContainer.GetStrokes())
+            foreach (InkStroke stroke in _strokeContainer.GetStrokes())
             {
                 if (stroke.Selected)
                 {
@@ -96,7 +97,7 @@ namespace Dash.Views
 
         private void UpdateStrokeThickness()
         {
-            double scale = FreeformView?.Zoom ?? Scroller.ZoomFactor;
+            double scale = _freeformView?.Zoom ?? _scroller.ZoomFactor;
             double rectStrokeThickness = 1 / scale;
             foreach (var grid in _draggers)
             {
@@ -115,7 +116,7 @@ namespace Dash.Views
         private void DraggerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
-            double scale = FreeformView?.Zoom ?? Scroller.ZoomFactor;
+            double scale = _freeformView?.Zoom ?? _scroller.ZoomFactor;
             var translate = new Point(e.Delta.Translation.X / scale, e.Delta.Translation.Y / scale);
             var dragger = sender as Grid;
             float xScale = (float)((Width - 50) / _startSize.Width);
@@ -168,7 +169,7 @@ namespace Dash.Views
             var totalTranslation = new Point(Position().X - _startPosition.X, Position().Y - _startPosition.Y);
             Matrix3x2 translationMatrix = Matrix3x2.CreateTranslation(new Vector2((float)totalTranslation.X, (float)totalTranslation.Y));
             Matrix3x2 scaleMatrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2((float)InnerTopLeft().X, (float)InnerTopLeft().Y));
-            foreach (var stroke in StrokeContainer.GetStrokes())
+            foreach (var stroke in _strokeContainer.GetStrokes())
             {
                 if (stroke.Selected)
                 {
@@ -182,15 +183,15 @@ namespace Dash.Views
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            FreeformView.InkControl.UpdateInkFieldModelController();
-            FreeformView.InkControl.InkRecognitionHelper.AddStrokeData(new List<InkStroke>(StrokeContainer.GetStrokes().Where(s => s.Selected)));
+            _freeformView.InkControl.UpdateInkFieldModelController();
+            _freeformView.InkControl.InkRecognitionHelper.AddStrokeData(new List<InkStroke>(_strokeContainer.GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
 
         private void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            FreeformView.InkControl.InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(StrokeContainer.GetStrokes().Where(s => s.Selected)));
+            _freeformView.InkControl.InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(_strokeContainer.GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
             e.Handled = true;
@@ -228,7 +229,7 @@ namespace Dash.Views
 
         private void Delete()
         {
-            StrokeContainer.DeleteSelected();
+            _strokeContainer.DeleteSelected();
             var canvas = Parent as Canvas;
             canvas?.Children.Clear();
         }
@@ -241,7 +242,7 @@ namespace Dash.Views
 
         private void Copy()
         {
-            StrokeContainer.CopySelectedToClipboard();
+            _strokeContainer.CopySelectedToClipboard();
         }
 
         private void Grid_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -252,24 +253,24 @@ namespace Dash.Views
 
         }
 
-        private void DeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void DeleteButton_OnClick(object sender, RoutedEventArgs e)
         {
             Delete();
         }
 
-        private void CopyButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void CopyButton_OnClick(object sender, RoutedEventArgs e)
         {
             Copy();
         }
 
-        private void CutButton_OnTappedButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void CutButton_OnClick(object sender, RoutedEventArgs e)
         {
             Cut();
         }
 
-        private void RecognizeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void RecognizeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            FreeformView.InkControl.RecognizeSelected();
+            _freeformView.InkControl.RecognizeSelected();
         }
     }
 }

@@ -21,7 +21,7 @@
             <RowDefinition Height="15"></RowDefinition>
             <RowDefinition Height="279"></RowDefinition>
         </Grid.RowDefinitions>
-        <InkCanvas x:Name="XInkCanvas" Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="2" Margin="-55,-55,0,0"/>
+        <InkCanvas x:Name="XInkCanvas" Grid.Row="0" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="2" Margin="-5,-10,189,189" IsHitTestVisible="False"/>
         <local:RadialColorPicker Grid.Column="0" Grid.Row="1"></local:RadialColorPicker>
         <local:RadialMenuSlider x:Name="SizeSlider" Grid.Row="1" Width="200" StartAngle="30"
                                     Angle="30"

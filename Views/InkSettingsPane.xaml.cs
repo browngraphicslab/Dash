@@ -43,10 +43,9 @@ namespace Dash
         {
             var builder = new InkStrokeBuilder();
             var stroke = builder.CreateStrokeFromInkPoints(_strokeBuilderList, new Matrix3x2(1, 0, 0, 1, 0, 0));
-            var point1 = stroke.GetInkPoints()[0].Position;
             XInkCanvas.InkPresenter.StrokeContainer.AddStroke(stroke.Clone());
             XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0].Selected = true;
-            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(55, 55));
+            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(5, 13));
             XInkCanvas.InkPresenter.IsInputEnabled = false;
             ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
@@ -72,14 +71,6 @@ namespace Dash
             {
                 ExampleStroke.DrawingAttributes = GlobalInkSettings.Attributes;
             }
-            if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Eraser)
-            {
-                Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                Visibility = Visibility.Visible;
-            }
             if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && OpacitySlider.Visibility == Visibility.Visible)
             {
                 OpacitySlider.Visibility = Visibility.Collapsed;
@@ -89,6 +80,7 @@ namespace Dash
                 OpacitySlider.Visibility = Visibility.Visible;
             }
         }
+
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             GlobalInkSettings.Color = Color.FromArgb(255, 128, 128, 128);

@@ -205,10 +205,10 @@ namespace RadialMenuControl.UserControl
             Width = Diameter;
             Height = Diameter;
             // Check if we're floating
-            //floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
-            //Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
-            //Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
-            //Pie.Visibility = Visibility.Visible;
+            floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
+            Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
+            Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
+            Pie.Visibility = Visibility.Visible;
 
             await OpenStoryboard.PlayAsync();
             MenuOpenedOrClosed?.Invoke(true);
@@ -228,9 +228,9 @@ namespace RadialMenuControl.UserControl
             Width = CenterButton.ActualWidth;
             Height = CenterButton.ActualHeight;
             // Check if we're floating
-            //floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
-            //Canvas.SetTop(CenterButton, 0);
-            //Canvas.SetLeft(CenterButton, 0);
+            floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
+            Canvas.SetTop(CenterButton, 0);
+            Canvas.SetLeft(CenterButton, 0);
             Visibility = Visibility.Collapsed;
             MenuOpenedOrClosed?.Invoke(false);
         }
@@ -254,21 +254,21 @@ namespace RadialMenuControl.UserControl
                 await CloseStoryboard.PlayAsync();
                 MenuOpenedOrClosed?.Invoke(false);
                 Pie.Visibility = Visibility.Collapsed;
-                //Width = CenterButton.ActualWidth;
-                //Height = CenterButton.ActualHeight;
+                Width = CenterButton.ActualWidth;
+                Height = CenterButton.ActualHeight;
                 //// Check if we're floating
-                //floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
-                //Canvas.SetTop(CenterButton, 0);
-                //Canvas.SetLeft(CenterButton, 0);
+                floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
+                Canvas.SetTop(CenterButton, 0);
+                Canvas.SetLeft(CenterButton, 0);
             }
             else
             {
                 Width = Diameter;
                 Height = Diameter;
                 // Check if we're floating
-                //floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
-                //Canvas.SetTop(CenterButton, Diameter/2 - CenterButton.ActualHeight/2);
-                //Canvas.SetLeft(CenterButton, Diameter/2 - CenterButton.ActualWidth/2);
+                floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
+                Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
+                Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
                 Pie.Visibility = Visibility.Visible;
 
                 await OpenStoryboard.PlayAsync();

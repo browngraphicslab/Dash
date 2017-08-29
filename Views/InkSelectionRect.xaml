@@ -35,10 +35,33 @@
         </Grid.Resources>
         <Grid.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem x:Name="DeleteButton" Tapped="DeleteButton_OnTapped">Delete</MenuFlyoutItem>
-                <MenuFlyoutItem x:Name="CopyButton" Tapped="CopyButton_OnTapped">Copy</MenuFlyoutItem>
-                <MenuFlyoutItem x:Name="CutButton" Tapped="CutButton_OnTappedButton_OnTapped">Cut</MenuFlyoutItem>
-                <MenuFlyoutItem x:Name="RecognizeButton" Tapped="RecognizeButton_OnTapped">Recognize</MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="DeleteButton" Text="Delete" Click="DeleteButton_OnClick">
+                    <MenuFlyoutItem.Icon>
+                        <SymbolIcon Symbol="Delete"></SymbolIcon>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Copy" x:Name="CopyButton" Click="CopyButton_OnClick">
+                    <MenuFlyoutItem.Icon>
+                        <SymbolIcon Symbol="Copy"></SymbolIcon>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="CutButton" Text="Cut" Click="CutButton_OnClick">
+                    <MenuFlyoutItem.Icon>
+                        <SymbolIcon Symbol="Cut"></SymbolIcon>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+                <MenuFlyoutSubItem Text="More...">
+                    <MenuFlyoutSubItem.Icon>
+                        <SymbolIcon Symbol="Setting"></SymbolIcon>
+                    </MenuFlyoutSubItem.Icon>
+                    <MenuFlyoutItem x:Name="RecognizeButton" Text="Recognize" Click="RecognizeButton_OnClick">
+                        <MenuFlyoutItem.Icon>
+                            <SymbolIcon Symbol="View"></SymbolIcon>
+                        </MenuFlyoutItem.Icon>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="CopyAttributesButton" Text="Copy Attributes"></MenuFlyoutItem>
+                    <MenuFlyoutItem x:Name="AdjustSettingsButton" Text="Change Attributes"></MenuFlyoutItem>
+                </MenuFlyoutSubItem>
             </MenuFlyout>
         </Grid.ContextFlyout>
         <Rectangle Style="{StaticResource RectStyle}" Fill="Transparent" Margin="15"

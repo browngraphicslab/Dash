@@ -163,10 +163,8 @@ namespace Dash
         public void CloseInkMenu()
         {
             if (SettingsPane != null) SettingsPane.Visibility = Visibility.Collapsed;
-            Grid.Height = 215;
-            Grid.Width = 215;
             RadialMenu.Margin = new Thickness(0, 0, 0, 0);
-            Floating.ManipulateControlPosition(16, 31.25);
+            Floating.ManipulateControlPosition(16, 23.5, 215, 215);
         }
 
         /// <summary>
@@ -180,8 +178,6 @@ namespace Dash
             Point pos1 = Util.PointTransformFromVisual(new Point(107.5, 107.5), RadialMenu, _parentCanvas);
             if (SettingsPane == null) FindName("SettingsPane");
             SettingsPane.Visibility = Visibility.Visible;
-            Grid.Height = 294;
-            Grid.Width = 309;
             RadialMenu.Margin = new Thickness(32, 15, 0, 0);
 
             //Clicks the pen and ink buttons the first time they are loaded. hacky? yes.
@@ -197,7 +193,7 @@ namespace Dash
                 };
                 timer.Start();
             }
-            Floating.ManipulateControlPosition(-32, -47);
+            Floating.ManipulateControlPosition(-32, -47, 294, 309);
         }
 
         /// <summary>
@@ -369,12 +365,10 @@ namespace Dash
         {
             if (RadialMenu.Pie.Visibility == Visibility.Collapsed)
             {
-                Grid.Width = Grid.Height = 215;
                 RadialMenu.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else
             {
-                Grid.Width = Grid.Height = 45;
                 RadialMenu.VerticalAlignment = VerticalAlignment.Center;
                 RadialMenu.HorizontalAlignment = HorizontalAlignment.Center;
             }
