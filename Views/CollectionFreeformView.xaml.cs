@@ -897,28 +897,13 @@ namespace Dash
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                   
         {
-            //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            //var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-            //if (sourceIsRadialMenu)
-            //{
-            //    e.AcceptedOperation = DataPackageOperation.Move;
-            //    e.DragUIOverride.Clear();
-            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
-            //    e.DragUIOverride.IsContentVisible = false;
-            //    e.DragUIOverride.IsGlyphVisible = false;
-
-            //}
             ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
 
-
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null)
-            {
-                return;
-            }
+            if (carrier.StartingCollection == null) return;
+
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {

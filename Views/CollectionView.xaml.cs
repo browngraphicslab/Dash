@@ -209,7 +209,22 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
-        
+
+        private int GetMenuIndex() 
+        {
+            switch (_viewType)
+            {
+                case CollectionViewType.Freeform:
+                    return 2; 
+                case CollectionViewType.Grid:
+                    return 0; 
+                case CollectionViewType.List:
+                    return 1; 
+                default: return -1; 
+            }
+        }
+
+
 
         private void MakeMenu()
         {
@@ -223,7 +238,6 @@ namespace Dash
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
-
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
@@ -232,7 +246,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
