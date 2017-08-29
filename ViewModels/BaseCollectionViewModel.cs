@@ -159,10 +159,7 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                if (carrier.Source.Equals(carrier.Destination))
-                {
-                    return; // we don't want to drop items on ourself
-                }
+                if (carrier.Source.Equals(carrier.Destination)) return; // we don't want to drop items on ourself
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -179,8 +176,6 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("DRAG enterrrrrrrrr");
-
             this.HighlightPotentialDropTarget(sender as SelectionElement);
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -224,11 +219,10 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
+            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
             ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
             ItemsCarrier.Instance.CurrBaseModel = this;
-            ItemsCarrier.Instance.CurrCollection = sender as ICollectionView; 
 
-            Debug.WriteLine("DRAG LEFTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
             var element = sender as SelectionElement;
             if (element != null)
             {
