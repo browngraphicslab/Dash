@@ -98,16 +98,13 @@ namespace Dash
             {
                 // Add Events
 #pragma warning disable 4014
-                _mutex.WaitOne();
                 RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
 #pragma warning restore 4014
                 {
                     // Yay!
-                    _mutex.ReleaseMutex();
                 }, exception =>
                 {
                     // Hayyyyy!
-                    _mutex.ReleaseMutex();
                 });
             }
         }
@@ -458,8 +455,6 @@ namespace Dash
             }
         }
 
-        private readonly Mutex _mutex = new Mutex();
-
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyController" /> at the first
         ///     prototype in the hierarchy that contains it. If the <see cref="KeyController" /> is not used at any level then it is
@@ -490,15 +485,12 @@ namespace Dash
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
 
-            _mutex.WaitOne();
             RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
             {
                 //Yay!
-                _mutex.ReleaseMutex();
             }, exception =>
             {
                 //Hayyyyy!
-                _mutex.ReleaseMutex();
             });
 
         }
@@ -561,15 +553,12 @@ namespace Dash
 
             if (updateServer)
             {
-                _mutex.WaitOne();
                 RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
                 {
                     //Yay!
-                    _mutex.ReleaseMutex();
                 }, exception =>
                 {
                     //Hayyyyy!
-                    _mutex.ReleaseMutex();
                 });
             }
         }
@@ -582,7 +571,7 @@ namespace Dash
         public DocumentController MakeDelegate()
         {
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType, id: "delegate of " + GetId() + " " + Guid.NewGuid());
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType, id: "delegate-of-" + GetId() + "-" + Guid.NewGuid());
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {

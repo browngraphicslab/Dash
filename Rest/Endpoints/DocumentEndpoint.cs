@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -10,9 +12,15 @@ namespace Dash
     {
         private readonly ServerEndpoint _connection;
 
+        ConcurrentDictionary<string, SemaphoreSlim> _semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private SemaphoreSlim _semaphore;
+
         public DocumentEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+
+            // create a semaphore to be used in the get documents async task
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         /// <summary>
@@ -25,15 +33,24 @@ namespace Dash
         {
             try
             {
+                if (!_semaphores.ContainsKey(newDocument.Id))
+                {
+                    _semaphores[newDocument.Id] = new SemaphoreSlim(1);
+                }
+
+                await _semaphores[newDocument.Id].WaitAsync();
+
                 var result = await _connection.Post("api/Document", newDocument);
                 var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
                 success(resultDoc);
+                _semaphores[newDocument.Id].Release();
             }
             catch (Exception e)
             {
                 // return the error message
                 error(e);
+                _semaphores[newDocument.Id].Release();
             }
         }
 
@@ -48,6 +65,13 @@ namespace Dash
         {
             try
             {
+                if (!_semaphores.ContainsKey(documentToUpdate.Id))
+                {
+                    _semaphores[documentToUpdate.Id] = new SemaphoreSlim(1);
+                }
+
+                await _semaphores[documentToUpdate.Id].WaitAsync();
+
                 var result = await _connection.Put("api/Document", documentToUpdate);
                 var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
@@ -57,6 +81,10 @@ namespace Dash
             {
                 // return the error message
                 error(e);
+            }
+            finally
+            {
+                _semaphores[documentToUpdate.Id].Release();
             }
         }
 
@@ -88,15 +116,23 @@ namespace Dash
         /// <param name="error"></param>
         public async void GetDocuments(IEnumerable<string> ids, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
         {
+
             try
             {
-                var result = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/batch/{ string.Join(",", ids)}");
+                await _semaphore.WaitAsync();
+
+                var url = $"api/Document/batch/{string.Join("&", ids)}";
+                var result = await _connection.GetItem<IEnumerable<DocumentModelDTO>>(url);
                 success(result);
             }
             catch (Exception e)
             {
                 // return the error message
                 error(e);
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 

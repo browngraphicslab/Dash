@@ -109,19 +109,24 @@ namespace Dash
             if (_documents.Contains(docController))
                 return;
             _documents.Add(docController);
-            DocumentCollectionFieldModel.Data.Add(docController.GetId());
+
+            if (!DocumentCollectionFieldModel.Data.Contains(docController.GetId()))
+            {
+                DocumentCollectionFieldModel.Data.Add(docController.GetId());
+
+                // Update server
+                RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                {
+
+                }, exception =>
+                {
+
+                });
+            }
+            
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
                 CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
                 new List<DocumentController> {docController}));
-            
-            // Update server
-            RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
-            {
-
-            }, exception =>
-            {
-
-            });
         }
 
 

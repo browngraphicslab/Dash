@@ -88,7 +88,7 @@ namespace Dash
                 {
                     [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
                 };
-                _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id:"home document " + Guid.NewGuid());
+                _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id:"home-document-" + Guid.NewGuid());
 
                 var collectionDocumentController =
                     new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -116,7 +116,7 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
-            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType, "main document " + Guid.NewGuid());
+            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType, "main-document-" + Guid.NewGuid());
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
@@ -152,7 +152,7 @@ namespace Dash
                     {
                         [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
                     };
-                    _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id: "home document " + Guid.NewGuid());
+                    _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id: "home-document-" + Guid.NewGuid());
                     var collectionDocumentController =
                         new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
 

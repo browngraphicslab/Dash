@@ -40,23 +40,30 @@ namespace DashWebServer.Controllers
         }
         
         // GET api/batch/document/5, returns the document with the given ID
-        [HttpGet("batch/{ids}")]
-        [HttpGet("batch")]
-        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds(IEnumerable<string> ids)
+        [HttpGet("batch/{idList}")]
+        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds(string idList)
         {
-            var docModels = new List<DocumentModel>();
-            foreach (var docId in ids)
+            try
             {
-                docModels.Add(await _documentRepository.GetItemByIdAsync<DocumentModel>(docId));
-            }
+                var ids = idList.Split('&');
+                var docModels = new List<DocumentModel>();
+                foreach (var docId in ids)
+                {
+                    docModels.Add(await _documentRepository.GetItemByIdAsync<DocumentModel>(docId));
+                }
 
-            var docModelDtos = new List<DocumentModelDTO>();
-            foreach (var docModel in docModels)
+                var docModelDtos = new List<DocumentModelDTO>();
+                foreach (var docModel in docModels)
+                {
+                    docModelDtos.Add(await GetDocumentModelDtoFromDocumentModel(docModel));
+                }
+
+                return docModelDtos;
+            }
+            catch(Exception e)
             {
-                docModelDtos.Add(await GetDocumentModelDtoFromDocumentModel(docModel));
+                throw;
             }
-
-            return docModelDtos;
         }
 
         // GET api/document/type/5, returns a list of documents with type specified by the given id
@@ -104,7 +111,7 @@ namespace DashWebServer.Controllers
             {
                 if (docModel.Id.Contains("delegate"))
                 {
-                    Debug.WriteLine("delegate post " + docModel.Fields.Count);
+                    Debug.WriteLine(docModel.Id + " post " + docModel.Fields.Count);
                 }
                 if (docModel.Id.Contains("home"))
                 {
@@ -133,7 +140,7 @@ namespace DashWebServer.Controllers
             {
                 if (docModel.Id.Contains("delegate"))
                 {
-                    Debug.WriteLine("delegate put " + docModel.Fields.Count);
+                    Debug.WriteLine(docModel.Id + " put " + docModel.Fields.Count);
                 }
                 if (docModel.Id.Contains("home"))
                 {
