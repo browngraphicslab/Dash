@@ -107,7 +107,6 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
             carrier.Source = this;
-            //carrier.SourceCollection = sender as ICollectionView; 
             carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
@@ -129,6 +128,7 @@ namespace Dash
 
             carrier.Payload.Clear();
             carrier.Source = null;
+            carrier.SourceCollection = null;
             carrier.Destination = null;
         }
 

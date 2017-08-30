@@ -740,11 +740,13 @@ namespace Dash
                     {
                         // for blue drag/drop; must remove the payload from the original collection 
                         //carrier.CurrBaseModel?.RemoveDocuments(carrier.Payload);
-                        carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents ..and collections? 
-                        
+                        carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
 
-                        carrier.Payload.Clear();
+                        carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); 
+
+                            carrier.Payload.Clear();
                         carrier.Source = null;
+                        carrier.SourceCollection = null; 
                         carrier.Destination = null;
                     }
                 }
@@ -939,7 +941,7 @@ namespace Dash
 
             carrier.Destination = null;
             carrier.StartingCollection = this;
-            carrier.Source = ViewModel;
+            carrier.SourceCollection = xOuterGrid.GetFirstAncestorOfType<CollectionView>();// ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
