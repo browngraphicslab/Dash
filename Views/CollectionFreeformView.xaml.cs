@@ -734,14 +734,15 @@ namespace Dash
             else
             {
 
-                if (carrier.SourceCollection != null)
+                if (carrier.Source != null)
                 {
                     if (!carrier.Source.Equals(carrier.Destination))
                     {
                         // for blue drag/drop; must remove the payload from the original collection 
-                        //carrier.CurrBaseModel?.RemoveDocuments(carrier.Payload);
-                        carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
-                        //carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); 
+                        if (carrier._source != null)
+                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
+                        else
+                            carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
 
                         carrier.Payload.Clear();
                         carrier.Source = null;

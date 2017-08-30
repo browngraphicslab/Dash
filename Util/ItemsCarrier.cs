@@ -14,7 +14,7 @@ namespace Dash
         public List<DocumentController> Payload { get; set; }
         public CollectionView SourceCollection { get; set; }
 
-        private ICollectionViewModel _source; 
+        public ICollectionViewModel _source { get; private set; } 
         public ICollectionViewModel Source
         {
             get

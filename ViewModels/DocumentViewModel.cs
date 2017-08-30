@@ -440,7 +440,7 @@ namespace Dash
             // different sources based on whether it's a collection or a document 
             carrier.SourceCollection = (sender as DocumentView).GetFirstDescendantOfType<CollectionView>(); //TODO this will not work all the time (collection's source) 
             //carrier.Source = (sender as DocumentView).GetFirstAncestorOfType<CollectionView>()?.ViewModel; //TODO this will not work all the time (remove collections frm this)
-            if (carrier.Source == null) carrier.SourceCollection = (sender as DocumentView)?.ParentCollection; 
+            if (carrier.Source == null) carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel; 
 
             carrier.Payload = new List<DocumentController>() { DocumentController };
             args.Data.RequestedOperation = DataPackageOperation.Move;
