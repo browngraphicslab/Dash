@@ -49,7 +49,10 @@ namespace Dash {
         /// <param name="e">event arg</param>
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) {
             var generator = this.GetFirstAncestorOfType<ApiCreatorPropertyGenerator>(); 
-            generator?.ApiController.RemoveParameter((ApiParameter)((DictionaryEntry) DataContext).Value); 
+            generator?.ApiController.RemoveParameter((ApiParameter)((DictionaryEntry) DataContext).Value);
+            generator?.ApiController.RemoveHeader((ApiParameter) ((DictionaryEntry) DataContext).Value);
+            generator?.ApiController.RemoveAuthParameter((ApiParameter)((DictionaryEntry)DataContext).Value);
+            generator?.ApiController.RemoveAuthHeader((ApiParameter)((DictionaryEntry)DataContext).Value);
         }
 
         private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -58,10 +61,46 @@ namespace Dash {
             KeyChanged?.Invoke(k, xKey.Text);
         }
 
+        private void XKey_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            xKeyText.Text = xKey.Text;
+            xKey.Visibility = Visibility.Collapsed;
+            xKeyText.Visibility = Visibility.Visible;
+        }
+
         private void XValue_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             var k = (KeyController) ((DictionaryEntry) DataContext).Key;
             ValueChanged?.Invoke(k, xValue.Text);
+        }
+
+        private void XKeyText_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            xKeyText.Visibility = Visibility.Collapsed;
+            xKey.Visibility = Visibility.Visible;
+            xKey.Focus(FocusState.Programmatic);
+        }
+
+        public void EnterEditMode()
+        {
+            xDeleteButtonColumn.Width = new GridLength(30);
+            xKey.Visibility = Visibility.Visible;
+            xKeyText.Visibility = Visibility.Collapsed;
+        }
+
+        public void ExitEditMode()
+        {
+            xDeleteButtonColumn.Width = new GridLength(0);
+            if (!xKey.Text.Equals(string.Empty))
+            {
+                xKey.Visibility = Visibility.Collapsed;
+                xKeyText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                xKey.Visibility = Visibility.Visible;
+                xKeyText.Visibility = Visibility.Collapsed;
+            }
         }
 
         public delegate void ValueChangedHandler(KeyController key, string newValue);

@@ -13,16 +13,22 @@
 
     <Grid HorizontalAlignment="Stretch" Background="Transparent">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="xDeleteButtonColumn" Width="0" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="30" />
             <ColumnDefinition Width="30" />
-            <ColumnDefinition Width="40" />
+            <ColumnDefinition Width="10"/>
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="xKey" TextWrapping="Wrap" PlaceholderText="Property Name" Grid.Column="0" TextChanged="XKey_OnTextChanged" BorderBrush="White"/>
-        <TextBox x:Name="xValue" TextWrapping="Wrap" Margin="3,0,0,0" PlaceholderText="Property Value" Grid.Column="1" TextChanged="XValue_OnTextChanged" BorderBrush="White"/>
-        <CheckBox x:Name="xDisplay" IsChecked="{Binding Path=Value.Displayed, Mode=TwoWay}"  MinWidth="0" Margin="10,0,0,0"  Grid.Column="2"/>
-        <CheckBox x:Name="xRequired" IsChecked="{Binding Path=Value.Required, Mode=TwoWay}"  MinWidth="0" Margin="10,0,0,0" Grid.Column="3"/>
-        <Button x:Name="xDelete" Tapped="xDelete_Tapped" Padding="0" Content="X"  Height="26" Width="30" Grid.Column="4" MinWidth="0" Margin="10,0,0,0" Background="{StaticResource AccentGreen}" />
+        <TextBox x:Name="xKey" TextWrapping="Wrap"  Grid.Column="1" TextChanged="XKey_OnTextChanged" LostFocus="XKey_OnLostFocus" BorderBrush="Transparent"/>
+        <TextBlock x:Name="xKeyText" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Stretch" Padding="5" Tapped="XKeyText_OnTapped"></TextBlock>
+        <TextBox x:Name="xValue" TextWrapping="Wrap" Margin="3,0,0,0" Grid.Column="2" TextChanged="XValue_OnTextChanged" BorderBrush="Transparent"/>
+        <CheckBox x:Name="xDisplay" IsChecked="{Binding Path=Value.Displayed, Mode=TwoWay}"  MinWidth="0" Margin="10,0,0,0"  Grid.Column="3"/>
+        <CheckBox x:Name="xRequired" IsChecked="{Binding Path=Value.Required, Mode=TwoWay}"  MinWidth="0" Margin="10,0,0,0" Grid.Column="4"/>
+        <Button x:Name="xDelete" Tapped="xDelete_Tapped" Padding="0" Height="26" Width="30" Grid.Column="0" MinWidth="0" Background="Transparent">
+            <Border Background="Red" Height="24" Width="24" CornerRadius="12" Opacity="0.7">
+                <Rectangle Height="3" Width="15" Fill="White"></Rectangle>
+            </Border>
+        </Button>
     </Grid>
 </UserControl>

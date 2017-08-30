@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
         <TextBlock Text="HTTP API Builder" Grid.Row="0" HorizontalAlignment="Center" Style="{StaticResource xTitleStyle}" FontWeight="Normal"/>
         <StackPanel Orientation="Vertical" Grid.Row="1" >
-            <Grid>
+            <Grid Margin="0,10,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="77"></ColumnDefinition>
                     <ColumnDefinition Width="*"></ColumnDefinition>
@@ -27,7 +27,10 @@
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
                 <Button x:Name="xRequestTypeButton" Background="{StaticResource AccentGreen}" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="77" Content="Get" Tapped="xRequestTypeButton_OnTapped"/>
-                <TextBox  Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0" TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="White"  />
+                <TextBox Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0" TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="SlateGray" BorderThickness="1.5" GotFocus="XApiURLTB_OnGotFocus" LostFocus="XApiURLTB_OnLostFocus"/>
+                <Border x:Name="xAddressLabel" Grid.Column="1" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="3,-10,0,0">
+                    <TextBlock Text="API Adress" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                </Border>
             </Grid>
             <local:ApiCreatorAuthenticationDisplay x:Name="xAuthControl" Margin="0,0,0,12" />
             <local:ApiCreatorPropertyGenerator x:Name="xHeaderControl" Margin="0,0,0,12" TitleTag="HEADERS"/>

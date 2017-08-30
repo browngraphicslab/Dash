@@ -15,6 +15,6 @@
             <ListView x:Name="xListView" SelectionMode="None"></ListView>
         </Grid>
         <Button HorizontalAlignment="Center"  VerticalAlignment="Bottom" x:Name="xQueryBtn" Content="Query API" />
-        <Button HorizontalAlignment="Left" Tapped="XEditBtn_Tapped" Style="{StaticResource xAccentButtonStyle}"  VerticalAlignment="Bottom" x:Name="xEditBtn" Content="Edit API" />
+        <Button HorizontalAlignment="Left" Tapped="XEditBtn_Tapped" Style="{StaticResource xAccentButtonStyle}"  VerticalAlignment="Bottom" x:Name="xEditBtn" Content="Edit Parameters" />
     </Grid>
 </UserControl>

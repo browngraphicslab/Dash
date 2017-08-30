@@ -9,33 +9,62 @@
     d:DesignHeight="320"
     d:DesignWidth="400">
 
-    <StackPanel  Background="Transparent" HorizontalAlignment="Stretch">
-        <Grid Background="{StaticResource WindowsBlue}">
-            <TextBlock Text="AUTHENTICATION" TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButtonText_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            <TextBlock Name="xCollapseButtonText"  HorizontalAlignment="Right" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped"  Margin="0,0,10,4" FontFamily="Marlett" Text="5" Foreground="White"></TextBlock>
+    <StackPanel HorizontalAlignment="Stretch">
+        <Grid >
+            <Grid.Background>
+                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+            </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="AUTHENTICATION" Grid.Column="1"  TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButtonText_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <TextBlock Name="xCollapseButtonText" Grid.Column="2"   HorizontalAlignment="Left" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped" Margin="5,3,10,4" Text="5" FontFamily="Marlett" Foreground="White"></TextBlock>
         </Grid>
-        <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" Margin="10" BorderBrush="DarkSlateGray" BorderThickness="2">
-            <Grid Name="xTopAPIURL" Margin="0,0,0,10">
+        <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" BorderThickness="8">
+            <StackPanel.Background>
+                <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
+            </StackPanel.Background>
+            <StackPanel.BorderBrush>
+                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+            </StackPanel.BorderBrush>
+            <Grid Name="xTopAPIURL" Margin="0,5,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="77" />
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox x:Name="requestTypePicker" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="77" SelectedIndex="1" Grid.Column="0">
+                <ComboBox x:Name="requestTypePicker" HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Width="77" SelectedIndex="1" Grid.Column="0" Visibility="Collapsed" DropDownClosed="RequestTypePicker_OnDropDownClosed">
                     <ComboBoxItem Content="GET"/>
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
-                <TextBox x:Name="xApiURLTB" TextChanged="xApiURLTB_TextChanged" Grid.Column="1" Height="25" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search" BorderBrush="#FF474747"  />
+                <Button x:Name="xRequestTypeButton" Background="{StaticResource AccentGreen}" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="77" Content="Post" Tapped="xRequestTypeButton_OnTapped"/>
+                <TextBox x:Name="xApiURLTB" TextChanged="xApiURLTB_TextChanged" Grid.Column="1" Height="25" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search" BorderBrush="SlateGray"  BorderThickness="1.5" GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"/>
+                <Border x:Name="xAddressLabel" Grid.Column="1" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="3,-10,0,0">
+                    <TextBlock Text="API Adress" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                </Border>
             </Grid>
-            <Grid Margin="0,0,0,10">
+            <Grid Margin="0,10,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBox PlaceholderText="API Key" Text="NzeQ251NVAOgvDPpZBsjy2w3Y" x:Name="xKey" Grid.Column="0" ></TextBox>
-                <TextBox PlaceholderText="API Secret" Text="qMoxx61YKMDjUgIkpDgIJlLhVKTLDk5YOrSaNMalmkUwuJo3ak" x:Name="xSecret" Grid.Column="1"  Margin="3,0,0,0"></TextBox>
+                <TextBox Text="NzeQ251NVAOgvDPpZBsjy2w3Y" x:Name="xKey" Grid.Column="0" BorderBrush="SlateGray"  BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
+                <Border x:Name="xKeyLabel" Grid.Column="0" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-10,0,0">
+                    <TextBlock Text="API Key" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                </Border>
+                <TextBox Text="qMoxx61YKMDjUgIkpDgIJlLhVKTLDk5YOrSaNMalmkUwuJo3ak" x:Name="xSecret" Grid.Column="1"  Margin="3,0,0,0" BorderBrush="SlateGray" BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
+                <Border x:Name="xSecretLabel" Grid.Column="1" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="3,-10,0,0">
+                    <TextBlock Text="API Secret" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                </Border>
             </Grid>
-            <local:ApiCreatorPropertyGenerator x:Name="xAuthHeaders" Margin="0,0,0,12" TitleTag="AUTHENTICATION HEADERS" />
-            <local:ApiCreatorPropertyGenerator x:Name="xAuthParams" TitleTag="AUTHENTICATION PARAMETERS" />
+            <Grid Background="{StaticResource WindowsBlue}" Margin="0,0,0,12">
+                <local:ApiCreatorPropertyGenerator x:Name="xAuthHeaders" TitleTag="AUTHENTICATION HEADERS" />
+            </Grid>
+            <Grid Background="{StaticResource WindowsBlue}">
+                <local:ApiCreatorPropertyGenerator x:Name="xAuthParams" TitleTag="AUTHENTICATION PARAMETERS" />
+            </Grid>
         </StackPanel>
     </StackPanel>
 </UserControl>

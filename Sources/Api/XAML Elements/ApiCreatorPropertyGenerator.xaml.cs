@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -30,7 +31,6 @@ namespace Dash
         public ApiCreatorPropertyGenerator(KeyController key) {
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
-            Document = null;
             parameterCollectionKey = key;
 
         }
@@ -61,9 +61,16 @@ namespace Dash
         private void xCollapseButton_OnTapped(object sender, TappedRoutedEventArgs e) {
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
                 xCollapseStackPanel.Visibility = Visibility.Collapsed;
+                xEditButton.Visibility = Visibility.Collapsed;
+                addParameterItem.Visibility = Visibility.Collapsed;
                 xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
+                if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() != 0)
+                {
+                    xEditButton.Visibility = Visibility.Visible;
+                }
+                addParameterItem.Visibility = Visibility.Visible;
                 xCollapseButtonText.Text = "6";
             }
         }
@@ -88,7 +95,7 @@ namespace Dash
             {
                 _operatorController.AddAuthParameter(new ApiParameter(false, true));
             }
-
+            xEditButton.Visibility = Visibility.Visible;
             //var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
@@ -139,6 +146,32 @@ namespace Dash
         private void ApiCreatorProperty_OnValueChanged(KeyController key, string newValue)
         {
             Values[key] = newValue;
+        }
+
+        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var symbol = (xEditButton.Content as SymbolIcon)?.Symbol;
+            var items = xListView.GetDescendantsOfType<ApiCreatorProperty>();
+            if (symbol == Symbol.Edit)
+            {
+                xEditButton.Content = new SymbolIcon(Symbol.Accept);
+                if (items != null)
+                    foreach (var item in items)
+                    {
+                         item?.EnterEditMode();
+                    }
+                xDeleteButtonColumn.Width = new GridLength(30);
+            }
+            else
+            {
+                xEditButton.Content = new SymbolIcon(Symbol.Edit);
+                if (items != null)
+                    foreach (var item in items)
+                    {
+                        item?.ExitEditMode();
+                    }
+                xDeleteButtonColumn.Width = new GridLength(0);
+            }
         }
     }
 }

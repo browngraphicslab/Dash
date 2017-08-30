@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using RadialMenuControl.UserControl;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -178,6 +180,24 @@ namespace Dash
         {
             requestTypePicker.Visibility = Visibility.Collapsed;
             xRequestTypeButton.Content = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
+        }
+
+        private void XApiURLTB_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            xAddressLabel.Background = xRequestTypeButton.Background;
+            if ((sender as TextBox) != null)
+            {
+                ((TextBox) sender).BorderBrush = xRequestTypeButton.Background;
+            }
+        }
+
+        private void XApiURLTB_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            xAddressLabel.Background = new SolidColorBrush(Colors.SlateGray);
+            if ((sender as TextBox) != null)
+            {
+                ((TextBox)sender).BorderBrush = new SolidColorBrush(Colors.SlateGray);
+            }
         }
     }
 }
