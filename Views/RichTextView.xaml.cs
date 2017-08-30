@@ -192,6 +192,46 @@ namespace Dash
         }
 
         int LastS1 = 0, LastS2 = 0;
+
+        private void ItalicButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.xRichEitBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
+        }
+
+        private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.xRichEitBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
+        }
+
+        private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (this.xRichEitBox.Document.Selection.CharacterFormat.Underline != UnderlineType.None)
+                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Dash;
+            else
+                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.None;
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void xRichEitBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xFormatRow.Height = new GridLength(50);
+        }
+
+        private void Grid_GotFocus(object sender, RoutedEventArgs e)
+        {
+
+            xFormatRow.Height = new GridLength(50);
+        }
+
+        private void Grid_LostFocus(object sender, RoutedEventArgs e)
+        {
+            xFormatRow.Height = new GridLength(0);
+        }
+
         void xRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;
