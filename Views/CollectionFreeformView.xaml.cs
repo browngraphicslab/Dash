@@ -768,6 +768,10 @@ namespace Dash
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragLeave(sender, e);
+            Collection_DragLeave(sender, e);
+
+            //ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
+            //ItemsCarrier.Instance.CurrBaseModel = this;
         }
 
         public void SetDropIndicationFill(Brush fill)
