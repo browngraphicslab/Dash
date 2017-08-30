@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
+using Newtonsoft.Json;
 
 namespace Dash
 {
@@ -121,9 +124,17 @@ namespace Dash
             {
                 await _semaphore.WaitAsync();
 
-                var url = $"api/Document/batch/{string.Join("&", ids)}";
-                var result = await _connection.GetItem<IEnumerable<DocumentModelDTO>>(url);
-                success(result);
+
+                if (!ids.Any())
+                {
+                    Debug.WriteLine("id count is zero in GetDocuments in DocumentEndpoint");
+                }
+
+                var url = $"api/Document/batch/&{string.Join("&", ids)}";
+
+                var result = await _connection.Post("api/Document/batch", ids);
+                var resultDoc = await result.Content.ReadAsAsync<IEnumerable<DocumentModelDTO>>();
+                success(resultDoc);
             }
             catch (Exception e)
             {

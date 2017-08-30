@@ -62,12 +62,8 @@ namespace Dash
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    //TODO we should extract this logging from this class
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-                    throw ex;
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
                 }
 
                 // otherwise return the result
@@ -102,13 +98,8 @@ namespace Dash
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-
                     // then throw the HttpRequestException
                     response.EnsureSuccessStatusCode();
-                    //TODO we should think about how get requests should work, maybe we want get requests to happen in individual controllers
                 }
 
                 // otherwise return the result
@@ -144,12 +135,8 @@ namespace Dash
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    //TODO we should extract this logging from this class
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-                    throw ex;
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
                 }
 
                 // otherwise return the result
@@ -183,12 +170,8 @@ namespace Dash
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    //TODO we should extract this logging from this class
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-                    throw ex;
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
                 }
 
                 // otherwise return the result

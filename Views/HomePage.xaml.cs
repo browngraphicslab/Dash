@@ -67,47 +67,6 @@ namespace Dash
             collectionField.AddDocument(newDocument);
         }
 
-
-        private void OnCreateMainPageTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var mainDocuments = new List<DocumentController>();
-
-            Task.Run(async () =>
-            {
-                await RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType, docModelDtos =>
-                {
-                    mainDocuments.AddRange(docModelDtos.Select(dmDto => DocumentController.CreateFromServer(dmDto)));
-                }, exception =>
-                {
-                    Debug.WriteLine(exception);
-                });
-
-            }).ContinueWith(task =>
-            {
-                var fields = new Dictionary<KeyController, FieldModelController>
-                {
-                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
-                };
-                _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id:"home-document-" + Guid.NewGuid());
-
-                var collectionDocumentController =
-                    new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-
-                _homePageDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
-
-                var documentViewModel = new DocumentViewModel(_homePageDocument);
-                _mainDocView = new DocumentView(documentViewModel);
-
-                // set the main view's width and height to avoid NaN errors
-                _mainDocView.Width = xOuterGrid.ActualWidth;
-                _mainDocView.Height = xOuterGrid.ActualHeight;
-
-                Grid.SetRow(_mainDocView, 1);
-                xOuterGrid.Children.Add(_mainDocView);
-
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
         private DocumentController CreateNewWorkspace()
         {
             // create the collection document model using a request

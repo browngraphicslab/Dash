@@ -109,8 +109,18 @@ namespace Dash
             }
         }
 
+        public static int threadCount = 0;
+        public static object l = new object();
+
         public static DocumentController CreateFromServer(DocumentModelDTO docModelDto)
         {
+
+            lock (l)
+            {
+                threadCount++;
+                Debug.WriteLine($"enter dc : {threadCount}");
+            }
+
             var localDocController = ContentController.GetController<DocumentController>(docModelDto.Id);
             if (localDocController != null) return localDocController;
 
@@ -122,6 +132,12 @@ namespace Dash
             }).ToDictionary(keyFieldPair => keyFieldPair.keyController, keyFieldPair => keyFieldPair.fieldController);
             var type = docModelDto.DocumentType;
             var id = docModelDto.Id;
+
+            lock (l)
+            {
+                threadCount--;
+                Debug.WriteLine($"exit dc : {threadCount}");
+            }
 
             return new DocumentController(fields, type, id, sendToServer: false);
         }

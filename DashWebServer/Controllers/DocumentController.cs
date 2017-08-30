@@ -40,17 +40,18 @@ namespace DashWebServer.Controllers
         }
         
         // GET api/batch/document/5, returns the document with the given ID
-        [HttpGet("batch/{idList}")]
-        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds(string idList)
+        [HttpPost("batch")]
+        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds([FromBody] IEnumerable<string> idList)
         {
             try
             {
-                var ids = idList.Split('&');
+                //var ids = idList.Split('&').Where(id => string.IsNullOrWhiteSpace(id) == false);
                 var docModels = new List<DocumentModel>();
-                foreach (var docId in ids)
+                foreach (var docId in idList)
                 {
                     docModels.Add(await _documentRepository.GetItemByIdAsync<DocumentModel>(docId));
                 }
+
 
                 var docModelDtos = new List<DocumentModelDTO>();
                 foreach (var docModel in docModels)

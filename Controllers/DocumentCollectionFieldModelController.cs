@@ -42,31 +42,39 @@ namespace Dash
 
             RESTClient.Instance.Documents.GetDocuments(documentIds, docmodelDtos =>
             {
-
-                Task.Run(() =>
+                try
                 {
-                    var docControllerList = new List<DocumentController>();
-
-                    foreach (var docDto in docmodelDtos)
+                    Task.Run(() =>
                     {
-                        var keys = docDto.KeyList.Select(key => new KeyController(key, false));
-                        var fields = docDto.FieldList.Select(field => CreateFromServer(field));
+                        var docControllerList = new List<DocumentController>();
 
-                        var fieldDict = keys.Zip(fields,
-                                (keyController, fieldController) => new {keyController, fieldController})
-                            .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
+                        foreach (var docDto in docmodelDtos)
+                        {
+                            var keys = docDto.KeyList.Select(key => new KeyController(key, false));
+                            var fields = docDto.FieldList.Select(CreateFromServer);
 
-                        var docController = new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
-                        docControllerList.Add(docController);
-                    }
-                    UITask.Run(() =>
-                    {
-                        AddDocuments(docControllerList);
+                            var fieldDict = keys.Zip(fields,
+                                    (keyController, fieldController) => new {keyController, fieldController})
+                                .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
+
+                            var docController =
+                                new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
+                            docControllerList.Add(docController);
+                        }
+                        UITask.Run(() =>
+                        {
+                            AddDocuments(docControllerList);
+                        });
+
+
+
                     });
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
 
-
-
-                });
             }, exeption => { });
         }
 

@@ -1,44 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using System.Collections.Generic;
 
 namespace Dash
 {
     public abstract class FieldModelController : ViewModelBase, IController, IDisposable
     {
-        /// <summary>
-        ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
-        ///     on the fieldModel!
-        /// </summary>
-        public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args, Context context);
-        public event FieldModelUpdatedHandler FieldModelUpdated;
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args,
+            Context context);
 
-        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
-        {
-            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), context);
-        }
+        public static int threadCount;
+        public static object l = new object();
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.OutputReferences" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
-
-        public abstract TypeInfo TypeInfo { get; }
-
-        public virtual bool CheckType(FieldModelController fmc)
-        {
-            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
-        }
 
 
         protected FieldModelController(FieldModel fieldModel, bool isCreatedFromServer)
@@ -49,36 +32,57 @@ namespace Dash
             ContentController.AddController(this);
 
             if (isCreatedFromServer == false)
-            {
-                // Add Events
                 RESTClient.Instance.Fields.AddField(fieldModel, fieldModelDto =>
                 {
                     // Yay!
-
                 }, exception =>
                 {
                     // Haaay
                     Debug.WriteLine(exception);
-
                 });
-            } 
-
-
         }
+
+        /// <summary>
+        ///     The fieldModel associated with this <see cref="FieldModelController" />, You should only set values on the
+        ///     controller, never directly
+        ///     on the fieldModel!
+        /// </summary>
+        public FieldModel FieldModel { get; set; }
+
+        public abstract TypeInfo TypeInfo { get; }
 
 
         /// <summary>
-        /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
+        ///     Returns the <see cref="EntityBase.Id" /> for the entity which the controller encapsulates
         /// </summary>
         public string GetId()
         {
             return FieldModel.Id;
         }
 
+        public virtual void Dispose()
+        {
+        }
+
+        public event FieldModelUpdatedHandler FieldModelUpdated;
+
+        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
+        {
+            FieldModelUpdated?.Invoke(this,
+                args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update),
+                context);
+        }
+
+        public virtual bool CheckType(FieldModelController fmc)
+        {
+            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
+        }
+
         public virtual IEnumerable<DocumentController> GetReferences()
         {
             return new List<DocumentController>();
         }
+
         public virtual FieldModelController Dereference(Context context)
         {
             return this;
@@ -95,15 +99,19 @@ namespace Dash
         }
 
         /// <summary>
-        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        ///     Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
         /// <returns></returns>
         public abstract FrameworkElement GetTableCellView(Context context);
 
         /// <summary>
-        /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll
+        ///     Helper method for generating a table cell view in <see cref="GetTableCellView" /> for textboxes which may have to
+        ///     scroll
         /// </summary>
-        /// <param name="bindTextOrSetOnce">A method which will create a binding on the passed in textbox, or set the text of the textbox to some initial value</param>
+        /// <param name="bindTextOrSetOnce">
+        ///     A method which will create a binding on the passed in textbox, or set the text of the
+        ///     textbox to some initial value
+        /// </param>
         protected FrameworkElement GetTableCellViewOfScrollableText(Action<TextBlock> bindTextOrSetOnce)
         {
             var textBlock = new TextBlock
@@ -114,7 +122,7 @@ namespace Dash
                 TextWrapping = TextWrapping.NoWrap
             };
             bindTextOrSetOnce(textBlock);
-            
+
 
             var scrollViewer = new ScrollViewer
             {
@@ -129,27 +137,28 @@ namespace Dash
         }
 
         /// <summary>
-        /// Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock displaying the number of items stored in collection/list 
+        ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
+        ///     displaying the number of items stored in collection/list
         /// </summary>
         protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
         {
-            Grid grid = new Grid
+            var grid = new Grid
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition {Height = GridLength.Auto});
+            grid.RowDefinitions.Add(new RowDefinition {Height = GridLength.Auto});
 
             var symbol = new TextBlock
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center, 
-                FontSize = 40, 
-                Text = icon 
+                TextAlignment = TextAlignment.Center,
+                FontSize = 40,
+                Text = icon
             };
-            grid.Children.Add(symbol); 
+            grid.Children.Add(symbol);
 
             var textBlock = new TextBlock
             {
@@ -159,19 +168,17 @@ namespace Dash
                 TextWrapping = TextWrapping.Wrap
             };
             bindTextOrSetOnce(textBlock);
-            grid.Children.Add(textBlock); 
+            grid.Children.Add(textBlock);
             Grid.SetRow(textBlock, 1);
 
-            return grid; 
+            return grid;
         }
 
         public override bool Equals(object obj)
         {
-            FieldModelController cont = obj as FieldModelController;
+            var cont = obj as FieldModelController;
             if (cont == null)
-            {
                 return false;
-            }
             return FieldModel.Equals(cont.FieldModel);
         }
 
@@ -189,46 +196,72 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
-        public virtual void Dispose()
-        {
-        }
-
         public static FieldModelController CreateFromServer(FieldModelDTO fieldModelDto)
         {
+            lock (l)
+            {
+                threadCount++;
+                Debug.WriteLine($"enter fc : {threadCount}");
+            }
+
             var fieldModel = TypeInfoHelper.CreateFieldModel(fieldModelDto);
+
+            FieldModelController returnController;
+
 
             switch (fieldModelDto.Type)
             {
                 case TypeInfo.None:
                     throw new NotImplementedException();
                 case TypeInfo.Number:
-                    return NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
+                    returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
+                    break;
                 case TypeInfo.Text:
-                    return TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
+                    returnController = TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
+                    break;
                 case TypeInfo.Image:
-                    return ImageFieldModelController.CreateFromServer(fieldModel as ImageFieldModel);
+                    returnController = ImageFieldModelController.CreateFromServer(fieldModel as ImageFieldModel);
+                    break;
                 case TypeInfo.Collection:
-                    return DocumentCollectionFieldModelController.CreateFromServer(fieldModel as DocumentCollectionFieldModel);
+                    returnController =
+                        DocumentCollectionFieldModelController.CreateFromServer(
+                            fieldModel as DocumentCollectionFieldModel);
+                    break;
                 case TypeInfo.Document:
-                    return DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
+                    returnController = DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
+                    break;
                 case TypeInfo.Reference:
-                    return ReferenceFieldModelController.CreateFromServer(fieldModel as ReferenceFieldModel);
+                    returnController =
+                        ReferenceFieldModelController.CreateFromServer(fieldModel as ReferenceFieldModel);
+                    break;
                 case TypeInfo.Operator:
                     throw new NotImplementedException();
-                    //return OperatorFieldModelController.CreateFromServer(fieldModel as OperatorFieldModel);
+                //returnController = OperatorFieldModelController.CreateFromServer(fieldModel as OperatorFieldModel);
                 case TypeInfo.Point:
-                    return PointFieldModelController.CreateFromServer(fieldModel as PointFieldModel);
+                    returnController = PointFieldModelController.CreateFromServer(fieldModel as PointFieldModel);
+                    break;
                 case TypeInfo.List:
                     throw new NotImplementedException();
                 case TypeInfo.Ink:
-                    return InkFieldModelController.CreateFromServer(fieldModel as InkFieldModel);
+                    returnController = InkFieldModelController.CreateFromServer(fieldModel as InkFieldModel);
+                    break;
                 case TypeInfo.RichTextField:
-                    return RichTextFieldModelController.CreateFromServer(fieldModel as RichTextFieldModel);
+                    returnController = RichTextFieldModelController.CreateFromServer(fieldModel as RichTextFieldModel);
+                    break;
                 case TypeInfo.Rectangle:
-                    return RectFieldModelController.CreateFromServer(fieldModel as RectFieldModel);
+                    returnController = RectFieldModelController.CreateFromServer(fieldModel as RectFieldModel);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            lock (l)
+            {
+                threadCount--;
+                Debug.WriteLine($"exit fc : {threadCount}");
+            }
+
+            return returnController;
         }
     }
 }

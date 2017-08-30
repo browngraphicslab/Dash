@@ -164,28 +164,12 @@ namespace DashWebServer
         /// <returns>The added items</returns>
         public async Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items) where T : EntityBase
         {
+            // nasty but easiest way to create array of dynamics from c# objects
             dynamic argsJson = JsonConvert.SerializeObject(items.ToArray());
             var args = new[] {JsonConvert.DeserializeObject<dynamic[]>(argsJson)};
             var results =
                 await _client.ExecuteStoredProcedureAsync<List<T>>(GetStoredProcedureLink("bulkImport"), args);
             return results.Response;
-
-            //var results = new List<T>();
-            //try
-            //{
-            //    // transfer over all the new models
-            //    foreach (var item in items)
-            //    {
-            //        results.Add(await AddItemAsync(item));
-            //    }
-
-            //    return results;
-            //}
-            //catch (DocumentClientException e)
-            //{
-            //    Debug.WriteLine(e);
-            //    throw;
-            //}
         }
 
         /// <summary>
@@ -240,7 +224,9 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Debug.WriteLine(e);
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in GetItemsAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
                 throw;
             }
         }
@@ -258,16 +244,19 @@ namespace DashWebServer
             T result;
             //var result = GetDocumentFromCacheOrNull<T>(documentId);
             //if (result is null)
-                try
-                {
-                    var resourceResponse = await _client.ReadDocumentAsync(GetDocumentLink(documentId));
-                    result = (dynamic) resourceResponse.Resource;
-                }
-                catch (DocumentClientException e)
-                {
-                    Debug.WriteLine(e);
-                    throw;
-                }
+            try
+            {
+                var resourceResponse = await _client.ReadDocumentAsync(GetDocumentLink(documentId));
+                result = (dynamic) resourceResponse.Resource;
+            }
+            catch (DocumentClientException e)
+            {
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in GetItemByIdAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+                Debug.WriteLine($"desired id: {documentId}");
+                throw;
+            }
 
             return result;
         }
@@ -321,7 +310,7 @@ namespace DashWebServer
             try
             {
                 Debug.WriteLine("updated: " + document.Id);
-                
+
 
                 // add the documetn to the cache and return it, it will update itself in the database when it needs to
                 //var result = AddDocumentToCache(document);
@@ -331,7 +320,9 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Debug.WriteLine(e);
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in UpdateItemAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
                 throw;
             }
         }
@@ -351,7 +342,9 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Debug.WriteLine(e);
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in UpdateItemAsyncSkipCache");
+                Debug.WriteLine($"desired type: {typeof(T)}");
                 throw;
             }
         }
@@ -374,28 +367,29 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Debug.WriteLine(e);
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in DeleteItemAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
                 throw;
             }
         }
 
         /// <summary>
-        /// Deletes all the documents from the database
+        ///     Deletes all the documents from the database
         /// </summary>
         /// <returns></returns>
         public async Task DeleteAllAsync()
         {
             try
             {
-                var query = _client.CreateDocumentQuery<Document>(GetCollectionLink, "Select * From c").AsDocumentQuery();
+                var query = _client.CreateDocumentQuery<Document>(GetCollectionLink, "Select * From c")
+                    .AsDocumentQuery();
                 var results = new List<Document>();
                 while (query.HasMoreResults)
                     results.AddRange(await query.ExecuteNextAsync<Document>());
 
                 foreach (var doc in results)
-                {
                     await _client.DeleteDocumentAsync(GetDocumentLink(doc.Id));
-                }
             }
             catch (Exception e)
             {
