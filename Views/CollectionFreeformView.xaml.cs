@@ -734,17 +734,16 @@ namespace Dash
             else
             {
 
-                if (carrier.Source != null)
+                if (carrier.SourceCollection != null)
                 {
                     if (!carrier.Source.Equals(carrier.Destination))
                     {
                         // for blue drag/drop; must remove the payload from the original collection 
                         //carrier.CurrBaseModel?.RemoveDocuments(carrier.Payload);
                         carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
+                        //carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); 
 
-                        carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); 
-
-                            carrier.Payload.Clear();
+                        carrier.Payload.Clear();
                         carrier.Source = null;
                         carrier.SourceCollection = null; 
                         carrier.Destination = null;
@@ -763,15 +762,6 @@ namespace Dash
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-            Collection_DragLeave(sender, e);
-
-            //ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
-            //ItemsCarrier.Instance.CurrBaseModel = this;
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -903,8 +893,10 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void Collection_DragLeave(object sender, DragEventArgs args)
+        private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+
             if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
@@ -945,7 +937,8 @@ namespace Dash
 
             carrier.Destination = null;
             carrier.StartingCollection = this;
-            carrier.SourceCollection = xOuterGrid.GetFirstAncestorOfType<CollectionView>();// ViewModel;
+            //carrier.SourceCollection = xOuterGrid.GetFirstAncestorOfType<CollectionView>();
+            carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
