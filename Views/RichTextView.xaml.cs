@@ -218,18 +218,18 @@ namespace Dash
 
         private void xRichEitBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(50);
+            xFormatCol.Width = new GridLength(50);
         }
 
         private void Grid_GotFocus(object sender, RoutedEventArgs e)
         {
 
-            xFormatRow.Height = new GridLength(50);
+            xFormatCol.Width = new GridLength(50);
         }
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(0);
+            xFormatCol.Width = new GridLength(0);
         }
 
         void xRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
