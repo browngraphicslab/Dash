@@ -733,6 +733,22 @@ namespace Dash
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
+
+                if (carrier.Source != null)
+                {
+                    if (!carrier.Source.Equals(carrier.Destination))
+                    {
+                        // for blue drag/drop; must remove the payload from the original collection 
+                        //carrier.CurrBaseModel?.RemoveDocuments(carrier.Payload);
+                        carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents ..and collections? 
+                        
+
+                        carrier.Payload.Clear();
+                        carrier.Source = null;
+                        carrier.Destination = null;
+                    }
+                }
+
                 // delete connection lines logically and graphically 
                 var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
@@ -743,13 +759,8 @@ namespace Dash
                         startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-
-                    carrier.Payload.Clear();
-                    carrier.Source = null;
-                    carrier.Destination = null;
                 }
             }
-
         }
 
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
@@ -789,7 +800,7 @@ namespace Dash
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
-            OnSelected(); 
+            OnSelected();
         }
 
         #endregion
@@ -892,14 +903,14 @@ namespace Dash
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
-                
+
             _payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                   
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDragEnter(sender, e);                                                       
+            ViewModel.CollectionViewOnDragEnter(sender, e);
 
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;

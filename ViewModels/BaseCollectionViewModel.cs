@@ -45,6 +45,7 @@ namespace Dash
         public abstract void AddDocument(DocumentController document, Context context);
         public abstract void RemoveDocuments(List<DocumentController> documents);
         public abstract void RemoveDocument(DocumentController document);
+       
 
         private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
@@ -106,6 +107,7 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
             carrier.Source = this;
+            //carrier.SourceCollection = sender as ICollectionView; 
             carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
@@ -159,7 +161,11 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                if (carrier.Source.Equals(carrier.Destination)) return; // we don't want to drop items on ourself
+                // we don't want to drop items on ourself
+                if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
+                    return; 
+
+                //if (carrier.Is)
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -188,7 +194,7 @@ namespace Dash
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
-
+                ItemsCarrier.Instance.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
             }
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
@@ -241,7 +247,6 @@ namespace Dash
         /// <summary>
         /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
         /// </summary>
-        /// <param name="element"></param>
         private void HighlightPotentialDropTarget(SelectionElement element)
         {
             // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
