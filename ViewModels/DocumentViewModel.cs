@@ -436,8 +436,11 @@ namespace Dash
             if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
 
             var carrier = ItemsCarrier.Instance;
-            //carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
-            carrier.Source = (sender as DocumentView).GetFirstDescendantOfType<CollectionView>().ViewModel; 
+            
+            // different sources based on whether it's a collection or a document 
+            carrier.Source = (sender as DocumentView).GetFirstDescendantOfType<CollectionView>()?.ViewModel; //TODO this will not work all the time 
+            if (carrier.Source == null) carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel; 
+
             carrier.Payload = new List<DocumentController>() { this.DocumentController };
             args.Data.RequestedOperation = DataPackageOperation.Move;
         }
