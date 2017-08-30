@@ -59,11 +59,8 @@ namespace Dash
         public bool ConvertFromXaml(object xamlData)
         {
             var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
-            var refField = field as ReferenceFieldModelController;
-            if (refField != null) {
-                if ((string)xamlData == (string)refField.GetValue(Context))
-                    return false; // avoid cycles
-                xamlData = new Tuple<Context, string>(Context, xamlData as string);
+            if (field is ReferenceFieldModelController) {
+                xamlData = new Tuple<Context, object>(Context, xamlData);
             }
             
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;

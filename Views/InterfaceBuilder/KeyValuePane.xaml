@@ -46,7 +46,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="{Binding ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}" MinWidth="50"/> 
+                            <ColumnDefinition Width="{Binding ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}"/> 
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>

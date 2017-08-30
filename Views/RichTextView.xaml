@@ -49,7 +49,8 @@
             </Grid>
         </Grid>-->
         <Grid Grid.Row="1">
-            <RichEditBox x:FieldModifier="public" x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionChanged="xRichEitBox_SelectionChanged_1"  BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue"></RichEditBox>
+            <RichEditBox x:FieldModifier="public" x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionChanged="xRichEitBox_SelectionChanged"  BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue" 
+                 ></RichEditBox>
         </Grid>
     </Grid>
 
