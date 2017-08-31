@@ -53,6 +53,7 @@ namespace Dash {
             generator?.ApiController.RemoveHeader((ApiParameter) ((DictionaryEntry) DataContext).Value);
             generator?.ApiController.RemoveAuthParameter((ApiParameter)((DictionaryEntry)DataContext).Value);
             generator?.ApiController.RemoveAuthHeader((ApiParameter)((DictionaryEntry)DataContext).Value);
+            this.ExitEditMode();
         }
 
         private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)

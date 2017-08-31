@@ -47,8 +47,9 @@ namespace Dash {
 
         private void xRequestTypeButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            requestTypePicker.IsDropDownOpen = true;
             requestTypePicker.Visibility = Visibility.Visible;
+            requestTypePicker.IsDropDownOpen = true;
+            e.Handled = true;
         }
 
         private void RequestTypePicker_OnDropDownClosed(object sender, object e)

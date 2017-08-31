@@ -12,9 +12,12 @@
     x:Name="xApiCreatorPropertyGenerator">
 
     <StackPanel HorizontalAlignment="Stretch">
-        <Grid>
+        <Grid BorderThickness="5">
+            <Grid.BorderBrush>
+                <SolidColorBrush Color="Black" Opacity ="0.3"></SolidColorBrush>
+            </Grid.BorderBrush>
             <Grid.Background>
-                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+                <SolidColorBrush Color="Black" Opacity="0.2"></SolidColorBrush>
             </Grid.Background>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -22,18 +25,24 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="xEditButton" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch" Padding="5" Background="Transparent" Visibility="Collapsed"  Tapped="XEditButton_OnTapped">
+            <Button x:Name="xEditButton" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch" Padding="5" Visibility="Collapsed"  Tapped="XEditButton_OnTapped">
+                <Button.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.15"></SolidColorBrush>
+                </Button.Background>
                 <SymbolIcon Symbol="Edit"></SymbolIcon>
             </Button>
             <TextBlock x:Name="XTitleBlock" TextAlignment="Center" Grid.Column="1" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButton_OnTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             <TextBlock Name="xCollapseButtonText" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButton_OnTapped" Margin="5,3,10,4" Text="6" FontFamily="Marlett" Foreground="White"></TextBlock>
-            <Button x:Name="addParameterItem" Grid.Column="3" Click="addParameterItem_Click" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="2" Background="Transparent">
+            <Button x:Name="addParameterItem" Grid.Column="3" Click="addParameterItem_Click" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="2">
+                <Button.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.15"></SolidColorBrush>
+                </Button.Background>
                 <SymbolIcon Symbol="Add"></SymbolIcon>
             </Button>
         </Grid>
         <StackPanel x:Name="xCollapseStackPanel">
             <StackPanel.Background>
-                <SolidColorBrush Color="White" Opacity="0.4"></SolidColorBrush>
+                <SolidColorBrush Color="White" Opacity="0.6"></SolidColorBrush>
             </StackPanel.Background>
             <Grid>
                 <Grid.ColumnDefinitions>

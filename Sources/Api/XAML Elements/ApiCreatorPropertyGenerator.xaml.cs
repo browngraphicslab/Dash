@@ -62,7 +62,6 @@ namespace Dash
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
                 xCollapseStackPanel.Visibility = Visibility.Collapsed;
                 xEditButton.Visibility = Visibility.Collapsed;
-                addParameterItem.Visibility = Visibility.Collapsed;
                 xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
@@ -70,7 +69,6 @@ namespace Dash
                 {
                     xEditButton.Visibility = Visibility.Visible;
                 }
-                addParameterItem.Visibility = Visibility.Visible;
                 xCollapseButtonText.Text = "6";
             }
         }
@@ -161,6 +159,7 @@ namespace Dash
                          item?.EnterEditMode();
                     }
                 xDeleteButtonColumn.Width = new GridLength(30);
+                addParameterItem.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -171,6 +170,7 @@ namespace Dash
                         item?.ExitEditMode();
                     }
                 xDeleteButtonColumn.Width = new GridLength(0);
+                addParameterItem.Visibility = Visibility.Visible;
             }
         }
     }

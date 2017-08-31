@@ -10,9 +10,12 @@
     d:DesignWidth="400">
 
     <StackPanel HorizontalAlignment="Stretch">
-        <Grid >
+        <Grid BorderThickness="5">
+            <Grid.BorderBrush>
+                <SolidColorBrush Color="Black" Opacity ="0.3"></SolidColorBrush>
+            </Grid.BorderBrush>
             <Grid.Background>
-                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+                <SolidColorBrush Color="Black" Opacity="0.2"></SolidColorBrush>
             </Grid.Background>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -50,11 +53,11 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <TextBox Text="NzeQ251NVAOgvDPpZBsjy2w3Y" x:Name="xKey" Grid.Column="0" BorderBrush="SlateGray"  BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
+                <TextBox x:Name="xKey" Grid.Column="0" BorderBrush="SlateGray"  BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
                 <Border x:Name="xKeyLabel" Grid.Column="0" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-10,0,0">
                     <TextBlock Text="API Key" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
                 </Border>
-                <TextBox Text="qMoxx61YKMDjUgIkpDgIJlLhVKTLDk5YOrSaNMalmkUwuJo3ak" x:Name="xSecret" Grid.Column="1"  Margin="3,0,0,0" BorderBrush="SlateGray" BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
+                <TextBox x:Name="xSecret" Grid.Column="1"  Margin="3,0,0,0" BorderBrush="SlateGray" BorderThickness="1.5"  GotFocus="xTextBox_OnGotFocus" LostFocus="xTextBox_OnLostFocus"></TextBox>
                 <Border x:Name="xSecretLabel" Grid.Column="1" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="3,-10,0,0">
                     <TextBlock Text="API Secret" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
                 </Border>
