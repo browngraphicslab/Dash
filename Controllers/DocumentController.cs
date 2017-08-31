@@ -888,6 +888,8 @@ namespace Dash
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
 
+                // TODO : if the document has no Data, i.e the active layout has not loaded from the server
+                // TODO cont... we should display a nice loading screen instead of this ugly Red Rectangle
                 if (doc.Data == null)
                 {
                     return new Rectangle { Fill = new SolidColorBrush(Colors.Red) };

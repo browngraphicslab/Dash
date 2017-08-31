@@ -13,8 +13,15 @@ namespace Dash
     public class RichTextFieldModel:FieldModel
     {
         public class RTD {
-            public string RtfFormatString;
-            public string ReadableString;
+            public string RtfFormatString { get; set; }
+            public string ReadableString { get; set; }
+
+            // default constructor for json deserialization
+            public RTD()
+            {
+                
+            }
+
             public RTD(string readableString) { ReadableString = readableString; RtfFormatString = readableString;  }
             public RTD(string readableString, string rtfstring) { ReadableString = readableString; RtfFormatString = rtfstring;  }
         }
