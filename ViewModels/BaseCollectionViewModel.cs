@@ -139,6 +139,8 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            this.RemoveDragDropIndication(sender as SelectionElement);
+
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
@@ -176,7 +178,6 @@ namespace Dash
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
             SetGlobalHitTestVisiblityOnSelectedItems(false);
-            this.RemoveDragDropIndication(sender as SelectionElement);
         }
 
         /// <summary>
