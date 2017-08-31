@@ -44,7 +44,7 @@
             <StackPanel.Background>
                 <SolidColorBrush Color="White" Opacity="0.6"></SolidColorBrush>
             </StackPanel.Background>
-            <Grid>
+            <Grid Margin="5,0,5,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition x:Name="xDeleteButtonColumn" Width="0" />
                     <ColumnDefinition Width="*" />
@@ -58,12 +58,12 @@
                 <TextBlock x:Name="xDisplayText" Grid.Column="3"  Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="display?" TextAlignment="Right" Margin="0,6,0,0" FontSize="9" FontWeight="Medium"/>
                 <TextBlock x:Name="xRequiredText" Grid.Column="4"  Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="required?" TextAlignment="Right" Margin="0,6,0,0" FontSize="9" FontWeight="Medium"/>
             </Grid>
-            <Grid MaxHeight="140">
+            <Grid MaxHeight="140"  Margin="5,0,5,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="41*"/>
                     <ColumnDefinition Width="170*"/>
                 </Grid.ColumnDefinitions>
-                <ListView x:Name="xListView" VerticalAlignment="Top" HorizontalAlignment="Stretch" SelectionMode="None" Grid.ColumnSpan="2">
+                <ListView x:Name="xListView" VerticalAlignment="Top" HorizontalAlignment="Stretch" SelectionMode="None" Grid.ColumnSpan="2" Margin="0,0,0,5">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>

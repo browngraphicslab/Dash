@@ -26,9 +26,9 @@
             <TextBlock Text="AUTHENTICATION" Grid.Column="1"  TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButtonText_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             <TextBlock Name="xCollapseButtonText" Grid.Column="2"   HorizontalAlignment="Left" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped" Margin="5,3,10,4" Text="5" FontFamily="Marlett" Foreground="White"></TextBlock>
         </Grid>
-        <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" BorderThickness="8">
+        <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" BorderThickness="10">
             <StackPanel.Background>
-                <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
+                <SolidColorBrush Color="White" Opacity="0.3"></SolidColorBrush>
             </StackPanel.Background>
             <StackPanel.BorderBrush>
                 <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>

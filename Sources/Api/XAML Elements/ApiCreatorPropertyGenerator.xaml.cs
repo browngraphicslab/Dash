@@ -65,7 +65,7 @@ namespace Dash
                 xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
-                if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() != 0)
+                if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() != 0 || (xEditButton.Content as SymbolIcon)?.Symbol == Symbol.Accept)
                 {
                     xEditButton.Visibility = Visibility.Visible;
                 }
