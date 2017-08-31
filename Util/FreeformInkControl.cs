@@ -23,7 +23,7 @@ namespace Dash
         private Rect _boundingRect;
         private InkSelectionMode _inkSelectionMode;
         private bool _analyzeStrokes;
-        private bool _selectionEnded;
+        private bool _selecting;
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
@@ -44,11 +44,12 @@ namespace Dash
             InkRecognitionHelper = new InkRecognitionHelper(this);
             GlobalInkSettings.FreeformInkControls.Add(this);
             GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
-            GlobalInkSettings.UpdateInkPresenters();
+            TargetCanvas.InkPresenter.UpdateDefaultDrawingAttributes(GlobalInkSettings.Attributes);
             TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.AllowProcessing;
             UpdateStrokes();
-            ClearSelection();
+            UpdateSelectionMode();
             UpdateInputType();
+            ClearSelection();
             AddEventHandlers();
         }
 
@@ -97,7 +98,7 @@ namespace Dash
 
         public void UpdateSelectionMode()
         {
-            if (GlobalInkSettings.IsSelectionEnabled)
+            if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Selection && !_selecting)
             {
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
                     InkInputRightDragAction.LeaveUnprocessed;
@@ -108,10 +109,11 @@ namespace Dash
                     UnprocessedInput_PointerMoved;
                 TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
                     UnprocessedInput_PointerReleased;
+                _selecting = true;
             }
             else
             {
-                if (TargetCanvas != null)
+                if (TargetCanvas != null && _selecting && GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Selection)
                 {
                     TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.AllowProcessing;
                     TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
@@ -121,6 +123,7 @@ namespace Dash
                         UnprocessedInput_PointerMoved;
                     TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased -=
                         UnprocessedInput_PointerReleased;
+                    _selecting = false;
                 }
             }
         }
@@ -324,6 +327,7 @@ namespace Dash
         {
             InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(e.Strokes));
             UpdateInkFieldModelController();
+            ClearSelection();
         }
 
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)

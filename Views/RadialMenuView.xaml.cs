@@ -237,18 +237,14 @@ namespace Dash
             Action<object> toggleSelect = Actions.ToggleSelectionMode;
             Action<object> toggleInkRecognition = Actions.ToggleInkRecognition;
             var penInk = new RadialActionModel("", (Symbol) 0xEE56) {GenericAction = choosePen,
-                IsToggle = true
             };
             var pencilInk = new RadialActionModel("", (Symbol) 0xED63) {GenericAction = choosePencil,
-                IsToggle = true
             };
             var eraserInkModel = new RadialActionModel("", (Symbol) 0xED60) {GenericAction = chooseEraser,
-                IsToggle = true
             };
             //var toggleInkRecognitionModel = new RadialActionModel("", (Symbol) 0xE945) {GenericAction = toggleInkRecognition, IsToggle = true};
             var selectModel =
                 new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect,
-                    IsToggle = true
                 };
             SetActionModel(penInk, SetPenInkButton);
             SetActionModel(pencilInk, SetPencilInkButton);
@@ -262,22 +258,18 @@ namespace Dash
             var setPenModel = new RadialActionModel("Pen", (Symbol) 0xEDC6)
             {
                 GenericAction = setPenInput,
-                IsToggle = true
             };
             var setTouchModel = new RadialActionModel("Touch", (Symbol) 0xED5F)
             {
                 GenericAction = setTouchInput,
-                IsToggle = true
             };
             var setMouseModel = new RadialActionModel("Mouse", (Symbol) 0xE962)
             {
                 GenericAction = setMouseInput,
-                IsToggle = true
             };
             var disableModel = new RadialActionModel("Disable", Symbol.Clear)
             {
                 GenericAction = setNoInput,
-                IsToggle = true
             };
             SetActionModel(setPenModel, SetPenInputButton);
             SetActionModel(setTouchModel, SetTouchInputButton);
@@ -314,52 +306,16 @@ namespace Dash
             }
         }
 
-        //private void InputSubMenuButton_OnInnerArcReleased(object sender, PointerRoutedEventArgs e)
-        //{
-        //    RadialMenu.ChangeMenu(null, InputSubMenu);
-        //}
-
         private void InkSubMenu_OnMenuOpenedOrClosed(bool isopen)
         {
             if(isopen) OpenInkMenu();
-            else CloseInkMenu();
-        }
-
-        private void InputSubMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
-        {
-            OpenInkMenu();
         }
 
         private void InkSubMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
         {
             CloseInkMenu();
         }
-
-        private void InputTypeOnTapped(object sender, PointerRoutedEventArgs e)
-        {
-            if (e == null) return;
-            var tappedButton = sender as RadialMenuButton;
-            ToggleButtonGroup(_inputButtons, tappedButton);
-        }
-
-        private void ToggleButtonGroup(List<RadialMenuButton> group, RadialMenuButton selected)
-        {
-            foreach (var button in group)
-            {
-                if (button.Value is bool && (bool) button.Value)
-                {
-                    RadialMenu.ClickInnerRadialMenuButton(button);
-                }
-            }
-            RadialMenu.ClickInnerRadialMenuButton(selected);
-        }
-
-        private void InkTypeOnTapped(object sender, PointerRoutedEventArgs e)
-        {
-            if (e == null) return;
-            var tappedButton = sender as RadialMenuButton;
-            ToggleButtonGroup(_strokeButtons, tappedButton);
-        }
+        
 
         private void RadialMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -374,10 +330,9 @@ namespace Dash
             }
         }
 
-        private void FilePickerButton_OnInnerArcReleased(object sender, PointerRoutedEventArgs e)
+        private void Input_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            FileOpenPicker filePicker = new FileOpenPicker();
-            
+            RadialMenu.ChangeMenu(sender, InputSubMenu);
         }
     }
 }

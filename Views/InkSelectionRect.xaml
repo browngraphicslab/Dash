@@ -64,7 +64,7 @@
                             <SymbolIcon Symbol="{x:Bind CopyAttributesSymbol}"></SymbolIcon>
                         </MenuFlyoutItem.Icon>
                     </MenuFlyoutItem>
-                    <ToggleMenuFlyoutItem x:Name="AdjustSettingsButton" Text="Edit Attributes?" IsChecked="False">
+                    <ToggleMenuFlyoutItem x:Name="AdjustSettingsButton" Text="Edit Attributes" Click="AdjustSettingsButton_OnClick">
                         <ToggleMenuFlyoutItem.Icon>
                             <SymbolIcon Symbol="Edit"></SymbolIcon>
                         </ToggleMenuFlyoutItem.Icon>

@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
@@ -34,6 +35,7 @@ namespace Dash.Views
         private readonly List<Grid> _draggers;
         private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
         private bool _flyoutShowing;
+        private bool _editAttributes;
         public Symbol CopyAttributesSymbol { get; set; } = Symbol.Upload;
 
         private Point Position()
@@ -77,7 +79,7 @@ namespace Dash.Views
 
         private void GlobalInkSettingsOnOnAttributesUpdated(SolidColorBrush newAttributes)
         {
-            if (AdjustSettingsButton.IsChecked)
+            if (_editAttributes)
             {
                 foreach (var stroke in _startingTransforms.Keys)
                 {
@@ -290,6 +292,23 @@ namespace Dash.Views
         {
             var stroke = _strokeContainer.GetStrokes().First(s => s.Selected);
             GlobalInkSettings.ForceUpdateFromAttributes(stroke.DrawingAttributes);
+        }
+
+        private void AdjustSettingsButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            _editAttributes = !_editAttributes;
+            foreach (var grid in _draggers)
+            {
+                var rect = grid.Children[0] as Rectangle;
+                if (_editAttributes)
+                {
+                    rect.Fill = (SolidColorBrush) Application.Current.Resources["WindowsBlue"];
+                }
+                else
+                {
+                    rect.Fill = new SolidColorBrush(Colors.White);
+                }
+            }
         }
     }
 }

@@ -305,7 +305,7 @@ namespace Dash
 
         public static void ToggleSelectionMode(object o)
         {
-            GlobalInkSettings.IsSelectionEnabled = true;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Selection;
         }
 
         public static void ToggleInkRecognition(object o)
@@ -316,49 +316,16 @@ namespace Dash
         public static void ChoosePen(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChoosePencil(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChooseEraser(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void SetOpacity(double opacity)
-        {
-            GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-        public static void SetSize(double size)
-        {
-            GlobalInkSettings.Size = size;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-
-        public static void DisplayBrightnessSlider(RadialMenuView obj)
-        {
-            obj.OpenInkMenu();
-        }
-
-        public static void CloseSliderPanel(RadialMenuView obj)
-        {
-            obj.CloseInkMenu();
-        }
-
-        public static void SetBrightness(double brightness, RadialMenu menu)
-        {
-            GlobalInkSettings.Brightness = brightness;
-            GlobalInkSettings.UpdateInkPresenters();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         #endregion

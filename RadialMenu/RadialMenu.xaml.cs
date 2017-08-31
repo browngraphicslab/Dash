@@ -551,6 +551,14 @@ namespace RadialMenuControl.UserControl
             }
         }
 
+        public void ToggleVisualInnerRadialMenuButton(RadialMenuButton rmb)
+        {
+            foreach (var ps in Pie.PieSlices.Where(ps => ps.OriginalRadialMenuButton == rmb))
+            {
+                ps.ToggleClickedIndicator();
+            }
+        }
+
         /// <summary>
         ///     Programmatically "click" the outer arc in a RadialMenuButton
         /// </summary>

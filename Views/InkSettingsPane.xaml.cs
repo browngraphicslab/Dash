@@ -33,7 +33,7 @@ namespace Dash
         public InkSettingsPane()
         {
             this.InitializeComponent();
-            GlobalInkSettings.OnAttributesUpdated += (newBrush) => UpdateExample(newBrush);
+            GlobalInkSettings.OnAttributesUpdated += (newBrush) => UpdateExample();
             SizeSlider.Loaded += SizeSliderOnLoaded;
             Loaded += InkSettingsPane_Loaded;
             
@@ -49,6 +49,7 @@ namespace Dash
             XInkCanvas.InkPresenter.IsInputEnabled = false;
             ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
+            UpdateExample();
         }
 
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
@@ -65,7 +66,7 @@ namespace Dash
             SizeSlider.SetValue(RadialMenuSlider.RelativeValueProperty, 0.5);
         }
 
-        private void UpdateExample(SolidColorBrush newBrush)
+        private void UpdateExample()
         {
             if (ExampleStroke != null)
             {
@@ -99,19 +100,16 @@ namespace Dash
         private void OpacitySlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
             GlobalInkSettings.Opacity = newvalue/100;
-            GlobalInkSettings.UpdateInkPresenters();
         }
 
         private void SizeSlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
             GlobalInkSettings.Size = newvalue;
-            GlobalInkSettings.UpdateInkPresenters();
         }
 
         private void BrightnessSlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
             GlobalInkSettings.Brightness = newvalue;
-            GlobalInkSettings.UpdateInkPresenters();
         }
 
         private List<InkPoint> _strokeBuilderList = new List<InkPoint>

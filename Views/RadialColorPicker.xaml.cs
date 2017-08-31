@@ -33,14 +33,15 @@ namespace Dash
 
         private void RadialColorPicker_Loaded(object sender, RoutedEventArgs e)
         {
-            _trackerPoint = Util.PointTransformFromVisual(new Point(5, 15), RotationGrid, ColorEllipse);
             GlobalInkSettings.OnAttributesUpdated += GlobalInkSettingsOnOnAttributesUpdated;
-            SetRotationFromPoint(_trackerPoint);
+            var newRotation = GlobalInkSettings.Hue;
+            CompositeTransform newTransform = new CompositeTransform { Rotation = newRotation };
+            RotationGrid.RenderTransform = newTransform;
         }
 
         private void GlobalInkSettingsOnOnAttributesUpdated(SolidColorBrush newAttributes)
         {
-            var newRotation = GlobalInkSettings.H;
+            var newRotation = GlobalInkSettings.Hue;
             CompositeTransform newTransform = new CompositeTransform { Rotation = newRotation };
             RotationGrid.RenderTransform = newTransform;
         }
@@ -77,7 +78,7 @@ namespace Dash
         private void SetRotationFromPoint(Point pos)
         {
             double newRotation = GetAngleOfPoint(pos, ColorEllipse);
-            GlobalInkSettings.H = newRotation;
+            GlobalInkSettings.Hue = newRotation;
         }
     }
 }

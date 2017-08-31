@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -79,7 +80,12 @@ namespace Dash
             _radialMenu.Loaded += delegate
             {
                 _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
-                
+                GlobalInkSettings.Hue = 200;
+                GlobalInkSettings.Brightness = 30;
+                GlobalInkSettings.Size = 4;
+                GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+                GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+                GlobalInkSettings.Opacity = 1;
             };
             //xCanvas.Children.Add(_radialMenu);
         }

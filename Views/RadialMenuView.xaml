@@ -19,16 +19,43 @@
                     <userControl:RadialMenu.Buttons>
                         <components:RadialMenuButton x:Name="Ink" Label="Ink" IconSymbol="{x:Bind InkMenuSymbol}" Type="Simple" InnerArcPressed="Ink_OnInnerArcPressed">
                             <components:RadialMenuButton.Submenu>
-                                <userControl:RadialMenu x:Name="InkSubMenu" StartAngle="-90" CenterButtonTapped="InkSubMenu_OnCenterButtonTapped">
+                                <userControl:RadialMenu x:Name="InkSubMenu" StartAngle="-90"
+                                                        CenterButtonTapped="InkSubMenu_OnCenterButtonTapped">
                                     <userControl:RadialMenu.Buttons>
-                                        <components:RadialMenuButton x:Name="SetMouseInputButton" Label="Mouse" Type="Simple" IconSymbol="{x:Bind SetMouse}" InnerArcReleased="InputTypeOnTapped"/>
-                                        <components:RadialMenuButton x:Name="SetTouchInputButton" Label="Touch" Type="Simple" IconSymbol="{x:Bind SetTouch}" InnerArcReleased="InputTypeOnTapped"/>
-                                        <components:RadialMenuButton x:Name="SetPenInputButton" Label="Pen" Type="Simple" IconSymbol="{x:Bind SetPen}" InnerArcReleased="InputTypeOnTapped"/>
-                                        <components:RadialMenuButton x:Name="DisableButton" Label="Disable" Type="Simple" IconSymbol="{x:Bind Disable}" InnerArcReleased="InputTypeOnTapped"/>
-                                        <components:RadialMenuButton x:Name="SetPenInkButton" IconSymbol="{x:Bind PenInkSymbol}" InnerArcReleased="InkTypeOnTapped"></components:RadialMenuButton>
-                                        <components:RadialMenuButton x:Name="SetPencilInkButton" IconSymbol="{x:Bind PencilInkSymbol}" InnerArcReleased="InkTypeOnTapped"></components:RadialMenuButton>
-                                        <components:RadialMenuButton x:Name="SetEraserButton" IconSymbol="{x:Bind EraserSymbol}" InnerArcReleased="InkTypeOnTapped"></components:RadialMenuButton>
-                                        <components:RadialMenuButton x:Name="SelectButton" IconSymbol="{x:Bind SelectSymbol}" InnerArcReleased="InkTypeOnTapped"></components:RadialMenuButton>
+                                        <components:RadialMenuButton Label="Input"
+                                                                     IconSymbol="{x:Bind SetPen}" Type="Simple"
+                                                                     InnerArcPressed="Input_OnInnerArcPressed">
+                                            <components:RadialMenuButton.Submenu>
+                                                <userControl:RadialMenu x:Name="InputSubMenu" StartAngle="-90">
+                                                    <userControl:RadialMenu.Buttons>
+                                                        <components:RadialMenuButton x:Name="SetMouseInputButton"
+                                                                                     Label="Mouse" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetMouse}"/>
+                                                        <components:RadialMenuButton x:Name="SetTouchInputButton"
+                                                                                     Label="Touch" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetTouch}"/>
+                                                        <components:RadialMenuButton x:Name="SetPenInputButton"
+                                                                                     Label="Pen" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetPen}"/>
+                                                        <components:RadialMenuButton x:Name="DisableButton"
+                                                                                     Label="Disable" Type="Radio"
+                                                                                     IconSymbol="{x:Bind Disable}"/>
+                                                    </userControl:RadialMenu.Buttons>
+                                                </userControl:RadialMenu>
+                                            </components:RadialMenuButton.Submenu>
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetPenInkButton"
+                                                                     IconSymbol="{x:Bind PenInkSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetPencilInkButton"
+                                                                     IconSymbol="{x:Bind PencilInkSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetEraserButton"
+                                                                     IconSymbol="{x:Bind EraserSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SelectButton"
+                                                                     IconSymbol="{x:Bind SelectSymbol}">
+                                        </components:RadialMenuButton>
                                     </userControl:RadialMenu.Buttons>
                                 </userControl:RadialMenu>
                             </components:RadialMenuButton.Submenu>

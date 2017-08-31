@@ -139,7 +139,6 @@ namespace Dash
         {
             MinAngle = StartAngle + 5 + AngleBuffer;
             MaxAngle = StartAngle + Angle - AngleBuffer;
-            RelativeValue = 0.5;
             Draw();
         }
 

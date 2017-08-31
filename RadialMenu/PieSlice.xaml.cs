@@ -652,6 +652,12 @@ namespace RadialMenuControl.UserControl
             innerPieSlicePath_PointerReleased(this, new RoutedEventArgs() as PointerRoutedEventArgs);
         }
 
+        public void ToggleClickedIndicator()
+        {
+            
+          VisualStateManager.GoToState(this, "InnerNormal", true);
+        }
+
         /// <summary>
         ///     Programmatically "click" the outer arc in the PieSlice
         /// </summary>
