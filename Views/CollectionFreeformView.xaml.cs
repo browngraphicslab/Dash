@@ -942,8 +942,8 @@ namespace Dash
             carrier.Destination = null;
             carrier.StartingCollection = this;
             var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
-            if (parent == null) carrier.CurrBaseModel = ViewModel; 
-            else carrier.CurrBaseModel = parent.ViewModel; 
+            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
+            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView; 
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;

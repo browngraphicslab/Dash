@@ -198,7 +198,7 @@ namespace Dash
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
-                ItemsCarrier.Instance.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
+                ItemsCarrier.Instance.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
             }
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
@@ -232,8 +232,8 @@ namespace Dash
             Debug.WriteLine("COLLECTION leave!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
-            ItemsCarrier.Instance.CurrBaseModel = this;
+            ItemsCarrier.Instance.CurrBaseModel.ViewModel.CollectionViewOnDragEnter(ItemsCarrier.Instance.CurrBaseModel, e);
+            ItemsCarrier.Instance.CurrBaseModel = sender as ICollectionView;
 
             var element = sender as SelectionElement;
             if (element != null)

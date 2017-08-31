@@ -446,14 +446,14 @@ namespace Dash
                 var docSource = (sender as DocumentView)?.ParentCollection;
                 carrier.Source = docSource?.ViewModel;
                 var parent = docSource?.ParentCollection; // set CurrBaseModel as the collection containing it 
-                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
-                else carrier.CurrBaseModel = parent.ViewModel;
+                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
+                else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
             }
             else // for collections
             {
                 var parent = carrier.SourceCollection?.ParentCollection?.ParentCollection; // 
-                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
-                else carrier.CurrBaseModel = parent.ViewModel;
+                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
+                else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
                 //carrier.SourceCollection.ParentCollection.ViewModel.CollectionViewOnDragEnter(sender,
             }
 
