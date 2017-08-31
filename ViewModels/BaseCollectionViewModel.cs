@@ -232,8 +232,12 @@ namespace Dash
             Debug.WriteLine("COLLECTION leave!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            ItemsCarrier.Instance.CurrBaseModel.ViewModel.CollectionViewOnDragEnter(ItemsCarrier.Instance.CurrBaseModel, e);
-            ItemsCarrier.Instance.CurrBaseModel = sender as ICollectionView;
+            var basemodel = ItemsCarrier.Instance.CurrBaseModel; 
+            if (basemodel != sender as ICollectionView)
+            {
+                basemodel.ViewModel.CollectionViewOnDragEnter(basemodel, e);
+                basemodel = sender as ICollectionView;
+            }
 
             var element = sender as SelectionElement;
             if (element != null)
