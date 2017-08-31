@@ -163,9 +163,11 @@ namespace Dash
             {
                 // we don't want to drop items on ourself
                 if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
-                    return; 
+                    return;
 
-                //if (carrier.Is)
+                if (carrier.Destination != null)    // cancel collection dropping to its container collection 
+                    if (carrier.Destination.Equals(carrier.CurrBaseModel))
+                        return;
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :

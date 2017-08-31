@@ -443,11 +443,15 @@ namespace Dash
             {
                 var docSource = (sender as DocumentView)?.ParentCollection; 
                 carrier.Source = docSource?.ViewModel;
-                carrier.CurrBaseModel = docSource?.ParentCollection.ViewModel;  // set CurrBaseModel as the collection containing it 
+                var parent = docSource?.ParentCollection; // set CurrBaseModel as the collection containing it 
+                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
+                else carrier.CurrBaseModel = parent.ViewModel;  
             }
             else // for collections
             {
-                carrier.CurrBaseModel = carrier.SourceCollection.ParentCollection.ViewModel; 
+                var parent = carrier.SourceCollection?.ParentCollection; 
+                if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
+                else carrier.CurrBaseModel = parent.ViewModel; 
             }
             carrier.Payload = new List<DocumentController>() { DocumentController };
             args.Data.RequestedOperation = DataPackageOperation.Move;

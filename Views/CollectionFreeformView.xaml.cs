@@ -728,12 +728,15 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
 
+            if (carrier.Destination != null)    // cancel collection dropping to its container collection 
+                if (carrier.Destination.Equals(carrier.CurrBaseModel))
+                    return; 
+
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
-
                 if (carrier.Source != null)
                 {
                     if (!carrier.Source.Equals(carrier.Destination))
@@ -742,11 +745,11 @@ namespace Dash
                         if (carrier._source != null)
                             carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
                         else
-                            carrier.SourceCollection.GetFirstAncestorOfType<CollectionView>()?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
+                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
 
                         carrier.Payload.Clear();
                         carrier.Source = null;
-                        carrier.SourceCollection = null; 
+                        carrier.SourceCollection = null;
                         carrier.Destination = null;
                     }
                 }
@@ -938,7 +941,9 @@ namespace Dash
 
             carrier.Destination = null;
             carrier.StartingCollection = this;
-            //carrier.SourceCollection = xOuterGrid.GetFirstAncestorOfType<CollectionView>();
+            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
+            if (parent == null) carrier.CurrBaseModel = ViewModel; 
+            else carrier.CurrBaseModel = parent.ViewModel; 
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
