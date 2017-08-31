@@ -139,6 +139,8 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            if (DocumentView.DragDocumentView != null)
+                DocumentView.DragDocumentView.IsHitTestVisible = true;
             this.RemoveDragDropIndication(sender as SelectionElement);
 
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
@@ -163,6 +165,7 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
+                
                 // we don't want to drop items on ourself
                 if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
                     return;
@@ -185,7 +188,6 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("COLLECTION ENTERED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); 
             this.HighlightPotentialDropTarget(sender as SelectionElement);
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -229,8 +231,6 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("COLLECTION leave!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
             var basemodel = ItemsCarrier.Instance.CurrBaseModel; 
             if (basemodel != sender as ICollectionView)
