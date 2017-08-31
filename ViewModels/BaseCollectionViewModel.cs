@@ -182,6 +182,7 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("COLLECTION ENTERED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); 
             this.HighlightPotentialDropTarget(sender as SelectionElement);
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -225,6 +226,8 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("COLLECTION leave!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
             ItemsCarrier.Instance.CurrBaseModel.CollectionViewOnDragEnter(sender, e);
             ItemsCarrier.Instance.CurrBaseModel = this;
