@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -16,13 +18,31 @@ namespace Dash
 
         private DocumentFieldModelController(DocumentFieldModel documentFieldModel) : base(documentFieldModel, true)
         {
+
 #pragma warning disable 4014
-            RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data.Id, dto =>
+            RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data.Id, async dto =>
 #pragma warning restore 4014
             {
+                var tempData = DocumentController.CreateFromServer(dto);
+
+                var prototypeData = tempData.GetField(KeyStore.PrototypeKey, true);
+
+                if (prototypeData != null)
+                    await RESTClient.Instance.Documents.GetDocument(
+                        (prototypeData as DocumentFieldModelController).DocumentFieldModel.Data.Id,
+                        protoDto =>
+                        {
+                            (prototypeData as DocumentFieldModelController).Data =
+                                DocumentController.CreateFromServer(protoDto);
+                        }, exception => throw exception);
+
+
+
+
+
                 UITask.Run(() =>
                 {
-                    Data =  DocumentController.CreateFromServer(dto);
+                    Data = tempData;
                 });
             }, exception => throw exception);            
         }

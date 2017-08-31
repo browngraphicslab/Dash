@@ -241,7 +241,8 @@ namespace Dash
                     returnController = PointFieldModelController.CreateFromServer(fieldModel as PointFieldModel);
                     break;
                 case TypeInfo.List:
-                    throw new NotImplementedException();
+                    returnController = new ListFieldModelController<TextFieldModelController>();
+                    break;
                 case TypeInfo.Ink:
                     returnController = InkFieldModelController.CreateFromServer(fieldModel as InkFieldModel);
                     break;

@@ -54,7 +54,7 @@ namespace Dash
                 case TypeInfo.Point:
                     return new PointFieldModel(JsonConvert.DeserializeObject<Point>(data.ToString()), fieldModelDTO.Id);
                 case TypeInfo.List:
-                    throw new NotImplementedException();
+                    return new ListFieldModel(new List<string>(), TypeInfo.Text);
                     //switch (listType) //TODO support list of list?
                     //{
                     //    case TypeInfo.Number:

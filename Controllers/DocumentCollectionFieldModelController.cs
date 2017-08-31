@@ -44,30 +44,27 @@ namespace Dash
             {
                 try
                 {
-                    Task.Run(() =>
+                    var docControllerList = new List<DocumentController>();
+
+                    foreach (var docDto in docmodelDtos)
                     {
-                        var docControllerList = new List<DocumentController>();
+                        var keys = docDto.KeyList.Select(key => new KeyController(key, false));
+                        var fields = docDto.FieldList.Select(CreateFromServer);
 
-                        foreach (var docDto in docmodelDtos)
-                        {
-                            var keys = docDto.KeyList.Select(key => new KeyController(key, false));
-                            var fields = docDto.FieldList.Select(CreateFromServer);
+                        var fieldDict = keys.Zip(fields,
+                                (keyController, fieldController) => new { keyController, fieldController })
+                            .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
 
-                            var fieldDict = keys.Zip(fields,
-                                    (keyController, fieldController) => new {keyController, fieldController})
-                                .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
+                        var docController =
+                            new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
+                        docControllerList.Add(docController);
+                    }
 
-                            var docController =
-                                new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
-                            docControllerList.Add(docController);
-                        }
-                        UITask.Run(() =>
-                        {
-                            AddDocuments(docControllerList);
-                        });
+                    AddDocuments(docControllerList);
 
 
-
+                    UITask.Run(() =>
+                    {
                     });
                 }
                 catch (Exception e)
