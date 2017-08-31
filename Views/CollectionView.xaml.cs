@@ -33,6 +33,9 @@ namespace Dash
             set { DataContext = value; }
         }
         public CollectionView ParentCollection { get; set; }
+
+        public CompoundOperatorEditor CompoundFreeform { get; set; }
+
         public DocumentView ParentDocument { get; set; }
 
         public enum CollectionViewType
@@ -41,8 +44,6 @@ namespace Dash
         }
 
         private CollectionViewType _viewType;
-
-        private CollectionFreeformView _freeformView;
 
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
@@ -65,7 +66,8 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
+            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
 
             switch (_viewType)
             {
@@ -109,9 +111,11 @@ namespace Dash
             Ellipse el = ConnectionEllipse;
             KeyController outputKey = ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
-            CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView).CanLink = true;
-            (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.CanLink = true;
+            freeform.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -121,8 +125,10 @@ namespace Dash
             Ellipse el = ConnectionEllipse;
             KeyController outputKey = ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
-            CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef, false);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.EndDrag(ioRef, false);
         }
 
         #endregion

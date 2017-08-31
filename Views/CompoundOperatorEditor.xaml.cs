@@ -24,7 +24,6 @@ namespace Dash
         private readonly DocumentController _documentController;
         private readonly CompoundOperatorFieldController _operatorFieldModelController;
         private ObservableCollection<OperatorBuilder> _operatorList;
-        //public string OperationBarDragKey = "4D9172C1-266F-4119-BB76-961D7D6C37B0";       // TODO moved to CompoundOperatorFieldController maybe find a better place later 
         private SimpleCollectionViewModel _collectionViewModel;
 
         public CompoundOperatorEditor()
