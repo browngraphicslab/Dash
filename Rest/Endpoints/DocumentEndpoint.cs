@@ -122,15 +122,10 @@ namespace Dash
 
             try
             {
-                await _semaphore.WaitAsync();
-
-
                 if (!ids.Any())
                 {
                     Debug.WriteLine("id count is zero in GetDocuments in DocumentEndpoint");
                 }
-
-                var url = $"api/Document/batch/&{string.Join("&", ids)}";
 
                 var result = await _connection.Post("api/Document/batch", ids);
                 var resultDoc = await result.Content.ReadAsAsync<IEnumerable<DocumentModelDTO>>();
@@ -140,10 +135,6 @@ namespace Dash
             {
                 // return the error message
                 error(e);
-            }
-            finally
-            {
-                _semaphore.Release();
             }
         }
 

@@ -15,6 +15,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Flurl;
 using Flurl.Http;
@@ -47,39 +48,44 @@ namespace Dash
         {
             InitializeComponent();
 
-            // create the collection document model using a request
-            var fields = new Dictionary<KeyController, FieldModelController>();
-            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-            var collectionDocumentController =
-                new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
-
-            // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument);
-
-            // set the main view's width and height to avoid NaN errors
-            MainDocView.Width = MyGrid.ActualWidth;
-            MainDocView.Height = MyGrid.ActualHeight;
-
-            // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
-            Instance = this;
-
-            //var jsonDoc = JsonToDashUtil.RunTests();
-
-            //var sw = new Stopwatch();
-            //sw.Start();
-            //DisplayDocument(jsonDoc);
-            //sw.Stop();
-
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter is DocumentController)
+            {
+                // get the main document from the navigation context
+                MainDocument = e.Parameter as DocumentController;
+                // set the main view's datacontext to be the collection
+                xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+
+                // set the main view's width and height to avoid NaN errors
+                xMainDocView.Width = MyGrid.ActualWidth;
+                xMainDocView.Height = MyGrid.ActualHeight;
+
+                // Set the instance to be itself, there should only ever be one MainView
+                Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+                Instance = this;
+
+                //var jsonDoc = JsonToDashUtil.RunTests();
+
+                //var sw = new Stopwatch();
+                //sw.Start();
+                //DisplayDocument(jsonDoc);
+                //sw.Stop();
+            }
+            else
+            {
+                Debug.Fail("the main page expects a document controller when it is navigated to");
+            }
+            base.OnNavigatedTo(e);
+        }
+
         public CollectionView GetMainCollectionView()
         {
-            return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
+            return _mainCollectionView ?? (_mainCollectionView = xMainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
         public void AddOperatorsFilter(object o, DragEventArgs e)
@@ -121,8 +127,8 @@ namespace Dash
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            MainDocView.Width = e.NewSize.Width;
-            MainDocView.Height = e.NewSize.Height;
+            xMainDocView.Width = e.NewSize.Width;
+            xMainDocView.Height = e.NewSize.Height;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)

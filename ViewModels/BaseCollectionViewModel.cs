@@ -137,11 +137,14 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+
+            // first check for things we don't want to allow dropped onto the collection
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
             e.Handled = true;
 
+            // if we are dragging and dropping from the radial menu
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
             {
@@ -151,6 +154,7 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
 
+            // if we are dragging and dropping from another collection
             var carrier = ItemsCarrier.Instance;
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
@@ -166,6 +170,8 @@ namespace Dash
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
 
+
+            // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 

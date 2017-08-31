@@ -41,7 +41,7 @@ namespace Dash
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionDropPoint(
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
+                MainPage.Instance.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
             MainPage.Instance.DisplayDocument(opModel, where);

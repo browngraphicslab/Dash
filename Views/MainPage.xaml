@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
-        <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
+        <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
         <Button Tapped="UIElement_OnTapped" HorizontalAlignment="Left" VerticalAlignment="Center">TEST TEST TEST</Button>
     </Grid>
