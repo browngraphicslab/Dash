@@ -167,8 +167,8 @@ namespace Dash
                 if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
                     return;
 
-                if (carrier.Destination != null)    // cancel collection dropping to its container collection 
-                    if (carrier.Destination.Equals(carrier.CurrBaseModel))
+                if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
+                    if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
                         return;
 
                 var where = sender is CollectionFreeformView ?

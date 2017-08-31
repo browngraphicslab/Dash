@@ -26,7 +26,6 @@ namespace Dash
         }
         public ICollectionViewModel Destination { get; set; }
 
-        //public BaseCollectionViewModel CurrBaseModel { get; set; } = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView).ViewModel;
         public ICollectionView CurrBaseModel { get; set; } = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
         public CollectionFreeformView StartingCollection { get; set; }

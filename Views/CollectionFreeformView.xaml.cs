@@ -728,9 +728,9 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
 
-            if (carrier.Destination != null)    // cancel collection dropping to its container collection 
-                if (carrier.Destination.Equals(carrier.CurrBaseModel))
-                    return; 
+            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
+                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
+                    return;
 
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
