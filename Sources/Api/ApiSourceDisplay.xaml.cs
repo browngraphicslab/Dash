@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -16,6 +17,7 @@ namespace Dash
 
         public DocumentController DocModel;
 
+        public string Title { get { return xTitle.Text; } set { xTitle.Text = value; } }
         // == CONSTRUCTORS ==
         public ApiSourceDisplay() {
             this.InitializeComponent();

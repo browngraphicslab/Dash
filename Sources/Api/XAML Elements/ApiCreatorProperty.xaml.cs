@@ -64,8 +64,16 @@ namespace Dash {
         private void XKey_OnLostFocus(object sender, RoutedEventArgs e)
         {
             xKeyText.Text = xKey.Text;
-            xKey.Visibility = Visibility.Collapsed;
-            xKeyText.Visibility = Visibility.Visible;
+            if (!xKey.Text.Equals(string.Empty))
+            {
+                xKey.Visibility = Visibility.Collapsed;
+                xKeyText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                xKey.Visibility = Visibility.Visible;
+                xKeyText.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void XValue_OnTextChanged(object sender, TextChangedEventArgs e)

@@ -20,10 +20,13 @@ namespace Dash
 {
     public sealed partial class ApiView : UserControl
     {
+        private ApiCreatorDisplay XApiCreator;
+
         public ApiView()
         {
             this.InitializeComponent();
-
+            XApiCreator = new ApiCreatorDisplay(XApiSource);
+            xGrid.Children.Add(XApiCreator);
             XApiCreator.MakeApi += XApiCreatorOnMakeApi;
             XApiSource.EditApi += XApiSourceOnEditApi;
         }

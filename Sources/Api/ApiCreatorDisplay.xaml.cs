@@ -53,10 +53,11 @@ namespace Dash
 
             updateSource();
         }
-        public ApiCreatorDisplay()
+
+        public ApiCreatorDisplay(ApiSourceDisplay display)
         {
             this.InitializeComponent();
-
+            SourceDisplay = display;
             // manipulator = new ManipulationControls(this);
         }
 
@@ -127,6 +128,17 @@ namespace Dash
            
             _operatorDocument.SetFields(fields, true);
 
+            Uri uriResult;
+            var isUri = Uri.TryCreate(xApiURLTB.Text, UriKind.Absolute, out uriResult);
+            if (isUri)
+            {
+                SourceDisplay.Title = uriResult.Host.ToUpperInvariant();
+            }
+            else
+            {
+                SourceDisplay.Title = "API NODE";
+            }
+
             MakeApi?.Invoke();
         }
 
@@ -160,7 +172,6 @@ namespace Dash
             // instantiate new APISource
             Source = new ApiSource(Document, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret, xAuthControl.Key);
             Source.setApiDisplay(SourceDisplay);
-
         }
 
         private void ApiCreatorDisplay_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -197,6 +208,18 @@ namespace Dash
             if ((sender as TextBox) != null)
             {
                 ((TextBox)sender).BorderBrush = new SolidColorBrush(Colors.SlateGray);
+            }
+        }
+
+        private void XApiURLTB_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (xApiURLTB.Text == string.Empty)
+            {
+                createAPIBtn.IsEnabled = false;
+            }
+            else
+            {
+                createAPIBtn.IsEnabled = true;
             }
         }
     }

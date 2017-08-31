@@ -27,7 +27,7 @@
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
                 <Button x:Name="xRequestTypeButton" Background="{StaticResource AccentGreen}" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="77" Content="Get" Tapped="xRequestTypeButton_OnTapped"/>
-                <TextBox Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0" TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="SlateGray" BorderThickness="1.5" GotFocus="XApiURLTB_OnGotFocus" LostFocus="XApiURLTB_OnLostFocus"/>
+                <TextBox Grid.Column="1" x:Name="xApiURLTB" HorizontalAlignment="Stretch" Height="25" Margin="3,0,0,0" TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="SlateGray" BorderThickness="1.5" GotFocus="XApiURLTB_OnGotFocus" LostFocus="XApiURLTB_OnLostFocus" TextChanged="XApiURLTB_OnTextChanged"/>
                 <Border x:Name="xAddressLabel" Grid.Column="1" Background="SlateGray" CornerRadius="5" Width="70" Height="18" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="3,-10,0,0">
                     <TextBlock Text="API Adress" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
                 </Border>
@@ -37,6 +37,6 @@
             <local:ApiCreatorPropertyGenerator x:Name="xParameterControl" TitleTag="PARAMETERS"/>
 
         </StackPanel>
-        <Button x:Name="createAPIBtn" Click="createAPINodeTemplate" Grid.Row="2" Content="MAKE API" HorizontalAlignment="Center" Margin="0,20,0,0" Foreground="White" Background="#FF0078D7"/>
+        <Button x:Name="createAPIBtn" Click="createAPINodeTemplate" Grid.Row="2" Content="MAKE API" HorizontalAlignment="Center" Margin="0,20,0,0" Foreground="White" Background="#FF0078D7" IsEnabled="False"/>
     </Grid>
 </UserControl>

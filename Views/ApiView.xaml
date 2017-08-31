@@ -9,8 +9,8 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
-        <local:ApiCreatorDisplay x:Name="XApiCreator"></local:ApiCreatorDisplay>
+    <Grid x:Name="xGrid">
+        <!--<local:ApiCreatorDisplay x:Name="XApiCreator"></local:ApiCreatorDisplay>-->
         <local:ApiSourceDisplay x:Name="XApiSource" Visibility="Collapsed"></local:ApiSourceDisplay>
     </Grid>
 </UserControl>
