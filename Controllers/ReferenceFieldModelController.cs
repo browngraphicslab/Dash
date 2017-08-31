@@ -125,10 +125,16 @@ namespace Dash
         }
         public override bool SetValue(object value)
         {
-            var refValue = (Tuple<Context,string>)value;
+            var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
             var field = doc.GetDereferencedField<FieldModelController>(FieldKey, refValue.Item1);
-            return doc.ParseDocField(FieldKey, refValue.Item2, field);
+            if (refValue.Item2 is string)
+                return doc.ParseDocField(FieldKey, refValue.Item2 as string, field);
+            else if (refValue.Item2 is RichTextFieldModel.RTD)
+                return doc.SetField(FieldKey, new RichTextFieldModelController(refValue.Item2 as RichTextFieldModel.RTD), false);
+            else
+                ;
+            return false;
         }
     }
 }

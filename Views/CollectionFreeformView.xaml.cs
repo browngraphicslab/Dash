@@ -104,7 +104,7 @@ namespace Dash
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
-            ManipulationControls.Dispose();
+            ManipulationControls?.Dispose();
         }
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
@@ -117,6 +117,7 @@ namespace Dash
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
+
             if (InkFieldModelController != null)
             {
                 MakeInkCanvas();
@@ -793,8 +794,7 @@ namespace Dash
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
-            OnSelected();
-
+            OnSelected(); 
         }
 
         #endregion
