@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Data.Pdf;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -168,19 +169,45 @@ namespace Dash
                 if (items.Count > 0)
                 {
                     var storageFile = items[0] as StorageFile;
-                    var imagery = new Image();
-                    var bitmapImage = new BitmapImage();
-                    bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
-                    imagery.Source = bitmapImage;
+                    if (storageFile.Path.EndsWith(".pdf"))
+                    {
+                        var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
+                        using (PdfPage page = pdf.GetPage(0))
+                        {
+                            var stream = new InMemoryRandomAccessStream();
+                            await page.RenderToStreamAsync(stream);
+                            BitmapImage src = new BitmapImage();
+                            await src.SetSourceAsync(stream);
+                            var pageImage = new Image();
+                            pageImage.Source = src;
 
-                    var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(imagery);
+                            // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
+                            var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
 
-                    var where = sender is CollectionFreeformView ?
-                        Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                        new Point();
+                            var where = sender is CollectionFreeformView ?
+                                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                                new Point();
 
-                    var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), storageFile.Path, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
-                    MainPage.Instance.DisplayDocument(image.Document, where);
+                            var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), "1st page", 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                            MainPage.Instance.DisplayDocument(image.Document, where);
+                        }
+                    }
+                    else
+                    {
+                        var imagery = new Image();
+                        var bitmapImage = new BitmapImage();
+                        bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                        imagery.Source = bitmapImage;
+
+                        var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(imagery);
+
+                        var where = sender is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                            new Point();
+
+                        var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), storageFile.Path, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                        MainPage.Instance.DisplayDocument(image.Document, where);
+                    }
                 }
             }
             var carrier = ItemsCarrier.Instance;
@@ -208,9 +235,15 @@ namespace Dash
 
             HackGridToRenderImage = new Grid();
             HackGridToHideRenderImageWhenRendering = new Grid();
-            imagery.Width = HackGridToRenderImage.Width = HackGridToHideRenderImageWhenRendering.Width = (imagery.Source as BitmapImage).PixelWidth;
-            imagery.Height = HackGridToRenderImage.Height = HackGridToHideRenderImageWhenRendering.Height = (imagery.Source as BitmapImage).PixelHeight;
-            HackGridToHideRenderImageWhenRendering.Background = new SolidColorBrush(Colors.Blue);
+            var w = (imagery.Source as BitmapImage).PixelWidth;
+            var h = (imagery.Source as BitmapImage).PixelHeight;
+            if (w == 0)
+                w = 100;
+            if (h == 0)
+                h = 100;
+            imagery.Width = HackGridToRenderImage.Width = HackGridToHideRenderImageWhenRendering.Width = w;
+            imagery.Height = HackGridToRenderImage.Height = HackGridToHideRenderImageWhenRendering.Height = h;
+            //HackGridToHideRenderImageWhenRendering.Background = new SolidColorBrush(Colors.Blue);
             HackGridToHideRenderImageWhenRendering.Children.Add(HackGridToRenderImage);
             HackGridToRenderImage.Background = new SolidColorBrush(Colors.Blue);
             HackGridToRenderImage.Children.Add(imagery);
