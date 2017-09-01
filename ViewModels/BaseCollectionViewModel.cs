@@ -177,6 +177,11 @@ namespace Dash
                 carrier.Destination = null;
             }
 
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                FileDropHelper.HandleDropOnCollection(sender, e, this);
+            }
+
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 

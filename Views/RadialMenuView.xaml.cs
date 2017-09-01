@@ -235,14 +235,12 @@ namespace Dash
             Action<object> choosePencil = Actions.ChoosePencil;
             Action<object> chooseEraser = Actions.ChooseEraser;
             Action<object> toggleSelect = Actions.ToggleSelectionMode;
-            Action<object> toggleInkRecognition = Actions.ToggleInkRecognition;
             var penInk = new RadialActionModel("", (Symbol) 0xEE56) {GenericAction = choosePen,
             };
             var pencilInk = new RadialActionModel("", (Symbol) 0xED63) {GenericAction = choosePencil,
             };
             var eraserInkModel = new RadialActionModel("", (Symbol) 0xED60) {GenericAction = chooseEraser,
             };
-            //var toggleInkRecognitionModel = new RadialActionModel("", (Symbol) 0xE945) {GenericAction = toggleInkRecognition, IsToggle = true};
             var selectModel =
                 new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect,
                 };
@@ -276,13 +274,16 @@ namespace Dash
             SetActionModel(setMouseModel, SetMouseInputButton);
             SetActionModel(disableModel, DisableButton);
 
+            Action<ICollectionView, DragEventArgs> onImportDropped = Actions.OpenFilePickerForImport;
             Action<ICollectionView, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
+            var importModel =
+                new RadialActionModel("", "") {CollectionDropAction = onImportDropped, IsDraggable = true};
             var operatorModel = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionModel = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
-
+            SetActionModel(importModel, ImportButton);
             SetActionModel(operatorModel, Operator);
             SetActionModel(collectionModel, Collection);
             SetActionModel(documentModel, Document);

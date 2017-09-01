@@ -35,7 +35,7 @@
         </local:RadialMenuSlider>
         <local:RadialMenuSlider x:Name="OpacitySlider" Grid.Row="1" Grid.RowSpan="2" Width="200" StartAngle="115"
                                     Angle="30"
-                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,0" Grid.Column="0"
+                                    InnerRadius="139.5" Thickness="30" Margin="139.5,-15,0,-6" Grid.Column="0"
                                     Grid.ColumnSpan="2" ValueChanged="OpacitySlider_OnValueChanged" MinValue="0" MaxValue="100" Symbol="{x:Bind OpacitySymbol}">
         </local:RadialMenuSlider>
     </Grid>

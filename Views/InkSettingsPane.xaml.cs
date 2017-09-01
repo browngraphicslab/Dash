@@ -33,10 +33,9 @@ namespace Dash
         public InkSettingsPane()
         {
             this.InitializeComponent();
-            GlobalInkSettings.OnAttributesUpdated += (newBrush) => UpdateExample();
+            GlobalInkSettings.InkSettingsUpdated += (args) => UpdateExample();
             SizeSlider.Loaded += SizeSliderOnLoaded;
             Loaded += InkSettingsPane_Loaded;
-            
         }
 
         private void InkSettingsPane_Loaded(object sender, RoutedEventArgs e)
@@ -48,17 +47,7 @@ namespace Dash
             XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(new Point(5, 13));
             XInkCanvas.InkPresenter.IsInputEnabled = false;
             ExampleStroke = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes()[0];
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             UpdateExample();
-        }
-
-        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
-        {
-            Debug.WriteLine("new stroke ======");
-            foreach (var point in e.Strokes[0].GetInkPoints())
-            {
-                Debug.WriteLine("new InkPoint( new Point(" + point.Position + "), (float)" + point.Pressure + ", (float)" + point.TiltX + ", (float)" + point.TiltY + ", (ulong)" + point.Timestamp + "),");
-            }
         }
 
         private void SizeSliderOnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -96,7 +85,6 @@ namespace Dash
             }
         }
 
-
         private void OpacitySlider_OnValueChanged(RadialMenuSlider sender, double newvalue)
         {
             GlobalInkSettings.Opacity = newvalue/100;
@@ -112,7 +100,8 @@ namespace Dash
             GlobalInkSettings.Brightness = newvalue;
         }
 
-        private List<InkPoint> _strokeBuilderList = new List<InkPoint>
+
+        private readonly List<InkPoint> _strokeBuilderList = new List<InkPoint>
         {
             new InkPoint( new Point(57.71411,7.072601), (float)0.0703125, (float)0, (float)0, (ulong)1015062801132),
             new InkPoint( new Point(57.71411,6.651978), (float)0.09960938, (float)0, (float)0, (ulong)1015062801266),

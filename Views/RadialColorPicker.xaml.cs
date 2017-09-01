@@ -33,13 +33,13 @@ namespace Dash
 
         private void RadialColorPicker_Loaded(object sender, RoutedEventArgs e)
         {
-            GlobalInkSettings.OnAttributesUpdated += GlobalInkSettingsOnOnAttributesUpdated;
+            GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnOnAttributesUpdated;
             var newRotation = GlobalInkSettings.Hue;
             CompositeTransform newTransform = new CompositeTransform { Rotation = newRotation };
             RotationGrid.RenderTransform = newTransform;
         }
 
-        private void GlobalInkSettingsOnOnAttributesUpdated(SolidColorBrush newAttributes)
+        private void GlobalInkSettingsOnOnAttributesUpdated(InkUpdatedEventArgs args)
         {
             var newRotation = GlobalInkSettings.Hue;
             CompositeTransform newTransform = new CompositeTransform { Rotation = newRotation };

@@ -6,7 +6,10 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Media.Effects;
 using Windows.Storage;
+using Windows.System;
+using Windows.System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Input;
@@ -61,7 +64,13 @@ namespace Dash
             
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
-            this.Drop += DocumentDropHelper.HandleDrop;
+            this.Drop += OnDrop;
+        }
+
+        private void OnDrop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+            FileDropHelper.HandleDropOnDocument(this, e);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -460,6 +469,14 @@ namespace Dash
                 e.AcceptedOperation = DataPackageOperation.Copy | DataPackageOperation.Move;
             }
         }
-        
+
+        private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var doc = ViewModel.DocumentController;
+            var text = doc.GetField(KeyStore.SystemUriKey) as TextFieldModelController;
+            if (text == null) return;
+            var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+            Debug.WriteLine(query);
+        }
     }
 }

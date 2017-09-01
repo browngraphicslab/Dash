@@ -162,8 +162,8 @@
         /// <param name="expectedWidth">Expected width of the floating control</param>
         public void ManipulateControlPosition(double x, double y, double expectedHeight, double expectedWidth)
         {
-            var left = Canvas.GetLeft(_border) + x; //* XDirection; //Bounce!
-            var top = Canvas.GetTop(_border) + y; //* YDirection; //Bounce!
+            var left = Canvas.GetLeft(_border) + x * XDirection; //Bounce!
+            var top = Canvas.GetTop(_border) + y * YDirection; //Bounce!
 
             Rect rect = new Rect(left, top, expectedWidth, expectedHeight);
             AdjustCanvasPosition(rect);

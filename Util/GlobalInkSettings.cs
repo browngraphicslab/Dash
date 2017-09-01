@@ -10,15 +10,26 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
+    public class InkUpdatedEventArgs
+    {
+        public InkInputProcessingMode InputProcessingMode { get; private set; }
+        public CoreInputDeviceTypes InputDeviceTypes { get; private set; }
+        public InkDrawingAttributes InkAttributes { get; private set; }
+
+        public InkUpdatedEventArgs(InkInputProcessingMode mode, CoreInputDeviceTypes inputs,
+            InkDrawingAttributes attributes)
+        {
+            InputProcessingMode = mode;
+            InputDeviceTypes = inputs;
+            InkAttributes = attributes;
+        }
+    }
     public static class GlobalInkSettings
     {
-        public delegate void BooleanToggledEventHandler(bool newValue);
 
-        public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
+        public delegate void InkSettingsUpdatedEventHandler(InkUpdatedEventArgs args);
 
-        public delegate void AttributesUpdatedEventHandler(SolidColorBrush newAttributes);
-
-        public static event AttributesUpdatedEventHandler OnAttributesUpdated;
+        public static event InkSettingsUpdatedEventHandler InkSettingsUpdated;
 
         public enum StrokeTypes
         {
@@ -30,13 +41,13 @@ namespace Dash
 
         private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
         private static CoreInputDeviceTypes _inkInputType;
-        private static bool _isRecognitionEnabled;
-        private static Color _color = Colors.DarkGray;
+        private static Color _color;
         private static double _hue;
         private static double _brightness;
         private static StrokeTypes _strokeType;
-        private static double _size = 3;
-        private static double _opacity = 1;
+        private static double _size;
+        private static double _opacity;
+        
 
         public static StrokeTypes StrokeType
         {
@@ -45,58 +56,23 @@ namespace Dash
             {
                 if (_strokeType == value) return;
                 _strokeType = value;
-                foreach (var ctrl in FreeformInkControls)
-                {
-                    ctrl.UpdateSelectionMode();
-                }
                 var attributes = new InkDrawingAttributes();
                 switch (value)
                 {
-                    case StrokeTypes.Eraser:
-                        foreach (var presenter in Presenters)
-                        {
-                            presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
-                        }
-                        break;
                     case StrokeTypes.Pencil:
                         attributes = InkDrawingAttributes.CreateForPencil();
                         attributes.PencilProperties.Opacity = Opacity;
                         attributes.Color = Color;
                         attributes.Size = new Size(Size, Size);
                         Attributes = attributes;
-                        OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                        {
-                            Opacity = Opacity
-                        });
-                        foreach (var presenter in Presenters)
-                        {
-                            presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-                            presenter.UpdateDefaultDrawingAttributes(Attributes);
-                        }
                         break;
                     case StrokeTypes.Pen:
                         attributes.Color = Color;
                         attributes.Size = new Size(Size, Size);
                         Attributes = attributes;
-                        OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                        {
-                            Opacity = Opacity
-                        });
-                        foreach (var presenter in Presenters)
-                        {
-                            presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-                            presenter.UpdateDefaultDrawingAttributes(Attributes);
-                        }
                         break;
-                    case StrokeTypes.Selection:
-                        foreach (var presenter in Presenters)
-                        {
-                            presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.None;
-                        }
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
+                FireAttributesUpdatedEvent();
             }
 
         }
@@ -107,85 +83,60 @@ namespace Dash
             set
             {
                 _inkInputType = value;
-                foreach (var inkPresenter in Presenters)
-                    inkPresenter.InputDeviceTypes = value;
-                foreach (var ctrls in FreeformInkControls)
-                    ctrls.UpdateInputType();
-               
+                FireAttributesUpdatedEvent();
             }
         }
 
         public static double Brightness
         {
-            get { return _brightness; }
+            get => _brightness;
             set
             {
                 _brightness = value;
-                Color color = HsvToRgb(Hue, 1, 1);
-                Color = ChangeColorBrightness(color, value);
+                Color = ChangeColorBrightness(Hue, value);
             }
         }
 
         public static Color Color
         {
-            get { return _color; }
+            get => _color;
             set
             {
                 _color = value;
                 Attributes.Color = Color;
-                OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                {
-                    Opacity = Opacity
-                });
-                UpdateInkPresenters();
+                FireAttributesUpdatedEvent();
             }
         }
-
-        private static void UpdateInkPresenters()
-        {
-            foreach (var presenter in Presenters)
-            {
-                presenter.UpdateDefaultDrawingAttributes(Attributes);
-            }
-        }
-
+        
         public static double Hue
         {
-            get { return _hue; }
+            get => _hue;
             set
             {
                 _hue = value;
-                Color = ChangeColorBrightness(HsvToRgb(value, 1, 1), Brightness);
+                Color = ChangeColorBrightness(value, Brightness);
             }
         }
 
         public static double Opacity
         {
-            get { return _opacity; }
+            get => _opacity;
             set
             {
                 _opacity = value;
                 if (Attributes.PencilProperties != null) Attributes.PencilProperties.Opacity = Opacity;
-                OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                {
-                    Opacity = Opacity
-                });
-                UpdateInkPresenters();
+                FireAttributesUpdatedEvent();
             }
         }
 
         public static double Size
         {
-            get { return _size; }
+            get => _size;
             set
             {
                 _size = value;
                 Attributes.Size = new Size(Size, Size);
-                OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
-                {
-                    Opacity = Opacity
-                });
-                UpdateInkPresenters();
+                FireAttributesUpdatedEvent();
             }
         }
 
@@ -195,42 +146,52 @@ namespace Dash
             set
             {
                 _attributes = value;
-                foreach (var presenter in Presenters)
-                {
-                    presenter.UpdateDefaultDrawingAttributes(_attributes);
-                }
+                FireAttributesUpdatedEvent();
             }
         }
 
-        public static ObservableCollection<InkPresenter> Presenters { get; set; } =
-            new ObservableCollection<InkPresenter>();
-
-        public static bool IsRecognitionEnabled
+        public static void FireAttributesUpdatedEvent()
         {
-            get => _isRecognitionEnabled;
-            set
+            InkInputProcessingMode processingMode;
+            switch (StrokeType)
             {
-                if (value != _isRecognitionEnabled)
-                {
-                    RecognitionChanged?.Invoke(value);
-                    _isRecognitionEnabled = value;
-                }
+                case StrokeTypes.Eraser:
+                    processingMode = InkInputProcessingMode.Erasing;
+                    break;
+                case StrokeTypes.Selection:
+                    processingMode = InkInputProcessingMode.None;
+                    break;
+                default:
+                    processingMode = InkInputProcessingMode.Inking;
+                    break;
             }
+            var args = new InkUpdatedEventArgs(processingMode, InkInputType, Attributes);
+            InkSettingsUpdated?.Invoke(args);
         }
 
-        public static ObservableCollection<FreeformInkControl> FreeformInkControls { get; set; } =
-            new ObservableCollection<FreeformInkControl>();
+        public static void ForceUpdateFromAttributes(InkDrawingAttributes attributes)
+        {
+            RgbToHsV(attributes.Color, out double h, out double s,out double v);
+            Hue = h;
+            Brightness = GetBrightnessFromColor(attributes.Color, h);
+            Size = attributes.Size.Width;
+            if (attributes.PencilProperties != null) Opacity = attributes.PencilProperties.Opacity;
+        }
 
-        public static event InkInputChangedEventHandler InkInputChanged;
-
-        public static event BooleanToggledEventHandler RecognitionChanged;
-
-        public static Color ChangeColorBrightness(Color color, double brightness)
+        #region Math
+        /// <summary>
+        /// Given double from 0(black)-100(white), adjusts the brightness of the given hue.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="brightness"></param>
+        /// <returns></returns>
+        public static Color ChangeColorBrightness(double hue, double brightness)
         {
             var newFactor = brightness / 50 - 1;
-            double red = color.R;
-            double green = color.G;
-            double blue = color.B;
+            Color midColor = HsvToRgb(hue, 1, 1);
+            double red = midColor.R;
+            double green = midColor.G;
+            double blue = midColor.B;
 
             if (newFactor < 0)
             {
@@ -245,11 +206,11 @@ namespace Dash
                 green += (255 - green) * newFactor;
                 blue += (255 - blue) * newFactor;
             }
-            return Color.FromArgb(color.A, (byte)red, (byte)green, (byte)blue);
+            return Color.FromArgb(midColor.A, (byte)red, (byte)green, (byte)blue);
         }
 
         /// <summary>
-        /// Inverses the ChangeColorBrightness function to get the brightness factor for a color, given its hue
+        /// Inverses the ChangeColorBrightness function to get the brightness factor (0-100) for a color, given its hue
         /// </summary>
         /// <param name="color"></param>
         /// <param name="hue"></param>
@@ -290,25 +251,8 @@ namespace Dash
             {
                 brightness = (x2 - x1) / (255 - x1);
             }
-            return brightness;
+            return (brightness + 1)*50;
         }
-
-        public static void ForceUpdateFromAttributes(InkDrawingAttributes attributes)
-        {
-            Color color = attributes.Color;
-            double h, s, v;
-            RgbToHsV(color, out h,out s,out v);
-            Hue = h;
-            _brightness = (GetBrightnessFromColor(color, h) + 1) * 50;
-            Size = attributes.Size.Width;
-            if (attributes.PencilProperties != null)
-            {
-                StrokeType = StrokeTypes.Pencil;
-                Opacity = attributes.PencilProperties.Opacity;
-            }
-            else StrokeType = StrokeTypes.Pen;
-        }
-
         public static void RgbToHsV(Color rgb, out double h, out double s, out double v)
         {
             double delta, min;
@@ -449,5 +393,7 @@ namespace Dash
             if (i > 255) return 255;
             return i;
         }
+
+        #endregion
     }
 }

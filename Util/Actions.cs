@@ -280,6 +280,19 @@ namespace Dash
             DisplayDocument(collectionView, postitNote, where);
         }
 
+        public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            FileOpenPicker picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            var results = await picker.PickMultipleFilesAsync();
+            FileDropHelper.HandleDropOnCollection(results, collectionView, where);
+        }
+
         #region Ink Commands
 
         public static void SetTouchInput(object obj)
@@ -306,11 +319,6 @@ namespace Dash
         public static void ToggleSelectionMode(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Selection;
-        }
-
-        public static void ToggleInkRecognition(object o)
-        {
-            GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
         }
 
         public static void ChoosePen(object o)

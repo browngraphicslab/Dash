@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Input.Inking;
@@ -15,94 +16,14 @@ namespace Dash
 {
     public sealed class InkRecognitionHelper
     {
-        private readonly FreeformInkControl _freeformInkControl;
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _textBoundsDictionary;
-        private readonly DispatcherTimer _timer;
-        private InkAnalyzer analyzer;
-        private bool doubleTapped;
-        private List<Point> doubleTappedPoints;
-        private List<InkStroke> newStrokes;
-        private List<InkStroke> strokesToRemove;
-
-        public FreeformInkControl FreeformInkControl => FreeformInkControl1;
-
-        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary
-        {
-            get => TextBoundsDictionary1;
-            set => TextBoundsDictionary1 = value;
-        }
-
-        public DispatcherTimer Timer => Timer1;
-
-        public InkAnalyzer Analyzer
-        {
-            get => Analyzer1;
-            set => Analyzer1 = value;
-        }
-
-        public bool DoubleTapped
-        {
-            get => DoubleTapped1;
-            set => DoubleTapped1 = value;
-        }
-
-        public List<Point> DoubleTappedPoints
-        {
-            get => DoubleTappedPoints1;
-            set => DoubleTappedPoints1 = value;
-        }
-
-        public List<InkStroke> NewStrokes
-        {
-            get => NewStrokes1;
-            set => NewStrokes1 = value;
-        }
-
-        public List<InkStroke> StrokesToRemove
-        {
-            get => StrokesToRemove1;
-            set => StrokesToRemove1 = value;
-        }
-
-        public FreeformInkControl FreeformInkControl1 => _freeformInkControl;
-
-        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary1
-        {
-            get => _textBoundsDictionary;
-            set => _textBoundsDictionary = value;
-        }
-
-        public DispatcherTimer Timer1 => _timer;
-
-        public InkAnalyzer Analyzer1
-        {
-            get => analyzer;
-            set => analyzer = value;
-        }
-
-        public bool DoubleTapped1
-        {
-            get => doubleTapped;
-            set => doubleTapped = value;
-        }
-
-        public List<Point> DoubleTappedPoints1
-        {
-            get => doubleTappedPoints;
-            set => doubleTappedPoints = value;
-        }
-
-        public List<InkStroke> NewStrokes1
-        {
-            get => newStrokes;
-            set => newStrokes = value;
-        }
-
-        public List<InkStroke> StrokesToRemove1
-        {
-            get => strokesToRemove;
-            set => strokesToRemove = value;
-        }
+        private List<IInkAnalysisNode> _shapeRegions;
+        public FreeformInkControl FreeformInkControl { get; set; }
+        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary { get; set; }
+        public InkAnalyzer Analyzer { get; set; }
+        public bool DoubleTapped { get; set; }
+        public List<Point> DoubleTappedPoints { get; set; }
+        public List<InkStroke> NewStrokes { get; set; }
+        public List<InkStroke> StrokesToRemove { get; set; }
 
         public InkRecognitionHelper(FreeformInkControl freeformInkControl)
         {
@@ -110,40 +31,16 @@ namespace Dash
             DoubleTappedPoints = new List<Point>();
             NewStrokes = new List<InkStroke>();
             StrokesToRemove = new List<InkStroke>();
-            _freeformInkControl = freeformInkControl;
-            //_timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(600)};
-            //_timer.Tick += TimerOnTick;
-            //_timer.Start();
-            //GlobalInkSettings.RecognitionChanged += GlobalInkSettingsOnRecognitionChanged;
-        }
-
-        private void GlobalInkSettingsOnRecognitionChanged(bool newValue)
-        {
-            if (!newValue)
-            {
-                Analyzer.ClearDataForAllStrokes();
-                FreeformInkControl.ClearSelection();
-                foreach (var stroke in StrokesToRemove)
-                {
-                    stroke.Selected = true;
-                }
-                FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            }
-        }
-
-        private void TimerOnTick(object sender, object o1)
-        {
-            RecognizeInk();
+            FreeformInkControl = freeformInkControl;
         }
 
         /// <summary>
         ///     Tries to find documents or collections at the double tap point, or delete using the newest stroke.
         /// </summary>
-        /// <param name="doubleTapped"></param>
-        /// <param name="newStroke"></param>
-        public async void RecognizeInk(bool addToRemoveList = true)
+        /// <param name="recognitionFromSelectedStrokes"></param>
+        public async void RecognizeInk(bool recognitionFromSelectedStrokes = false)
         {
-            if (NewStrokes.Count > 0)
+            if (NewStrokes.Count > 0 && !recognitionFromSelectedStrokes)
             {
                 StrokesToRemove.AddRange(NewStrokes);
                 foreach (var newStroke in NewStrokes)
@@ -154,45 +51,49 @@ namespace Dash
             if (result.Status == InkAnalysisStatus.Updated)
             {
                 TextBoundsDictionary = GetTextBoundsDictionary();
-                // Find circles and rectangles
-                var shapeRegions = Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
-                foreach (InkAnalysisInkDrawing region in shapeRegions)
+                _shapeRegions = new List<IInkAnalysisNode>(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing).OrderBy(stroke => stroke.Id).Reverse());
+                foreach (var inkAnalysisNode in new List<IInkAnalysisNode>(_shapeRegions))
                 {
-                    //If the region is a rectangle and was double tapped, add the document
-                    if (region.DrawingKind != InkAnalysisDrawingKind.Rectangle &&
-                        region.DrawingKind != InkAnalysisDrawingKind.Square) continue;
-                    if (RegionContainsNewStroke(region)) AddDocumentFromShapeRegion(region);
-                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
-                }
-                //If the region is an ellipse, add a collection
-                foreach (InkAnalysisInkDrawing region in shapeRegions)
-                {
-                    if (region.DrawingKind != InkAnalysisDrawingKind.Circle &&
-                        region.DrawingKind != InkAnalysisDrawingKind.Ellipse) continue;
-                    if (RegionContainsNewStroke(region)) AddCollectionFromShapeRegion(region);
-                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
-                }
-
-                foreach (InkAnalysisInkDrawing region in shapeRegions)
-                {
-                    if (region.DrawingKind != InkAnalysisDrawingKind.Triangle &&
-                        region.DrawingKind != InkAnalysisDrawingKind.EquilateralTriangle &&
-                        region.DrawingKind != InkAnalysisDrawingKind.IsoscelesTriangle &&
-                        region.DrawingKind != InkAnalysisDrawingKind.RightTriangle) continue;
+                    var region = (InkAnalysisInkDrawing)inkAnalysisNode;
+                    //Only recognize shapes if the region was just drawn and contains a new stroke
                     if (RegionContainsNewStroke(region))
                     {
-                        OperatorSearchView.AddsToThisCollection = FreeformInkControl.FreeformView;
-                        if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) continue;
-                        MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
-                        Point absPos =
-                            Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
-                                FreeformInkControl.TargetCanvas, MainPage.Instance);
-                        Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-                        Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
-                        DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
-                        Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+                        bool recognized = false;
+                        //ellipses ==> collections
+                        if (region.DrawingKind == InkAnalysisDrawingKind.Circle ||
+                            region.DrawingKind == InkAnalysisDrawingKind.Ellipse)
+                        {
+                            AddCollectionFromShapeRegion(region);
+                            recognized = true;
+                        }
+                        if (!recognitionFromSelectedStrokes && recognized) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                     }
-                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                }
+                foreach (var inkAnalysisNode in _shapeRegions)
+                {
+                    var region = (InkAnalysisInkDrawing) inkAnalysisNode;
+                    //Only recognize shapes if the region was just drawn and contains a new stroke
+                    if (RegionContainsNewStroke(region))
+                    {
+                        bool recognized = false;
+                        //rectangles ==> documents
+                        if (region.DrawingKind == InkAnalysisDrawingKind.Rectangle ||
+                            region.DrawingKind == InkAnalysisDrawingKind.Square)
+                        {
+                            AddDocumentFromShapeRegion(region);
+                            recognized = true;
+                        }
+                        //triangles ==> operator menu
+                        if (region.DrawingKind == InkAnalysisDrawingKind.Triangle &&
+                            region.DrawingKind == InkAnalysisDrawingKind.EquilateralTriangle &&
+                            region.DrawingKind == InkAnalysisDrawingKind.IsoscelesTriangle &&
+                            region.DrawingKind == InkAnalysisDrawingKind.RightTriangle)
+                        {
+                            AddOperatorFromRegion(region);
+                            recognized = true;
+                        }
+                        if (!recognitionFromSelectedStrokes && recognized) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                    }
                 }
                 //All of the unused text gets re-added to the InkAnalyzer
                 foreach (var key in TextBoundsDictionary.Keys)
@@ -203,44 +104,19 @@ namespace Dash
                     if (ids != null) Analyzer.AddDataForStrokes(ids);
                 }
             }
-            if (!addToRemoveList) Analyzer.ClearDataForAllStrokes();
+            if (recognitionFromSelectedStrokes) Analyzer.ClearDataForAllStrokes();
             FreeformInkControl.UpdateInkFieldModelController();
             NewStrokes.Clear();
         }
 
-        private bool RegionContainsNewStroke(IInkAnalysisNode region)
-        {
-            return region.GetStrokeIds()
-                .Select(id => FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id))
-                .Any(stroke => NewStrokes.Contains(stroke));
-        }
+        
 
-        private void RemoveStrokeReferences(ICollection<uint> ids)
-        {
-            AccountForRemovedStrokes(ids.ToImmutableHashSet());
-            Analyzer.RemoveDataForStrokes(ids);
-        }
+        #region Delete with line
 
-        public void AccountForRemovedStrokes(ICollection<uint> ids)
-        {
-            var strokes = FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes()
-                .Where(s => ids.Contains(s.Id));
-            foreach (var stroke in strokes) StrokesToRemove.Remove(stroke);
-        }
-
-        private bool ContainsDoubleTapPoint(Rect rect, out List<Point> containedPoints)
-        {
-            containedPoints = new List<Point>();
-            var ret = false;
-            foreach (var point in DoubleTappedPoints)
-                if (rect.Contains(point))
-                {
-                    containedPoints.Add(point);
-                    ret = true;
-                }
-            return ret;
-        }
-
+        /// <summary>
+        /// Tries to delete documents and field connections intersected by a stroke, so long as the stroke is linear.
+        /// </summary>
+        /// <param name="newStroke"></param>
         private void TryDeleteWithStroke(InkStroke newStroke)
         {
             var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(
@@ -341,9 +217,10 @@ namespace Dash
 
         private bool IsLinear(IEnumerable<Point> points)
         {
-            var xVals = points.Select(p => p.X).ToArray();
-            var yVals = points.Select(p => p.Y).ToArray();
-            Util.LinearRegression(xVals, yVals, 0, points.Count(), out double rsquared, out double yInt,
+            var pList = points.ToList();
+            var xVals = pList.Select(p => p.X).ToArray();
+            var yVals = pList.Select(p => p.Y).ToArray();
+            Util.LinearRegression(xVals, yVals, 0, pList.Count, out double rsquared, out double yInt,
                 out double slope);
             return rsquared > 0.85;
         }
@@ -388,98 +265,73 @@ namespace Dash
             return dict;
         }
 
+        #endregion
+
+
+        #region Add collection, doc, operator
+
         private void AddCollectionFromShapeRegion(InkAnalysisInkDrawing region)
         {
-            var selectionPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
+            var regions = new List<IInkAnalysisNode>(_shapeRegions);
+            List<DocumentController> recognizedDocuments = new List<DocumentController>();
+            foreach (var child in regions.OfType<InkAnalysisInkDrawing>().Where(
+                r => RectContainsRect(region.BoundingRect, r.BoundingRect)))
+            {
+                if (child.DrawingKind == InkAnalysisDrawingKind.Rectangle ||
+                    child.DrawingKind == InkAnalysisDrawingKind.Square)
+                {
+                    recognizedDocuments.Add(AddDocumentFromShapeRegion(child, false));
+                    RemoveStrokeReferences(child.GetStrokeIds().ToImmutableHashSet());
+                    _shapeRegions.Remove(child);
+                }
+            }
+            var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
                 .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
                     FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
-            var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(selectionPoints);
-            var docControllers = new List<DocumentController>();
+            var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(lassoPoints);
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
-            var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
                 FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-            foreach (var view in selectedDocuments)
+            recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
+            foreach (var doc in recognizedDocuments)
             {
-                var doc = (view.DataContext as DocumentViewModel).DocumentController;
                 var ogPos = doc.GetPositionField().Data;
                 var newPos = Util.PointTransformFromVisual(ogPos,
                     FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
-                docControllers.Add(doc);
             }
             var fields = new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(docControllers)
+                new DocumentCollectionFieldModelController(recognizedDocuments)
             };
             var documentController = new DocumentController(fields, DocumentType.DefaultType);
             documentController.SetActiveLayout(
                 new CollectionBox(
                     new ReferenceFieldModelController(documentController.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, size.Width,
-                    size.Height).Document, true, true);
+                        DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
+                    region.BoundingRect.Height).Document, true, true);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
 
-        private List<Point> GetPointsFromStrokeIDs(IEnumerable<uint> ids)
+        private void AddOperatorFromRegion(InkAnalysisInkDrawing region)
         {
-            var points = new List<Point>();
-            foreach (var id in ids)
-                points.AddRange(FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)
-                    .GetInkPoints().Select(inkPoint => inkPoint.Position));
-            return points;
+            OperatorSearchView.AddsToThisCollection = FreeformInkControl.FreeformView;
+            if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
+            MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
+            Point absPos =
+                Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
+                    FreeformInkControl.TargetCanvas, MainPage.Instance);
+            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
+            Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
         }
 
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetTextBoundsDictionary()
-        {
-            var textLineRegions = new List<InkAnalysisLine>(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
-                .Select(o => o as InkAnalysisLine));
-            var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
-            foreach (var textLine in textLineRegions)
-            {
-                textBoundsDictionary[textLine.BoundingRect] =
-                    new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-                Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
-            }
-
-            return textBoundsDictionary;
-        }
-
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetListBoundsDictionary()
-        {
-            var textLineRegions = new List<InkAnalysisListItem>(Analyzer.AnalysisRoot
-                .FindNodes(InkAnalysisNodeKind.ListItem).Select(o => o as InkAnalysisListItem));
-            var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
-            foreach (var textLine in textLineRegions)
-            {
-                textBoundsDictionary[textLine.BoundingRect] =
-                    new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-                Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
-            }
-
-            return textBoundsDictionary;
-        }
-
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetParagraphBoundsDictionary()
-        {
-            var textLineRegions = new List<InkAnalysisParagraph>(Analyzer.AnalysisRoot
-                .FindNodes(InkAnalysisNodeKind.Paragraph).Select(o => o as InkAnalysisParagraph));
-            var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
-            foreach (var textLine in textLineRegions)
-            {
-                textBoundsDictionary[textLine.BoundingRect] =
-                    new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-                Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
-            }
-
-            return textBoundsDictionary;
-        }
-
-        private void AddDocumentFromShapeRegion(InkAnalysisInkDrawing region)
+        private DocumentController AddDocumentFromShapeRegion(InkAnalysisInkDrawing region, bool addToFreeformView = true)
         {
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
@@ -491,17 +343,14 @@ namespace Dash
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
-            foreach (var rect in TextBoundsDictionary.Keys)
-                if (RectContainsRect(region.BoundingRect, rect))
+            foreach (var rect in TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r)))
                 {
                     DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
                     var str = TextBoundsDictionary[rect].Item1;
-                    var key = TryGetKey(str);
-                    var text = TryGetText(str);
+                    TryGetText(str, out string text, out KeyController key);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                    double n;
-                    bool isNumeric = double.TryParse(text, out n);
-                    if (isNumeric)
+                    bool isNumbers = double.TryParse(text, out double n);
+                    if (isNumbers)
                     {
                         doc.SetField(key, new NumberFieldModelController(n), true);
                     }
@@ -520,29 +369,92 @@ namespace Dash
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
-            FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
+            if(addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
+            return doc;
         }
 
-        private string TryGetText(string str)
+        #endregion
+
+        #region InkStroke data helpers
+
+        private List<Point> GetPointsFromStrokeIDs(IEnumerable<uint> ids)
+        {
+            var points = new List<Point>();
+            foreach (var id in ids)
+                points.AddRange(FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)
+                    .GetInkPoints().Select(inkPoint => inkPoint.Position));
+            return points;
+        }
+        private void DeleteStrokesByID(ICollection<uint> IDs)
+        {
+            FreeformInkControl.ClearSelection();
+            foreach (var stroke in FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
+                if (IDs.Contains(stroke.Id))
+                    stroke.Selected = true;
+            FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+        }
+
+        public void AddStrokeData(List<InkStroke> strokes)
+        {
+            Analyzer.AddDataForStrokes(strokes);
+            NewStrokes = strokes;
+        }
+
+        public void RemoveStrokeData(List<InkStroke> strokes)
+        {
+            Analyzer.RemoveDataForStrokes(strokes.Select(s => s.Id));
+            NewStrokes.RemoveAll(strokes.Contains);
+        }
+
+        public void RecognizeAndForgetStrokes(IEnumerable<InkStroke> strokes)
+        {
+            AddStrokeData(new List<InkStroke>(strokes));
+            RecognizeInk(true);
+        }
+
+        private bool RegionContainsNewStroke(IInkAnalysisNode region)
+        {
+            return region.GetStrokeIds()
+                .Select(id => FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id))
+                .Any(stroke => NewStrokes.Contains(stroke));
+        }
+
+        private void RemoveStrokeReferences(ICollection<uint> ids)
+        {
+            var strokes = FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes()
+                .Where(s => ids.Contains(s.Id));
+            foreach (var stroke in strokes) StrokesToRemove.Remove(stroke);
+            Analyzer.RemoveDataForStrokes(ids);
+        }
+
+        #endregion
+
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetTextBoundsDictionary()
+        {
+            var textLineRegions = new List<InkAnalysisLine>(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
+                .Select(o => o as InkAnalysisLine));
+            var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+            foreach (var textLine in textLineRegions)
+            {
+                textBoundsDictionary[textLine.BoundingRect] =
+                    new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+                Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+            }
+
+            return textBoundsDictionary;
+        }
+
+        private void TryGetText(string str, out string value, out KeyController key)
         {
             if (str.Contains(':'))
             {
                 var splitstring = str.Split(':');
-                var text = splitstring[1].TrimEnd(' ').TrimStart(' ');
-                return text;
+                value = splitstring[1].TrimEnd(' ').TrimStart(' ');
+                string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
+                key = new KeyController(Guid.NewGuid().ToString(), keystring);
             }
-            return str;
-        }
-
-        private KeyController TryGetKey(string text)
-        {
-            if (text.Contains(':'))
-            {
-                var splitstring = text.Split(':');
-                var key = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                return new KeyController(Guid.NewGuid().ToString(), key);
-            }
-            return new KeyController(Guid.NewGuid().ToString(), text);
+            value = str;
+            key = new KeyController(Guid.NewGuid().ToString(), str);
         }
 
         private bool RectContainsRect(Rect outer, Rect inner)
@@ -563,32 +475,35 @@ namespace Dash
             return true;
         }
 
-        private void DeleteStrokesByID(ICollection<uint> IDs)
-        {
-            FreeformInkControl.ClearSelection();
-            foreach (var stroke in FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
-                if (IDs.Contains(stroke.Id))
-                    stroke.Selected = true;
-            FreeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-        }
+        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetListBoundsDictionary()
+        //{
+        //    var textLineRegions = new List<InkAnalysisListItem>(Analyzer.AnalysisRoot
+        //        .FindNodes(InkAnalysisNodeKind.ListItem).Select(o => o as InkAnalysisListItem));
+        //    var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+        //    foreach (var textLine in textLineRegions)
+        //    {
+        //        textBoundsDictionary[textLine.BoundingRect] =
+        //            new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+        //        Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+        //    }
 
+        //    return textBoundsDictionary;
+        //}
 
-        public void AddStrokeData(List<InkStroke> strokes)
-        {
-            Analyzer.AddDataForStrokes(strokes);
-            NewStrokes = strokes;
-        }
+        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetParagraphBoundsDictionary()
+        //{
+        //    var textLineRegions = new List<InkAnalysisParagraph>(Analyzer.AnalysisRoot
+        //        .FindNodes(InkAnalysisNodeKind.Paragraph).Select(o => o as InkAnalysisParagraph));
+        //    var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+        //    foreach (var textLine in textLineRegions)
+        //    {
+        //        textBoundsDictionary[textLine.BoundingRect] =
+        //            new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+        //        Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+        //    }
 
-        public void RemoveStrokeData(List<InkStroke> strokes)
-        {
-            Analyzer.RemoveDataForStrokes(strokes.Select(s => s.Id));
-            NewStrokes.RemoveAll(strokes.Contains);
-        }
+        //    return textBoundsDictionary;
+        //}
 
-        public void RecognizeAndForgetStrokes(IEnumerable<InkStroke> strokes)
-        {
-            AddStrokeData(new List<InkStroke>(strokes));
-            RecognizeInk(false);
-        }
     }
 }

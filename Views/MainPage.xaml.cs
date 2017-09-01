@@ -80,14 +80,19 @@ namespace Dash
             _radialMenu.Loaded += delegate
             {
                 _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
-                GlobalInkSettings.Hue = 200;
-                GlobalInkSettings.Brightness = 30;
-                GlobalInkSettings.Size = 4;
-                GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
-                GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-                GlobalInkSettings.Opacity = 1;
             };
+            Loaded += OnLoaded;
             //xCanvas.Children.Add(_radialMenu);
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            GlobalInkSettings.Hue = 200;
+            GlobalInkSettings.Brightness = 30;
+            GlobalInkSettings.Size = 4;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.Opacity = 1;
         }
 
         public CollectionView GetMainCollectionView()
