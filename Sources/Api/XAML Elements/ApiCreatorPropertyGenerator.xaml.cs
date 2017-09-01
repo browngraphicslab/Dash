@@ -60,14 +60,15 @@ namespace Dash
         /// <param name="e"></param>
         private void xCollapseButton_OnTapped(object sender, TappedRoutedEventArgs e) {
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
-                xCollapseStackPanel.Visibility = Visibility.Collapsed;
-                xEditButton.Visibility = Visibility.Collapsed;
+                xStackPanelClose.Begin();
+                xEditButtonFadeOut.Begin();
                 xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
+                xStackPanelOpen.Begin();
                 if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() != 0 || (xEditButton.Content as SymbolIcon)?.Symbol == Symbol.Accept)
                 {
-                    xEditButton.Visibility = Visibility.Visible;
+                    xEditButtonFadeIn.Begin();
                 }
                 xCollapseButtonText.Text = "6";
             }
@@ -79,6 +80,11 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void addParameterItem_Click(object sender, RoutedEventArgs e) {
+            if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() == 0)
+            {
+                xEditButton.Visibility = Visibility.Visible;
+                xEditButtonFadeIn.Begin();
+            }
             if (TitleTag == "HEADERS")
             {
                 _operatorController.AddHeader(new ApiParameter(false, false));
@@ -93,7 +99,6 @@ namespace Dash
             {
                 _operatorController.AddAuthParameter(new ApiParameter(false, true));
             }
-            xEditButton.Visibility = Visibility.Visible;
             //var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
@@ -159,7 +164,7 @@ namespace Dash
                          item?.EnterEditMode();
                     }
                 xDeleteButtonColumn.Width = new GridLength(30);
-                addParameterItem.Visibility = Visibility.Collapsed;
+                xAddParameterItemFadeOut.Begin();
             }
             else
             {
@@ -170,8 +175,13 @@ namespace Dash
                         item?.ExitEditMode();
                     }
                 xDeleteButtonColumn.Width = new GridLength(0);
-                addParameterItem.Visibility = Visibility.Visible;
+                xAddParameterItemFadeIn.Begin();
             }
+        }
+
+        private void XStackPanelClose_OnCompleted(object sender, object e)
+        {
+            xCollapseStackPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

@@ -93,6 +93,7 @@ namespace Dash {
         public void EnterEditMode()
         {
             xDeleteButtonColumn.Width = new GridLength(30);
+            xDeleteItemFadeIn.Begin();
             xKey.Visibility = Visibility.Visible;
             xKeyText.Visibility = Visibility.Collapsed;
         }
@@ -100,6 +101,7 @@ namespace Dash {
         public void ExitEditMode()
         {
             xDeleteButtonColumn.Width = new GridLength(0);
+            xDeleteItemFadeOut.Begin();
             if (!xKey.Text.Equals(string.Empty))
             {
                 xKey.Visibility = Visibility.Collapsed;
@@ -115,5 +117,6 @@ namespace Dash {
         public delegate void ValueChangedHandler(KeyController key, string newValue);
         public event ValueChangedHandler KeyChanged;
         public event ValueChangedHandler ValueChanged;
+
     }
 }

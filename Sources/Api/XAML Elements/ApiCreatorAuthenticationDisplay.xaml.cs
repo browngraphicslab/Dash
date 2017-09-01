@@ -10,6 +10,7 @@ namespace Dash {
     public sealed partial class ApiCreatorAuthenticationDisplay : UserControl {
         public ApiCreatorAuthenticationDisplay() {
             this.InitializeComponent();
+            xStackPanelClose.Begin();
         }
 
         // GETTERS / SETTERS
@@ -29,10 +30,11 @@ namespace Dash {
 
         private void collapseStackPanel() {
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
-                xCollapseStackPanel.Visibility = Visibility.Collapsed;
+                xStackPanelClose.Begin();
                 xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
+                xStackPanelOpen.Begin();
                 xCollapseButtonText.Text = "6";
             }
         }
@@ -98,6 +100,11 @@ namespace Dash {
                     xSecretLabel.Background = slateGray;
                 }
             }
+        }
+
+        private void XStackPanelClose_OnCompleted(object sender, object e)
+        {
+            xCollapseStackPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

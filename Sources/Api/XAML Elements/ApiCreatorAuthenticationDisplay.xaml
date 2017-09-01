@@ -27,6 +27,14 @@
             <TextBlock Name="xCollapseButtonText" Grid.Column="2"   HorizontalAlignment="Left" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButtonText_Tapped" Margin="5,3,10,4" Text="5" FontFamily="Marlett" Foreground="White"></TextBlock>
         </Grid>
         <StackPanel x:Name="xCollapseStackPanel" Visibility="Collapsed" Padding="20,15" BorderThickness="10">
+            <StackPanel.Resources>
+                <Storyboard x:Name="xStackPanelOpen">
+                    <FadeInThemeAnimation TargetName="xCollapseStackPanel" SpeedRatio="2"></FadeInThemeAnimation>
+                </Storyboard>
+                <Storyboard x:Name="xStackPanelClose" Completed="XStackPanelClose_OnCompleted">
+                    <FadeOutThemeAnimation TargetName="xCollapseStackPanel" SpeedRatio="2"></FadeOutThemeAnimation>
+                </Storyboard>
+            </StackPanel.Resources>
             <StackPanel.Background>
                 <SolidColorBrush Color="White" Opacity="0.3"></SolidColorBrush>
             </StackPanel.Background>
@@ -62,12 +70,8 @@
                     <TextBlock Text="API Secret" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
                 </Border>
             </Grid>
-            <Grid Background="{StaticResource WindowsBlue}" Margin="0,0,0,12">
-                <local:ApiCreatorPropertyGenerator x:Name="xAuthHeaders" TitleTag="AUTHENTICATION HEADERS" />
-            </Grid>
-            <Grid Background="{StaticResource WindowsBlue}">
-                <local:ApiCreatorPropertyGenerator x:Name="xAuthParams" TitleTag="AUTHENTICATION PARAMETERS" />
-            </Grid>
+            <local:ApiCreatorPropertyGenerator x:Name="xAuthHeaders" TitleTag="AUTHENTICATION HEADERS" Margin="0,0,0,12"/>
+            <local:ApiCreatorPropertyGenerator x:Name="xAuthParams" TitleTag="AUTHENTICATION PARAMETERS" />
         </StackPanel>
     </StackPanel>
 </UserControl>
