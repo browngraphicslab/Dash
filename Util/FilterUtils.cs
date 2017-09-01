@@ -168,6 +168,7 @@ namespace Dash.StaticClasses
                 else if (field is ImageFieldModelController)
                 {
                     var image = field as ImageFieldModelController;
+                    data = image.ImageFieldModel.Data.AbsoluteUri;
                 }
                 if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
                 {
@@ -214,6 +215,7 @@ namespace Dash.StaticClasses
                 else if (field is ImageFieldModelController)
                 {
                     var image = field as ImageFieldModelController;
+                    data = image.ImageFieldModel.Data.AbsoluteUri;
                 }
                 if (data.Equals(value.ToLower()))
                 {
