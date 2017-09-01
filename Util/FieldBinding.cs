@@ -147,7 +147,7 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,null);
+                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, binding.Context, false));
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {

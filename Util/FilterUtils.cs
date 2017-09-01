@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Dash.Models;
 using DashShared;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash.StaticClasses
 {
@@ -167,7 +168,6 @@ namespace Dash.StaticClasses
                 else if (field is ImageFieldModelController)
                 {
                     var image = field as ImageFieldModelController;
-                    data = image.Data.UriSource.AbsoluteUri;
                 }
                 if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
                 {
@@ -214,7 +214,6 @@ namespace Dash.StaticClasses
                 else if (field is ImageFieldModelController)
                 {
                     var image = field as ImageFieldModelController;
-                    data = image.Data.UriSource.AbsoluteUri;
                 }
                 if (data.Equals(value.ToLower()))
                 {

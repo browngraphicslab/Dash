@@ -78,7 +78,8 @@ namespace Dash
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
             
-            xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+            if (GetText() != null)
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
             
             xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
         }

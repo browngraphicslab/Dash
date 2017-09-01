@@ -2,15 +2,22 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -122,7 +129,7 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-            if (e.DropResult == DataPackageOperation.Move)                             
+            if (e.DropResult == DataPackageOperation.Move)
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
@@ -135,7 +142,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void CollectionViewOnDrop(object sender, DragEventArgs e)
+        public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
@@ -155,6 +162,27 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
 
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                if (items.Count > 0)
+                {
+                    var storageFile = items[0] as StorageFile;
+                    var imagery = new Image();
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                    imagery.Source = bitmapImage;
+
+                    var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(imagery);
+
+                    var where = sender is CollectionFreeformView ?
+                        Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                        new Point();
+
+                    var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), storageFile.Path, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                    MainPage.Instance.DisplayDocument(image.Document, where);
+                }
+            }
             var carrier = ItemsCarrier.Instance;
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
@@ -172,6 +200,51 @@ namespace Dash
             }
             SetGlobalHitTestVisiblityOnSelectedItems(false);
             this.RemoveDragDropIndication(sender as SelectionElement);
+        }
+
+        private static async Task<RenderTargetBitmap> RenderImportImageToBitmapToOvercomeUWPSandbox(Image imagery)
+        {
+            Grid HackGridToRenderImage, HackGridToHideRenderImageWhenRendering;
+
+            HackGridToRenderImage = new Grid();
+            HackGridToHideRenderImageWhenRendering = new Grid();
+            imagery.Width = HackGridToRenderImage.Width = HackGridToHideRenderImageWhenRendering.Width = (imagery.Source as BitmapImage).PixelWidth;
+            imagery.Height = HackGridToRenderImage.Height = HackGridToHideRenderImageWhenRendering.Height = (imagery.Source as BitmapImage).PixelHeight;
+            HackGridToHideRenderImageWhenRendering.Background = new SolidColorBrush(Colors.Blue);
+            HackGridToHideRenderImageWhenRendering.Children.Add(HackGridToRenderImage);
+            HackGridToRenderImage.Background = new SolidColorBrush(Colors.Blue);
+            HackGridToRenderImage.Children.Add(imagery);
+            HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
+
+            var renderTargetBitmap = new RenderTargetBitmap();
+            (MainPage.Instance.MainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
+            await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
+            (MainPage.Instance.MainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
+
+            return renderTargetBitmap;
+        }
+
+        async Task<string>  ToBase64(RenderTargetBitmap bitmap)
+        {
+            var image = (await bitmap.GetPixelsAsync()).ToArray();
+            var width = (uint)bitmap.PixelWidth;
+            var height = (uint)bitmap.PixelHeight;
+
+            double dpiX = 96;
+            double dpiY = 96;
+
+            var encoded = new InMemoryRandomAccessStream();
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, encoded);
+
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, width, height, dpiX, dpiY, image);
+            await encoder.FlushAsync();
+            encoded.Seek(0);
+
+            var bytes = new byte[encoded.Size];
+            await encoded.AsStream().ReadAsync(bytes, 0, bytes.Length);
+
+            var base64String = Convert.ToBase64String(bytes);
+            return base64String;
         }
 
         /// <summary>
@@ -208,7 +281,7 @@ namespace Dash
             // the soruce is assumed to be outside the app
             if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                e.AcceptedOperation = DataPackageOperation.Move;
+                e.AcceptedOperation = DataPackageOperation.Copy;
                 e.DragUIOverride.IsContentVisible = true;
             }
 

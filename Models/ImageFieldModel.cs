@@ -14,6 +14,8 @@ namespace Dash
         /// </summary>
         public Uri Data;
 
+        public string ByteData = null;
+
         /// <summary>
         /// Create a new Image Field Model that does not represent an image
         /// </summary>
@@ -25,9 +27,10 @@ namespace Dash
         /// Create a new Image Field Model which represents the image pointed to by the <paramref name="data"/>
         /// </summary>
         /// <param name="data">The uri that the image this field model encapsulates is sourced from</param>
-        public ImageFieldModel(Uri data)
+        public ImageFieldModel(Uri path, string bytes)
         {
-            Data = data;
+            Data = path;
+            ByteData = bytes;
         }
 
         protected override FieldModelDTO GetFieldDTOHelper()
