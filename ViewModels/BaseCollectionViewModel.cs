@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DashShared;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -171,41 +173,68 @@ namespace Dash
                     var storageFile = items[0] as StorageFile;
                     if (storageFile.Path.EndsWith(".pdf"))
                     {
+                        var fields = new Dictionary<KeyController, FieldModelController>();
+                        fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                        var pdfDoc = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+                        var pdfLayout =
+                            new CollectionBox(new ReferenceFieldModelController(pdfDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, double.NaN, double.NaN, CollectionView.CollectionViewType.Grid).Document;
+                        pdfDoc.SetActiveLayout(pdfLayout, forceMask: true, addToLayoutList: true);
+
+
+                        var where = sender is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                            new Point();
                         var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
-                        using (PdfPage page = pdf.GetPage(0))
-                        {
-                            var stream = new InMemoryRandomAccessStream();
-                            await page.RenderToStreamAsync(stream);
-                            BitmapImage src = new BitmapImage();
-                            await src.SetSourceAsync(stream);
-                            var pageImage = new Image();
-                            pageImage.Source = src;
+                        var children = pdfDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+                        for (uint i = 0; i < pdf.PageCount; i++)
+                            using (PdfPage page = pdf.GetPage(i))
+                            {
+                                var stream = new InMemoryRandomAccessStream();
+                                await page.RenderToStreamAsync(stream);
+                                BitmapImage src = new BitmapImage();
+                                await src.SetSourceAsync(stream);
+                                var pageImage = new Image();
+                                pageImage.Source = src;
 
-                            // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
-                            var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
+                                // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
+                                var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
 
-                            var where = sender is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                                new Point();
+                                var pageFields = new Dictionary<KeyController, FieldModelController>();
+                                pageFields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                                var pageDoc = new DocumentController(pageFields, DashConstants.DocumentTypeStore.CollectionDocument);
+                                var pageLayout =
+                                    new CollectionBox(new ReferenceFieldModelController(pageDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                                pageDoc.SetActiveLayout(pageLayout, forceMask: true, addToLayoutList: true);
 
-                            var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), "1st page", 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
-                            MainPage.Instance.DisplayDocument(image.Document, where);
-                        }
+                                var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), 
+                                    "page " + i, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                                DBTest.ResetCycleDetection();
+                                var pagechildren = pageDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+                                pagechildren?.AddDocument(image.Document);
+                                children?.AddDocument(pageDoc);
+                            }
+                        MainPage.Instance.DisplayDocument(pdfDoc, where);
+                    }
+                    else if (storageFile.Path.EndsWith(".pptx"))
+                    {
+                        var sFile = items[0] as StorageFile;
+                        var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        StorageFile file = await localFolder.CreateFileAsync("filename.pptx", CreationCollisionOption.ReplaceExisting);
+                        await sFile.CopyAndReplaceAsync(file);
+                        await Windows.System.Launcher.LaunchFileAsync(file);
                     }
                     else
                     {
-                        var imagery = new Image();
-                        var bitmapImage = new BitmapImage();
-                        bitmapImage.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
-                        imagery.Source = bitmapImage;
-
-                        var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(imagery);
+                        var sFile = items[0] as StorageFile;
+                        var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        StorageFile file = await localFolder.CreateFileAsync("filename.jpg", CreationCollisionOption.ReplaceExisting);
+                        await sFile.CopyAndReplaceAsync(file);
 
                         var where = sender is CollectionFreeformView ?
                             Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                             new Point();
 
-                        var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), storageFile.Path, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                        var image = new AnnotatedImage(new Uri(file.Path), null, file.Path, 300, 300);
                         MainPage.Instance.DisplayDocument(image.Document, where);
                     }
                 }
