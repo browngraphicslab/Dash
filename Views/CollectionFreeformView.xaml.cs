@@ -752,6 +752,11 @@ namespace Dash
 
         }
 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
+        }
+
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragLeave(sender, e);
@@ -897,7 +902,7 @@ namespace Dash
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionView_OnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
             //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 

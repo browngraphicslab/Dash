@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -30,7 +31,6 @@ namespace Dash
         public ApiCreatorPropertyGenerator(KeyController key) {
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
-            Document = null;
             parameterCollectionKey = key;
 
         }
@@ -60,11 +60,17 @@ namespace Dash
         /// <param name="e"></param>
         private void xCollapseButton_OnTapped(object sender, TappedRoutedEventArgs e) {
             if (xCollapseStackPanel.Visibility == Visibility.Visible) {
-                xCollapseStackPanel.Visibility = Visibility.Collapsed;
-                xCollapseButtonText.Text = "+";
+                xStackPanelClose.Begin();
+                xEditButtonFadeOut.Begin();
+                xCollapseButtonText.Text = "5";
             } else {
                 xCollapseStackPanel.Visibility = Visibility.Visible;
-                xCollapseButtonText.Text = "-";
+                xStackPanelOpen.Begin();
+                if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() != 0 || (xEditButton.Content as SymbolIcon)?.Symbol == Symbol.Accept)
+                {
+                    xEditButtonFadeIn.Begin();
+                }
+                xCollapseButtonText.Text = "6";
             }
         }
 
@@ -74,6 +80,11 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void addParameterItem_Click(object sender, RoutedEventArgs e) {
+            if (xListView.GetDescendantsOfType<ApiCreatorProperty>().Count() == 0)
+            {
+                xEditButton.Visibility = Visibility.Visible;
+                xEditButtonFadeIn.Begin();
+            }
             if (TitleTag == "HEADERS")
             {
                 _operatorController.AddHeader(new ApiParameter(false, false));
@@ -88,7 +99,6 @@ namespace Dash
             {
                 _operatorController.AddAuthParameter(new ApiParameter(false, true));
             }
-
             //var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
@@ -139,6 +149,39 @@ namespace Dash
         private void ApiCreatorProperty_OnValueChanged(KeyController key, string newValue)
         {
             Values[key] = newValue;
+        }
+
+        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var symbol = (xEditButton.Content as SymbolIcon)?.Symbol;
+            var items = xListView.GetDescendantsOfType<ApiCreatorProperty>();
+            if (symbol == Symbol.Edit)
+            {
+                xEditButton.Content = new SymbolIcon(Symbol.Accept);
+                if (items != null)
+                    foreach (var item in items)
+                    {
+                         item?.EnterEditMode();
+                    }
+                xDeleteButtonColumn.Width = new GridLength(30);
+                xAddParameterItemFadeOut.Begin();
+            }
+            else
+            {
+                xEditButton.Content = new SymbolIcon(Symbol.Edit);
+                if (items != null)
+                    foreach (var item in items)
+                    {
+                        item?.ExitEditMode();
+                    }
+                xDeleteButtonColumn.Width = new GridLength(0);
+                xAddParameterItemFadeIn.Begin();
+            }
+        }
+
+        private void XStackPanelClose_OnCompleted(object sender, object e)
+        {
+            xCollapseStackPanel.Visibility = Visibility.Collapsed;
         }
     }
 }

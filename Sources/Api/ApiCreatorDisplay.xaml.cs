@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using RadialMenuControl.UserControl;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -50,10 +53,11 @@ namespace Dash
 
             updateSource();
         }
-        public ApiCreatorDisplay()
+
+        public ApiCreatorDisplay(ApiSourceDisplay display)
         {
             this.InitializeComponent();
-
+            SourceDisplay = display;
             // manipulator = new ManipulationControls(this);
         }
 
@@ -124,6 +128,17 @@ namespace Dash
            
             _operatorDocument.SetFields(fields, true);
 
+            Uri uriResult;
+            var isUri = Uri.TryCreate(xApiURLTB.Text, UriKind.Absolute, out uriResult);
+            if (isUri)
+            {
+                SourceDisplay.Title = uriResult.Host.ToUpperInvariant();
+            }
+            else
+            {
+                SourceDisplay.Title = "API NODE";
+            }
+
             MakeApi?.Invoke();
         }
 
@@ -157,7 +172,6 @@ namespace Dash
             // instantiate new APISource
             Source = new ApiSource(Document, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret, xAuthControl.Key);
             Source.setApiDisplay(SourceDisplay);
-
         }
 
         private void ApiCreatorDisplay_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -165,6 +179,48 @@ namespace Dash
             var reference = (args.NewValue as FieldReference);
             _operatorDocument = reference.GetDocumentController(null);
             _operatorController = _operatorDocument.GetField(reference.FieldKey) as ApiOperatorController;
+        }
+
+        private void xRequestTypeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            requestTypePicker.IsDropDownOpen = true;
+            requestTypePicker.Visibility = Visibility.Visible;
+        }
+
+        private void RequestTypePicker_OnDropDownClosed(object sender, object e)
+        {
+            requestTypePicker.Visibility = Visibility.Collapsed;
+            xRequestTypeButton.Content = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
+        }
+
+        private void XApiURLTB_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            xAddressLabel.Background = xRequestTypeButton.Background;
+            if ((sender as TextBox) != null)
+            {
+                ((TextBox) sender).BorderBrush = xRequestTypeButton.Background;
+            }
+        }
+
+        private void XApiURLTB_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            xAddressLabel.Background = new SolidColorBrush(Colors.SlateGray);
+            if ((sender as TextBox) != null)
+            {
+                ((TextBox)sender).BorderBrush = new SolidColorBrush(Colors.SlateGray);
+            }
+        }
+
+        private void XApiURLTB_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (xApiURLTB.Text == string.Empty)
+            {
+                createAPIBtn.IsEnabled = false;
+            }
+            else
+            {
+                createAPIBtn.IsEnabled = true;
+            }
         }
     }
 }

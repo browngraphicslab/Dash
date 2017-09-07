@@ -11,15 +11,85 @@
     DataContextChanged="ApiCreatorPropertyGenerator_OnDataContextChanged"
     x:Name="xApiCreatorPropertyGenerator">
 
-    <StackPanel  Background="Transparent" HorizontalAlignment="Stretch">
-        <Grid Background="{StaticResource WindowsBlue}">
-            <TextBlock x:Name="XTitleBlock" TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButton_OnTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            <TextBlock Name="xCollapseButtonText"  HorizontalAlignment="Right" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButton_OnTapped" Margin="0,0,10,4" Text="-" Foreground="White"></TextBlock>
+    <StackPanel HorizontalAlignment="Stretch" Background="{StaticResource WindowsBlue}">
+        <Grid BorderThickness="5">
+            <Grid.BorderBrush>
+                <SolidColorBrush Color="Black" Opacity ="0.3"></SolidColorBrush>
+            </Grid.BorderBrush>
+            <Grid.Background>
+                <SolidColorBrush Color="Black" Opacity="0.2"></SolidColorBrush>
+            </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="xEditButton" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Stretch" Padding="5" Visibility="Collapsed"  Tapped="XEditButton_OnTapped">
+                <Button.Resources>
+                    <Storyboard x:Name="xEditButtonFadeOut" TargetName="xEditButton">
+                        <FadeOutThemeAnimation></FadeOutThemeAnimation>
+                    </Storyboard>
+                    <Storyboard x:Name="xEditButtonFadeIn" TargetName="xEditButton">
+                        <FadeInThemeAnimation></FadeInThemeAnimation>
+                        <RepositionThemeAnimation FromHorizontalOffset="-50"></RepositionThemeAnimation>
+                    </Storyboard>
+                </Button.Resources>
+                <Button.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.15"></SolidColorBrush>
+                </Button.Background>
+                <SymbolIcon Symbol="Edit"></SymbolIcon>
+            </Button>
+            <TextBlock x:Name="XTitleBlock" TextAlignment="Center" Grid.Column="1" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButton_OnTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <TextBlock Name="xCollapseButtonText" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButton_OnTapped" Margin="5,3,10,4" Text="6" FontFamily="Marlett" Foreground="White"></TextBlock>
+            <Button x:Name="addParameterItem" Grid.Column="3" Click="addParameterItem_Click" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="2">
+                <Button.Resources>
+                    <Storyboard x:Name="xAddParameterItemFadeOut" TargetName="addParameterItem">
+                        <FadeOutThemeAnimation></FadeOutThemeAnimation>
+                    </Storyboard>
+                    <Storyboard x:Name="xAddParameterItemFadeIn" TargetName="addParameterItem">
+                        <FadeInThemeAnimation></FadeInThemeAnimation>
+                        <RepositionThemeAnimation FromHorizontalOffset="50"></RepositionThemeAnimation>
+                    </Storyboard>
+                </Button.Resources>
+                <Button.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.15"></SolidColorBrush>
+                </Button.Background>
+                <SymbolIcon Symbol="Add"></SymbolIcon>
+            </Button>
         </Grid>
         <StackPanel x:Name="xCollapseStackPanel">
-            <TextBlock x:Name="xDisplayRequiredText" Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="display? required?" TextAlignment="Right" Margin="0,3,37,0" FontSize="9" FontWeight="Medium"/>
-            <Grid MaxHeight="140">
-                <ListView x:Name="xListView" Margin="0,0,0,10" VerticalAlignment="Top" HorizontalAlignment="Stretch" SelectionMode="None">
+            <StackPanel.Resources>
+                <Storyboard x:Name="xStackPanelOpen">
+                    <FadeInThemeAnimation TargetName="xCollapseStackPanel" SpeedRatio="2"></FadeInThemeAnimation>
+                </Storyboard>
+                <Storyboard x:Name="xStackPanelClose" Completed="XStackPanelClose_OnCompleted">
+                    <FadeOutThemeAnimation TargetName="xCollapseStackPanel" SpeedRatio="2"></FadeOutThemeAnimation>
+                </Storyboard>
+            </StackPanel.Resources>
+            <StackPanel.Background>
+                <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
+            </StackPanel.Background>
+            <Grid Margin="5,0,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="xDeleteButtonColumn" Width="0" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="15"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="xPropertyNameLabel" Grid.Column="1" Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="Property Name" FontSize="12" Margin="13,3,0,0" FontWeight="Medium"></TextBlock>
+                <TextBlock x:Name="xPropertyValueLabel" Grid.Column="2" Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="Property Value" Margin="17,3,0,0" FontSize="12" FontWeight="Medium"></TextBlock>
+                <TextBlock x:Name="xDisplayText" Grid.Column="3"  Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="display?" TextAlignment="Right" Margin="0,6,0,0" FontSize="9" FontWeight="Medium"/>
+                <TextBlock x:Name="xRequiredText" Grid.Column="4"  Visibility="{Binding ElementName=xListView, Path=Visibility}" Text="required?" TextAlignment="Right" Margin="0,6,0,0" FontSize="9" FontWeight="Medium"/>
+            </Grid>
+            <Grid MaxHeight="140"  Margin="5,0,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="41*"/>
+                    <ColumnDefinition Width="170*"/>
+                </Grid.ColumnDefinitions>
+                <ListView x:Name="xListView" VerticalAlignment="Top" HorizontalAlignment="Stretch" SelectionMode="None" Grid.ColumnSpan="2" Margin="0,0,0,5">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -33,6 +103,5 @@
                 </ListView>
             </Grid>
         </StackPanel>
-        <Button x:Name="addParameterItem" Click="addParameterItem_Click" Style="{StaticResource xAccentButtonStyle}" Content="ADD" HorizontalAlignment="Stretch" />
     </StackPanel>
 </UserControl>
