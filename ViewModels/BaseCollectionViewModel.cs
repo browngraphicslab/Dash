@@ -343,7 +343,7 @@ namespace Dash
             // the soruce is assumed to be outside the app
             if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                e.AcceptedOperation = DataPackageOperation.Copy;
+                e.AcceptedOperation |= DataPackageOperation.Copy;
                 e.DragUIOverride.IsContentVisible = true;
             }
 

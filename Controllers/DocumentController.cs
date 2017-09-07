@@ -594,12 +594,13 @@ namespace Dash
             {
                 return;
             }
-            if (args.Context.HasAncestorOf(this)) 
+            if (args.Context.HasAncestorOf(this))
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, args.FieldArgs, c, false), true);
+                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
+                        args.FieldArgs, c, false), true);
             }
         }
 
