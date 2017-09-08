@@ -28,10 +28,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <local:DocumentView x:Name="XBackdrop" Width="150" Height="30" IsHitTestVisible="False"/>
-                        <Grid x:Name="xBorder" >
-                            <TextBox x:Name="xDocumentDisplay" Height="25" Text="{Binding Converter={StaticResource DocumentViewModelToStringConverter}}"></TextBox>
-                        </Grid>
+                        <TextBox x:Name="xDocumentDisplay" Height="25" Text="{Binding Converter={StaticResource DocumentViewModelToStringConverter}}"></TextBox>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

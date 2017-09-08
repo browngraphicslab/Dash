@@ -161,11 +161,11 @@ namespace Dash
             var yInt1 = point1.Y - point1.X * slope1;
             var view = FreeformInkControl.FreeformView;
 
-            foreach (var pair in view.LineDict)
+            foreach (var pair in view.RefToLine)
             {
                 //Calculate line 2
                 var line = pair.Value;
-                var converter = line.Converter;
+                var converter = view.LineToConverter[line];
                 var curvePoint1 = converter.Element1.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
                     .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
                 var curvePoint2 = converter.Element2.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
@@ -182,7 +182,6 @@ namespace Dash
                 if (PointBetween(intersectionPoint, point1, point2) &&
                     PointBetween(intersectionPoint, curvePoint1, curvePoint2))
                 {
-                    view.xItemsControl.ItemsPanelRoot.Children.Remove(pair.Value.Line);
                     toBeDeleted.Add(pair.Key);
                     var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                     var doc2 = view2.ViewModel.DocumentController;
@@ -204,7 +203,10 @@ namespace Dash
                     lineDeleted = true;
                 }
             }
-            foreach (var key in toBeDeleted) view.LineDict.Remove(key);
+            foreach (var key in toBeDeleted)
+            {
+                view.DeleteLine(key, view.RefToLine[key]);
+            }
             return lineDeleted;
         }
 
@@ -241,11 +243,11 @@ namespace Dash
 
         private Dictionary<Rect, DocumentView> GetDocViewRects()
         {
-            var dict = new Dictionary<Rect, DocumentView>();
-            var parameters = FreeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModelParameters>();
+            Dictionary<Rect, DocumentView> dict = new Dictionary<Rect, DocumentView>();
+            IEnumerable<DocumentViewModel> parameters = FreeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModel>();
             foreach (var param in parameters)
             {
-                var doc = param.Controller;
+                var doc = param.DocumentController;
                 var position = doc.GetPositionField().Data;
                 var width = doc.GetWidthField().Data;
                 var height = doc.GetHeightField().Data;

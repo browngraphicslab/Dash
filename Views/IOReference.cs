@@ -9,20 +9,20 @@ namespace Dash
 {
     public class IOReference
     {
-        public FieldReference FieldReference { get; set; }
-        public bool IsOutput { get; set; }
+        public FieldReference FieldReference { get; }
+        public bool IsOutput { get; }
 
-        public TypeInfo Type;
+        public TypeInfo Type { get; }
         //public bool IsReference { get; set; }
 
-        public PointerRoutedEventArgs PointerArgs { get; set; }
+        public PointerRoutedEventArgs PointerArgs { get; }
 
-        public FrameworkElement FrameworkElement { get; set; }
-        public DocumentView ContainerView { get; set; }
+        public FrameworkElement FrameworkElement { get; }
+        public DocumentView ContainerView { get; }
 
-        public FieldModelController FMController { get; set; }
+        public FieldModelController FMController { get; }
 
-        public KeyController FieldKey { get; set; }
+        public KeyController FieldKey { get; }
         public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, TypeInfo type, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
         {
             FieldKey = fieldKey;

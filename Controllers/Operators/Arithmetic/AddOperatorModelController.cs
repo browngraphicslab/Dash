@@ -20,10 +20,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController SumKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [AKey] = TypeInfo.Number,
-            [BKey] = TypeInfo.Number
+            [AKey] = new IOInfo(TypeInfo.Number, true),
+            [BKey] = new IOInfo(TypeInfo.Number, true)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -45,6 +45,14 @@ namespace Dash
         public override FieldModelController Copy()
         {
             return new AddOperatorModelController(OperatorFieldModel);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
     }
 }

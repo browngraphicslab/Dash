@@ -78,6 +78,16 @@
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
         </Style>
 
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#FF656973"></Setter>
+        </Style>
+
+        <Style TargetType="local:EditableTextBlock">
+            <Setter Property="Foreground" Value="#FF656973" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono" />
+        </Style>
+
         <!-- GLOBAL STYLES -->
         <!-- border & padding on node-containing elements-->
         <Style TargetType="Grid" x:Key="xNodeContainerGrid">
@@ -198,7 +208,7 @@
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-        <local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>
+        <!--<local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>-->
 
         <!-- SAMPLE NODE HERE-->
 

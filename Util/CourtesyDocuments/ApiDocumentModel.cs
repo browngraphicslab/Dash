@@ -14,7 +14,7 @@ namespace Dash
     /// </summary>
     internal class ApiDocumentModel : CourtesyDocument
     {
-        public static readonly DocumentType DocumentType = ApiOperator.ApiType;
+        public static readonly DocumentType DocumentType = ApiOperatorController.ApiType;
 
         public static readonly KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
         public static readonly KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");

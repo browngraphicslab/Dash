@@ -25,10 +25,18 @@ namespace Dash
             return new ConcatOperator();
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override object GetValue(Context context)
         {
-            [AKey] = TypeInfo.Text,
-            [BKey] = TypeInfo.Text
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        {
+            [AKey] = new IOInfo(TypeInfo.Text, true),
+            [BKey] = new IOInfo(TypeInfo.Text, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

@@ -36,7 +36,26 @@ namespace Dash
         {
             return new NumberFieldModelController(0);
         }
-        
+
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            var data = value as double?;
+            if (data != null)
+            {
+                Data = (double)data.Value;
+                return true;
+            }
+            if (value is double)
+            {
+                Data = (double)data;
+                return true;
+            }
+            return false;
+        }
 
         public double Data
         {
@@ -45,10 +64,10 @@ namespace Dash
             {
                 if (SetProperty(ref NumberFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }
-                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;

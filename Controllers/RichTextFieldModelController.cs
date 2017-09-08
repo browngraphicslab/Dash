@@ -21,7 +21,7 @@ namespace Dash
         /// </summary>
         public RichTextFieldModel RichTextFieldModel => FieldModel as RichTextFieldModel;
 
-        public RichTextFieldModel.RTD RichTextData
+        public RichTextFieldModel.RTD Data
         {
             get { return RichTextFieldModel.Data; }
             set
@@ -35,19 +35,31 @@ namespace Dash
 
             }
         }
-
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (value is RichTextFieldModel.RTD)
+            {
+                Data = value as RichTextFieldModel.RTD;
+                return true;
+            }
+            return false;
+        }
         public ITextSelection SelectedText { get; set; }
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             var richTextFieldModelController = fieldModel as RichTextFieldModelController;
-            if (richTextFieldModelController != null) RichTextData = richTextFieldModelController.RichTextData;
+            if (richTextFieldModelController != null) Data = richTextFieldModelController.Data;
         }
 
         public override TypeInfo TypeInfo => TypeInfo.RichText;
 
         public override IEnumerable<DocumentController> GetReferences()
         {
-            var links = RichTextData.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var link in links)
             {
                 var split = link.Split('\"');
@@ -62,10 +74,11 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView(Context context)
         {
-            var richTextView = new RichTextView(this, null, null)
+            var richTextView = new RichTextView()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
+                VerticalAlignment = VerticalAlignment.Stretch,
+                TargetRTFController = this
             };
 
             return richTextView;
@@ -78,12 +91,12 @@ namespace Dash
 
         public override string ToString()
         {
-            return RichTextData.ReadableString;
+            return Data.ReadableString;
         }
 
         public override FieldModelController Copy()
         {
-            return new RichTextFieldModelController(RichTextData);
+            return new RichTextFieldModelController(Data);
         }
     }
 }

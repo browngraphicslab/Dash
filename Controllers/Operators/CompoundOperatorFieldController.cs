@@ -23,7 +23,7 @@ namespace Dash
 
         private CompoundOperatorFieldController(CompoundOperatorFieldController copy) : this()
         {
-            Inputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Inputs);
+            Inputs = new ObservableDictionary<KeyController, IOInfo>(copy.Inputs);
             Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
             InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>(copy.InputFieldReferences);
             OutputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.OutputFieldReferences);
@@ -34,8 +34,16 @@ namespace Dash
             Debug.Assert(OperatorFieldModel is CompoundOperatorFieldModel);
             return new CompoundOperatorFieldController(this);
         }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>();
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
 

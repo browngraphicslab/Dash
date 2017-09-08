@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Media.Effects;
@@ -43,25 +42,29 @@ namespace Dash
 
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+        // the document view that is being dragged
+        public static DocumentView DragDocumentView;
 
         public bool ProportionalScaling { get; set; }
-        public ManipulationControls Manipulator { get { return manipulator; } }
+
+        public static int dvCount = 0;
 
         public DocumentView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            manipulator = new ManipulationControls(this, true, true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
 
             // set bounds
             MinWidth = 100;
+
             MinHeight = 25;
-            
+
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
@@ -80,6 +83,7 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
@@ -91,16 +95,22 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            DraggerButton.Holding -= DraggerButtonHolding;
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped -= ExpandContract_DoubleTapped;
+            DoubleTapped += ExpandContract_DoubleTapped;
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
             }
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
 
@@ -110,17 +120,17 @@ namespace Dash
         //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         //{
 
-            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            //if (view == null) return; // we can't always assume we're on a collection		
+        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+        //if (view == null) return; // we can't always assume we're on a collection		
 
-            //view.CanLink = false;
-            //args.Handled = true;
+        //view.CanLink = false;
+        //args.Handled = true;
 
-            //view.CancelDrag(args.Pointer); 
+        //view.CancelDrag(args.Pointer); 
 
-            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
         //}
 
@@ -145,8 +155,8 @@ namespace Dash
                 Mode = BindingMode.OneWay
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
+
             xMenuCanvas.Children.Add(_docMenu);
-            ViewModel.OpenMenu();
         }
 
 
@@ -164,7 +174,8 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(0, 0);
+            //var scaleCenter = new Point(0, 0);
+            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2); 
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -284,17 +295,9 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            // if _vm has already been set return
-            if (ViewModel != null || DataContext == null)
-                return;
-
             ViewModel = DataContext as DocumentViewModel;
-            // if new _vm is not correct return
-            if (ViewModel == null)
-                return;
-            initDocumentOnDataContext();
-            SetUpMenu();
-            ViewModel.CloseMenu();
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -311,7 +314,8 @@ namespace Dash
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
                 xTextView.Visibility = Visibility.Visible;
-            } else
+            }
+            else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
@@ -352,15 +356,17 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(250, 250);
-                IsLowestSelected = false; 
+                IsLowestSelected = false;
             }
             e.Handled = true; // prevent propagating
         }
+
 
         #region Menu
 
         public void DeleteDocument()
         {
+            (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
         }
 
@@ -453,11 +459,22 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-
+            this.CanDrag = ViewModel.IsLowestSelected;
+            this.DragStarting -= ViewModel.DocumentView_DragStarting;
+            this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            {
+                if (_docMenu == null)
+                {
+                    SetUpMenu();
+                }
                 ViewModel?.OpenMenu();
+                _docMenu.AddAndPlayOpenAnimation();
+            }
             else
+            {
                 ViewModel?.CloseMenu();
+            }
         }
 
         #endregion

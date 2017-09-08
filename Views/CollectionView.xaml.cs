@@ -16,6 +16,7 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,14 +42,13 @@ namespace Dash
 
         private CollectionViewType _viewType;
 
-        private CollectionFreeformView _freeformView; 
+        private CollectionFreeformView _freeformView;
 
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
@@ -70,7 +70,7 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = _freeformView != null ? _freeformView : _freeformView = new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
+                    CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -90,6 +90,8 @@ namespace Dash
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
             }
+
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
         }
 
         #endregion
@@ -129,7 +131,7 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = _freeformView != null ? _freeformView : _freeformView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
         }
 
@@ -260,6 +262,7 @@ namespace Dash
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
+            _collectionMenu.AddAndPlayOpenAnimation();
         }
 
         private void GetJson()
@@ -277,7 +280,7 @@ namespace Dash
 
         #region Collection Activation
 
-        private void OnLowestSelectionSet(bool isLowestSelected)
+        public void OnLowestSelectionSet(bool isLowestSelected)
         {
             // if we're the lowest selected then open the menu
             if (isLowestSelected)
@@ -293,5 +296,24 @@ namespace Dash
         }
 
         #endregion
+
+        /// <summary>
+        /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
+        /// in order to make ellipses hit test visible and the rest not 
+        /// </summary>
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)           // TODO think up a better way to do this 
+        {
+            var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
+            DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;
+
+            if (datacontext == null) return;
+            var visibilityBinding = new Binding
+            {
+                Source = datacontext,
+                Path = new PropertyPath(nameof(datacontext.IsSelected)) 
+            };
+            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
+       
     }
 }

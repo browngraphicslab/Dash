@@ -83,6 +83,7 @@ namespace Dash
             };
             Loaded += OnLoaded;
             //xCanvas.Children.Add(_radialMenu);
+
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -102,7 +103,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView; 
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);
@@ -147,7 +148,7 @@ namespace Dash
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
             //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
-            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas); 
+            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
@@ -291,6 +292,96 @@ namespace Dash
         {
             Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void TestEnvOnButtonTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int numDocuments = 1000;
+            int numFields = 50;
+
+            var docs = new List<DocumentController>();
+            for (int i = 0; i < numDocuments; ++i)
+            {
+                if (i % 20 == 0)
+                {
+                    Debug.WriteLine($"Generated {i} documents");
+                }
+                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
+            }
+
+            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+            }, DocumentType.DefaultType);
+
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            doc.SetActiveLayout(colBox, true, false);
+            DisplayDocument(doc);
+        }
+
+        private void UIElementTest(object sender, TappedRoutedEventArgs e)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            //var sp = new StackPanel
+            //{
+            //    Orientation = Orientation.Vertical,
+            //    Width = 400,
+            //    Height = 1000
+            //};
+            Grid g = new Grid
+            {
+                Name = "XTestGrid",
+                ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
+                Height = 900
+            };
+            //List<FrameworkElement> elements = new List<FrameworkElement>();
+            //GridView gv = new GridView();
+            //Canvas.SetLeft(g, 200);
+            //Grid.SetColumn(gv, 0);
+            //for (int i = 0; i < 50; ++i)
+            //{
+            //    var tb = new EditableTextBlock();
+            //    TextingBox.SetupBindings(tb, new TextingBox(new TextFieldModelController("Test " + i)).Document, new Context());
+            //    //sp.Children.Add(tb);
+            //    elements.Add(tb);
+            //}
+            //gv.ItemsSource = elements;
+            //g.Children.Add(gv);
+            //sw.Stop();
+            //Debug.WriteLine($"Phase 1 took {sw.ElapsedMilliseconds} ms");
+            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
+            Grid.SetColumn(documentView, 1);
+            g.Children.Add(documentView);
+            sw.Stop();
+            Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
+            xCanvas.Children.Add(g);
+        }
+
+        private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var protoNumbers = new Numbers().Document;
+            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
+            var protoLayout = protoNumbers.GetActiveLayout().Data;
+            protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+
+            DisplayDocument(protoNumbers);
+
+            Random r = new Random();
+            for (int i = 0; i < 10; ++i)
+            {
+                var delNumbers = protoNumbers.MakeDelegate();
+                if (i != 4)
+                delNumbers.SetField(Numbers.Number4FieldKey,
+                    new NumberFieldModelController(i + 2), true);
+                delNumbers.SetField(Numbers.Number5FieldKey,
+                    new NumberFieldModelController(0), true);
+                var delLayout = protoLayout.MakeDelegate();
+                delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(400 + 200 * (i / 5), i % 5 * 200), true);
+                delNumbers.SetActiveLayout(delLayout, true, false);
+
+                DisplayDocument(delNumbers);
+            }
         }
     }
 }

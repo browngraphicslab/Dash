@@ -40,6 +40,10 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
+        public abstract bool SetValue(object value);
+
+        public abstract object GetValue(Context context);
+
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
@@ -95,6 +99,7 @@ namespace Dash
         {
             var tb = new TextingBox(this);
             tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
+            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true); 
             return tb.makeView(tb.Document, context);
         }
 

@@ -57,11 +57,13 @@ namespace Dash
         public Symbol? CollectionSymbol = (Symbol) 0xE8B7;
         public Symbol? DocumentSymbol = (Symbol) 0xE160;
         public Symbol? FilePickerSymbol = Symbol.Add;
+        public Symbol? SearchSymbol = Symbol.Find;
+        public Symbol? NoteSymbol = Symbol.Page;
 
         /// <summary>
         /// Get or set the Diameter of the radial menu
         /// </summary>
-    public double Diameter
+        public double Diameter
         {
             get { return RadialMenu.Diameter; }
             set
@@ -278,15 +280,21 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
+            Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
+            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
             var importModel =
                 new RadialActionModel("", "") {CollectionDropAction = onImportDropped, IsDraggable = true};
             var operatorModel = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionModel = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
+            var searchModel = new RadialActionModel("Search", Symbol.Find) { CollectionDropAction = onSearchAdd, IsDraggable = true };
+            var notesModel = new RadialActionModel("Notes", Symbol.Page) { CollectionDropAction = addNotes, IsDraggable = true };
             SetActionModel(importModel, ImportButton);
             SetActionModel(operatorModel, Operator);
             SetActionModel(collectionModel, Collection);
             SetActionModel(documentModel, Document);
+            SetActionModel(searchModel, SearchButton);
+            SetActionModel(notesModel, NotesButton);
         }
 
         private void Ink_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)

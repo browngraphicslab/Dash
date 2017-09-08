@@ -26,7 +26,7 @@
     
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
+          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="0"/>
@@ -70,7 +70,7 @@
                         <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
-                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" IsHitTestVisible="{Binding IsSelected}"/>
+                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" /> <!--IsHitTestVisible="{Binding IsSelected}"-->
             </Grid>
             <!-- Dragger Button-->
             <Button x:Name="DraggerButton"

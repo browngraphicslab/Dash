@@ -7,10 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}"
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
+    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     >
     <Grid x:Name="Grid" Background="Transparent">
@@ -26,14 +27,10 @@
                   ShowsScrollingPlaceholders="False">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <local:DocumentView x:Name="XBackdrop" Visibility="Collapsed" IsHitTestVisible="False"/>
-                        <Viewbox x:Name="xBorder" Width="250" Height="250">
-                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
-                        </Viewbox>
-                    </Grid>
+                    <local:DocumentView x:Name="xDocumentDisplay" Height="300" Width="300" IsHitTestVisible="False"/>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xGridView, Path=Width}" Height="{Binding ElementName=xGridView, Path=Height}" IsHitTestVisible="False"></Rectangle>
     </Grid>
 </local:SelectionElement>

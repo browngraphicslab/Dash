@@ -21,10 +21,10 @@ namespace Dash
         {
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [InputKey] = TypeInfo.List,
-            [OperatorKey] = TypeInfo.Operator
+            [InputKey] = new IOInfo(TypeInfo.List, true),
+            [OperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -35,6 +35,14 @@ namespace Dash
         public override FieldModelController Copy()
         {
             return new MapOperatorController(OperatorFieldModel);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
 
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)

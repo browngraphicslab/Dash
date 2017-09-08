@@ -4,6 +4,14 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using System.IO;
+using System.Threading.Tasks;
+using Windows.Storage.Streams;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Graphics.Imaging;
+using Windows.UI.Xaml.Media;
+using Windows.Storage;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -11,7 +19,7 @@ namespace Dash
     {
         public ImageFieldModelController() : base(new ImageFieldModel()) { }
 
-        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
+        public ImageFieldModelController(Uri path, string data = null) : base(new ImageFieldModel(path, data)) { }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,
@@ -19,22 +27,7 @@ namespace Dash
         /// </summary>
         public ImageFieldModel ImageFieldModel => FieldModel as ImageFieldModel;
 
-        /// <summary>
-        ///     The uri which this image is sourced from. This is a wrapper for <see cref="ImageFieldModel.Data" />
-        /// </summary>
-        public Uri ImageSource
-        {
-            get { return ImageFieldModel.Data; }
-            set
-            {
-                if (SetProperty(ref ImageFieldModel.Data, value))
-                {
-                    // update local
-                    // update server    
-                }
-                OnFieldModelUpdated(null);
-            }
-        }
+        
 
         protected override void UpdateValue(FieldModelController fieldModel)
         {
@@ -45,7 +38,6 @@ namespace Dash
         {
             var image = new Image
             {
-                Source = new BitmapImage(ImageSource),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
@@ -66,16 +58,56 @@ namespace Dash
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+
+        public override bool SetValue(object value)
+        {
+            if (value is BitmapImage)
+            {
+                Data = value as BitmapImage;
+                return true;
+            }
+            return false;
+        }
+
+        public BitmapImage ByteToImage(byte[] array)
+        {
+            BitmapImage image = new BitmapImage();
+            using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream())
+            {
+                stream.AsStreamForWrite().Write(array, 0, array.Length);
+                stream.Seek(0);
+                image.SetSource(stream);
+            }
+            return image;
+        }
+
+        ImageSource _cacheSource;
         /// <summary>
         ///     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
         ///     the <see cref="ImageFieldModel.Data" />
         /// </summary>
-        public BitmapImage Data
+        public ImageSource Data
         {
-            get { return UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data); }//TODO We shouldn't create a new BitmapImage every time Data is accessed
-            set
-            {
-                if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
+            get {
+                if (_cacheSource == null) {
+                    if (ImageFieldModel.Data != null)
+                    {
+                        _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data);
+                    }
+                    if (ImageFieldModel.ByteData != null)
+                    {
+                        _cacheSource = FromBase64(ImageFieldModel.ByteData);
+                    }
+                }
+                return _cacheSource;
+            }   //TODO We shouldn't create a new BitmapImage every time Data is accessed
+            set {
+                _cacheSource = null;
+                if (value is BitmapImage && SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage)))
                 {
                     OnFieldModelUpdated(null);
                     // update local
@@ -83,16 +115,38 @@ namespace Dash
                 }
             }
         }
+
+
+        private WriteableBitmap FromBase64(string base64)
+        {
+            var bytes = Convert.FromBase64String(base64);
+            var image = bytes.AsBuffer().AsStream().AsRandomAccessStream();
+
+            BitmapDecoder decoder = null;
+
+            var x = Task.Run(async () => {
+                decoder = await BitmapDecoder.CreateAsync(image).AsTask();
+                return 0;
+            }).Result;
+            image.Seek(0);
+
+            var bmp = new WriteableBitmap((int)decoder.PixelHeight, (int)decoder.PixelWidth);
+            MainPage.Instance.Dispatcher.RunIdleAsync(async (args) =>
+            {
+                bmp.SetSourceAsync(image);
+            });
+            return bmp;
+        }
         public override TypeInfo TypeInfo => TypeInfo.Image;
 
         public override string ToString()
         {
-            return ImageSource.ToString();
+            return ImageFieldModel.Data.AbsolutePath;
         }
 
         public override FieldModelController Copy()
         {
-            return new ImageFieldModelController(Data.UriSource);
+            return new ImageFieldModelController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }
     }
 }

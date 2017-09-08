@@ -98,12 +98,12 @@ namespace Dash
                 _editingDocView.DragEnter += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
-                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
-                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged += OnActiveLayoutChanged;
             }
         }
 
-        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, Context context)
         {
             UpdateRootLayout();
         }

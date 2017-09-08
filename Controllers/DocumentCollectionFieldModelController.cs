@@ -53,8 +53,18 @@ namespace Dash
         /// TODO This might be better in a different class
         /// </summary>
         public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public override object GetValue(Context context)
+        {
+            return GetDocuments();
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is List<DocumentController>))
+                return false;
 
-
+            SetDocuments(value as List<DocumentController>);
+            return true;
+        }
         public List<DocumentController> Data
         {
             get { return _documents; }
@@ -98,6 +108,8 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Collection;
 
+        public int Count => _documents.Count;
+
         /// <summary>
         /// Adds a single document to the collection.
         /// </summary>
@@ -112,13 +124,11 @@ namespace Dash
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
         }
 
-        public delegate void ContainedDocumentFieldUpdatedHandler(DocumentCollectionFieldModelController collection, DocumentController doucment, DocumentFieldUpdatedEventArgs args);
-        public event ContainedDocumentFieldUpdatedHandler ContainedDocumentFieldUpdatedEvent;
-
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
-            if (ContainedDocumentFieldUpdatedEvent != null)
-                ContainedDocumentFieldUpdatedEvent(this, sender, args);
+            var keylist = (sender.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                OnFieldModelUpdated(args.FieldArgs);
         }
 
         public void RemoveDocument(DocumentController doc)

@@ -26,11 +26,19 @@ namespace Dash
         {
             return new ZipOperatorFieldController(OperatorFieldModel);
         }
-
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override object GetValue(Context context)
         {
-            [AKey] = TypeInfo.Collection,
-            [BKey] = TypeInfo.Collection
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
+
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        {
+            [AKey] = new IOInfo(TypeInfo.Collection, true),
+            [BKey] = new IOInfo(TypeInfo.Collection, true)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

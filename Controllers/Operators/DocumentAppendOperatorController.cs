@@ -25,11 +25,19 @@ namespace Dash
         {
             return new DocumentAppendOperatorController();
         }
-
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override object GetValue(Context context)
         {
-            [InputDocumentKey] = TypeInfo.Document,
-            [FieldKey] = TypeInfo.Any
+            throw new NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
+
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        {
+            [InputDocumentKey] = new IOInfo(TypeInfo.Document, true),
+            [FieldKey] = new IOInfo(TypeInfo.Any, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

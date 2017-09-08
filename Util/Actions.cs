@@ -50,7 +50,6 @@ namespace Dash
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
-        
 
 
         public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
@@ -269,8 +268,12 @@ namespace Dash
 
             DisplayDocument(collectionView, new XampleText().Document, where);
 
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(collectionView, d, where);
+            var ndb = new DBTest();
+            for (int i = 0; i < ndb.Documents.Count; i++)
+            {
+                DisplayDocument(collectionView, ndb.Documents[i], where);
+                MainPage.Instance.UpdateLayout();
+            }
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
@@ -335,7 +338,7 @@ namespace Dash
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
         }
-
+        
         #endregion
     }
 }

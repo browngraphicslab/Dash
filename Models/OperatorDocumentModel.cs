@@ -13,8 +13,6 @@ namespace Dash
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
         {
-            IDictionary<KeyController, TypeInfo> inputs = opController.Inputs;
-            IDictionary<KeyController, TypeInfo> outputs = opController.Outputs;
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
             fields[OperatorKey] = opController;
             
@@ -46,20 +44,6 @@ namespace Dash
             var doc = new DocumentController(fields, CollectionMapOperator.MapType);
 
             var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
-            doc.SetActiveLayout(layoutDoc, true, true);
-
-            return doc;
-        }
-
-        public static DocumentController CreateApi1DocumentController()
-        {
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
-            var doc = new ApiDocumentModel().Document;
-            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true);
-            doc.DocumentType = ApiOperator.ApiType;
-
-
-            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
