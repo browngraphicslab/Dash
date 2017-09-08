@@ -669,6 +669,16 @@ namespace Dash
                 }
             }
 
+            var delegates = GetField(KeyStore.DelegatesKey, true) as DocumentCollectionFieldModelController;
+            if (delegates != null)
+            {
+                bool cycle = false;
+                foreach (var documentController in delegates.Data)
+                {
+                    cycle = cycle || documentController.CheckCycle(key, field);
+                }
+                return cycle;
+            }
             return false;
         }
 
