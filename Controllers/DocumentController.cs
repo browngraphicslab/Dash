@@ -632,15 +632,16 @@ namespace Dash
             }
             var visitedFields = new HashSet<FieldReference>();
             visitedFields.Add(new DocumentFieldReference(GetId(), key));
-            var rfms = new Queue<FieldModelController>();
+            var rfms = new Queue<Tuple<FieldModelController, Context>>();
 
             //TODO If this is a DocPointerFieldReference this might not work
-            rfms.Enqueue(field);
+            rfms.Enqueue(Tuple.Create(field, new Context(this)));
 
-            Context c = new Context(this);
             while (rfms.Count > 0)
             {
-                var fm = rfms.Dequeue();
+                var t = rfms.Dequeue();
+                var fm = t.Item1;
+                var c = t.Item2;
                 if (!(fm is ReferenceFieldModelController))
                 {
                     continue;
@@ -648,23 +649,32 @@ namespace Dash
                 var rfm = (ReferenceFieldModelController)fm;
                 var fieldRef = rfm.FieldReference.Resolve(c);
                 var doc = rfm.GetDocumentController(c);
-                c.AddDocumentContext(doc);
+                Context c2;
+                if (c.DocContextList.Contains(doc))
+                {
+                    c2 = c;
+                }
+                else
+                {
+                    c2 = new Context(c);
+                    c2.AddDocumentContext(doc);
+                }
                 foreach (var fieldReference in visitedFields)
                 {
-                    if (fieldReference.Resolve(c).Equals(fieldRef))
+                    if (fieldReference.Resolve(c2).Equals(fieldRef))
                     {
                         return true;
                     }
                 }
                 visitedFields.Add(fieldRef);
 
-                var keys = doc.GetRelevantKeys(rfm.FieldKey, c);
+                var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
                 foreach (var keyController in keys)
                 {
                     var f = doc.GetField(keyController);
                     if (f != null)
                     {
-                        rfms.Enqueue(f);
+                        rfms.Enqueue(Tuple.Create(f, c2));
                     }
                 }
             }

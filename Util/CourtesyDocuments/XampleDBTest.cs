@@ -70,9 +70,10 @@ namespace Dash
         static DocumentController CreatePrototypeUmp()
         {
             var fields = new Dictionary<KeyController, FieldModelController>();
-            fields.Add(UmpNameKey, new TextFieldModelController("Prototype Umpire"));
+            fields.Add(UmpNameKey, new TextFieldModelController("PrototypeUmpire"));
             var dc = new DocumentController(fields, UmpType);
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
+            dc.SetField(AgeKey, new NumberFieldModelController(88), true);
             var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(dc.GetId(), KeyStore.ThisKey),
                                                                               DBDoc, "AssignedPerson", "AssignedGame");
             dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
