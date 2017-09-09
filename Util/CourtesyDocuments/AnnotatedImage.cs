@@ -29,16 +29,23 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
-            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
+            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, double.NaN, 20);
+            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
 
-            var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
-
-            prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(KeyStore.HeightFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.HeightFieldKey), true);
+            var prototypeLayout = new StackLayout(new DocumentController[] { prototypeTextLayout.Document, prototypeImage1Layout.Document}, false);
 
             return prototypeLayout.Document;
+        }
+        public AnnotatedImage(Uri imageUri, string imageBytes, string text, double width = 200, double height = 250)
+        {
+            Document = _prototypeDoc.MakeDelegate();
+            Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
+            Document.SetField(TextFieldKey, new TextFieldModelController(text), true);
+            var docLayout = _prototypeLayout.MakeDelegate();
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+            SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
         }
 
         public AnnotatedImage(Uri imageUri, string text)
@@ -50,7 +57,7 @@ namespace Dash
             docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
             docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);
             docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            //SetLayoutForDocument(Document, docLayout);
+            SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
         }
 
         protected override DocumentController GetLayoutPrototype()

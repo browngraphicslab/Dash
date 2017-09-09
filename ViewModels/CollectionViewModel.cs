@@ -23,8 +23,7 @@ namespace Dash
         public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             if (collection == null) return;
-            _collectionFieldModelController =
-                collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddViewModels(_collectionFieldModelController.Data, context);
 
             var copiedContext = new Context(context);
@@ -44,6 +43,7 @@ namespace Dash
                         else
                         {
                             _collectionFieldModelController = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context);
+                            if (_collectionFieldModelController == null) return;
                             var documents = _collectionFieldModelController.GetDocuments();
                             bool newDoc = DocumentViewModels.Count != documents.Count;
                             if (!newDoc)

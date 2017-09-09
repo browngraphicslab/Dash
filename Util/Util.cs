@@ -160,11 +160,12 @@ namespace Dash
                             {
                                 ImageFieldModelController fmContA = pair.Value as ImageFieldModelController;
                                 ImageFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageFieldModelController;
-                                if (!fmContA.Data.UriSource.AbsoluteUri.Equals(fmContB?.Data.UriSource.AbsoluteUri))
+                                if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data.AbsoluteUri))
                                 {
                                     equal = false;
                                     break;
                                 }
+                                else throw new NotImplementedException();
                             }
                             else
                             {
@@ -203,7 +204,7 @@ namespace Dash
                 else if (pair.Value is ImageFieldModelController)
                 {
                     ImageFieldModelController cont = pair.Value as ImageFieldModelController;
-                    data = cont.Data.UriSource.AbsoluteUri;
+                    data = cont.ImageFieldModel.Data.AbsoluteUri;
                 }
                 else if (pair.Value is PointFieldModelController)
                 {

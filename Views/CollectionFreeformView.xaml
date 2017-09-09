@@ -20,7 +20,7 @@
     >
 
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-          SizeChanged="XOuterGrid_OnSizeChanged">
+          SizeChanged="XOuterGrid_OnSizeChanged" >
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
@@ -42,7 +42,8 @@
                             Width="0"
                             Height="0"
                             VerticalAlignment="Top"
-                            HorizontalAlignment="Left">
+                            HorizontalAlignment="Left"
+                            >
                     </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>

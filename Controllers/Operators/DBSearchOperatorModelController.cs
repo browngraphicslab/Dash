@@ -65,12 +65,12 @@ namespace Dash.Controllers.Operators
         public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
         public static readonly KeyController SearchForDocKey = new KeyController("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [FieldPatternKey] = TypeInfo.Text,
-            [ReturnDocKey]    = TypeInfo.Text,
-            [SearchForDocKey] = TypeInfo.Document,
-            [InputDocsKey]    = TypeInfo.Collection
+            [FieldPatternKey] = new IOInfo(TypeInfo.Text, true),
+            [ReturnDocKey]    = new IOInfo(TypeInfo.Text, true),
+            [SearchForDocKey] = new IOInfo(TypeInfo.Document, true),
+            [InputDocsKey]    = new IOInfo(TypeInfo.Collection, true)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

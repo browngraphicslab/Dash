@@ -25,122 +25,70 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl
     {
-        private RichTextFieldModelController _richTextFieldModelController;
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
-        //private int _selectionStart;
-        //private int _selectionEnd;
-        ReferenceFieldModelController _reftorichtext;
-        Context _refcontext;
 
-        private ITextSelection _selectedText
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            "Text", typeof(RichTextFieldModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextFieldModel.RTD)));
+        
+
+        public RichTextFieldModel.RTD Text
         {
-            set { _richTextFieldModelController.SelectedText = value; }
+            get { return (RichTextFieldModel.RTD)GetValue(TextProperty); }
+            set{ SetValue(TextProperty, value); }
         }
 
-        public RichTextView(RichTextFieldModelController richTextFieldModelController, ReferenceFieldModelController reftorichtext, Context refcontext)
+        public RichTextFieldModelController  TargetRTFController = null;
+        public ReferenceFieldModelController TargetFieldReference = null;
+        public Context                       TargetDocContext = null;
+
+        public RichTextView()
         {
-            _reftorichtext = reftorichtext;
-            _refcontext = refcontext;
             this.InitializeComponent();
-            _richTextFieldModelController = richTextFieldModelController;
-            Loaded += OnLoaded;
+            Loaded   += OnLoaded;
             Unloaded += UnLoaded;
+
+            RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
+        private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
+        {
+            xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
+            xRichEitBox.Document.Selection.SetRange(LastS1, LastS2);
+        }
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
-            if (_reftorichtext != null)
-            {
-                _reftorichtext.GetDocumentController(_refcontext).DocumentFieldUpdated -= RichTextView_DocumentFieldUpdated;
-            }
-            _richTextFieldModelController.FieldModelUpdated -= RichTextFieldModelControllerOnFieldModelUpdated;
-            xRichEitBox.TextChanged      -= XRichEitBoxOnTextChanged;
-            xRichEitBox.LostFocus        -= XRichEitBox_LostFocus;
-            xRichEitBox.GotFocus         -= XRichEitBoxOnGotFocus;
-            xRichEitBox.SelectionChanged -= XRichEitBox_SelectionChanged;
+            xRichEitBox.TextChanged  -= XRichEitBoxOnTextChanged;
         }
 
-        private void RichTextView_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        RichTextFieldModel.RTD GetText()
         {
-            if (_reftorichtext != null)
-                if (args.Action == DocumentController.FieldUpdatedAction.Replace && args.OldValue == _richTextFieldModelController)
-                {
-                    _richTextFieldModelController = args.NewValue as RichTextFieldModelController;
-                    string curText;
-                    xRichEitBox.Document.GetText(TextGetOptions.None, out curText);
-                    var argText = args.NewValue.DereferenceToRoot<RichTextFieldModelController>(args.Context).Data.ReadableString.TrimEnd('\r');
-                    if (curText.TrimEnd('\r') != argText)
-                    {
-                        var newtext = (args.NewValue as RichTextFieldModelController).Data;
-                        xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, newtext.RtfFormatString);
-                        //string finalText;
-                        //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out finalText);
-                        //if (finalText != newtext.RtfFormatString)
-                        //    System.Diagnostics.Debug.WriteLine("Mismatch");
-                    }
-                }
+            if (TargetRTFController != null)
+                return TargetRTFController.Data;
+            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextFieldModel.RTD;
         }
 
-        private void XRichEitBoxOnGotFocus(object sender, RoutedEventArgs routedEventArgs)
-        {
-        }
-
-        private void XRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            _selectedText = xRichEitBox.Document.Selection;
-        }
-
-
-        private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-        }
 
         private async Task<string> LoadText()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/rtf.txt"));
-            var rtfString = await FileIO.ReadTextAsync(file);
-            return rtfString;
+            return await FileIO.ReadTextAsync(file);
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
-
-             xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.Data != null ? 
-                 _richTextFieldModelController.Data.RtfFormatString : await LoadText());
-           
-            if (_reftorichtext != null)
-            {
-                _reftorichtext.GetDocumentController(_refcontext).DocumentFieldUpdated += RichTextView_DocumentFieldUpdated;
-            }
-            xRichEitBox.SelectionChanged += XRichEitBox_SelectionChanged;
-            xRichEitBox.LostFocus        += XRichEitBox_LostFocus;
-            xRichEitBox.GotFocus         += XRichEitBoxOnGotFocus;
-            xRichEitBox.TextChanged      += XRichEitBoxOnTextChanged;
-            _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+            
+            if (GetText() != null)
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+            
+            xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
         }
 
-
-        private void RichTextFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
-        {
-            var text = string.Empty;
-            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out text);
-            if (_richTextFieldModelController.Data != null && !text.Equals(_richTextFieldModelController.Data))
-            {
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.Data.RtfFormatString);
-            }
-        }
         // freezes the app
         private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
             string allText;
             xRichEitBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
-            if (_reftorichtext != null)
-            { // we seem to get an additional \r added for no reason when you SetText on an RTF document.  this avoids an infinite loop
-                var curRTFField = _reftorichtext.GetDocumentController(_refcontext).GetDereferencedField(_reftorichtext.FieldKey, _refcontext) as RichTextFieldModelController;
-                if (allText.TrimEnd('\r') == curRTFField.Data.ReadableString.TrimEnd('\r'))
-                    return;
-            }
 
             var startPt = new Point();
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;
@@ -173,12 +121,12 @@ namespace Dash
                     }
                 }
             }
-            
-            if (_reftorichtext != null)
+
+            if (allText.TrimEnd('\r') != GetText().ReadableString.TrimEnd('\r'))
             {
                 string allRtfText;
                 xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-                this._reftorichtext.GetDocumentController(_refcontext).SetField(_reftorichtext.FieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(allText, allRtfText)), true);
+                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\par\r\n}\r\n\0", "}\r\n\0"));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             }
             this.xRichEitBox.Document.Selection.SetRange(s1, s2);
         }
@@ -245,7 +193,47 @@ namespace Dash
         }
 
         int LastS1 = 0, LastS2 = 0;
-        void xRichEitBox_SelectionChanged_1(object sender, RoutedEventArgs e)
+
+        private void ItalicButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.xRichEitBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
+        }
+
+        private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.xRichEitBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
+        }
+
+        private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (this.xRichEitBox.Document.Selection.CharacterFormat.Underline != UnderlineType.None)
+                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Dash;
+            else
+                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.None;
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void xRichEitBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xFormatCol.Width = new GridLength(50);
+        }
+
+        private void Grid_GotFocus(object sender, RoutedEventArgs e)
+        {
+
+            xFormatCol.Width = new GridLength(50);
+        }
+
+        private void Grid_LostFocus(object sender, RoutedEventArgs e)
+        {
+            xFormatCol.Width = new GridLength(0);
+        }
+
+        void xRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;
             var s2 = this.xRichEitBox.Document.Selection.EndPosition;

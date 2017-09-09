@@ -1,16 +1,26 @@
-﻿using System;
+﻿using DashShared;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Data.Pdf;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -122,7 +132,7 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-            if (e.DropResult == DataPackageOperation.Move)                             
+            if (e.DropResult == DataPackageOperation.Move)
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
@@ -135,7 +145,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void CollectionViewOnDrop(object sender, DragEventArgs e)
+        public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
@@ -155,6 +165,80 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
 
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                if (items.Count > 0)
+                {
+                    var storageFile = items[0] as StorageFile;
+                    if (storageFile.Path.EndsWith(".pdf"))
+                    {
+                        var fields = new Dictionary<KeyController, FieldModelController>();
+                        fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                        var pdfDoc = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+                        var pdfLayout =
+                            new CollectionBox(new ReferenceFieldModelController(pdfDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, double.NaN, double.NaN, CollectionView.CollectionViewType.Grid).Document;
+                        pdfDoc.SetActiveLayout(pdfLayout, forceMask: true, addToLayoutList: true);
+
+
+                        var where = sender is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                            new Point();
+                        var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
+                        var children = pdfDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+                        for (uint i = 0; i < pdf.PageCount; i++)
+                            using (PdfPage page = pdf.GetPage(i))
+                            {
+                                var stream = new InMemoryRandomAccessStream();
+                                await page.RenderToStreamAsync(stream);
+                                BitmapImage src = new BitmapImage();
+                                await src.SetSourceAsync(stream);
+                                var pageImage = new Image();
+                                pageImage.Source = src;
+
+                                // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
+                                var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
+
+                                var pageFields = new Dictionary<KeyController, FieldModelController>();
+                                pageFields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                                var pageDoc = new DocumentController(pageFields, DashConstants.DocumentTypeStore.CollectionDocument);
+                                var pageLayout =
+                                    new CollectionBox(new ReferenceFieldModelController(pageDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                                pageDoc.SetActiveLayout(pageLayout, forceMask: true, addToLayoutList: true);
+
+                                var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), 
+                                    "page " + i, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
+                                DBTest.ResetCycleDetection();
+                                var pagechildren = pageDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+                                pagechildren?.AddDocument(image.Document);
+                                children?.AddDocument(pageDoc);
+                            }
+                        MainPage.Instance.DisplayDocument(pdfDoc, where);
+                    }
+                    else if (storageFile.Path.EndsWith(".pptx"))
+                    {
+                        var sFile = items[0] as StorageFile;
+                        var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        StorageFile file = await localFolder.CreateFileAsync("filename.pptx", CreationCollisionOption.ReplaceExisting);
+                        await sFile.CopyAndReplaceAsync(file);
+                        await Windows.System.Launcher.LaunchFileAsync(file);
+                    }
+                    else
+                    {
+                        var sFile = items[0] as StorageFile;
+                        var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        StorageFile file = await localFolder.CreateFileAsync("filename.jpg", CreationCollisionOption.ReplaceExisting);
+                        await sFile.CopyAndReplaceAsync(file);
+
+                        var where = sender is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                            new Point();
+
+                        var image = new AnnotatedImage(new Uri(file.Path), null, file.Path, 300, 300);
+                        MainPage.Instance.DisplayDocument(image.Document, where);
+                    }
+                }
+            }
             var carrier = ItemsCarrier.Instance;
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
@@ -172,6 +256,57 @@ namespace Dash
             }
             SetGlobalHitTestVisiblityOnSelectedItems(false);
             this.RemoveDragDropIndication(sender as SelectionElement);
+        }
+
+        private static async Task<RenderTargetBitmap> RenderImportImageToBitmapToOvercomeUWPSandbox(Image imagery)
+        {
+            Grid HackGridToRenderImage, HackGridToHideRenderImageWhenRendering;
+
+            HackGridToRenderImage = new Grid();
+            HackGridToHideRenderImageWhenRendering = new Grid();
+            var w = (imagery.Source as BitmapImage).PixelWidth;
+            var h = (imagery.Source as BitmapImage).PixelHeight;
+            if (w == 0)
+                w = 100;
+            if (h == 0)
+                h = 100;
+            imagery.Width = HackGridToRenderImage.Width = HackGridToHideRenderImageWhenRendering.Width = w;
+            imagery.Height = HackGridToRenderImage.Height = HackGridToHideRenderImageWhenRendering.Height = h;
+            //HackGridToHideRenderImageWhenRendering.Background = new SolidColorBrush(Colors.Blue);
+            HackGridToHideRenderImageWhenRendering.Children.Add(HackGridToRenderImage);
+            HackGridToRenderImage.Background = new SolidColorBrush(Colors.Blue);
+            HackGridToRenderImage.Children.Add(imagery);
+            HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
+
+            var renderTargetBitmap = new RenderTargetBitmap();
+            (MainPage.Instance.MainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
+            await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
+            (MainPage.Instance.MainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
+
+            return renderTargetBitmap;
+        }
+
+        async Task<string>  ToBase64(RenderTargetBitmap bitmap)
+        {
+            var image = (await bitmap.GetPixelsAsync()).ToArray();
+            var width = (uint)bitmap.PixelWidth;
+            var height = (uint)bitmap.PixelHeight;
+
+            double dpiX = 96;
+            double dpiY = 96;
+
+            var encoded = new InMemoryRandomAccessStream();
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, encoded);
+
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, width, height, dpiX, dpiY, image);
+            await encoder.FlushAsync();
+            encoded.Seek(0);
+
+            var bytes = new byte[encoded.Size];
+            await encoded.AsStream().ReadAsync(bytes, 0, bytes.Length);
+
+            var base64String = Convert.ToBase64String(bytes);
+            return base64String;
         }
 
         /// <summary>
@@ -208,7 +343,7 @@ namespace Dash
             // the soruce is assumed to be outside the app
             if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                e.AcceptedOperation = DataPackageOperation.Move;
+                e.AcceptedOperation = DataPackageOperation.Copy;
                 e.DragUIOverride.IsContentVisible = true;
             }
 

@@ -108,7 +108,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView; 
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);
@@ -348,7 +348,7 @@ namespace Dash
             Grid g = new Grid
             {
                 Name = "XTestGrid",
-                ColumnDefinitions = { new ColumnDefinition{Width = new GridLength(400)}, new ColumnDefinition{Width = new GridLength(400)}},
+                ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
                 Height = 900
             };
             //List<FrameworkElement> elements = new List<FrameworkElement>();
@@ -393,6 +393,31 @@ namespace Dash
         private void Border_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
+        }
+        private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var protoNumbers = new Numbers().Document;
+            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
+            var protoLayout = protoNumbers.GetActiveLayout().Data;
+            protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+
+            DisplayDocument(protoNumbers);
+
+            Random r = new Random();
+            for (int i = 0; i < 10; ++i)
+            {
+                var delNumbers = protoNumbers.MakeDelegate();
+                if (i != 4)
+                delNumbers.SetField(Numbers.Number4FieldKey,
+                    new NumberFieldModelController(i + 2), true);
+                delNumbers.SetField(Numbers.Number5FieldKey,
+                    new NumberFieldModelController(0), true);
+                var delLayout = protoLayout.MakeDelegate();
+                delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(400 + 200 * (i / 5), i % 5 * 200), true);
+                delNumbers.SetActiveLayout(delLayout, true, false);
+
+                DisplayDocument(delNumbers);
+            }
         }
     }
 }

@@ -111,14 +111,28 @@ namespace Dash
             {
                 return;
             }
-            var sourceBinding = new Binding
+            var binding = new FieldBinding<FieldModelController>()
             {
-                Source = data,
-                Path = new PropertyPath(nameof(data.Data)),
-                Mode = BindingMode.OneWay
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.TwoWay,
+                Context = context
             };
-            image.SetBinding(Image.SourceProperty, sourceBinding);
+            image.AddFieldBinding(Image.SourceProperty, binding);
         }
+        //if (data.Data.UriSource == null)
+        //    image.Source = data.Data;
+        //else
+        //{
+        //var sourceBinding = new Binding
+        //        {
+        //            Source = data,
+        //            Path = new PropertyPath(nameof(data.Data)),
+        //            Mode = BindingMode.OneWay
+        //        };
+        //        image.SetBinding(Image.SourceProperty, sourceBinding);
+           // }
+        //}
 
         private static void BindClip(Image image, DocumentController docController, Context context)
         {

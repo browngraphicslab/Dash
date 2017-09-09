@@ -34,20 +34,20 @@ namespace Dash
         public IValueConverter Converter;
         public object ConverterParameter;
         
-        public void ConvertToXaml(FrameworkElement element, DependencyProperty property)
+        public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
             var refField = Document.GetField(Key) as ReferenceFieldModelController;
-            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(Context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
+            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
             {
-                element.SetValue(property, refField.GetDocumentController(Context).GetField(refField.FieldKey).GetValue(Context));
+                element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
             }
             else
             {
-                var field = Document.GetDereferencedField<T>(Key, Context);
+                var field = Document.GetDereferencedField<T>(Key, context);
                 if (field != null)
                 {
                     var converter = GetConverter != null ? GetConverter(field) : Converter;
-                    var fieldData = field.GetValue(Context);
+                    var fieldData = field.GetValue(context);
                     var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
                     if (xamlData != null)
                     {
@@ -59,11 +59,8 @@ namespace Dash
         public bool ConvertFromXaml(object xamlData)
         {
             var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
-            var refField = field as ReferenceFieldModelController;
-            if (refField != null) {
-                if ((string)xamlData == (string)refField.GetValue(Context))
-                    return false; // avoid cycles
-                xamlData = new Tuple<Context, string>(Context, xamlData as string);
+            if (field is ReferenceFieldModelController) {
+                xamlData = new Tuple<Context, object>(Context, xamlData);
             }
             
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
@@ -93,15 +90,20 @@ namespace Dash
 
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
-            binding.ConvertToXaml(element, property);
+            binding.ConvertToXaml(element, property, binding.Context);
         }
 
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler =
-                delegate
+                (sender, args) =>
                 {
-                    binding.ConvertToXaml(element, property);
+                    var prototype = binding.Document.GetPrototype();
+                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                    {
+                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                    }
                 };
             if (element.IsInVisualTree())
             {
@@ -120,24 +122,37 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
+            bool updateUI = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
-                (sender, args) => binding.ConvertToXaml(element, property);
+                (sender, args) =>
+                {
+                    updateUI = false;
+                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                    {
+                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                    }
+                    updateUI = true;
+                };
             DependencyPropertyChangedCallback callback =
                 (sender, dp)   =>
                 {
-                    if (!binding.ConvertFromXaml( sender.GetValue(dp)))
-                        binding.ConvertToXaml(element, property);
+                    if (updateUI)
+                    {
+                        if (!binding.ConvertFromXaml(sender.GetValue(dp)))
+                            binding.ConvertToXaml(element, property, binding.Context);
+                    }
                 };
 
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,null);
+                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, binding.Context, false));
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                binding.ConvertToXaml(element, property);
+                binding.ConvertToXaml(element, property, binding.Context);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)

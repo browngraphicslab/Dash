@@ -24,10 +24,10 @@ namespace Dash
         public static readonly KeyController QuotientKey = new KeyController("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
         public static readonly KeyController RemainderKey = new KeyController("32208EDB-B673-4957-A0AB-3704A15A1686", "Remainder");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [AKey] = TypeInfo.Number,
-            [BKey] = TypeInfo.Number
+            [AKey] = new IOInfo(TypeInfo.Number, true),
+            [BKey] = new IOInfo(TypeInfo.Number, true)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -35,10 +35,13 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
+        public static int numExecutions = 0;
+
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            var numberA = (NumberFieldModelController) inputs[AKey];
-            var numberB = (NumberFieldModelController) inputs[BKey];
+            var numberA = (NumberFieldModelController)inputs[AKey];
+            var numberB = (NumberFieldModelController)inputs[BKey];
+            Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
 
             var a = numberA.Data;
             var b = numberB.Data;

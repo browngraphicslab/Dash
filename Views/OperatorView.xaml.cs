@@ -96,7 +96,7 @@ namespace Dash
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
                     KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
-                    compoundFMCont.Inputs.Add(newInput, ioRef.Type);
+                    compoundFMCont.Inputs.Add(newInput, new IOInfo(ioRef.Type, true));
                     compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
                 };
 
@@ -126,7 +126,7 @@ namespace Dash
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
 
-            var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
@@ -162,7 +162,7 @@ namespace Dash
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             bool isCompound = false;
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (isCompound = view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;

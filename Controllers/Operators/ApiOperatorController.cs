@@ -68,14 +68,14 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [UrlKey] = TypeInfo.Text,
-            [MethodKey] = TypeInfo.Text,
-            [AuthUrlKey] = TypeInfo.Text,
-            [AuthMethodKey] = TypeInfo.Text,
-            [AuthKeyKey] = TypeInfo.Text,
-            [AuthSecretKey] = TypeInfo.Text
+            [UrlKey] = new IOInfo(TypeInfo.Text, true),
+            [MethodKey] = new IOInfo(TypeInfo.Text, true),
+            [AuthUrlKey] = new IOInfo(TypeInfo.Text, false),
+            [AuthMethodKey] = new IOInfo(TypeInfo.Text, false),
+            [AuthKeyKey] = new IOInfo(TypeInfo.Text, false),
+            [AuthSecretKey] = new IOInfo(TypeInfo.Text, false)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -93,7 +93,7 @@ namespace Dash
             int index = Parameters.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
             parameter.Key = key;
-            Inputs.Add(key, TypeInfo.Text);
+            Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             Parameters[key] = parameter;
         }
         public void RemoveParameter(ApiParameter parameter)
@@ -107,7 +107,7 @@ namespace Dash
             int index = Headers.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
             header.Key = key;
-            Inputs.Add(key, TypeInfo.Text);
+            Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             Headers[key] = header;
         }
         public void RemoveHeader(ApiParameter header)
@@ -121,7 +121,7 @@ namespace Dash
             int index = AuthParameters.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
             parameter.Key = key;
-            Inputs.Add(key, TypeInfo.Text);
+            Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             AuthParameters[key] = parameter;
         }
         public void RemoveAuthParameter(ApiParameter parameter)
@@ -135,7 +135,7 @@ namespace Dash
             int index = AuthHeaders.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
             header.Key = key;
-            Inputs.Add(key, TypeInfo.Text);
+            Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             AuthHeaders[key] = header;
         }
         public void RemoveAuthHeader(ApiParameter header)
@@ -210,8 +210,11 @@ namespace Dash
             if (!BuildParamList(inputs, Parameters, parameters)) return;
             if (!BuildParamList(inputs, Headers, headers)) return;
 
-            var request = new Request(httpMethod, new Uri(url))
-                .SetHeaders(headers)
+            Uri uri; 
+            try { uri = new Uri(url); }
+            catch (UriFormatException) { return; }
+
+            var request = new Request(httpMethod, uri).SetHeaders(headers)
                 .SetMessageBody(new HttpFormUrlEncodedContent(parameters));
 
             if (useAuth)

@@ -25,13 +25,14 @@ namespace Dash
         private MenuButtonContainer content;
 
         public bool RotateOnTap = false;
-
+        public bool IsComposite;
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
             this.CreateAndRunInstantiationAnimation(false);
+            IsComposite = false;
         }
 
         private int _selectedInd; 
@@ -57,6 +58,7 @@ namespace Dash
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
+            IsComposite = true;
         }
 
         /// <summary>
@@ -175,7 +177,7 @@ namespace Dash
         /// </summary>
         private void CreateAndRunRotationAnimation()
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var rotationTransform = new RotateTransform();
             if (_button != null)
@@ -194,7 +196,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.5;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.EnableDependentAnimation = true;
             doubleAnimation.From = 0;
             doubleAnimation.To = 360;
@@ -293,7 +295,7 @@ namespace Dash
         {
             _verticalOffset = verticalOffset;
 
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
@@ -309,8 +311,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.3;
-            //doubleAnimation.EnableDependentAnimation = true;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.From = 0;
             doubleAnimation.To = -_verticalOffset;
             Storyboard.SetTargetProperty(doubleAnimation, "Y");
@@ -324,7 +325,7 @@ namespace Dash
         /// </summary>
         private void CreateAndRunReverseVerticalTranslationAnimation()
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
             if (_button != null)
@@ -339,8 +340,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.3;
-            //doubleAnimation.EnableDependentAnimation = true;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.From = -_verticalOffset;
             doubleAnimation.To = 0;
             Storyboard.SetTargetProperty(doubleAnimation, "Y");
@@ -374,12 +374,12 @@ namespace Dash
 
         private Storyboard CreateAndRunOpacityAnimation(UIElement target, double from, double to)
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             // create and play opacity animation on button
             DoubleAnimation opacityAnimation = new DoubleAnimation()
             {
-                SpeedRatio = 1,
+                SpeedRatio = 1.3,
                 From = from,
                 To = to,
                 Duration = duration,

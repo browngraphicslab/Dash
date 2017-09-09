@@ -27,15 +27,16 @@
 
             <!-- Collectionview Content-->
             <Grid Grid.Column="1" Background="{StaticResource CollectionViewBackground}">
-                <Grid x:Name="DocumentViewContainerGrid"
+                <Grid x:Name="DocumentViewContainerGrid" 
                       AllowDrop="True"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
                       >
-                    <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                    <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded" 
+                                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/> 
                 </Grid>
-                <Grid HorizontalAlignment="Right"
+                <Grid HorizontalAlignment="Right" 
                       PointerPressed="ConnectionEllipse_OnPointerPressed"
                       PointerReleased="ConnectionEllipse_OnPointerReleased"
                       ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 

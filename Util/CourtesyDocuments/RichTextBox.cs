@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Windows.UI.Xaml;
 using Dash;
 using DashShared;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -16,6 +17,21 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             SetLayoutForDocument(Document, Document, forceMask: true, addToLayoutList: true);
         }
+        protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
+        {
+            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
+            if (data != null)
+            {
+                var binding = new FieldBinding<FieldModelController>()
+                {
+                    Document = docController,
+                    Key = KeyStore.DataKey,
+                    Mode = BindingMode.TwoWay,
+                    Context = context
+                };
+                element.AddFieldBinding(RichTextView.TextProperty, binding);
+            }
+        }
 
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
@@ -25,15 +41,20 @@ namespace Dash
                 docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             Debug.Assert(refToRichText != null);
             var fieldModelController = refToRichText.DereferenceToRoot(context);
+            var referenceToText = GetTextReference(docController);
             if (fieldModelController is RichTextFieldModelController)
             {
-                var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
-                Debug.Assert(richTextFieldModelController != null);
-                var richText = new RichTextView(richTextFieldModelController, refToRichText, context);
+
+                var richText = new RichTextView()
+                {
+                    TargetFieldReference = referenceToText,
+                    TargetDocContext = context
+                };
                 rtv = richText;
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
             }
+            SetupTextBinding(rtv, docController, context);
 
             // bind the rich text height
             var heightController = GetHeightField(docController, context);
@@ -48,6 +69,11 @@ namespace Dash
                 return new SelectableContainer(rtv, docController);
             }
             return rtv;
+        }
+
+        private static ReferenceFieldModelController GetTextReference(DocumentController docController)
+        {
+            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
         }
 
         protected override DocumentController GetLayoutPrototype()

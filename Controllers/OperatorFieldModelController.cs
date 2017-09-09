@@ -6,12 +6,25 @@ using DashShared;
 
 namespace Dash
 {
+    public class IOInfo
+    {
+        public TypeInfo Type { get; set; }
+
+        public bool IsRequired { get; set; }
+
+        public IOInfo(TypeInfo type, bool isRequired)
+        {
+            Type = type;
+            IsRequired = isRequired;
+        }
+    }
+
     public abstract class OperatorFieldModelController : FieldModelController
     {
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, TypeInfo> Inputs { get; }
+        public abstract ObservableDictionary<KeyController, IOInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 

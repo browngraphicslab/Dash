@@ -21,14 +21,14 @@ namespace Dash
             string docId = DocumentId;
             if (context != null)
             {
-                docId = context.GetDeepestDelegateOf(docId);
+                docId = context.GetDeepestDelegateOf(docId) ?? docId;
             }
             return ContentController.GetController<DocumentController>(docId);
         }
 
         public override FieldReference Resolve(Context context)
         {
-            string docId = context.GetDeepestDelegateOf(DocumentId);
+            string docId = context.GetDeepestDelegateOf(DocumentId) ?? DocumentId;
             return new DocumentFieldReference(docId, FieldKey);
         }
 

@@ -8,7 +8,7 @@
     d:DesignHeight="800"
     d:DesignWidth="400">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" BorderBrush="Transparent">
+    <Grid Width="250" HorizontalAlignment="Stretch" BorderBrush="Transparent" Padding="10,0,10,0">
         <Grid.Background>
             <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
         </Grid.Background>

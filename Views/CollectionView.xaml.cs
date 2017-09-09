@@ -16,12 +16,14 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -54,7 +56,6 @@ namespace Dash
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
@@ -93,6 +94,7 @@ namespace Dash
 
                     CurrentView = /*_freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
 
+
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -114,6 +116,8 @@ namespace Dash
                 CurrentView.InitializeAsRoot();
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
             }
+
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
         }
 
         #endregion
@@ -153,8 +157,8 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-
             CurrentView =/* _freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
+
             xContentControl.Content = CurrentView;
         }
 
@@ -284,7 +288,8 @@ namespace Dash
             if (_collectionMenu == null) MakeMenu();
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
-            xMenuColumn.Width = new GridLength(55);
+            xMenuColumn.Width = new GridLength(50);
+            _collectionMenu.AddAndPlayOpenAnimation();
         }
 
         private void GetJson()
@@ -302,7 +307,7 @@ namespace Dash
 
         #region Collection Activation
 
-        private void OnLowestSelectionSet(bool isLowestSelected)
+        public void OnLowestSelectionSet(bool isLowestSelected)
         {
             // if we're the lowest selected then open the menu
             if (isLowestSelected)
@@ -399,5 +404,24 @@ namespace Dash
             var session = args.DrawingSession;
             session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
         }
+
+        /// <summary>
+        /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
+        /// in order to make ellipses hit test visible and the rest not 
+        /// </summary>
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)           // TODO think up a better way to do this 
+        {
+            var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
+            DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;
+
+            if (datacontext == null) return;
+            var visibilityBinding = new Binding
+            {
+                Source = datacontext,
+                Path = new PropertyPath(nameof(datacontext.IsSelected)) 
+            };
+            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
+       
     }
 }
