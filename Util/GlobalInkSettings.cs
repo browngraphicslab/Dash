@@ -20,6 +20,12 @@ namespace Dash
         private static Color _color = Colors.DarkGray;
         private static StrokeTypes _strokeType;
         private static CoreInputDeviceTypes _inkInputType;
+        private static bool _isSelectionEnabled;
+        private static ObservableCollection<FreeformInkControl> _freeformInkControls = new ObservableCollection<FreeformInkControl>();
+
+        public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
+
+        public static event InkInputChangedEventHandler InkInputChanged;
 
         public enum StrokeTypes
         {
@@ -44,6 +50,20 @@ namespace Dash
                 {
                     inkPresenter.InputDeviceTypes = value;
                 }
+                foreach (var ctrls in FreeformInkControls)
+                {
+                    ctrls.UpdateInputType();
+                }
+            }
+        }
+
+        public static bool IsSelectionEnabled
+        {
+            get { return _isSelectionEnabled; }
+            set
+            {
+                _isSelectionEnabled = value;
+                UpdateInkPresenters();
             }
         }
 
@@ -95,17 +115,23 @@ namespace Dash
             set
             {
                 _presenters = value;
-                foreach (var presenter in _presenters)
-                {
-                    presenter.UpdateDefaultDrawingAttributes(_attributes);
-                    presenter.InputDeviceTypes = InkInputType;
-                }
             }
-        } 
+        }
+
+        public static bool IsRecognitionEnabled { get; set; }
+
+        public static ObservableCollection<FreeformInkControl> FreeformInkControls
+        {
+            get { return _freeformInkControls; }
+            set
+            {
+                _freeformInkControls = value;
+            }
+        }
 
         private static Color ChangeColorBrightness()
         {
-            double newFactor = BrightnessFactor/50 - 1;
+            double newFactor = BrightnessFactor / 50 - 1;
             double red = (float)Color.R;
             double green = (float)Color.G;
             double blue = (float)Color.B;
@@ -124,12 +150,20 @@ namespace Dash
                 blue = (255 - blue) * newFactor + blue;
             }
 
-            return Color.FromArgb(Color.A, (byte) red, (byte) green, (byte) blue);
+            return Color.FromArgb(Color.A, (byte)red, (byte)green, (byte)blue);
         }
 
-        public static void SetAttributes()
+        public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
-            
+            if (isSelectionEnabled != null) IsSelectionEnabled = (bool)isSelectionEnabled;
+            foreach (var cntrls in FreeformInkControls)
+            {
+                cntrls.UpdateSelectionMode();
+            }
+            if (IsSelectionEnabled)
+            {
+                return;
+            }
             if (StrokeType == StrokeTypes.Eraser)
             {
                 foreach (var presenter in Presenters)
@@ -150,8 +184,7 @@ namespace Dash
             }
             attributes.Color = ChangeColorBrightness();
             attributes.Size = new Size(GlobalInkSettings.Size, GlobalInkSettings.Size);
-            GlobalInkSettings.Attributes = attributes;
-
+            Attributes = attributes;
         }
     }
 }

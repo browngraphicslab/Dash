@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -38,7 +39,7 @@ namespace Dash
         public static MainPage Instance { get; private set; }
         private RadialMenuView _radialMenu;
         private static CollectionView _mainCollectionView;
-        
+
 
         public DocumentController MainDocument { get; private set; }
 
@@ -50,6 +51,18 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
+            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
+            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
+            TestMatrix(2, 2, 0, 0, 1, 1);
+            TestMatrix(2, 2, 1, 1, 1, 1);
+            TestMatrix(2, 2, 2, 2, 1, 1);
+            TestMatrix(2, 2, 4, 4, 1, 1);
+            TestMatrix(4, 4, 0, 0, 2, 2);
+            TestMatrix(4, 4, 1, 1, 2, 2);
+            TestMatrix(4, 4, 2, 2, 2, 2);
+            TestMatrix(4, 4, 4, 4, 2, 2);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -66,21 +79,21 @@ namespace Dash
                 xMainDocView.Height = MyGrid.ActualHeight;
 
                 // Set the instance to be itself, there should only ever be one MainView
-                Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+                Debug.Assert(Instance == null,
+                    "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
                 Instance = this;
 
                 //var jsonDoc = JsonToDashUtil.RunTests();
+            }
+        }
 
-                //var sw = new Stopwatch();
-                //sw.Start();
-                //DisplayDocument(jsonDoc);
-                //sw.Stop();
-            }
-            else
-            {
-                Debug.Fail("the main page expects a document controller when it is navigated to");
-            }
-            base.OnNavigatedTo(e);
+        private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
+        {
+            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
+            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
+            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
+            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
+            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
         }
 
         public CollectionView GetMainCollectionView()
@@ -88,8 +101,9 @@ namespace Dash
             return _mainCollectionView ?? (_mainCollectionView = xMainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
-        public void AddOperatorsFilter(object o, DragEventArgs e)
+        public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);
@@ -134,7 +148,7 @@ namespace Dash
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
             //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
-            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas); 
+            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
@@ -148,7 +162,7 @@ namespace Dash
             Post
         }
 
-        private async void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void TwitterTestButtonOnTapped(object sender, TappedRoutedEventArgs e)
         {
             // authorization on the tiwtter api
             var twitterBase = "https://api.twitter.com";
@@ -157,8 +171,8 @@ namespace Dash
             var twitterConsumerSecret = "6QOcnCElbr4u80tiWspoGQTYryFyyRoXxMgiSZv4fq0Fox3dhV";
             var token = await OAuth2Authentication(twitterAuthEndpoint, twitterConsumerKey, twitterConsumerSecret);
 
-            var userName = "realdonaldtrump";
-            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName });
+            var userName = "alanalevinson";
+            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
             var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));
@@ -261,5 +275,113 @@ namespace Dash
 
 
         #endregion
+
+        private void DocumentTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddDocuments;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollectionTEST;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void NotesTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void TestEnvOnButtonTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int numDocuments = 1000;
+            int numFields = 50;
+
+            var docs = new List<DocumentController>();
+            for (int i = 0; i < numDocuments; ++i)
+            {
+                if (i % 20 == 0)
+                {
+                    Debug.WriteLine($"Generated {i} documents");
+                }
+                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
+            }
+
+            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+            }, DocumentType.DefaultType);
+
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            doc.SetActiveLayout(colBox, true, false);
+            DisplayDocument(doc);
+        }
+
+        private void UIElementTest(object sender, TappedRoutedEventArgs e)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            //var sp = new StackPanel
+            //{
+            //    Orientation = Orientation.Vertical,
+            //    Width = 400,
+            //    Height = 1000
+            //};
+            Grid g = new Grid
+            {
+                Name = "XTestGrid",
+                ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
+                Height = 900
+            };
+            //List<FrameworkElement> elements = new List<FrameworkElement>();
+            //GridView gv = new GridView();
+            //Canvas.SetLeft(g, 200);
+            //Grid.SetColumn(gv, 0);
+            //for (int i = 0; i < 50; ++i)
+            //{
+            //    var tb = new EditableTextBlock();
+            //    TextingBox.SetupBindings(tb, new TextingBox(new TextFieldModelController("Test " + i)).Document, new Context());
+            //    //sp.Children.Add(tb);
+            //    elements.Add(tb);
+            //}
+            //gv.ItemsSource = elements;
+            //g.Children.Add(gv);
+            //sw.Stop();
+            //Debug.WriteLine($"Phase 1 took {sw.ElapsedMilliseconds} ms");
+            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
+            Grid.SetColumn(documentView, 1);
+            g.Children.Add(documentView);
+            sw.Stop();
+            Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
+            xCanvas.Children.Add(g);
+        }
+
+        private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var protoNumbers = new Numbers().Document;
+            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
+            var protoLayout = protoNumbers.GetActiveLayout().Data;
+            protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+
+            DisplayDocument(protoNumbers);
+
+            Random r = new Random();
+            for (int i = 0; i < 10; ++i)
+            {
+                var delNumbers = protoNumbers.MakeDelegate();
+                if (i != 4)
+                delNumbers.SetField(Numbers.Number4FieldKey,
+                    new NumberFieldModelController(i + 2), true);
+                delNumbers.SetField(Numbers.Number5FieldKey,
+                    new NumberFieldModelController(0), true);
+                var delLayout = protoLayout.MakeDelegate();
+                delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(400 + 200 * (i / 5), i % 5 * 200), true);
+                delNumbers.SetActiveLayout(delLayout, true, false);
+
+                DisplayDocument(delNumbers);
+            }
+        }
     }
 }

@@ -57,6 +57,19 @@ namespace Dash
             return new RectFieldModelController(0, 0, 1, 1);
         }
 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (value is Rect)
+            {
+                Data = (Rect)value;
+                return true;
+            }
+            return false;
+        }
         public Rect Data
         {
             get { return RectFieldModel.Data; }
@@ -72,8 +85,10 @@ namespace Dash
                     {
 
                     });
+                    OnFieldModelUpdated(null);
+                    // update local
+                    // update server
                 }
-                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;

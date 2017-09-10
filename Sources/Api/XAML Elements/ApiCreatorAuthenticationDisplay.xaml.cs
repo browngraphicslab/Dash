@@ -15,7 +15,9 @@ namespace Dash {
         public ListView ParameterListView { get { return xAuthParams.ItemListView; } }
         public string Secret { get { return xSecret.Text; } }
         public string Key { get { return xKey.Text; } }
+
         public string AuthURL { get { return xApiURLTB.Text; } }
+        public string AuthMethod => (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
 
         public TextBox UrlTB { get { return xApiURLTB; } set { xApiURLTB = value; } }
         public TextBox KeyTB { get { return xKey; } set { xKey = value; } }

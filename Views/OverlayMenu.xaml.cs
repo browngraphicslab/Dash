@@ -101,8 +101,6 @@ namespace Dash
             {
                 if (!button.RotateOnTap)
                 {
-                    //var transform = button.TransformToVisual(parent);
-                    //var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
                     var yOffset = Util.PointTransformFromVisual(new Point(0, 0), button, parent).Y; 
                     button.AddAndRunCollapseAnimation(yOffset);
                 }
@@ -125,6 +123,28 @@ namespace Dash
                 else
                 {
                     button.AddAndRunRotateInAnimation();
+                }
+            }
+        }
+
+        public void AddAndPlayOpenAnimation()
+        {
+            foreach (var button in _documentButtons)
+            {
+                button.CreateAndRunInstantiationAnimation(false);
+            }
+            if (_collectionButtons != null)
+            {
+                foreach (var button in _collectionButtons)
+                {
+                    if (button.IsComposite)
+                    {
+                        button.CreateAndRunInstantiationAnimation(true);
+                    }
+                    else
+                    {
+                        button.CreateAndRunInstantiationAnimation(false);
+                    }
                 }
             }
         }

@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using RadialMenuControl.UserControl;
+using Dash.Models;
 
 namespace Dash
 {
@@ -49,7 +51,18 @@ namespace Dash
             IsAction = false;
             IsDraggable = true;
             IsSubMenu = true;
+        }
 
+        public RadialSubmenuModel(string description, Symbol symbol, List<RadialItemModel> buttons)
+        {
+            Description = description;
+            IconSymbol = symbol;
+            RadialItemList = buttons;
+            BackGroundColor = Colors.Transparent;
+            IsMeter = false;
+            IsAction = false;
+            IsDraggable = true;
+            IsSubMenu = true;
         }
     }
 }

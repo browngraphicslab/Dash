@@ -9,49 +9,30 @@ namespace Dash
 {
     public class IOReference
     {
-        public delegate void IODragEventHandler(IOReference ioReference);
+        public FieldReference FieldReference { get; }
+        public bool IsOutput { get; }
 
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
-        /// </summary>
-        public event IODragEventHandler IoDragStarted;
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
-        /// </summary>
-        public event IODragEventHandler IoDragEnded;
-
-        public FieldReference FieldReference { get; set; }
-        public bool IsOutput { get; set; }
+        public TypeInfo Type { get; }
         //public bool IsReference { get; set; }
 
-        public PointerRoutedEventArgs PointerArgs { get; set; }
+        public PointerRoutedEventArgs PointerArgs { get; }
 
-        public FrameworkElement FrameworkElement { get; set; }
-        public DocumentView ContainerView { get; set; }
+        public FrameworkElement FrameworkElement { get; }
+        public DocumentView ContainerView { get; }
 
-        public FieldModelController FMController { get; set; }
+        public FieldModelController FMController { get; }
 
-        public KeyController FieldKey { get; set; }
-        public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+        public KeyController FieldKey { get; }
+        public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, TypeInfo type, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
         {
             FieldKey = fieldKey;
             FMController = controller;
             FieldReference = fieldReference;
             IsOutput = isOutput;
+            Type = type;
             PointerArgs = args;
             FrameworkElement = e;
             ContainerView = container;
-        }
-
-        public void FireDragStarted()
-        {
-            IoDragStarted?.Invoke(this);
-        }
-
-        public void FireDragEnded()
-        {
-            IoDragEnded?.Invoke(this);
         }
     }
 }

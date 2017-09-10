@@ -97,12 +97,12 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task GetDocument(string id, Action<DocumentModelDTO> success, Action<Exception> error)
+        public async Task GetDocument(string id, Func<DocumentModelDTO, Task> success, Action<Exception> error)
         {
             try
             {
                 var result = await _connection.GetItem<DocumentModelDTO>($"api/Document/{id}");
-                success(result);
+                await success(result);
             }
             catch (Exception e)
             {
@@ -117,7 +117,7 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void GetDocuments(IEnumerable<string> ids, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
+        public async Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
         {
 
             try
@@ -129,7 +129,7 @@ namespace Dash
 
                 var result = await _connection.Post("api/Document/batch", ids);
                 var resultDoc = await result.Content.ReadAsAsync<IEnumerable<DocumentModelDTO>>();
-                success(resultDoc);
+                await success(resultDoc);
             }
             catch (Exception e)
             {

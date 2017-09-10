@@ -14,10 +14,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController IntersectionKey = new KeyController("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [AKey] = TypeInfo.Collection,
-            [BKey] = TypeInfo.Collection
+            [AKey] = new IOInfo(TypeInfo.Collection, true),
+            [BKey] = new IOInfo(TypeInfo.Collection, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -51,6 +51,14 @@ namespace Dash
         public override FieldModelController Copy()
         {
             return new IntersectionOperatorModelController(OperatorFieldModel);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
     }
 }

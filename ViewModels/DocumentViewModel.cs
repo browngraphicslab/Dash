@@ -1,6 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -13,11 +17,8 @@ namespace Dash
 {
     public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
 
-    public class DocumentViewModel : BaseSelectionElementViewModel
+    public class DocumentViewModel : BaseSelectionElementViewModel, IDisposable
     {
-
-        public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
-        public event OnContentChangedHandler OnContentChanged;
 
         // == MEMBERS, GETTERS, SETTERS ==
         private ManipulationModes _manipulationMode;
@@ -28,11 +29,10 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private Visibility _docMenuVisibility;
+        private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
-        private FrameworkElement _content;
         private WidthAndMenuOpenWrapper _widthBinding;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
@@ -58,15 +58,6 @@ namespace Dash
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
-
-        public FrameworkElement Content
-        {
-            get { return _content; }
-            set
-            {
-                SetProperty(ref _content, value);
-            }
-        }
 
         public double Width
         {
@@ -133,10 +124,12 @@ namespace Dash
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
+
                     // set position
                     var posFieldModelController =
                         layoutDocController.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
+                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
                     posFieldModelController.Data = value.Translate;
                     // set scale center
                     var scaleCenterFieldModelController =
@@ -152,6 +145,17 @@ namespace Dash
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
+        }
+
+        public static bool PointEquals(Point a, Point b)
+        {
+            var ax = double.IsNaN(a.X);
+            var ay = double.IsNaN(a.Y);
+            var bx = double.IsNaN(b.X);
+            var by = double.IsNaN(b.Y);
+            if (!ax && !ay) return a == b;
+            if (ax == ay) return bx && by;
+            return ax ? bx : by;
         }
 
         public Brush BackgroundBrush
@@ -172,8 +176,28 @@ namespace Dash
             set { SetProperty(ref _docMenuVisibility, value); }
         }
 
+        private FrameworkElement _content = null;
+        public FrameworkElement Content
+        {
+            get
+            {
+                if (_content == null)
+                {
+                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
+                }
+                return _content;
+            }
+        }
+
+        public void UpdateContent()
+        {
+            _content = null;
+            OnPropertyChanged(nameof(Content));
+        }
+
         public readonly bool IsInInterfaceBuilder;
 
+        public Context  Context { get; set; }
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
@@ -189,6 +213,7 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
+            Context = newContext;
         }
 
         private void SetUpSmallIcon()
@@ -208,12 +233,37 @@ namespace Dash
         {
             Debug.Assert(args.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey));
             Debug.WriteLine(args.Action);
-            OnActiveLayoutChanged(new Dash.Context(DocumentController));
+            OnActiveLayoutChanged(new Context(DocumentController));
+            if (args.OldValue == null) return;
+            var oldLayoutDoc = ((DocumentFieldModelController) args.OldValue).Data;
+            RemoveListenersFromLayout(oldLayoutDoc);
         }
+
+        private void RemoveListenersFromLayout(DocumentController oldLayoutDoc)
+        {
+            if (oldLayoutDoc == null) return;
+            oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetPositionField().FieldModelUpdated -= PosFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetScaleCenterField().FieldModelUpdated -= ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetScaleAmountField().FieldModelUpdated -= ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+        }
+
+        private void RemoveControllerListeners()
+        {
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
+            var icon = (NumberFieldModelController) DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
+            icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
+        }
+
+        public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
+
+        public event OnLayoutChangedHandler LayoutChanged;
+
         private void OnActiveLayoutChanged(Context context)
         {
-            Content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
-            OnContentChanged?.Invoke(this, Content);
+            UpdateContent();
+            LayoutChanged?.Invoke(this, context);
 
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
@@ -230,12 +280,8 @@ namespace Dash
             var activeLayout = docController.GetActiveLayout()?.Data;
             if (activeLayout != null)
             {
-                var scaleCenterFieldModelController =
-                    activeLayout.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
-                        new Context(DocumentController)) as PointFieldModelController;
-                var scaleAmountFieldModelController =
-                    activeLayout.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
-                        new Context(DocumentController)) as PointFieldModelController;
+                var scaleCenterFieldModelController = docController.GetScaleCenterField();
+                var scaleAmountFieldModelController = docController.GetScaleAmountField();
                 if (scaleCenterFieldModelController != null)
                 {
                     if (scaleAmountFieldModelController != null)
@@ -380,6 +426,31 @@ namespace Dash
                 true);
             del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
             return del;
+        }
+
+        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var docView = sender as DocumentView;
+            DocumentView.DragDocumentView = docView;
+
+            // create border around the doc being dragged
+            if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
+
+            var carrier = ItemsCarrier.Instance;
+            throw new NotImplementedException();
+            //carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
+            carrier.Payload = new List<DocumentController>() { this.DocumentController };
+            args.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+
+        public void Dispose()
+        {
+            var layoutDoc = DocumentController.GetActiveLayout()?.Data;
+            if (layoutDoc != null)
+            {
+                RemoveListenersFromLayout(layoutDoc);
+            } 
+            RemoveControllerListeners();
         }
     }
 }

@@ -24,6 +24,7 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
+        
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
@@ -37,28 +38,29 @@ namespace Dash
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
-                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout);
+                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout, true);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 
-            var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-            var docView = new KeyValuePane();
-            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
+            //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+            //var docView = new KeyValuePane();
+            //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
                 //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+            
+            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
+
             var border = new Border();
             border.Child = docView;
-            border.BorderThickness = new Thickness(3);
-            border.BorderBrush = new SolidColorBrush(Colors.Black);
 
             // bind the text height
-            var docheightController = GetHeightField(docController, context);
-            if (docheightController != null)
-                BindHeight(docView, docheightController);
+            //var docheightController = GetHeightField(docController, context);
+            //if (docheightController != null)
+                //BindHeight(docView, docheightController);
 
             // bind the text width
-            var docwidthController = GetWidthField(docController, context);
-            if (docwidthController != null)
-                BindWidth(docView, docwidthController);
+            //var docwidthController = GetWidthField(docController, context);
+            //if (docwidthController != null)
+                //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

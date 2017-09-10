@@ -98,12 +98,12 @@ namespace Dash
         {
             DocumentViewModel homePageViewModel;
 
-            void Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
+            async void Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
             {
                 var documentModelDto = homePageDocDtos.FirstOrDefault();
                 if (documentModelDto != null)
                 {
-                   _homePageDocument = DocumentController.CreateFromServer(documentModelDto);
+                   _homePageDocument = await DocumentController.CreateFromServer(documentModelDto);
                 }
                 else
                 {

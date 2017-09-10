@@ -7,10 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    >
 
     <Grid>
-        <local:CollectionFreeformView x:FieldModifier="public" x:Name="xFreeFormEditor" AllowDrop="True" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
+        <local:CollectionFreeformView x:FieldModifier="public" x:Name="xFreeFormEditor" 
+                                      AllowDrop="True" DragEnter="XFreeFormEditor_OnDragOver" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
         
         <!--listview of all the operator options at the bottom-->
         <ListView x:Name="xOperationListView" HorizontalAlignment="Center" VerticalAlignment="Bottom"
@@ -18,7 +20,7 @@
                   ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsHorizontalRailEnabled="True"
                   ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.IsVerticalRailEnabled="False"
                   CanDragItems="True" DragItemsStarting="XOperationListView_OnDragItemsStarting"
-                  IsItemClickEnabled="true" ItemClick="XOperationListView_OnItemClick"
+                  IsItemClickEnabled="true" 
                   SelectionMode="Single" ItemsSource="{x:Bind _operatorList}" ManipulationMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">

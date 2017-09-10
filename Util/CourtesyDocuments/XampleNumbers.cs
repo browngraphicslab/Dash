@@ -23,7 +23,7 @@ namespace Dash
         public Numbers()
         {
             // create a document with two images
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+            var fields = new Dictionary<KeyController, FieldModelController>();
             fields.Add(Number1FieldKey, new NumberFieldModelController(789));
             fields.Add(Number2FieldKey, new NumberFieldModelController(23));
             fields.Add(Number3FieldKey, new NumberFieldModelController(8));
@@ -62,6 +62,7 @@ namespace Dash
         });
             gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
             gridPanel.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
             tBox1.SetGridRow(0);
             gridPanel.AddChild(tBox1);
             tBox2.SetGridRow(1);

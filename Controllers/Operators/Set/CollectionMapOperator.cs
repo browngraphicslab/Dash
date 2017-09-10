@@ -25,10 +25,18 @@ namespace Dash
         {
             return new CollectionMapOperator();
         }
-
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
+        public override object GetValue(Context context)
         {
-            [InputOperatorKey] = TypeInfo.Operator
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
+
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>()
+        {
+            [InputOperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
@@ -39,7 +47,7 @@ namespace Dash
         public void ResetInputKeys()
         {
             Inputs.Clear();
-            Inputs[InputOperatorKey] = TypeInfo.Operator;
+            Inputs[InputOperatorKey] = new IOInfo(TypeInfo.Operator, true);
         }
 
         public void UpdateInputs(OperatorFieldModelController controller)
@@ -54,7 +62,7 @@ namespace Dash
             //Inputs[InputOperatorKey] = TypeInfo.Operator;
             foreach (var controllerInput in controller.Inputs)
             {
-                Inputs[controllerInput.Key] = TypeInfo.Collection;
+                Inputs[controllerInput.Key] = new IOInfo(TypeInfo.Collection, true);
             }
         }
 
@@ -76,6 +84,7 @@ namespace Dash
                     continue;
                 }
                 var documentControllers = (inputs[key] as DocumentCollectionFieldModelController)?.GetDocuments();
+
                 if (numDocuments == -1)
                 {
                     numDocuments = documentControllers.Count;
@@ -84,11 +93,17 @@ namespace Dash
                 {
                     return;//Collections with different lengths
                 }
+                if (!InputKeyMap.ContainsKey(key))
+                {
+                    return;//We don't have a key for one of the inputs
+                }
                 keys.Add(key);
                 collections.Add(documentControllers);
             }
 
             List<DocumentController> documents = new List<DocumentController>();
+
+            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
 
             for (int i = 0; i < numDocuments; i++)
             {
@@ -99,7 +114,8 @@ namespace Dash
                 }
                 operatorOutputs.Clear();
                 operatorController.Execute(operatorInputs, operatorOutputs);
-                DocumentController doc = new DocumentController(operatorOutputs, DocumentType.DefaultType);
+                DocumentController doc = prototype.MakeDelegate();//new DocumentController(operatorOutputs, DocumentType.DefaultType);
+                doc.SetFields(operatorOutputs, true);
                 doc.SetActiveLayout(new DefaultLayout().Document, true, false);
                 documents.Add(doc);
             }

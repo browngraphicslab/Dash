@@ -78,6 +78,8 @@ namespace RadialMenuControl.UserControl
                 PieCompositeTransform.CenterY = Diameter/2;
                 CustomPieCompositeTransform.CenterX = Diameter/2;
                 CustomPieCompositeTransform.CenterY = Diameter/2;
+                if (CenterButtonSymbol != null) CenterButton.Content = new SymbolIcon((Symbol)CenterButtonSymbol);
+                else CenterButton.Content = CenterButtonIcon;
             };
             CenterButton.Style = Resources["RoundedCenterButton"] as Style;
 
@@ -127,6 +129,7 @@ namespace RadialMenuControl.UserControl
             get { return (double) GetValue(OuterArcThicknesssProperty); }
             set { SetValue(OuterArcThicknesssProperty, value); }
         }
+        
 
         /// <summary>
         ///     Previous pies (for back navigation)
@@ -463,7 +466,7 @@ namespace RadialMenuControl.UserControl
                 {
                     BorderBrush = CenterButtonBorder,
                     Background = CenterButtonBackgroundFill,
-                    Content = CenterButtonIcon,
+                    Content = CenterButton.Content,
                     FontSize = CenterButtonFontSize,
                     Top = CenterButtonTop,
                     Left = CenterButtonLeft,
@@ -477,7 +480,8 @@ namespace RadialMenuControl.UserControl
             // Center button style defaults to current style unless overridden
             CenterButtonBorder = newButton?.BorderBrush ?? CenterButtonBorder;
             CenterButtonBackgroundFill = newButton?.Background ?? CenterButtonBackgroundFill;
-            CenterButtonIcon = (string) newButton?.Content ?? CenterButtonIcon;
+            if (newButton?.Content is SymbolIcon) CenterButtonSymbol = ((SymbolIcon) newButton.Content).Symbol;
+            else CenterButtonIcon = (string)newButton?.Content ?? CenterButtonIcon;
             CenterButtonFontSize = newButton?.FontSize ?? CenterButtonFontSize;
             CenterButtonTapped = newButton?.CenterButtonTappedHandler ?? null;
 
@@ -485,7 +489,11 @@ namespace RadialMenuControl.UserControl
             {
                 CenterButtonTop = newButton.Top ?? CenterButtonTop;
                 CenterButtonLeft = newButton.Left ?? CenterButtonTop;
+                if (CenterButtonSymbol != null) CenterButton.Content = new SymbolIcon((Symbol)CenterButtonSymbol);
+                else CenterButton.Content = CenterButtonIcon;
             }
+
+            
         }
 
         /// <summary>

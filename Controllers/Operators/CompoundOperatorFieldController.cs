@@ -10,6 +10,9 @@ namespace Dash
 {
     public class CompoundOperatorFieldController : OperatorFieldModelController
     {
+        public static readonly DocumentType MapType = new DocumentType("CFB46F9B-03FB-48E1-9AF9-DBBD266F0D31", "Compound");
+        public static readonly string OperationBarDragKey = "4D9172C1-266F-4119-BB76-961D7D6C37B0";
+
         public CompoundOperatorFieldController(CompoundOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
@@ -18,26 +21,46 @@ namespace Dash
         {
         }
 
+        private CompoundOperatorFieldController(CompoundOperatorFieldController copy) : this()
+        {
+            Inputs = new ObservableDictionary<KeyController, IOInfo>(copy.Inputs);
+            Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
+            InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>(copy.InputFieldReferences);
+            OutputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.OutputFieldReferences);
+        }
+
         public override FieldModelController Copy()
         {
             Debug.Assert(OperatorFieldModel is CompoundOperatorFieldModel);
-            return new CompoundOperatorFieldController(OperatorFieldModel as CompoundOperatorFieldModel);
+            return new CompoundOperatorFieldController(this);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>();
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
 
-        public Dictionary<KeyController, ReferenceFieldModelController> InputFieldReferences = new Dictionary<KeyController, ReferenceFieldModelController>();
-        public Dictionary<KeyController, ReferenceFieldModelController> OutputFieldReferences = new Dictionary<KeyController, ReferenceFieldModelController>();
+        public Dictionary<KeyController, List<FieldReference>> InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>();
+        public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
 
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             Context c = new Context();
             foreach (var reference in InputFieldReferences)
             {
-                var doc = reference.Value.GetDocumentController(c);
-                doc.SetField(reference.Value.FieldKey, inputs[reference.Key].Copy(), true);
+                var refList = reference.Value;
+                foreach (var fieldReference in refList)
+                {
+                    var doc = fieldReference.GetDocumentController(c);
+                    doc.SetField(fieldReference.FieldKey, inputs[reference.Key].Copy(), true);
+                }
             }
             foreach (var output in OutputFieldReferences)
             {
@@ -45,23 +68,31 @@ namespace Dash
             }
         }
 
-        public void AddInputreference(KeyController key, ReferenceFieldModelController reference)
+        public void AddInputreference(KeyController key, FieldReference reference)
         {
-            InputFieldReferences.Add(key, reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Add(key, reference.ReferenceFieldModel);
+            if (!InputFieldReferences.ContainsKey(key))
+            {
+                InputFieldReferences[key] = new List<FieldReference>();
+                (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key] = new List<FieldReference>();
+            }
+            InputFieldReferences[key].Add(reference);
+            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Add(reference);
         }
 
-        public void RemoveInputReference(KeyController key)
+        public void RemoveInputReference(KeyController key, FieldReference reference)
         {
-            InputFieldReferences.Remove(key);
-            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Remove(key);
-
+            if (!InputFieldReferences.ContainsKey(key))
+            {
+                return;
+            }
+            InputFieldReferences[key].Remove(reference);
+            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Remove(reference);
         }
 
-        public void AddOutputreference(KeyController key, ReferenceFieldModelController reference)
+        public void AddOutputreference(KeyController key, FieldReference reference)
         {
             OutputFieldReferences.Add(key, reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Add(key, reference.ReferenceFieldModel);
+            (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Add(key, reference);
         }
 
         public void RemoveOutputReference(KeyController key)

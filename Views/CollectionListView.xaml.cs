@@ -24,12 +24,14 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
 
+        public double ItemHeight { get; set; } = 250;
 
         public CollectionListView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionListView_Unloaded;
+            xListView.ManipulationDelta += (s, e) => e.Handled = true; 
         }
 
 
@@ -93,7 +95,15 @@ namespace Dash
         {
             ViewModel.CollectionViewOnDrop(sender, e);
         }
+        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
 
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
         #endregion
 
         #region Activation

@@ -9,15 +9,15 @@ namespace Dash
     public class DocumentFieldModel : FieldModel
     {
         /// <summary>
-        ///     The DocumentModel which this field is encapsulating
+        ///     The id of the DocumentModel which this field is encapsulating
         /// </summary>
-        public DocumentModel Data;
+        public string Data;
 
         /// <summary>
         ///     Creates a new field model which represents a document
         /// </summary>
         /// <param name="data"></param>
-        public DocumentFieldModel(DocumentModel data, string id = null) : base(id)
+        public DocumentFieldModel(string data, string id = null) : base(id)
         {
             Data = data;
         }

@@ -192,5 +192,6 @@ namespace Dash
             // doesn't update list
 //            UpdateList(xSearch.Text);
         }
+        
     }
 }

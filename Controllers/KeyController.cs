@@ -11,6 +11,8 @@ namespace Dash
         /// </summary>
         public KeyModel KeyModel { get; set; }
 
+        private readonly int _hash;
+
         public string Name
         {
             get => KeyModel.Name;
@@ -33,6 +35,7 @@ namespace Dash
         {
             // Initialize Local Variables
             KeyModel = keyModel;
+            _hash = KeyModel.GetHashCode();
             ContentController.AddModel(keyModel);
             ContentController.AddController(this);
 

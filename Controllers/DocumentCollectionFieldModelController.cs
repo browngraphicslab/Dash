@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Dash.Converters;
+using Windows.UI.Xaml.Data;
+using static Dash.DocumentController;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -14,8 +18,42 @@ namespace Dash
         ///     Key for collection data
         ///     TODO This might be better in a different class
         /// </summary>
-        public static KeyController CollectionKey =
-            new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public override object GetValue(Context context)
+        {
+            return GetDocuments();
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is List<DocumentController>))
+                return false;
+
+            SetDocuments(value as List<DocumentController>);
+            return true;
+        }
+        public List<DocumentController> Data
+        {
+            get { return _documents; }
+            set
+            {
+                if (_documents != null)
+                    foreach (var docController in _documents)
+                        docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+                foreach (var docController in value)
+                    docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
+                if (SetProperty(ref _documents, value))
+                {
+                    // update 
+                    OnFieldModelUpdated(null);
+
+                    // Update server
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    {
+
+                    }, exception => throw exception);
+                }
+            }
+        }
 
         /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
@@ -27,56 +65,15 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(
-            new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)), false)
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)), false)
         {
-            _documents = documents.ToList();
+            Data = documents.ToList();
         }
 
-        private DocumentCollectionFieldModelController(DocumentCollectionFieldModel docCollectionFieldModel) : base(
-            docCollectionFieldModel, true)
+        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : base(fieldModel, true)
         {
-            _documents = new List<DocumentController>();
-
-            var documentIds = docCollectionFieldModel.Data;
-
-            RESTClient.Instance.Documents.GetDocuments(documentIds, docmodelDtos =>
-            {
-                try
-                {
-                    var docControllerList = new List<DocumentController>();
-
-                    foreach (var docDto in docmodelDtos)
-                    {
-                        var keys = docDto.KeyList.Select(key => new KeyController(key, false));
-                        var fields = docDto.FieldList.Select(CreateFromServer);
-
-                        var fieldDict = keys.Zip(fields,
-                                (keyController, fieldController) => new { keyController, fieldController })
-                            .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
-
-                        var docController =
-                            new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
-                        docControllerList.Add(docController);
-                    }
-
-                    AddDocuments(docControllerList);
-
-
-                    UITask.Run(() =>
-                    {
-                    });
-                }
-                catch (Exception e)
-                {
-                    throw;
-                }
-
-            }, exeption => { });
+            Data = documents.ToList();
         }
-
-
-        public List<DocumentController> Data => _documents;
 
         /// <summary>
         ///     The <see cref="DocumentCollectionFieldModel" /> associated with this
@@ -87,13 +84,30 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Collection;
 
-        public static DocumentCollectionFieldModelController CreateFromServer(
+        public static async Task<DocumentCollectionFieldModelController> CreateFromServer(
             DocumentCollectionFieldModel docCollectionFieldModel)
         {
-            return ContentController.GetController<DocumentCollectionFieldModelController>(docCollectionFieldModel.Id) ?? 
-                new DocumentCollectionFieldModelController(docCollectionFieldModel);
+            var localController = ContentController.GetController<DocumentCollectionFieldModelController>(docCollectionFieldModel.Id);
+            if (localController != null)
+            {
+                return localController;
+            }
+
+            List<DocumentController> docControllerList = new List<DocumentController>();
+            Debug.WriteLine("started get documents");
+            await RESTClient.Instance.Documents.GetDocuments(docCollectionFieldModel.Data, async docmodelDtos =>
+            {
+                foreach (var dto in docmodelDtos)
+                {
+                    docControllerList.Add(await DocumentController.CreateFromServer(dto));
+                }
+                Debug.WriteLine("done with get documents");
+
+            }, exception => throw exception);
+            return new DocumentCollectionFieldModelController(docControllerList, docCollectionFieldModel);
         }
 
+        public int Count => _documents.Count;
 
         /// <summary>
         ///     Adds a single document to the collection.
@@ -111,10 +125,17 @@ namespace Dash
         /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
+            // if the document is already in the collection don't readd it
             if (_documents.Contains(docController))
+            {
+                Debug.Assert(DocumentCollectionFieldModel.Data.Contains(docController.GetId()));
                 return;
-            _documents.Add(docController);
+            }
 
+            docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
+            _documents.Add(docController); // update the controller
+
+            // update the model
             if (!DocumentCollectionFieldModel.Data.Contains(docController.GetId()))
             {
                 DocumentCollectionFieldModel.Data.Add(docController.GetId());
@@ -128,31 +149,40 @@ namespace Dash
 
                 });
             }
-            
-            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
-                CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
-                new List<DocumentController> {docController}));
+
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
         }
 
+        void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+        {
+            var keylist = (sender.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                OnFieldModelUpdated(args.FieldArgs);
+        }
 
         public void RemoveDocument(DocumentController doc)
         {
+            doc.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
             var isDocInList = _documents.Remove(doc);
             DocumentCollectionFieldModel.Data.Remove(doc.GetId());
             if (isDocInList)
-                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
-                    CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove,
-                    new List<DocumentController> {doc}));
+                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController> { doc }));
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
         {
+            //TODO make sure the server is getting notified here or at a lower level
+            foreach (var docController in Data)
+                docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+
             _documents = new List<DocumentController>(docControllers);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId()).ToList();
 
-            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
-                CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace,
-                new List<DocumentController>(docControllers)));
+
+            foreach (var docController in Data)
+                docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
+
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace, new List<DocumentController>(docControllers)));
         }
 
         /// <summary>
@@ -165,23 +195,11 @@ namespace Dash
             return _documents.ToList();
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-            return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce);
-        }
-
         public override FieldModelController GetDefaultController()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            textBlock.Text = string.Format("{0} Document(s)", _documents.Count());
-        }
-
-
+        
         public override FieldModelController Copy()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));

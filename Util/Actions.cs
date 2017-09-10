@@ -40,58 +40,57 @@ namespace Dash
             //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
-            var where = Util.GetCollectionDropPoint(
+
+            var where = Util.GetCollectionFreeFormPoint(
                 MainPage.Instance.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
+
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
 
-
-
-        public static void ChangeInkColor(Color color, RadialMenu menu=null)
+        public static void ChangeInkColor(Color color, RadialMenu menu = null)
         {
             GlobalInkSettings.Color = color;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
             if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChoosePencil(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChooseEraser(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void SetOpacity(double opacity)
         {
             GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
         }
 
         public static void SetSize(double size)
         {
             GlobalInkSettings.Size = size;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
         }
 
 
         public static void DisplayBrightnessSlider(RadialMenuView obj)
         {
-            Action<double, RadialMenu> setBrightness = SetBrightness;
-            obj.OpenSlider("Brightness ", setBrightness);
+            obj.OpenSlider();
         }
 
         public static void CloseSliderPanel(RadialMenuView obj)
@@ -102,15 +101,14 @@ namespace Dash
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
             GlobalInkSettings.BrightnessFactor = brightness;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
             if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
 
-        public static void OnOperatorAdd(object o, DragEventArgs e)
+        public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
         {
-            //MainPage.Instance.AddOperator();
-            MainPage.Instance.AddOperatorsFilter(o, e);
+            MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
         public static void AddOperator(Func<DocumentController> documentCreationFunc)
@@ -140,11 +138,44 @@ namespace Dash
                 OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
         }
-        
+
+        public static void AddDocument(ICollectionView collection, DragEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                e.GetPosition(MainPage.Instance));
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+            };
+
+            collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+        }
+
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                e.GetPosition(MainPage.Instance));
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
+            };
+
+            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            documentController.SetActiveLayout(
+                new CollectionBox(
+                        new ReferenceFieldModelController(documentController.GetId(),
+                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
+                    .Document, true, true);
+
+            collection.ViewModel.AddDocument(documentController, null);
+        }
+        
+        public static void AddCollectionTEST(ICollectionView collection, DragEventArgs e)
+        {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -159,7 +190,7 @@ namespace Dash
                     new DocumentCollectionFieldModelController(numbers)
                 }
             };
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var col = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc =
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -177,7 +208,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2, twoImages2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -202,19 +233,12 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
-        }
-
-        public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
-        {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            var a = new ApiDocumentModel().Document;
-            DisplayDocument(collectionView, a, where);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make second collection
             var numbers2 = new Numbers().Document;
@@ -224,7 +248,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -236,18 +260,23 @@ namespace Dash
             //Display collections
             DisplayDocument(collectionView, col2, where);
 
-
             DisplayDocument(collectionView, new InkDoc().Document, where);
+            DisplayDocument(collectionView, new Numbers().Document, where);
+
+            DisplayDocument(collectionView, new XampleText().Document, where);
 
 
-
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(collectionView, d, where);
+            var ndb = new DBTest();
+            for (int i = 0; i < ndb.Documents.Count; i++)
+            {
+                DisplayDocument(collectionView, ndb.Documents[i], where);
+                MainPage.Instance.UpdateLayout();
+            }
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
             DisplayDocument(collectionView, postitNote, where);
         }
@@ -271,5 +300,17 @@ namespace Dash
         {
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.None;
         }
+
+
+        public static void ToggleSelectionMode(object o)
+        {
+            GlobalInkSettings.IsSelectionEnabled = true;
+        }
+
+        public static void ToggleInkRecognition(object o)
+        {
+            GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
+        }
+
     }
 }

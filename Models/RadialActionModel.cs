@@ -13,7 +13,7 @@ using RadialMenuControl.UserControl;
 
 namespace Dash.Models
 {
-    class RadialActionModel: RadialItemModel
+    public class RadialActionModel: RadialItemModel
     {
         /// <summary>
         /// Different types of actions that can be set and will (all) be 
@@ -25,6 +25,9 @@ namespace Dash.Models
         public Action<Color, RadialMenu> ColorAction { get; set; }
         public Action<object> GenericAction { get; set; }
         public Action<double> NumberAction { get; set; }
+        public bool IsRadio { get; set; } = true; 
+        public bool IsToggle { get; set; }
+
         public RadialActionModel(string description, ImageSource iconSource)
         {
             Description = description;
@@ -37,6 +40,14 @@ namespace Dash.Models
         {
             Description = description;
             Icon = icon;
+            IsAction = true;
+            BackGroundColor = Colors.Transparent;
+        }
+
+        public RadialActionModel(string description, Symbol icon)
+        {
+            Description = description;
+            IconSymbol = icon;
             IsAction = true;
             BackGroundColor = Colors.Transparent;
         }

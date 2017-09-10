@@ -21,11 +21,21 @@ namespace Dash
         public static readonly KeyController GridColumnsTypeKey = new KeyController("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
         public static readonly KeyController GridColumnsValueKey = new KeyController("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
 
-        public GridLayout()
+        public GridLayout() : this(new Point(0, 0), new Size(double.NaN, double.NaN))
         {
-            var fields = DefaultLayoutFields(new Point(0, 0), new Size(double.NaN, double.NaN),
+            
+        }
+
+        public GridLayout(Point position, Size size)
+        {
+            var fields = DefaultLayoutFields(position, size,
                 new DocumentCollectionFieldModelController());
             Document = new DocumentController(fields, GridPanelDocumentType);
+        }
+
+        public GridLayout(Point position) : this(position, new Size(double.NaN, double.NaN))
+        {
+            
         }
 
         protected override DocumentController GetLayoutPrototype()

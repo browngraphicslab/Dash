@@ -14,24 +14,24 @@ namespace Dash
     /// </summary>
     internal class ApiDocumentModel : CourtesyDocument
     {
-        public static DocumentType DocumentType = ApiOperator.ApiType;
+        public static readonly DocumentType DocumentType = ApiOperatorController.ApiType;
 
-        public static KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
-        public static KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
-        public static KeyController HeadersKey = new KeyController("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
-        public static KeyController ParametersKey = new KeyController("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
+        public static readonly KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
+        public static readonly KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
+        public static readonly KeyController HeadersKey = new KeyController("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
+        public static readonly KeyController ParametersKey = new KeyController("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
 
-        public static KeyController AuthHttpMethodKey = new KeyController("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
-        public static KeyController AuthBaseUrlKey = new KeyController("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
-        public static KeyController AuthKey = new KeyController("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
-        public static KeyController AuthSecretKey = new KeyController("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
-        public static KeyController AuthHeadersKey = new KeyController("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
-        public static KeyController AuthParametersKey = new KeyController("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
+        public static readonly KeyController AuthHttpMethodKey = new KeyController("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+        public static readonly KeyController AuthBaseUrlKey = new KeyController("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+        public static readonly KeyController AuthKey = new KeyController("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
+        public static readonly KeyController AuthSecretKey = new KeyController("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+        public static readonly KeyController AuthHeadersKey = new KeyController("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+        public static readonly KeyController AuthParametersKey = new KeyController("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
 
-        public static KeyController KeyTextKey = new KeyController("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
-        public static KeyController ValueTextKey = new KeyController("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
-        public static KeyController RequiredKey = new KeyController("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
-        public static KeyController DisplayKey = new KeyController("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
+        public static readonly KeyController KeyTextKey = new KeyController("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
+        public static readonly KeyController ValueTextKey = new KeyController("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
+        public static readonly KeyController RequiredKey = new KeyController("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
+        public static readonly KeyController DisplayKey = new KeyController("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
 
 
         public ApiDocumentModel()
@@ -269,9 +269,9 @@ namespace Dash
             makeBinding(apiDisplay, docController);
 
             // test bindings are working
-            Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, context) as TextFieldModelController).Data);
+            //Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, context) as TextFieldModelController).Data);
             apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
-            Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, context) as TextFieldModelController).Data);
+            //Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, context) as TextFieldModelController).Data);
 
             // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
             // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)

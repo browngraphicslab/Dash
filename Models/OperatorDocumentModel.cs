@@ -13,19 +13,8 @@ namespace Dash
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
         {
-            IDictionary<KeyController, TypeInfo> inputs = opController.Inputs;
-            IDictionary<KeyController, TypeInfo> outputs = opController.Outputs;
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
             fields[OperatorKey] = opController;
-            //TODO These loops make overloading not possible
-            //foreach (var typeInfo in inputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModel(typeInfo.Value);
-            //}
-            //foreach (var typeInfo in outputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModel(typeInfo.Value);
-            //}
             
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
@@ -63,10 +52,8 @@ namespace Dash
         public static DocumentController CreateApiDocumentController()
         {
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
-            var doc = new ApiDocumentModel().Document;
-            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true );
-            doc.DocumentType = ApiOperator.ApiType;
-
+            fields[OperatorKey] = new ApiOperatorController();
+            var doc = new DocumentController(fields, ApiOperatorController.ApiType);
 
             var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
@@ -80,10 +67,12 @@ namespace Dash
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };
-            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+            var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
+
+            OperationCreationHelper.AddOperator(doc.GetId(), () => doc.GetCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);
 
             return doc;
         }

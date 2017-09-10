@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Web.Http;
@@ -20,8 +21,10 @@ namespace Dash
     public class Request
     {
         protected HttpMethod RequestType; // POST, GET, etc.
+        protected HttpMethod AuthRequestType;
         protected HttpRequestMessage Message;
         protected HttpFormUrlEncodedContent MessageBody;
+        protected HttpFormUrlEncodedContent AuthMessageBody;
         protected HttpResponseMessage Response;
         protected HttpRequestMessage TokenMsg;
 
@@ -30,7 +33,7 @@ namespace Dash
 
         protected string Secret, Key;
 
-        protected Dictionary<string, string> Headers, Parameters, AuthHeaders, AuthParameters;
+        protected IEnumerable<KeyValuePair<string, string>> Headers, Parameters, AuthHeaders, AuthParameters;
 
         protected HttpClient Client;
 
@@ -47,9 +50,14 @@ namespace Dash
             return this;
         }
 
-        public Request SetHeaders(Dictionary<string, string> headers)
+        public Request SetAuthMethod(HttpMethod method)
         {
-            Headers = headers;
+            AuthRequestType = method;
+            return this;
+        }
+
+        public Request SetHeaders(IEnumerable<KeyValuePair<string, string>> headers)
+        {
             foreach (KeyValuePair<string, string> entry in headers)
             {
                 
@@ -69,9 +77,27 @@ namespace Dash
             return this;
         }
 
-        public Request SetAuthHeaders(Dictionary<string, string> authHeaders)
+        public Request SetAuthHeaders(IEnumerable<KeyValuePair<string, string>> authHeaders)
         {
             AuthHeaders = authHeaders;
+            return this;
+        }
+
+        public Request SetAuthMessageBody(HttpFormUrlEncodedContent authMessageBody)
+        {
+            AuthMessageBody = authMessageBody;
+            return this;
+        }
+
+        public Request SetKey(string key)
+        {
+            Key = key;
+            return this;
+        }
+
+        public Request SetSecret(string secret)
+        {
+            Secret = secret;
             return this;
         }
 
@@ -80,8 +106,9 @@ namespace Dash
             // if get, we add parameters to the URI either in URL for GET or in body for POST requests
             if (RequestType == HttpMethod.Get)
             {
-                if (!string.IsNullOrWhiteSpace(MessageBody.ToString()))
-                    Message.RequestUri = new Uri(ApiUri.OriginalString + "?" + MessageBody.ToString());
+                string messageBody = MessageBody.ToString();
+                if (!string.IsNullOrWhiteSpace(messageBody))
+                    Message.RequestUri = new Uri(ApiUri.OriginalString + "?" + messageBody);
             }
             else
             {
@@ -91,12 +118,11 @@ namespace Dash
                 !(string.IsNullOrWhiteSpace(ApiUri.AbsolutePath) || string.IsNullOrWhiteSpace(Key) ||
                   string.IsNullOrWhiteSpace(Secret)))
             {
-                TokenMsg = new HttpRequestMessage(HttpMethod.Post, AuthUri);
+                TokenMsg = new HttpRequestMessage(AuthRequestType, AuthUri);
                 //var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
                 //var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray)); //TODO is this needed
 
                 // apply auth headers & parameters
-                TokenMsg.Content = MessageBody; //TODO is this right??
                 TokenMsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes(
                         string.Format("{0}:{1}", Key, Secret))));
@@ -104,6 +130,16 @@ namespace Dash
                 {
                     if (!TokenMsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value))
                         return null;
+                }
+                if (AuthRequestType == HttpMethod.Get)
+                {
+                    string messageBody = AuthMessageBody.ToString();
+                    if (!string.IsNullOrWhiteSpace(messageBody))
+                        TokenMsg.RequestUri = new Uri(AuthUri.OriginalString + "?" + messageBody);
+                }
+                else
+                {
+                    TokenMsg.Content = AuthMessageBody;
                 }
                 // fetch token
                 Response = await RequestUtil.Client.SendRequestAsync(TokenMsg);
@@ -134,6 +170,12 @@ namespace Dash
                 Debug.Fail("the json util failed");
             }
             return null;
+        }
+
+        public DocumentController GetResult()
+        {
+            return JsonToDashUtil.Parse(Response.Content.ToString(),
+                Message.RequestUri.ToString());
         }
     }
 }

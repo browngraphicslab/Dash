@@ -22,7 +22,8 @@ namespace DashShared
         List = 0x100,
         Ink = 0x200,
         RichTextField = 0x400,
-        Rectangle = 0x800
+        Rectangle = 0x800,
+        Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink | RichTextField | Rectangle
     }
 
 }

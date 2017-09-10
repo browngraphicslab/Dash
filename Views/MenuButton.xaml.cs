@@ -21,17 +21,27 @@ namespace Dash
         private double _verticalOffset;
 
         public bool RotateOnTap = false;
-
+        public bool IsComposite;
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
             this.CreateAndRunInstantiationAnimation(false);
+            IsComposite = false;
         }
 
         private int _selectedInd; 
         private List<Button> _buttons = new List<Button>();
+        private Border _border;
+
+        public new Brush Background
+        {
+            get => _border.Background;
+            set => _border.Background = value;
+        }
+
+
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
@@ -44,6 +54,7 @@ namespace Dash
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
+            IsComposite = true;
         }
 
         /// <summary>
@@ -51,10 +62,9 @@ namespace Dash
         /// </summary>
         private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
         {
+            int i = 0;
             foreach (Symbol icon in icons)
             {
-                var i = icons.IndexOf(icon); // have to do this for eventhandling 
-
                 // create symbol for button
                 var symbol = new SymbolIcon()
                 {
@@ -94,17 +104,20 @@ namespace Dash
                 xButtonStackPanel.Children.Add(button);
                 _buttons.Add(button);
 
+                //Capture the right value for i
+                int j = i;
                 //events 
                 button.Tapped += (s, e) =>
                 {
                     e.Handled = true;
                     foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
                     (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
-                    buttonActions[i]?.Invoke();
+                    buttonActions[j]?.Invoke();
 
-                    _selectedInd = i; 
+                    _selectedInd = j; 
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
+                i++;
             }
         }
 
@@ -123,7 +136,7 @@ namespace Dash
                 Foreground = new SolidColorBrush(Colors.White)
             };
             // create rounded(circular) border to hold the symbol
-            var border = new Border()
+            _border = new Border()
             {
                 Height = 40,
                 Width = 40,
@@ -138,7 +151,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(-2.5),
-                Content = border
+                Content = _border
             };
             // create textblock containing a description of the button
             _descriptionText = new TextBlock()
@@ -185,7 +198,7 @@ namespace Dash
         /// </summary>
         private void CreateAndRunRotationAnimation()
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var rotationTransform = new RotateTransform();
             if (_button != null)
@@ -204,7 +217,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.5;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.EnableDependentAnimation = true;
             doubleAnimation.From = 0;
             doubleAnimation.To = 360;
@@ -263,7 +276,7 @@ namespace Dash
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
-        private void CreateAndRunInstantiationAnimation(bool isComposite)
+        public void CreateAndRunInstantiationAnimation(bool isComposite)
         {
             if (isComposite)
             {
@@ -289,7 +302,7 @@ namespace Dash
         {
             _verticalOffset = verticalOffset;
 
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
@@ -305,8 +318,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.3;
-            //doubleAnimation.EnableDependentAnimation = true;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.From = 0;
             doubleAnimation.To = -_verticalOffset;
             Storyboard.SetTargetProperty(doubleAnimation, "Y");
@@ -320,7 +332,7 @@ namespace Dash
         /// </summary>
         private void CreateAndRunReverseVerticalTranslationAnimation()
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
             if (_button != null)
@@ -335,8 +347,7 @@ namespace Dash
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.3;
-            //doubleAnimation.EnableDependentAnimation = true;
+            doubleAnimation.SpeedRatio = 2;
             doubleAnimation.From = -_verticalOffset;
             doubleAnimation.To = 0;
             Storyboard.SetTargetProperty(doubleAnimation, "Y");
@@ -369,12 +380,12 @@ namespace Dash
 
         private void CreateAndRunOpacityAnimation(UIElement target, double from, double to)
         {
-            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             // create and play opacity animation on button
             DoubleAnimation opacityAnimation = new DoubleAnimation()
             {
-                SpeedRatio = 1,
+                SpeedRatio = 1.3,
                 From = from,
                 To = to,
                 Duration = duration,

@@ -42,12 +42,21 @@ namespace Dash
             }
             DocumentController doc = GetDocumentController(context);
             context = context ?? new Context();
-            doc.Execute(context, false);
-            if (context.TryDereferenceToRoot(this, out controller))
+            var newContext = context;
+            if (doc.ShouldExecute(context, FieldKey))
             {
-                return controller;
+                {
+
+                    newContext = doc.Execute(context, false);
+                    if (newContext.TryDereferenceToRoot(this, out controller))
+                    {
+                        return controller;
+                    }
+                }
             }
-            var fmc = GetDocumentController(context)?.GetField(FieldKey);
+
+            var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
+
             return fmc;
         }
 

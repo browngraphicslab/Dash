@@ -96,6 +96,10 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ConcatOperator.cs" />
+    <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
@@ -105,6 +109,14 @@
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
     <Compile Include="Util\TaskQueue.cs" />
+    <Compile Include="Util\CollectionViewModelBindingSource.cs" />
+    <Compile Include="FreeformInkControl.cs" />
+    <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
+    <Compile Include="Views\CollectionTextView.xaml.cs">
+      <DependentUpon>CollectionTextView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
@@ -125,13 +137,18 @@
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\FieldBinding.cs" />
     <Compile Include="Util\EditableImage.xaml.cs">
       <DependentUpon>EditableImage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\InkBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleInkDoc.cs" />
+    <Compile Include="Util\EditableTextBlock.xaml.cs">
+      <DependentUpon>EditableTextBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
+    <Compile Include="Util\LassoSelectHelper.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\UITask.cs" />
     <Compile Include="Util\WebBox.cs" />
@@ -145,16 +162,26 @@
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\BezierConverter.cs" />
+    <Compile Include="Views\ApiView.xaml.cs">
+      <DependentUpon>ApiView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
+      <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
+    <Compile Include="Util\InkRecognitionHelper.cs" />
+    <Compile Include="Views\InkSelectionRect.xaml.cs">
+      <DependentUpon>InkSelectionRect.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>
@@ -183,6 +210,9 @@
     </Compile>
     <Compile Include="Views\IOReference.cs" />
     <Compile Include="Util\OperationCreationHelper.cs" />
+    <Compile Include="Views\MenuButtonList.xaml.cs">
+      <DependentUpon>MenuButtonList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -236,7 +266,6 @@
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
@@ -247,7 +276,6 @@
     <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleTwoImages.cs" />
-    <Compile Include="Util\EditableTextBlock.cs" />
     <Compile Include="Util\DropControls.cs" />
     <Compile Include="Views\SelectableContainer.xaml.cs">
       <DependentUpon>SelectableContainer.xaml</DependentUpon>
@@ -280,7 +308,6 @@
     <Compile Include="Controllers\ListFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
@@ -494,6 +521,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CollectionTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -522,7 +553,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Util\EditableTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ApiOpView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ApiView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -534,9 +573,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DocumentSelectionPolygon.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InkSelectionRect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>
@@ -547,6 +594,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MenuButtonList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -13,6 +14,10 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
+using Windows.UI;
+using Windows.UI.Composition;
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Shapes;
 using LightBuzz.SMTP;
 
 
@@ -21,6 +26,34 @@ namespace Dash
     // TODO: name this to something more descriptive
     public static class Util
     {
+
+        public static void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
+        {
+            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
+            Compositor compositor = hostVisual.Compositor;
+
+            // Create a drop shadow
+            var dropShadow = compositor.CreateDropShadow();
+
+            dropShadow.Color = Color.FromArgb(100, 75, 75, 80);
+            dropShadow.BlurRadius = 15.0f;
+            dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
+            // Associate the shape of the shadow with the shape of the target element
+            dropShadow.Mask = shadowTarget.GetAlphaMask();
+
+            // Create a Visual to hold the shadow
+            var shadowVisual = compositor.CreateSpriteVisual();
+            shadowVisual.Shadow = dropShadow;
+
+            // Add the shadow as a child of the host in the visual tree
+            ElementCompositionPreview.SetElementChildVisual(shadowHost, shadowVisual);
+
+            // Make sure size of shadow host and shadow visual always stay in sync
+            var bindSizeAnimation = compositor.CreateExpressionAnimation("hostVisual.Size");
+            bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
+
+            shadowVisual.StartAnimation("Size", bindSizeAnimation);
+        }
 
         /// <summary>
         /// Transforms point p to relative point in Window.Current.Content 
@@ -49,13 +82,7 @@ namespace Dash
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
             if (to == null) to = Window.Current.Content;
-            var ttv = from.TransformToVisual(to);
-            Debug.Assert(ttv != null); 
-            return ttv.TransformPoint(p);
-
-            //GeneralTransform r = from.TransformToVisual(Window.Current.Content).Inverse;
-            //Debug.Assert(r != null);
-            //return r.TransformPoint(p);
+            return from.TransformToVisual(to).TransformPoint(p);
         }
 
         /// <summary>
@@ -65,7 +92,7 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
             //Debug.Assert(freeForm != null);
             if (freeForm != null)
@@ -377,78 +404,54 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method that returns a list of different types of FieldModelControllers
-        ///                                                                 TODO what if people want to display url as textfieldmodel??? 
+        /// Fits a line to a collection of (x,y) points.
         /// </summary>
-        /// <returns></returns>
-        public static IEnumerable<FieldModelController> RawToFieldModelControllerFactory(IEnumerable<object> rawValues, bool displayAsImage = false)
+        /// <param name="xVals">The x-axis values.</param>
+        /// <param name="yVals">The y-axis values.</param>
+        /// <param name="inclusiveStart">The inclusive inclusiveStart index.</param>
+        /// <param name="exclusiveEnd">The exclusive exclusiveEnd index.</param>
+        /// <param name="rsquared">The r^2 value of the line.</param>
+        /// <param name="yintercept">The y-intercept value of the line (i.e. y = ax + b, yintercept is b).</param>
+        /// <param name="slope">The slop of the line (i.e. y = ax + b, slope is a).</param>
+        public static void LinearRegression(double[] xVals, double[] yVals,
+            int inclusiveStart, int exclusiveEnd,
+            out double rsquared, out double yintercept,
+            out double slope)
         {
-            var result = new LinkedList<FieldModelController>();
+            Debug.Assert(xVals.Length == yVals.Length);
+            double sumOfX = 0;
+            double sumOfY = 0;
+            double sumOfXSq = 0;
+            double sumOfYSq = 0;
+            double ssX = 0;
+            double ssY = 0;
+            double sumCodeviates = 0;
+            double sCo = 0;
+            double count = exclusiveEnd - inclusiveStart;
 
-            foreach (object value in rawValues)
+            for (int ctr = inclusiveStart; ctr < exclusiveEnd; ctr++)
             {
-                string stringVal = value.ToString();
-
-                double n;
-                Uri outUri;
-
-                if (double.TryParse(stringVal, out n))                             // if it's a number
-                {
-                    result.AddLast(new NumberFieldModelController(n));
-                }
-                else if (displayAsImage && Uri.TryCreate(stringVal, UriKind.Absolute, out outUri)         // if it's a url...  
-                       && Uri.IsWellFormedUriString(stringVal, UriKind.Absolute))
-                {
-                    result.AddLast(new ImageFieldModelController(outUri));
-                }
-                else
-                {
-                    result.AddLast(new TextFieldModelController(stringVal));
-                }
+                double x = xVals[ctr];
+                double y = yVals[ctr];
+                sumCodeviates += x * y;
+                sumOfX += x;
+                sumOfY += y;
+                sumOfXSq += x * x;
+                sumOfYSq += y * y;
             }
-            return result;
-        }
+            ssX = sumOfXSq - ((sumOfX * sumOfX) / count);
+            ssY = sumOfYSq - ((sumOfY * sumOfY) / count);
+            double RNumerator = (count * sumCodeviates) - (sumOfX * sumOfY);
+            double RDenom = (count * sumOfXSq - (sumOfX * sumOfX))
+                            * (count * sumOfYSq - (sumOfY * sumOfY));
+            sCo = sumCodeviates - ((sumOfX * sumOfY) / count);
 
-        public static IList<DocumentController> FMControllerToCourtesyDocs(ref DocumentController doc, IEnumerable<FieldModelController> fms)
-        {
-            var result = new List<DocumentController>();
-            string docID = doc.GetId();
-
-            foreach (FieldModelController fm in fms)
-            {
-                var key = new KeyController();                                                                                  // TODO should give it a unique key? 
-                doc.SetField(key, fm, true);
-                if (fm is TextFieldModelController || fm is NumberFieldModelController)
-                {
-                    result.Add(new TextingBox(new ReferenceFieldModelController(docID, key)).Document);
-                }
-                else if (fm is ImageFieldModelController)
-                {
-                    result.Add(new ImageBox(new ReferenceFieldModelController(docID, key)).Document);
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            return result;
-        }
-
-        // TODO move this somewhere else 
-        public static DocumentController MakeListView(List<object> randomList)
-        {
-            IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
-
-            DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type w/ actual guid 
-            var fields = new Dictionary<KeyController, FieldModelController>();
-            fields.Add(KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
-            DocumentController Document = new DocumentController(fields, ListType);
-
-            IList<DocumentController> viewDocs = FMControllerToCourtesyDocs(ref Document, fms);
-            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(300, Math.Min(50 * viewDocs.Count, 400)));
-            Document.SetActiveLayout(layoutDoc.Document, true, true);
-
-            return Document; 
+            double meanX = sumOfX / count;
+            double meanY = sumOfY / count;
+            double dblR = RNumerator / Math.Sqrt(RDenom);
+            rsquared = dblR * dblR;
+            yintercept = meanY - ((sCo / ssX) * meanX);
+            slope = sCo / ssX;
         }
     }
 }

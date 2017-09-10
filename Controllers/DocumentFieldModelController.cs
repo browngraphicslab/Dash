@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
@@ -6,51 +7,72 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
+using System.Linq;
+using static Dash.DocumentController;
 
 namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document?.DocumentModel), false)
+
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document.GetId()), isCreatedFromServer:false)
         {
             Data = document;
         }
 
-        private DocumentFieldModelController(DocumentFieldModel documentFieldModel) : base(documentFieldModel, true)
+        private DocumentFieldModelController(DocumentController document, DocumentFieldModel model) : base(model, isCreatedFromServer:true)
         {
-
-#pragma warning disable 4014
-            RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data.Id, async dto =>
-#pragma warning restore 4014
-            {
-                var tempData = DocumentController.CreateFromServer(dto);
-
-                var prototypeData = tempData.GetField(KeyStore.PrototypeKey, true);
-
-                if (prototypeData != null)
-                    await RESTClient.Instance.Documents.GetDocument(
-                        (prototypeData as DocumentFieldModelController).DocumentFieldModel.Data.Id,
-                        protoDto =>
-                        {
-                            (prototypeData as DocumentFieldModelController).Data =
-                                DocumentController.CreateFromServer(protoDto);
-                        }, exception => throw exception);
-
-
-
-
-
-                UITask.Run(() =>
-                {
-                    Data = tempData;
-                });
-            }, exception => throw exception);            
+            Data = document;
         }
 
-        public static DocumentFieldModelController CreateFromServer(DocumentFieldModel documentFieldModel)
+        public static async Task<DocumentFieldModelController> CreateFromServer(DocumentFieldModel documentFieldModel)
         {
-            return ContentController.GetController<DocumentFieldModelController>(documentFieldModel.Id) ?? 
-                new DocumentFieldModelController(documentFieldModel);
+            var localController = ContentController.GetController<DocumentFieldModelController>(documentFieldModel.Id);
+            if (localController != null)
+            {
+                return localController;
+            }
+
+            DocumentController docController = null;
+
+            await RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data, async dto =>
+            {
+                docController = await DocumentController.CreateFromServer(dto);
+
+                foreach (var keyFieldPair in docController.EnumFields(true))
+                {
+                    if (keyFieldPair.Value is DocumentFieldModelController)
+                    {
+                        var dfmc = (DocumentFieldModelController)keyFieldPair.Value;
+                        await RESTClient.Instance.Documents.GetDocument(
+                            dfmc.DocumentFieldModel.Data, async protoDto =>
+                            {
+                                dfmc.Data =
+                                    await DocumentController.CreateFromServer(protoDto);
+                            }, exception => throw exception);
+                    }
+
+                    if (keyFieldPair.Value is DocumentCollectionFieldModelController)
+                    {
+                        Debug.Assert(keyFieldPair.Key.Equals(KeyStore.DelegatesKey) == false, "the document controller should skip over creating any delegates field since it creates infinite loops");
+
+                        var dcfmc = ((DocumentCollectionFieldModelController)keyFieldPair.Value);
+                        var documentIds = dcfmc.DocumentCollectionFieldModel.Data;
+
+                        await RESTClient.Instance.Documents.GetDocuments(documentIds, async docmodelDtos =>
+                        {
+                            foreach (var docDto in docmodelDtos)
+                            {
+                                await DocumentController.CreateFromServer(docDto);
+                            }
+                        }, exception => throw exception);
+                    }
+                }
+            }, exception => throw exception);
+
+
+            return new DocumentFieldModelController(docController, documentFieldModel);
+
         }
 
         /// <summary>
@@ -66,24 +88,52 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentFieldModel.Data" />. Change this to propagate changes
         ///     to the server
         /// </summary>
+        /// 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (!(value is DocumentController))
+                return false;
+            Data = value as DocumentController;
+            return true;
+        }
+        OnDocumentFieldUpdatedHandler primaryKeyHandler;
         public DocumentController Data
         {
             get { return _data; }
             set
             {
+                var oldData = _data;
                 if (SetProperty(ref _data, value))
                 {
+                    if (oldData != null)
+                        oldData.DocumentFieldUpdated -= primaryKeyHandler;
+                    primaryKeyHandler = (sender, args) =>
+                    {
+                        var keylist = (_data.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data.Select((d) => (d as TextFieldModelController).Data));
+                        if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                            OnFieldModelUpdated(null);
+                    };
+                    value.DocumentFieldUpdated += primaryKeyHandler;
                     OnFieldModelUpdated(null);
                     RESTClient.Instance.Fields.UpdateField(FieldModel, dto => { }, exception => throw exception);
                 }
             }
         }
+        /// <summary>
+        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        /// </summary>
+        /// <returns></returns>
+        //public override FrameworkElement GetTableCellView(Context context)
+        //{
+        //    var tb = new DocumentView(new DocumentViewModel(Data, false, context));
+        //    tb.Height = 25;
+        //    return tb;
+        //}
         public override TypeInfo TypeInfo => TypeInfo.Document;
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
 
         public override IEnumerable<DocumentController> GetReferences()
         {
@@ -94,18 +144,6 @@ namespace Dash
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
                 new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            Binding textBinding = new Binding
-            {
-                Source = this,
-                Converter = new DocumentFieldModelToStringConverter(),
-                Mode = BindingMode.TwoWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-           // textBlock.Text = $"Document of type: {DocumentFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

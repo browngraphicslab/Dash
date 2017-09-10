@@ -28,33 +28,35 @@ namespace Dash
         // TODO move this to FieldModel
         private static FieldModel CreateFieldModelHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
-            var data = fieldModelDTO.Data;
-            switch (fieldModelDTO.Type)
+            try
             {
-                case TypeInfo.Text:
-                    return new TextFieldModel(data.ToString(), fieldModelDTO.Id);
-                case TypeInfo.Number:
-                    return new NumberFieldModel(JsonConvert.DeserializeObject<double>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.Image:
-                    return new ImageFieldModel(JsonConvert.DeserializeObject<Uri>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.Collection:
-                    return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.Document:
-                    return new DocumentFieldModel(JsonConvert.DeserializeObject<DocumentModel>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.Reference:
-                    FieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
-                    if ((docFieldRefence as DocumentFieldReference)?.DocumentId == null)
-                    {
-                        docFieldRefence = JsonConvert.DeserializeObject<DocumentPointerFieldReference>(data.ToString());
-                    }
-                    return new ReferenceFieldModel(docFieldRefence, fieldModelDTO.Id);
-                case TypeInfo.Operator: //TODO What should this do?
-                    var typeAndCompound = data as Tuple<string, bool>;
-                    return new OperatorFieldModel(typeAndCompound.Item1, typeAndCompound.Item2, fieldModelDTO.Id);
-                case TypeInfo.Point:
-                    return new PointFieldModel(JsonConvert.DeserializeObject<Point>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.List:
-                    return new ListFieldModel(new List<string>(), TypeInfo.Text);
+                var data = fieldModelDTO.Data;
+                switch (fieldModelDTO.Type)
+                {
+                    case TypeInfo.Text:
+                        return new TextFieldModel(data.ToString(), fieldModelDTO.Id);
+                    case TypeInfo.Number:
+                        return new NumberFieldModel(JsonConvert.DeserializeObject<double>(data.ToString()), fieldModelDTO.Id);
+                    case TypeInfo.Image:
+                        return new ImageFieldModel(JsonConvert.DeserializeObject<Uri>(data.ToString()), fieldModelDTO.Id);
+                    case TypeInfo.Collection:
+                        return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()), fieldModelDTO.Id);
+                    case TypeInfo.Document:
+                        return new DocumentFieldModel(data.ToString(), fieldModelDTO.Id);
+                    case TypeInfo.Reference:
+                        FieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
+                        if ((docFieldRefence as DocumentFieldReference)?.DocumentId == null)
+                        {
+                            docFieldRefence = JsonConvert.DeserializeObject<DocumentPointerFieldReference>(data.ToString());
+                        }
+                        return new ReferenceFieldModel(docFieldRefence, fieldModelDTO.Id);
+                    case TypeInfo.Operator: //TODO What should this do?
+                        var typeAndCompound = data as Tuple<string, bool>;
+                        return new OperatorFieldModel(typeAndCompound.Item1, typeAndCompound.Item2, fieldModelDTO.Id);
+                    case TypeInfo.Point:
+                        return new PointFieldModel(JsonConvert.DeserializeObject<Point>(data.ToString()), fieldModelDTO.Id);
+                    case TypeInfo.List:
+                        return new ListFieldModel(new List<string>(), TypeInfo.Text);
                     //switch (listType) //TODO support list of list?
                     //{
                     //    case TypeInfo.Number:
@@ -81,16 +83,22 @@ namespace Dash
                     //    default:
                     //        return null;
                     //}
-                case TypeInfo.None:
-                    throw new NotImplementedException();
-                case TypeInfo.Ink:
-                    return new InkFieldModel(data.ToString(), fieldModelDTO.Id);
-                case TypeInfo.RichTextField:
-                    return new RichTextFieldModel(JsonConvert.DeserializeObject<RichTextFieldModel.RTD>(data.ToString()), fieldModelDTO.Id);
-                case TypeInfo.Rectangle:
-                    return new RectFieldModel(JsonConvert.DeserializeObject<Rect>(data.ToString()), fieldModelDTO.Id);
-                default:
-                    return null;
+                    case TypeInfo.None:
+                        throw new NotImplementedException();
+                    case TypeInfo.Ink:
+                        return new InkFieldModel(data.ToString(), fieldModelDTO.Id);
+                    case TypeInfo.RichTextField:
+                        return new RichTextFieldModel(JsonConvert.DeserializeObject<RichTextFieldModel.RTD>(data.ToString()), fieldModelDTO.Id);
+                    case TypeInfo.Rectangle:
+                        return new RectFieldModel(JsonConvert.DeserializeObject<Rect>(data.ToString()), fieldModelDTO.Id);
+                    default:
+                        return null;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 

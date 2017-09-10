@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -18,26 +20,32 @@ namespace Dash
 
         public event OnParametersChangedEventHandler OnParametersChanged;
 
-        private DocumentController docModel;
-        public DocumentController DocModel {
-            get { return this.docModel; }
-            set { this.docModel = value; }
-        }
+        public DocumentController Document { get; set; }
 
         public ApiCreatorPropertyGenerator() {
-            DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
         }
 
         public ApiCreatorPropertyGenerator(KeyController key) {
-            DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
-            docModel = null;
+            Document = null;
             parameterCollectionKey = key;
 
         }
+
+        private DocumentController _operatorDocument;
+        private ApiOperatorController _operatorController;
+
+        public ApiOperatorController ApiController
+        {
+            get { return _operatorController; }
+            protected set { _operatorController = value; }
+        }
+
+        public Dictionary<KeyController, string> Keys = new Dictionary<KeyController, string>();
+        public Dictionary<KeyController, string> Values = new Dictionary<KeyController, string>();
 
         // == DEPENDENCY MEMBERS ==
         public String TitleTag { get; set; }
@@ -66,24 +74,71 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void addParameterItem_Click(object sender, RoutedEventArgs e) {
-            var stackPanel = new ApiCreatorProperty(this);
+            if (TitleTag == "HEADERS")
+            {
+                _operatorController.AddHeader(new ApiParameter(false, false));
+            }
+            else if (TitleTag == "PARAMETERS")
+            {
+                _operatorController.AddParameter(new ApiParameter(true, false));
+            } else if (TitleTag == "AUTHENTICATION HEADERS")
+            {
+                _operatorController.AddAuthHeader(new ApiParameter(true, true));
+            } else if (TitleTag == "AUTHENTICATION PARAMETERS") 
+            {
+                _operatorController.AddAuthParameter(new ApiParameter(false, true));
+            }
+
+            //var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
-            xListView.Items.Add(stackPanel);
+            //xListView.Items.Add(stackPanel);
             xListView.Visibility = Visibility.Visible;
-            xListView.ScrollIntoView(stackPanel);
+            //xListView.ScrollIntoView(stackPanel);
 
-            // make panel visible
-            xCollapseStackPanel.Visibility = Visibility.Visible;
-            xCollapseButtonText.Text = "-";
+            //// make panel visible
+            //xCollapseStackPanel.Visibility = Visibility.Visible;
+            //xCollapseButtonText.Text = "-";
 
-            Debug.Assert(SourceDisplay != null);
-            DocumentController c = ApiDocumentModel.addParameter(
-                docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
-                stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
-            stackPanel.docModelRef = c; // update to contain ref to docmodel generated
+            //Debug.Assert(SourceDisplay != null);
+            //DocumentController c = ApiDocumentModel.addParameter(
+            //    Document, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
+            //    stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
+            //stackPanel.docModelRef = c; // update to contain ref to docmodel generated
 
-            OnParametersChanged?.Invoke(this, stackPanel);
+            //OnParametersChanged?.Invoke(this, stackPanel);
+        }
+
+        private void ApiCreatorPropertyGenerator_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var reference = args.NewValue as FieldReference;
+            _operatorDocument = reference.GetDocumentController(null);
+            _operatorController = _operatorDocument.GetField(reference.FieldKey) as ApiOperatorController;
+            if (TitleTag == "HEADERS")
+            {
+                xListView.ItemsSource = _operatorController.Headers;
+            }
+            else if(TitleTag == "PARAMETERS")
+            {
+                xListView.ItemsSource = _operatorController.Parameters;
+            } else if (TitleTag == "AUTHENTICATION HEADERS")
+            {
+                xListView.ItemsSource = _operatorController.AuthHeaders;
+            } else if (TitleTag == "AUTHENTICATION PARAMETERS")
+            {
+                xListView.ItemsSource = _operatorController.AuthParameters;
+            }
+            XTitleBlock.Text = TitleTag;
+        }
+
+        private void ApiCreatorProperty_OnKeyChanged(KeyController key, string newValue)
+        {
+            Keys[key] = newValue;
+        }
+
+        private void ApiCreatorProperty_OnValueChanged(KeyController key, string newValue)
+        {
+            Values[key] = newValue;
         }
     }
 }

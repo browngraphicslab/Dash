@@ -32,7 +32,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var layoutList = doc.GetField(KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
-            
+
             if (layoutList == null)
             {
                 layoutList = InitializeLayoutList();
@@ -71,7 +71,7 @@ namespace Dash
         }
 
 
-        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context=null)
+        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
@@ -99,7 +99,7 @@ namespace Dash
 
             return heightField;
         }
-        
+
         public static NumberFieldModelController GetWidthField(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
@@ -125,6 +125,24 @@ namespace Dash
             return posField;
         }
 
+        public static PointFieldModelController GetScaleCenterField(this DocumentController doc, Context context = null)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var scaleCenterField = activeLayout?.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
+                                       new Context(context)) as PointFieldModelController ?? doc.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as PointFieldModelController;
+            return scaleCenterField;
+        }
+
+        public static PointFieldModelController GetScaleAmountField(this DocumentController doc, Context context = null)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
+                                       new Context(context)) as PointFieldModelController ??
+                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
+                                       PointFieldModelController;
+            return scaleAmountField;
+        }
+
         public static DocumentController GetCopy(this DocumentController doc, Context context = null)
         {
             var copy = doc.GetPrototype()?.MakeDelegate() ??
@@ -137,13 +155,16 @@ namespace Dash
                     )
                 {
                     fields[kvp.Key] = new NumberFieldModelController((kvp.Value as NumberFieldModelController)?.Data ?? 0);
-                } else if (kvp.Key.Equals(KeyStore.PositionFieldKey))
+                }
+                else if (kvp.Key.Equals(KeyStore.PositionFieldKey))
                 {
                     fields[kvp.Key] = new PointFieldModelController((kvp.Value as PointFieldModelController)?.Data ?? new Point());
                 }
                 else
                 {
-                    fields[kvp.Key] = kvp.Value.Copy();
+                    if (kvp.Key.KeyModel == DashConstants.KeyStore.ThisKey)
+                        fields[kvp.Key] = new DocumentFieldModelController(copy);
+                    else fields[kvp.Key] = kvp.Value.Copy();
                 }
             }
             copy.SetFields(fields, true);

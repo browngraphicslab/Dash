@@ -62,7 +62,7 @@ namespace DashWebServer
                 Debug.WriteLine("One or more exceptions has occurred:");
                 foreach (var exception in ex.InnerExceptions)
                     Debug.WriteLine("  " + exception.Message);
-                // If you throw here the database did not connect
+                // If you throw here the database did not connect. for local start emulator.
                 throw;
             }
         }

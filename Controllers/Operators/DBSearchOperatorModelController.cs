@@ -65,12 +65,12 @@ namespace Dash.Controllers.Operators
         public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
         public static readonly KeyController SearchForDocKey = new KeyController("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [FieldPatternKey] = TypeInfo.Text,
-            [ReturnDocKey]    = TypeInfo.Text,
-            [SearchForDocKey] = TypeInfo.Document,
-            [InputDocsKey]    = TypeInfo.Collection
+            [FieldPatternKey] = new IOInfo(TypeInfo.Text, true),
+            [ReturnDocKey]    = new IOInfo(TypeInfo.Text, true),
+            [SearchForDocKey] = new IOInfo(TypeInfo.Document, true),
+            [InputDocsKey]    = new IOInfo(TypeInfo.Collection, true)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -79,9 +79,9 @@ namespace Dash.Controllers.Operators
         
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data;
+            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data.Trim(' ','\r');
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
-            var returnPath   = new List<string>(retPathString.Trim(' ', '\r').Split('.'));
+            var returnPath   = new List<string>(retPathString.Split('.'));
             var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
             if (searchForDoc == DBTest.DBNull)
                 searchForDoc = null;
@@ -124,7 +124,7 @@ namespace Dash.Controllers.Operators
                     {
                         docsInSearchScope.Add(dmc);
                     }
-                    if (CheckForFieldReferencingTarget(targetDocument, dmc) != null)
+                    else if (CheckForFieldReferencingTarget(targetDocument, dmc) != null)
                         docsInSearchScope.Add(dmc);
                 }
             return docsInSearchScope;
@@ -176,7 +176,7 @@ namespace Dash.Controllers.Operators
                 else if (pfieldDoc != null)
                     foreach (var f in pfieldDoc.EnumFields())
                     {
-                        if ((pattern[1] != "" && pattern[1][0] == '~' && f.Key.Name.Contains(pattern[1].Substring(1, pattern.Count - 1))) || f.Key.Name == pattern[1])
+                        if ((pattern[1] != "" && pattern[1][0] == '~' && f.Key.Name.Contains(pattern[1].TrimStart('~'))) || f.Key.Name == pattern[1])
                         {
                             if (f.Value is DocumentFieldModelController)
                                 return (f.Value as DocumentFieldModelController).Data;
@@ -191,6 +191,14 @@ namespace Dash.Controllers.Operators
         public override FieldModelController Copy()
         {
             return new DBSearchOperatorFieldModelController(OperatorFieldModel as DBSearchOperatorFieldModel);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
     }
 }

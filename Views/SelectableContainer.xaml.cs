@@ -45,12 +45,14 @@ namespace Dash
         private Dictionary<Ellipse, LinesAndTextBlocks> _lineMap;
         private Ellipse _pressedEllipse;
 
+        public SelectableContainer ParentContainer { get { return _parentContainer; } }
         public readonly DocumentController LayoutDocument;
         public readonly DocumentController DataDocument;
         private ManipulationControls _manipulator;
         private bool _isLowestSelected;
         private RootSnapManager _rootSnapManager;
         private ManipulationControls _centerManipulator;
+        private bool _isLoaded;
 
         public FrameworkElement ContentElement
         {
@@ -117,6 +119,7 @@ namespace Dash
             DataDocument = dataDocument;
             InitiateManipulators();
 
+            //_manipulator = new ManipulationControls(this, true, true);
             RenderTransform = new TranslateTransform();
             _childContainers = new List<SelectableContainer>();
 
@@ -136,6 +139,7 @@ namespace Dash
 
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
         {
+            _isLoaded = true;
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             _parentContainer?.AddChild(this);
             InitiateManipulators();
@@ -162,7 +166,7 @@ namespace Dash
 
         private void SetContent()
         {
-            if (XLayoutDisplay == null) return;
+            if (XLayoutDisplay == null || !_isLoaded) return;
             XLayoutDisplay.Content = ContentElement;
 
             //ContentElement.IsHitTestVisible = IsSelected;

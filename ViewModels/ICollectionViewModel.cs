@@ -11,12 +11,12 @@ namespace Dash
 
         bool IsInterfaceBuilder { get; }
 
-        ObservableCollection<DocumentViewModelParameters> DocumentViewModels { get; }
+        ObservableCollection<DocumentViewModel> DocumentViewModels { get; }
 
         bool IsSelected { get; }
         bool IsLowestSelected { get; }
 
-        List<DocumentViewModelParameters> SelectionGroup { get;  }
+        List<DocumentViewModel> SelectionGroup { get;  }
 
         // TODO these are specific to grid view maybe shouldn't be here
         double CellSize { get; } // <----

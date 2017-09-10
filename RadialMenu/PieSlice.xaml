@@ -148,6 +148,14 @@
                 IsHitTestVisible="False"
                 Margin="0, -25, 0, 0">
             </Image>
+            <SymbolIcon
+                x:Name="IconSymbolElement"
+                x:FieldModifier="public"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                Margin="0, 0, 0, 0">
+            </SymbolIcon>
             <TextBlock
                 x:Name="LabelTextElement"
                 HorizontalAlignment="Center"
@@ -156,7 +164,7 @@
                 FontSize="{Binding LabelSize}"
                 Text="{Binding Label}"
                 IsHitTestVisible="False"
-                Margin="0, 25, 0, 0">
+                Margin="0, 30, 0, 0">
             </TextBlock>
 
            

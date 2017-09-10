@@ -1,13 +1,14 @@
 using System;
-using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using RadialMenuControl.Components;
-using Windows.Foundation;
 using Windows.UI.Xaml.Media.Animation;
+using RadialMenuControl.Components;
 
 namespace RadialMenuControl.UserControl
 {
@@ -30,105 +31,123 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("InnerReleasedColor", typeof(Color), typeof(PieSlice), null);
 
         /// <summary>
-        /// Hover color for the inner portion of the PieSlice
+        ///     Hover color for the inner portion of the PieSlice
         /// </summary>
         public Color InnerHoverColor
         {
-            get { return (Color)GetValue(InnerHoverColorProperty); }
-            set { SetValue(InnerHoverColorProperty, value); }
+            get => (Color) GetValue(InnerHoverColorProperty);
+            set => SetValue(InnerHoverColorProperty, value);
         }
 
         /// <summary>
-        /// Normal color for the inner portion of the PieSlice
+        ///     Normal color for the inner portion of the PieSlice
         /// </summary>
         public Color InnerNormalColor
         {
-            get { return (Color)GetValue(InnerNormalColorProperty); }
-            set { SetValue(InnerNormalColorProperty, value); }
+            get => (Color) GetValue(InnerNormalColorProperty);
+            set => SetValue(InnerNormalColorProperty, value);
         }
 
         /// <summary>
-        /// Tapped color for the inner portion of the PieSlice
+        ///     Tapped color for the inner portion of the PieSlice
         /// </summary>
         public Color InnerTappedColor
         {
-            get { return (Color)GetValue(InnerTappedColorProperty); }
-            set { SetValue(InnerTappedColorProperty, value); }
+            get => (Color) GetValue(InnerTappedColorProperty);
+            set => SetValue(InnerTappedColorProperty, value);
         }
 
         /// <summary>
-        ///  Released color for the inner portion of the PieSlice
+        ///     Released color for the inner portion of the PieSlice
         /// </summary>
         public Color InnerReleasedColor
         {
-            get { return (Color)GetValue(InnerReleasedColorProperty); }
-            set { SetValue(InnerReleasedColorProperty, value); }
+            get => (Color) GetValue(InnerReleasedColorProperty);
+            set => SetValue(InnerReleasedColorProperty, value);
         }
 
         // Indication Arc
         public static readonly DependencyProperty IndicationArcStartPointProperty =
-        DependencyProperty.Register("InidicationArcStartPoint", typeof(Point), typeof(PieSlice), null);
+            DependencyProperty.Register("InidicationArcStartPoint", typeof(Point), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcEndPointProperty =
-        DependencyProperty.Register("InidicationArcEndPoint", typeof(Point), typeof(PieSlice), null);
+            DependencyProperty.Register("InidicationArcEndPoint", typeof(Point), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcSizeProperty =
-        DependencyProperty.Register("InidicationArcSize", typeof(Size), typeof(PieSlice), null);
+            DependencyProperty.Register("InidicationArcSize", typeof(Size), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcIsLargeArcProperty =
-        DependencyProperty.Register("IndicationArcIsLargeArc", typeof(bool), typeof(PieSlice), null);
+            DependencyProperty.Register("IndicationArcIsLargeArc", typeof(bool), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcColorProperty =
-        DependencyProperty.Register("IndicationArcColor", typeof(Color), typeof(PieSlice), null);
+            DependencyProperty.Register("IndicationArcColor", typeof(Color), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcSweepAngleProperty =
-        DependencyProperty.Register("IndicationArcSweepAngle", typeof(double), typeof(PieSlice), null);
+            DependencyProperty.Register("IndicationArcSweepAngle", typeof(double), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcStrokeThicknessProperty =
-        DependencyProperty.Register("IndicationArcStrokeThickness", typeof(double), typeof(PieSlice), null);
+            DependencyProperty.Register("IndicationArcStrokeThickness", typeof(double), typeof(PieSlice), null);
+
         public static readonly DependencyProperty IndicationArcDistanceFromEdgeProperty =
-        DependencyProperty.Register("IndicationArcDistanceFromEdge", typeof(double), typeof(PieSlice), null);
+            DependencyProperty.Register("IndicationArcDistanceFromEdge", typeof(double), typeof(PieSlice), null);
+
         public static readonly DependencyProperty UseIndicationArcsProperty =
             DependencyProperty.Register("UseIndicationArc", typeof(bool), typeof(PieSlice), null);
+
         public Point IndicationArcStartPoint
         {
-            get { return (Point)GetValue(IndicationArcStartPointProperty); }
-            set { SetValue(IndicationArcStartPointProperty, value); }
+            get => (Point) GetValue(IndicationArcStartPointProperty);
+            set => SetValue(IndicationArcStartPointProperty, value);
         }
+
         public Point IndicationArcEndPoint
         {
-            get { return (Point)GetValue(IndicationArcEndPointProperty); }
-            set { SetValue(IndicationArcEndPointProperty, value); }
+            get => (Point) GetValue(IndicationArcEndPointProperty);
+            set => SetValue(IndicationArcEndPointProperty, value);
         }
+
         public Size IndicationArcSize
         {
-            get { return (Size)GetValue(IndicationArcSizeProperty); }
-            set { SetValue(IndicationArcSizeProperty, value); }
+            get => (Size) GetValue(IndicationArcSizeProperty);
+            set => SetValue(IndicationArcSizeProperty, value);
         }
+
         public Color IndicationArcColor
         {
-            get { return (Color)GetValue(IndicationArcColorProperty); }
-            set { SetValue(IndicationArcColorProperty, value); }
+            get => (Color) GetValue(IndicationArcColorProperty);
+            set => SetValue(IndicationArcColorProperty, value);
         }
+
         public double IndicationArcSweepAngle
         {
-            get { return (double)GetValue(IndicationArcSweepAngleProperty); }
-            set { SetValue(IndicationArcSweepAngleProperty, value); }
+            get => (double) GetValue(IndicationArcSweepAngleProperty);
+            set => SetValue(IndicationArcSweepAngleProperty, value);
         }
+
         public double IndicationArcStrokeThickness
         {
-            get { return (double)GetValue(IndicationArcStrokeThicknessProperty); }
-            set { SetValue(IndicationArcStrokeThicknessProperty, value); }
+            get => (double) GetValue(IndicationArcStrokeThicknessProperty);
+            set => SetValue(IndicationArcStrokeThicknessProperty, value);
         }
+
         public bool IndicationArcIsLargeArc
         {
-            get { return (bool)GetValue(IndicationArcIsLargeArcProperty); }
-            set { SetValue(IndicationArcIsLargeArcProperty, value); }
+            get => (bool) GetValue(IndicationArcIsLargeArcProperty);
+            set => SetValue(IndicationArcIsLargeArcProperty, value);
         }
+
         public double IndicationArcDistanceFromEdge
         {
-            get { return (double)GetValue(IndicationArcDistanceFromEdgeProperty); }
-            set { SetValue(IndicationArcDistanceFromEdgeProperty, value); }
+            get => (double) GetValue(IndicationArcDistanceFromEdgeProperty);
+            set => SetValue(IndicationArcDistanceFromEdgeProperty, value);
         }
+
         public bool UseIndicationArc
         {
-            get { return (bool)GetValue(UseIndicationArcsProperty); }
-            set { SetValue(UseIndicationArcsProperty, value); }
+            get => (bool) GetValue(UseIndicationArcsProperty);
+            set => SetValue(UseIndicationArcsProperty, value);
         }
+
         // Outer Arc Colors
         public static readonly DependencyProperty OuterNormalColorProperty =
             DependencyProperty.Register("OuterNormalColor", typeof(Color), typeof(PieSlice), null);
@@ -149,58 +168,58 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("StrokeThickness", typeof(double), typeof(PieSlice), null);
 
         /// <summary>
-        /// Hover color for the outer portion of the PieSlice
+        ///     Hover color for the outer portion of the PieSlice
         /// </summary>
         public Color OuterHoverColor
         {
-            get { return (Color)GetValue(OuterHoverColorProperty); }
-            set { SetValue(OuterHoverColorProperty, value); }
+            get => (Color) GetValue(OuterHoverColorProperty);
+            set => SetValue(OuterHoverColorProperty, value);
         }
 
         /// <summary>
-        /// Normal color for the outer portion of the PieSlice
+        ///     Normal color for the outer portion of the PieSlice
         /// </summary>
         public Color OuterNormalColor
         {
-            get { return (Color)GetValue(OuterNormalColorProperty); }
-            set { SetValue(OuterNormalColorProperty, value); }
+            get => (Color) GetValue(OuterNormalColorProperty);
+            set => SetValue(OuterNormalColorProperty, value);
         }
 
         /// <summary>
-        /// Disabled color for the outer portion of the PieSlice
+        ///     Disabled color for the outer portion of the PieSlice
         /// </summary>
         public Color OuterDisabledColor
         {
-            get { return (Color)GetValue(OuterDisabledColorProperty); }
-            set { SetValue(OuterDisabledColorProperty, value); }
+            get => (Color) GetValue(OuterDisabledColorProperty);
+            set => SetValue(OuterDisabledColorProperty, value);
         }
 
         /// <summary>
-        /// Tapped color for the outer portion of the PieSlice
+        ///     Tapped color for the outer portion of the PieSlice
         /// </summary>
         public Color OuterTappedColor
         {
-            get { return (Color)GetValue(OuterTappedColorProperty); }
-            set { SetValue(OuterTappedColorProperty, value); }
+            get => (Color) GetValue(OuterTappedColorProperty);
+            set => SetValue(OuterTappedColorProperty, value);
         }
 
         // Stroke
         /// <summary>
-        /// Color of the stroke around the PieSLice
+        ///     Color of the stroke around the PieSLice
         /// </summary>
         public Color StrokeColor
         {
-            get { return (Color)GetValue(StrokeColorProperty); }
-            set { SetValue(StrokeColorProperty, value); }
+            get => (Color) GetValue(StrokeColorProperty);
+            set => SetValue(StrokeColorProperty, value);
         }
 
         /// <summary>
-        /// Thickness of the stroke around the PieSlice
+        ///     Thickness of the stroke around the PieSlice
         /// </summary>
         public double StrokeThickness
         {
-            get { return (double)GetValue(StrokeThicknessProperty); }
-            set { SetValue(StrokeThicknessProperty, value); }
+            get => (double) GetValue(StrokeThicknessProperty);
+            set => SetValue(StrokeThicknessProperty, value);
         }
 
         // Angles & Radius
@@ -217,39 +236,39 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("OuterThickness", typeof(double), typeof(PieSlice), null);
 
         /// <summary>
-        /// Starting angle of this PieSlice (with 0 being the "north top")
+        ///     Starting angle of this PieSlice (with 0 being the "north top")
         /// </summary>
         public double StartAngle
         {
-            get { return (double)GetValue(StartAngleProperty); }
-            set { SetValue(StartAngleProperty, value); }
+            get => (double) GetValue(StartAngleProperty);
+            set => SetValue(StartAngleProperty, value);
         }
 
         /// <summary>
-        /// Angle (aka size) of this PieSlice
+        ///     Angle (aka size) of this PieSlice
         /// </summary>
         public double Angle
         {
-            get { return (double)GetValue(AngleProperty); }
-            set { SetValue(AngleProperty, value); }
+            get => (double) GetValue(AngleProperty);
+            set => SetValue(AngleProperty, value);
         }
 
         /// <summary>
-        /// Radius of the (invisible) full circle used as drawing basis for this PieSlice
+        ///     Radius of the (invisible) full circle used as drawing basis for this PieSlice
         /// </summary>
         public double Radius
         {
-            get { return (double)GetValue(RadiusProperty); }
-            set { SetValue(RadiusProperty, value); }
+            get => (double) GetValue(RadiusProperty);
+            set => SetValue(RadiusProperty, value);
         }
 
         /// <summary>
-        /// Thickness of the outer arc
+        ///     Thickness of the outer arc
         /// </summary>
         public double OuterArcThickness
         {
-            get { return (double)GetValue(OuterArcThicknessProperty); }
-            set { SetValue(OuterArcThicknessProperty, value); }
+            get => (double) GetValue(OuterArcThicknessProperty);
+            set => SetValue(OuterArcThicknessProperty, value);
         }
 
         // Label
@@ -287,77 +306,77 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("IconImageSideLength", typeof(ImageSource), typeof(PieSlice), null);
 
         public static readonly DependencyProperty CustomValueProperty =
-           DependencyProperty.Register("CustomValue", typeof(string), typeof(PieSlice), null);
+            DependencyProperty.Register("CustomValue", typeof(string), typeof(PieSlice), null);
 
         /// <summary>
-        /// Outer slice path access key
+        ///     Outer slice path access key
         /// </summary>
         public string OuterAccessKey
         {
-            get { return (string)GetValue(OuterAccessKeyProperty); }
-            set { SetValue(OuterAccessKeyProperty, value); }
+            get => (string) GetValue(OuterAccessKeyProperty);
+            set => SetValue(OuterAccessKeyProperty, value);
         }
 
         /// <summary>
-        /// Inner slice path access key
+        ///     Inner slice path access key
         /// </summary>
         public string InnerAccessKey
         {
-            get { return (string)GetValue(InnerAccessKeyProperty); }
-            set { SetValue(InnerAccessKeyProperty, value); }
+            get => (string) GetValue(InnerAccessKeyProperty);
+            set => SetValue(InnerAccessKeyProperty, value);
         }
 
         /// <summary>
-        /// Text label
+        ///     Text label
         /// </summary>
         public string Label
         {
-            get { return (string)GetValue(LabelProperty); }
-            set { SetValue(LabelProperty, value); }
+            get => (string) GetValue(LabelProperty);
+            set => SetValue(LabelProperty, value);
         }
 
         /// <summary>
-        /// Font size for the text label
+        ///     Font size for the text label
         /// </summary>
         public int LabelSize
         {
-            get { return (int)GetValue(LabelSizeProperty); }
-            set { SetValue(LabelSizeProperty, value); }
+            get => (int) GetValue(LabelSizeProperty);
+            set => SetValue(LabelSizeProperty, value);
         }
 
         /// <summary>
-        /// Should the label be hidden?
+        ///     Should the label be hidden?
         /// </summary>
         public bool IsLabelHidden
         {
-            get { return (bool)GetValue(IsLabelHiddenProperty); }
-            set { SetValue(IsLabelHiddenProperty, value); }
+            get => (bool) GetValue(IsLabelHiddenProperty);
+            set => SetValue(IsLabelHiddenProperty, value);
         }
 
         /// <summary>
-        /// Icon (string-based), to be used with icon fonts like Segoe Symbol
+        ///     Icon (string-based), to be used with icon fonts like Segoe Symbol
         /// </summary>
         public string Icon
         {
-            get { return (string)GetValue(IconProperty); }
-            set { SetValue(IconProperty, value); }
+            get => (string) GetValue(IconProperty);
+            set => SetValue(IconProperty, value);
         }
 
         /// <summary>
-        /// Foreground brush for the icon, allowing color change for text-based icons
+        ///     Foreground brush for the icon, allowing color change for text-based icons
         /// </summary>
         public Brush IconForegroundBrush
         {
-            get { return (Brush)GetValue(IconForegroundBrushProperty); }
-            set { SetValue(IconForegroundBrushProperty, value); }
+            get => (Brush) GetValue(IconForegroundBrushProperty);
+            set => SetValue(IconForegroundBrushProperty, value);
         }
 
         /// <summary>
-        /// Font family for the text-based icon
+        ///     Font family for the text-based icon
         /// </summary>
         public FontFamily IconFontFamily
         {
-            get { return (FontFamily)GetValue(IconFontFamilyProperty); }
+            get => (FontFamily) GetValue(IconFontFamilyProperty);
             set
             {
                 IconTextElement.FontFamily = value;
@@ -366,46 +385,61 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Font size for the text-based icon
+        ///     Font size for the text-based icon
         /// </summary>
         public int IconSize
         {
-            get { return (int)GetValue(IconSizeProperty); }
-            set { SetValue(IconSizeProperty, value); }
+            get => (int) GetValue(IconSizeProperty);
+            set => SetValue(IconSizeProperty, value);
         }
 
         /// <summary>
-        /// ImageSource for an image icon - if set, the text-based icon will not be displayed
+        ///     ImageSource for an image icon - if set, the text-based icon will not be displayed
         /// </summary>
         public ImageSource IconImage
         {
-            get { return (ImageSource)GetValue(IconImageProperty); }
-            set { SetValue(IconImageProperty, value); }
+            get => (ImageSource) GetValue(IconImageProperty);
+            set => SetValue(IconImageProperty, value);
         }
 
         /// <summary>
-        /// Length of the image-based icon
+        ///     Length of the image-based icon
         /// </summary>
         public double IconImageSideLength
         {
-            get { return (double)GetValue(IconImageSideLengthProperty); }
-            set { SetValue(IconImageSideLengthProperty, value); }
+            get => (double) GetValue(IconImageSideLengthProperty);
+            set => SetValue(IconImageSideLengthProperty, value);
         }
 
         /// <summary>
-        /// Value for custom button
+        ///     Value for custom button
         /// </summary>
         public string CustomValue
         {
-            get { return (string)GetValue(CustomValueProperty); }
-            set {
+            get => (string) GetValue(CustomValueProperty);
+            set
+            {
                 SetValue(CustomValueProperty, value);
                 OriginalRadialMenuButton.Value = value;
             }
         }
 
+        public static readonly DependencyProperty SymbolProperty =
+            DependencyProperty.Register("IconSymbol", typeof(Symbol), typeof(RadialMenuButton),
+                new PropertyMetadata(""));
+
+        public Symbol? IconSymbol
+        {
+            get
+            {
+                if (!(GetValue(SymbolProperty) is Symbol)) return null;
+                return (Symbol)GetValue(SymbolProperty);
+            }
+            set => SetValue(SymbolProperty, value);
+        }
+
         /// <summary>
-        /// Visibility of the text block - determined by checking whether or not an IconImage is set
+        ///     Visibility of the text block - determined by checking whether or not an IconImage is set
         /// </summary>
         public Visibility TextBlockVisibility => IconImage == null ? Visibility.Visible : Visibility.Collapsed;
 
@@ -413,44 +447,48 @@ namespace RadialMenuControl.UserControl
             DependencyProperty.Register("OriginalRadialMenuButton", typeof(RadialMenuButton), typeof(PieSlice), null);
 
         /// <summary>
-        /// Reference to the original RadialMenuButton that was used to create this PieSLice
+        ///     Reference to the original RadialMenuButton that was used to create this PieSLice
         /// </summary>
         public RadialMenuButton OriginalRadialMenuButton;
 
         /// <summary>
-        /// Reference to the TextBox control for this PieSLice when the button type is custom
+        ///     Reference to the TextBox control for this PieSLice when the button type is custom
         /// </summary>
         private TextBox CustomTextBox;
 
         /// <summary>
-        /// Delegate for a ChangeMenuRequest, asking the parent RadialMenu to change the menu to a submenu on a button
+        ///     Delegate for a ChangeMenuRequest, asking the parent RadialMenu to change the menu to a submenu on a button
         /// </summary>
         /// <param name="sender">Sending object</param>
         /// <param name="submenu">RadialMenu to change to</param>
         public delegate void ChangeMenuRequestHandler(object sender, MenuBase submenu);
+
         public event ChangeMenuRequestHandler ChangeMenuRequestEvent;
 
         /// <summary>
-        /// A delegate for the ChangeSelected event, fired whenever a radio or toggle button changes its value
+        ///     A delegate for the ChangeSelected event, fired whenever a radio or toggle button changes its value
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="slice"></param>
         public delegate void ChangeSelectedHandler(object sender, PieSlice slice);
+
         public event ChangeSelectedHandler ChangeSelectedEvent;
 
         // Tooltips
-        private bool _areAccessKeyToolTipsVisible = false;
+        private bool _areAccessKeyToolTipsVisible;
+
         /// <summary>
-        /// Are little popups showing the access keys for the inner and outer arc visible?
+        ///     Are little popups showing the access keys for the inner and outer arc visible?
         /// </summary>
         public bool AreAccessKeyToolTipsVisible
         {
-            get { return _areAccessKeyToolTipsVisible; }
+            get => _areAccessKeyToolTipsVisible;
             set
             {
                 _areAccessKeyToolTipsVisible = value;
-                OuterAccessKeyPopup.IsOpen = OriginalRadialMenuButton.HasOuterArcAction && (OuterAccessKey != null) && value;
-                InnerAccessKeyPopup.IsOpen = (InnerAccessKey != null) && value;
+                OuterAccessKeyPopup.IsOpen = OriginalRadialMenuButton.HasOuterArcAction && OuterAccessKey != null &&
+                                             value;
+                InnerAccessKeyPopup.IsOpen = InnerAccessKey != null && value;
             }
         }
 
@@ -463,57 +501,55 @@ namespace RadialMenuControl.UserControl
         {
             InitializeComponent();
             DataContext = this;
-            
+
             Loaded += OnLoaded;
         }
 
         private void SetupIndicationArc()
         {
-            var indicationArcRadius = Radius - OuterArcThickness - IndicationArcDistanceFromEdge;
+            var indicationArcRadius = Radius - OuterArcThickness /*- IndicationArcDistanceFromEdge*/;
             IndicationArc.Size = new Size(indicationArcRadius, indicationArcRadius);
-            double startAngle = (StartAngle + .10 * Angle) * (Math.PI / 180),
-                    endAngle = (StartAngle + .90 * Angle) * (Math.PI / 180);
+            double startAngle = StartAngle * (Math.PI / 180),
+                endAngle = (StartAngle + /*.90 * */Angle) * (Math.PI / 180);
             double startX = Radius + indicationArcRadius * Math.Sin(startAngle),
-                   startY = Radius - indicationArcRadius * Math.Cos(startAngle),
-                   endX = Radius + indicationArcRadius * Math.Sin(endAngle),
-                   endY = Radius - indicationArcRadius * Math.Cos(endAngle);
+                startY = Radius - indicationArcRadius * Math.Cos(startAngle),
+                endX = Radius + indicationArcRadius * Math.Sin(endAngle),
+                endY = Radius - indicationArcRadius * Math.Cos(endAngle);
             IndicationArcPathFigure.StartPoint = new Point(startX, startY);
             IndicationArc.Point = new Point(endX, endY);
             IndicationArcPath.StrokeThickness = IndicationArcStrokeThickness;
             IndicationArcPath.Stroke = new SolidColorBrush(IndicationArcColor);
             // make all arcs initiall invisibile
             IndicationArcPath.Opacity = 0.0;
-            
-            var appearAnimation = new DoubleAnimation()
+
+            var appearAnimation = new DoubleAnimation
             {
                 From = 0.0,
-                To = 1.0,
+                To = 1.0
             };
             appearAnimation.SetValue(Storyboard.TargetNameProperty, "IndicationArcPath");
             appearAnimation.SetValue(Storyboard.TargetPropertyProperty, "Opacity");
             InnerReleasedStoryBoard.Stop();
             InnerReleasedStoryBoard.Children.Add(appearAnimation);
-
         }
+
         /// <summary>
-        /// Math and drawing operations for the path elements is handled in this OnLoaded event handler
+        ///     Math and drawing operations for the path elements is handled in this OnLoaded event handler
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="routedEventArgs"></param>
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             if (UseIndicationArc)
-            {
                 SetupIndicationArc();
-            }
-            
+
             // Setup outer arc
             OuterPieSlicePath.Radius = Radius;
             OuterPieSlicePath.StartAngle = StartAngle;
             OuterPieSlicePath.Angle = Angle;
             OuterPieSlicePath.Thickness = OuterArcThickness;
-    
-            var middleRadian = (Math.PI / 180) * (StartAngle + (Angle / 2));
+
+            var middleRadian = Math.PI / 180 * (StartAngle + Angle / 2);
 
             if (!OriginalRadialMenuButton.HasOuterArcAction)
             {
@@ -528,9 +564,9 @@ namespace RadialMenuControl.UserControl
                 OuterPieSlicePath.PointerExited += outerPieSlicePath_PointerExited;
 
                 // Setup Caret
-                CaretRotateTransform.Angle = (StartAngle + (Angle / 2));
-                CaretTranslate.X = (Radius-OuterArcThickness/2 + 3) * Math.Sin(middleRadian);
-                CaretTranslate.Y = -(Radius-OuterArcThickness/2 + 3) * Math.Cos(middleRadian);
+                CaretRotateTransform.Angle = StartAngle + Angle / 2;
+                CaretTranslate.X = (Radius - OuterArcThickness / 2 + 3) * Math.Sin(middleRadian);
+                CaretTranslate.Y = -(Radius - OuterArcThickness / 2 + 3) * Math.Cos(middleRadian);
             }
 
             // Setup inner arc
@@ -563,10 +599,19 @@ namespace RadialMenuControl.UserControl
             // Go to correct visual state
             UpdateSliceForToggle();
             UpdateSliceForRadio();
+
+            if (IconSymbol != null)
+            {
+                IconSymbolElement.Symbol = (Symbol) IconSymbol;
+            }
+            else
+            {
+                IconSymbolElement.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
-        /// Creates a textbox to allow input of custom values for custom type RadialMenuButtons
+        ///     Creates a textbox to allow input of custom values for custom type RadialMenuButtons
         /// </summary>
         private void CreateCustomTextBox()
         {
@@ -581,7 +626,7 @@ namespace RadialMenuControl.UserControl
                 TextAlignment = TextAlignment.Center,
                 Background = new SolidColorBrush(Colors.Transparent),
                 AcceptsReturn = false,
-                Style = (Style)this.Resources["TransparentTextBox"]
+                Style = (Style) Resources["TransparentTextBox"]
             };
 
             CustomTextBox.Padding = new Thickness(0);
@@ -589,18 +634,17 @@ namespace RadialMenuControl.UserControl
             CustomTextBox.GotFocus += (sender, args) => LabelTextElement.Opacity = 0;
             CustomTextBox.LostFocus += (sender, args) =>
             {
-                OriginalRadialMenuButton.Value = ((TextBox)sender).Text;
+                OriginalRadialMenuButton.Value = ((TextBox) sender).Text;
                 LabelTextElement.Opacity = 1;
                 OriginalRadialMenuButton.OnValueChanged(args);
-
             };
-            CustomTextBox.SetBinding(TextBox.TextProperty, new Windows.UI.Xaml.Data.Binding() { Source = this.CustomValue });
+            CustomTextBox.SetBinding(TextBox.TextProperty, new Binding {Source = CustomValue});
 
             TextLabelGrid.Children.Add(CustomTextBox);
         }
 
         /// <summary>
-        /// Programmatically "click" the inner arc in the PieSlice
+        ///     Programmatically "click" the inner arc in the PieSlice
         /// </summary>
         public void ClickInner()
         {
@@ -609,7 +653,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Programmatically "click" the outer arc in the PieSlice
+        ///     Programmatically "click" the outer arc in the PieSlice
         /// </summary>
         public void ClickOuter()
         {
@@ -618,7 +662,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Event handler for a pointer press (mouse, touch, stylus) for on the outer arc of the PieSlice
+        ///     Event handler for a pointer press (mouse, touch, stylus) for on the outer arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -628,19 +672,15 @@ namespace RadialMenuControl.UserControl
 
             // Check for Submenu & Custom Menu
             if (OriginalRadialMenuButton.Submenu != null)
-            {
                 OnChangeMenuRequest(OriginalRadialMenuButton, OriginalRadialMenuButton.Submenu);
-            }
             else if (OriginalRadialMenuButton.CustomMenu != null)
-            {
                 OnChangeMenuRequest(OriginalRadialMenuButton, OriginalRadialMenuButton.CustomMenu);
-            }
 
             OriginalRadialMenuButton.OnOuterArcPressed(e);
         }
 
         /// <summary>
-        /// Event handler for a pointer relese (mouse, touch, stylus) on the outer arc of the PieSlice
+        ///     Event handler for a pointer relese (mouse, touch, stylus) on the outer arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -651,7 +691,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Event handler for a pointer enter (mouse, touch, stylus) on the outer arc of the PieSlice
+        ///     Event handler for a pointer enter (mouse, touch, stylus) on the outer arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -661,7 +701,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Event handler for a pointer exit (mouse, touch, stylus) on the outer arc of the PieSlice
+        ///     Event handler for a pointer exit (mouse, touch, stylus) on the outer arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -671,7 +711,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        ///  Event handler for a pointer enter (mouse, touch, stylus) on the inner arc of the PieSlice
+        ///     Event handler for a pointer enter (mouse, touch, stylus) on the inner arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -680,10 +720,14 @@ namespace RadialMenuControl.UserControl
             switch (OriginalRadialMenuButton.Type)
             {
                 case RadialMenuButton.ButtonType.Toggle:
-                    VisualStateManager.GoToState(this, (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value)) ? "InnerReleased" : "InnerHover", true);
+                    VisualStateManager.GoToState(this,
+                        OriginalRadialMenuButton.Value != null && (bool) OriginalRadialMenuButton.Value
+                            ? "InnerReleased"
+                            : "InnerHover", true);
                     break;
                 case RadialMenuButton.ButtonType.Radio:
-                    VisualStateManager.GoToState(this, OriginalRadialMenuButton.MenuSelected ? "InnerReleased" : "InnerHover", true);
+                    VisualStateManager.GoToState(this,
+                        OriginalRadialMenuButton.MenuSelected ? "InnerReleased" : "InnerHover", true);
                     break;
                 default:
                     VisualStateManager.GoToState(this, "InnerHover", true);
@@ -692,7 +736,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        ///  Event handler for a pointer exit (mouse, touch, stylus) on the inner arc of the PieSlice
+        ///     Event handler for a pointer exit (mouse, touch, stylus) on the inner arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -713,7 +757,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        ///  Event handler for a pointer press (mouse, touch, stylus) on the inner arc of the PieSlice
+        ///     Event handler for a pointer press (mouse, touch, stylus) on the inner arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -724,17 +768,18 @@ namespace RadialMenuControl.UserControl
                 CustomTextBox.Focus(FocusState.Keyboard);
                 CustomTextBox.SelectAll();
                 e.Handled = true;
-
             }
             else
             {
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                    InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)
                 {
                     case RadialMenuButton.ButtonType.Toggle:
                         VisualStateManager.GoToState(this,
-                            (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
+                            OriginalRadialMenuButton.Value != null && (bool) OriginalRadialMenuButton.Value
                                 ? "InnerReleased"
                                 : "InnerNormal", true);
                         break;
@@ -751,7 +796,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        ///  Event handler for a pointer release (mouse, touch, stylus) on the inner arc of the PieSlice
+        ///     Event handler for a pointer release (mouse, touch, stylus) on the inner arc of the PieSlice
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -763,7 +808,7 @@ namespace RadialMenuControl.UserControl
             {
                 case RadialMenuButton.ButtonType.Toggle:
                     VisualStateManager.GoToState(this,
-                        (OriginalRadialMenuButton.Value != null && ((bool) OriginalRadialMenuButton.Value))
+                        OriginalRadialMenuButton.Value != null && (bool) OriginalRadialMenuButton.Value
                             ? "InnerReleased"
                             : "InnerNormal", true);
                     break;
@@ -779,44 +824,34 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// If the PieSlice has been generated by a "radio" RadialMenuButton, this method ensures the correct visual state
+        ///     If the PieSlice has been generated by a "radio" RadialMenuButton, this method ensures the correct visual state
         /// </summary>
         public void UpdateSliceForRadio()
         {
             if (OriginalRadialMenuButton.Type != RadialMenuButton.ButtonType.Radio) return;
-            VisualStateManager.GoToState(this, OriginalRadialMenuButton.MenuSelected ? "InnerReleased" : "InnerNormal", true);
+            VisualStateManager.GoToState(this, OriginalRadialMenuButton.MenuSelected ? "InnerReleased" : "InnerNormal",
+                true);
         }
 
         /// <summary>
-        /// If the PieSlice has been generated by a "toggle" RadialMenuButton, this method ensures the correct visual state
+        ///     If the PieSlice has been generated by a "toggle" RadialMenuButton, this method ensures the correct visual state
         /// </summary>
         public void UpdateSliceForToggle()
         {
             if (OriginalRadialMenuButton.Type != RadialMenuButton.ButtonType.Toggle) return;
-            VisualStateManager.GoToState(this, (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value)) ? "InnerReleased" : "InnerNormal", true);
+            VisualStateManager.GoToState(this,
+                OriginalRadialMenuButton.Value != null && (bool) OriginalRadialMenuButton.Value
+                    ? "InnerReleased"
+                    : "InnerNormal", true);
         }
 
         private void InnerPieSlicePath_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             OriginalRadialMenuButton.OnDragStarting(args);
             args.DragUI.SetContentFromDataPackage();
-            switch (OriginalRadialMenuButton.Type)
-            {
-                case RadialMenuButton.ButtonType.Toggle:
-                    VisualStateManager.GoToState(this,
-                        (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
-                            ? "InnerReleased"
-                            : "InnerNormal", true);
-                    break;
-                case RadialMenuButton.ButtonType.Radio:
-                    VisualStateManager.GoToState(this, "InnerReleased", true);
-                    // get all other menus to release now that this menu has been selected
-                    ChangeSelectedEvent?.Invoke(sender, this);
-                    break;
-                default:
-                    VisualStateManager.GoToState(this, "InnerNormal", true);
-                    break;
-            }
+            if (!args.Cancel)
+                VisualStateManager.GoToState(this, "InnerNormal", true);
         }
+       
     }
 }

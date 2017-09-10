@@ -30,25 +30,30 @@ namespace Dash
         /// </summary>
         public NumberFieldModel NumberFieldModel => FieldModel as NumberFieldModel;
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
 
         public override FieldModelController GetDefaultController()
         {
             return new NumberFieldModelController(0);
         }
 
-        protected void BindTextOrSetOnce(TextBlock textBlock)
+        public override object GetValue(Context context)
         {
-            var textBinding = new Binding
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            var data = value as double?;
+            if (data != null)
             {
-                Source = this,
-                Path = new PropertyPath(nameof(Data)),
-                Mode = BindingMode.OneWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+                Data = (double)data.Value;
+                return true;
+            }
+            if (value is double)
+            {
+                Data = (double)data;
+                return true;
+            }
+            return false;
         }
 
         public double Data
@@ -66,8 +71,10 @@ namespace Dash
                     {
 
                     });
+                    OnFieldModelUpdated(null);
+                    // update local
+                    // update server
                 }
-                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;

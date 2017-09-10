@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -22,6 +23,10 @@ namespace Dash
         ///     to the server and across the client
         /// </summary>
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
+
+        public abstract bool SetValue(object value);
+
+        public abstract object GetValue(Context context);
 
 
         protected FieldModelController(FieldModel fieldModel, bool isCreatedFromServer)
@@ -102,7 +107,13 @@ namespace Dash
         ///     Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
         /// <returns></returns>
-        public abstract FrameworkElement GetTableCellView(Context context);
+        public virtual FrameworkElement GetTableCellView(Context context)
+        {
+            var tb = new TextingBox(this);
+            tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
+            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true); 
+            return tb.makeView(tb.Document, context);
+        }
 
         /// <summary>
         ///     Helper method for generating a table cell view in <see cref="GetTableCellView" /> for textboxes which may have to
@@ -119,7 +130,8 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap
+                TextWrapping = TextWrapping.NoWrap,
+                FontSize = 11
             };
             bindTextOrSetOnce(textBlock);
 
@@ -196,7 +208,7 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
-        public static FieldModelController CreateFromServer(FieldModelDTO fieldModelDto)
+        public static async Task<FieldModelController> CreateFromServer(FieldModelDTO fieldModelDto)
         {
             lock (l)
             {
@@ -224,11 +236,11 @@ namespace Dash
                     break;
                 case TypeInfo.Collection:
                     returnController =
-                        DocumentCollectionFieldModelController.CreateFromServer(
+                        await DocumentCollectionFieldModelController.CreateFromServer(
                             fieldModel as DocumentCollectionFieldModel);
                     break;
                 case TypeInfo.Document:
-                    returnController = DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
+                    returnController = await DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
                     break;
                 case TypeInfo.Reference:
                     returnController =
@@ -264,5 +276,7 @@ namespace Dash
 
             return returnController;
         }
+
+        public event InkFieldModelController.InkUpdatedHandler InkUpdated;
     }
 }

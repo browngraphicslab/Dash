@@ -34,16 +34,17 @@ namespace Dash
 
         private void MakeView()
         {
-
-
-            var divide = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "divide");
-            var union = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "union");
-            var intersection = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "intersection");
-            var uriToImage = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "uriToImage");
-            var map = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "map");
-            var api = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "api");
-            var filter = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "filter");
-            var compound = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "compound");
+            var divide = OperationCreationHelper.Operators["Divide"];
+            var union = OperationCreationHelper.Operators["Union"];
+            var intersection = OperationCreationHelper.Operators["Intersection"];
+            var zip = OperationCreationHelper.Operators["Zip"];
+            var uriToImage = OperationCreationHelper.Operators["UriToImage"];
+            var map = OperationCreationHelper.Operators["Map"];
+            var api = OperationCreationHelper.Operators["Api"];
+            var concat = OperationCreationHelper.Operators["Concat"];
+            var docAppend = OperationCreationHelper.Operators["Append"];
+            var filter = OperationCreationHelper.Operators["Filter"];
+            var compound = OperationCreationHelper.Operators["Compound"];
 
             var arithmetics = new ObservableCollection<OperatorBuilder>
             {
@@ -52,6 +53,7 @@ namespace Dash
             var sets = new ObservableCollection<OperatorBuilder> {
                 union,
                 intersection,
+                zip,
                 filter
             };
             var maps = new ObservableCollection<OperatorBuilder>
@@ -64,8 +66,11 @@ namespace Dash
                 divide,
                 union,
                 intersection,
+                zip,
                 filter,
                 api, 
+                concat,
+                docAppend,
                 compound,
                 map
             };

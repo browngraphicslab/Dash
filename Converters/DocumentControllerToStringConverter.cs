@@ -48,9 +48,9 @@ namespace Dash.Converters
             var docListString = "{";
             foreach (var data in dataList)
             {
-                docListString += GetPrimaryKeyString(data) + " ";
+                docListString += GetPrimaryKeyString(data) + ",";
             }
-            docListString = docListString.Trim(' ');
+            docListString = docListString.Trim(',');
             docListString += "}";
             return docListString;
         }
@@ -58,10 +58,10 @@ namespace Dash.Converters
         public override List<DocumentController> ConvertXamlToData(string xaml, object parameter = null)
         {
             var docList = new List<DocumentController>();
-            var docs = xaml.Trim('{','}').Split('>');
+            var docs = xaml.Trim('{','}').Split(new char[] { '>' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var d in docs)
             {
-                var doc = new DocumentControllerToStringConverter(_context).ConvertXamlToData(d + '>');
+                var doc = new DocumentControllerToStringConverter(_context).ConvertXamlToData(d.TrimStart(',', ' ') + '>');
                 if (doc != null)
                     docList.Add(doc);
             }
@@ -162,6 +162,84 @@ namespace Dash.Converters
         public override DocumentFieldModelController ConvertXamlToData(string xaml, object parameter = null)
         {
             return new DocumentFieldModelController(new DocumentControllerToStringConverter().ConvertXamlToData(xaml));
+        }
+    }
+    public class DocumentViewModelToStringConverter : SafeDataToXamlConverter<DocumentViewModel, string>
+    {
+        private DocumentViewModel _vm;
+
+        public DocumentViewModelToStringConverter()
+        {
+        }
+
+        public DocumentViewModelToStringConverter(DocumentViewModel vm)
+        {
+            _vm = vm;
+        }
+
+        public override string ConvertDataToXaml(DocumentViewModel data, object parameter = null)
+        {
+            _vm = data;
+            var keyList = data.DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, data.Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                var docString = "";
+                foreach (var k in keys.Data)
+                {
+                    var keyField = data.DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), data.Context);
+                    if (keyField is TextFieldModelController)
+                        docString += (keyField as TextFieldModelController).Data + " ";
+                }
+                return docString.TrimEnd(' ');
+            }
+            return data.DocumentController.GetId();
+        }
+
+        public override DocumentViewModel ConvertXamlToData(string xaml, object parameter = null)
+        {
+            var values = xaml.Split(' ');
+            var keyList = _vm.DocumentController?.GetDereferencedField(KeyStore.PrimaryKeyKey, _vm.Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+                    {
+                        bool found = true;
+                        foreach (var k in keys.Data)
+                        {
+                            var key = new KeyController((k as TextFieldModelController).Data);
+                            var index = keys.Data.IndexOf(k);
+                            var derefValue = (dmc.GetDereferencedField(key, _vm.Context) as TextFieldModelController)?.Data;
+                            if (derefValue != null)
+                            {
+                                if (values[index] != derefValue)
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            _vm.DocumentController = dmc;
+                            return _vm;
+                        }
+                    }
+            }
+            var doc = DocumentController.FindDocMatchingPrimaryKeys(values);
+            if (doc != null)
+            {
+                _vm.DocumentController = doc;
+                return _vm;
+            }
+            return null;
         }
     }
 }

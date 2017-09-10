@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash;
+using Dash.Models;
 using RadialMenuControl.UserControl;
 
 namespace RadialMenuControl.Components
@@ -28,6 +31,7 @@ namespace RadialMenuControl.Components
         public RadialMenuButton()
         {
             InitializeComponent();
+            Icon = string.Empty;
         }
 
         /// <summary>
@@ -126,7 +130,7 @@ namespace RadialMenuControl.Components
         /// </summary>
         public string Icon
         {
-            get { return (string) GetValue(IconProperty); }
+            get { return string.Empty; }
             set { SetValue(IconProperty, value); }
         }
 
@@ -417,6 +421,19 @@ namespace RadialMenuControl.Components
             set { SetValue(InnerAccessKeyProperty, value); }
         }
 
+        public static readonly DependencyProperty SymbolProperty =
+            DependencyProperty.Register("IconSymbol", typeof(Symbol), typeof(RadialMenuButton), new PropertyMetadata(""));
+
+        public Symbol? IconSymbol
+        {
+            get
+            {
+                if (!(GetValue(SymbolProperty) is Symbol)) return null;
+                return (Symbol) GetValue(SymbolProperty);
+            }
+            set { SetValue(SymbolProperty, value);}
+        }
+
         #endregion properties
 
         #region events
@@ -452,7 +469,9 @@ namespace RadialMenuControl.Components
         /// </summary>
         /// <returns></returns>
         public bool HasOuterArcAction => (Submenu != null || CustomMenu != null || HasOuterArcEvents);
-        
+
+        public RadialActionModel ActionModel { get; set; }
+
 
         public delegate void InnerArcPressedEventHandler(object sender, PointerRoutedEventArgs e);
 
@@ -472,6 +491,7 @@ namespace RadialMenuControl.Components
             if (Type == ButtonType.Toggle)
             {
                 Value = (Value == null || !(bool) Value);
+                ActionModel.GenericAction.Invoke(Value);
             }
         }
 
@@ -496,6 +516,11 @@ namespace RadialMenuControl.Components
 
         public void OnInnerArcReleased(PointerRoutedEventArgs e)
         {
+            if (ActionModel != null)
+            {
+                ActionModel.ColorAction?.Invoke(InnerNormalColor.Value, RadialMenuView.MainMenu);
+                if(Type != ButtonType.Toggle) ActionModel.GenericAction?.Invoke(null);
+            }
             InnerArcReleased?.Invoke(this, e);
         }
 
@@ -513,22 +538,22 @@ namespace RadialMenuControl.Components
 
         #endregion
 
-        public delegate void DragStartedEventHandler(object sender, DragStartingEventArgs e);
-
-        public event DragStartedEventHandler InnerArcDragStarted;
-
-        public void OnDragStarting(DragStartingEventArgs args)
+        public void OnDragStarting(DragStartingEventArgs e)
         {
-            if (InnerArcDragStarted == null)
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+            e.Data.Properties.Title = Icon + " " + Label;
+            if (ActionModel?.CollectionDropAction != null)
             {
-                args.Cancel = true;
+                e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.CollectionDropAction;
+            }
+            else if (ActionModel?.GenericDropAction != null)
+            {
+                e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.GenericDropAction;
             }
             else
             {
-                InnerArcDragStarted?.Invoke(this, args);
-                args.Data.Properties.Title = Icon + " " + Label;
+                e.Cancel = true;
             }
-            
         }
     }
 }

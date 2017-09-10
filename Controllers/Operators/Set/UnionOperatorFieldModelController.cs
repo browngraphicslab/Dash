@@ -14,10 +14,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController UnionKey = new KeyController("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [AKey] = TypeInfo.Collection,
-            [BKey] = TypeInfo.Collection
+            [AKey] = new IOInfo(TypeInfo.Collection, true),
+            [BKey] = new IOInfo(TypeInfo.Collection, true)
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -57,6 +57,14 @@ namespace Dash
         public override FieldModelController Copy()
         {
             return new UnionOperatorFieldModelController(OperatorFieldModel);
+        }
+        public override object GetValue(Context context)
+        {
+            throw new System.NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
         }
     }
 

@@ -8,7 +8,7 @@
     d:DesignHeight="800"
     d:DesignWidth="400">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
+    <Grid Width="250" HorizontalAlignment="Stretch" BorderBrush="Transparent" Padding="10,0,10,0">
         <Grid.Background>
             <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
         </Grid.Background>
@@ -24,14 +24,9 @@
             </TextBlock>
         </Grid>
         <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock>
-                    <Run Text="Type"/>
-                </TextBlock>
-                <TextBlock Margin="50,0,0,0">
-                    <Run Text="Collection"/>
-                </TextBlock>
-            </StackPanel>
+            <TextBlock HorizontalAlignment="Center">
+                <Run Text="Collection"/>
+            </TextBlock>
         </Grid>
         <Grid Grid.Row="2" Width="250">
             <Grid>

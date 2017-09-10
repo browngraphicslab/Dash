@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,50 +35,37 @@ namespace Dash {
         
 
         // == CONSTRUCTORS == 
-        public ApiCreatorProperty(ApiCreatorPropertyGenerator parent)
+        public ApiCreatorProperty()
         {
-            DataContext = this;
             this.InitializeComponent();
-            this.parent = parent;
         }
 
         // == METHODS ==
         /// <summary>
         /// On click, removes this property from the ListView it is contained in. If
-        /// the node is not parented by a ListView (should never happen), this method 
-        /// fails and sends an error.
+        /// the node is not parented by a ListView (should never happen), this method fails and sends an error.
         /// </summary>
         /// <param name="sender">sending obj (the delete button)</param>
         /// <param name="e">event arg</param>
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) {
-            if (this.Parent.GetType() == typeof(ListView)) {
-
-                // fetch containing list view
-                ListView listView = (ListView)XApiCreatorProperty.Parent;
-                int index = listView.Items.IndexOf(XApiCreatorProperty);
-                listView.Items.RemoveAt(index);
-
-                // update rendered source result to reflect the deleted field
-                parent.SourceDisplay.RemoveFromListView(index);
-
-                // propagate changes to the document model
-                ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
-
-                
-
-                if (listView.Items.Count == 0)
-                    listView.Visibility = Visibility.Collapsed;
-                else
-                    listView.Visibility = Visibility.Visible;
-            } 
+            var generator = this.GetFirstAncestorOfType<ApiCreatorPropertyGenerator>(); 
+            generator?.ApiController.RemoveParameter((ApiParameter)((DictionaryEntry) DataContext).Value); 
         }
 
-        private void xDisplay_Checked(object sender, RoutedEventArgs e) {
-           
+        private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
+            KeyChanged?.Invoke(k, xKey.Text);
         }
 
-        private void xDisplay_Unchecked(object sender, RoutedEventArgs e) {
-
+        private void XValue_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
+            ValueChanged?.Invoke(k, xValue.Text);
         }
+
+        public delegate void ValueChangedHandler(KeyController key, string newValue);
+        public event ValueChangedHandler KeyChanged;
+        public event ValueChangedHandler ValueChanged;
     }
 }

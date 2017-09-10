@@ -15,14 +15,18 @@ namespace Dash
     /// </summary>
     public class CollectionBox : CourtesyDocument
     {
-
+        public static KeyController CollectionViewKey = new KeyController("FA7002C4-0EB2-44F7-8D25-ECA5C618D10C", "Collection View Key");
         public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "Prototype-Collection-Box";
 
+        public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
 
-        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400)
+        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
+            fields[CollectionViewTypeKey] = new TextFieldModelController(viewType.ToString());
+            fields[InkBox.InkDataKey] = new InkFieldModelController();
+
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
         }
@@ -64,9 +68,12 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context);
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
-            var view = new CollectionView(collectionViewModel);
+            var typeString = (docController.GetField(CollectionViewTypeKey) as TextFieldModelController).Data;
+            CollectionView.CollectionViewType viewType =
+                (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
+            var view = new CollectionView(collectionViewModel, (docController.GetDereferencedField(CollectionViewKey,context) as TextFieldModelController)?.Data == "Text" ? CollectionView.CollectionViewType.Text : viewType);
 
 
             if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType &&
