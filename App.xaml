@@ -176,7 +176,6 @@
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
 
-            <Setter Property="Padding" Value="15"></Setter>
             <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>

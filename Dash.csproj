@@ -468,9 +468,6 @@
       <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
-    <Compile Include="Views\WindowView.xaml.cs">
-      <DependentUpon>WindowView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -803,10 +800,6 @@
     <Page Include="Views\SearchCategoryItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\WindowView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>

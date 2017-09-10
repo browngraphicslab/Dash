@@ -47,7 +47,6 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-            ChromeButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.View)};
             xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
             xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }

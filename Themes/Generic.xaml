@@ -19,10 +19,16 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
+                            <!--window content-->
+                            <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}" 
+                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1"/>
+
+                            <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
+                            
                             <!--window chrome-->
-                            <Rectangle x:Name="PART_Header" Fill="{StaticResource TranslucentWhite}"
+                            <Rectangle x:Name="PART_Header" Fill="{StaticResource DocumentHighlightBackground}"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                            <Button x:Name="PART_CloseButton" Width="30" Height="25"
+                            <Button x:Name="PART_CloseButton" Width="30" Height="25" Background="Transparent"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0">
                                 <Viewbox>
                                     <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
@@ -30,11 +36,6 @@
 
                             </Button>
 
-                            <!--window content-->
-                            <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}" 
-                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1"/>
-
-                            <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
 
                             <!--resizer-->
                             <Button x:Name="PART_Resizer"  Grid.Row="1" Background="Black" Margin="0,0,-20,-20"

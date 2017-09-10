@@ -73,6 +73,14 @@ namespace Dash
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
 
         public CollectionFreeformView() {
+
+            InitializeComponent();
+            Loaded += Freeform_Loaded;
+            Unloaded += Freeform_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            ParentCollection = null;
+            DragLeave += Collection_DragLeave;
+            //DragEnter += Collection_DragEnter;
         }
 
         public CollectionFreeformView(CollectionView parentCollection)
