@@ -728,11 +728,32 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
 
+            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
+                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
+                    return;
+
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
+                if (carrier.Source != null)
+                {
+                    if (!carrier.Source.Equals(carrier.Destination))
+                    {
+                        // for blue drag/drop; must remove the payload from the original collection 
+                        if (carrier._source != null)
+                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
+                        else
+                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
+
+                        carrier.Payload.Clear();
+                        carrier.Source = null;
+                        carrier.SourceCollection = null;
+                        carrier.Destination = null;
+                    }
+                }
+
                 // delete connection lines logically and graphically 
                 var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
@@ -743,18 +764,8 @@ namespace Dash
                         startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-
-                    carrier.Payload.Clear();
-                    carrier.Source = null;
-                    carrier.Destination = null;
                 }
             }
-
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -789,7 +800,7 @@ namespace Dash
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
-            OnSelected(); 
+            OnSelected();
         }
 
         #endregion
@@ -886,39 +897,26 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void Collection_DragLeave(object sender, DragEventArgs args)
+        private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+
             if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
-                
+
             _payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            //ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            //var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-            //if (sourceIsRadialMenu)
-            //{
-            //    e.AcceptedOperation = DataPackageOperation.Move;
-            //    e.DragUIOverride.Clear();
-            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
-            //    e.DragUIOverride.IsContentVisible = false;
-            //    e.DragUIOverride.IsGlyphVisible = false;
-
-            //}
-            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
-
+            ViewModel.CollectionViewOnDragEnter(sender, e);
 
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null)
-            {
-                return;
-            }
+            if (carrier.StartingCollection == null) return;
+
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
@@ -943,6 +941,9 @@ namespace Dash
 
             carrier.Destination = null;
             carrier.StartingCollection = this;
+            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
+            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
+            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;

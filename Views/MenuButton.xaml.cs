@@ -45,12 +45,12 @@ namespace Dash
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
-        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions)
+        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions, int selectedInd = -1)
         {
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
 
-            _selectedInd = icons.Count - 1; 
+            _selectedInd = selectedInd < 0 ? icons.Count - 1 : selectedInd; 
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);

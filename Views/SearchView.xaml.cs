@@ -119,7 +119,8 @@ namespace Dash
         private void UpdateList(string query)
         {
             var results = GetMatches(query);
-            _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
+            if (xRootPivot.SelectedItem != null)
+                _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
         }
 
         /// <summary>
@@ -129,8 +130,9 @@ namespace Dash
         /// <returns></returns>
         private ObservableCollection<object> GetMatches(string searchInput)
         {
-            var items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
             var suggestions = new ObservableCollection<object>();
+            if (xRootPivot.SelectedItem == null) return suggestions; 
+            var items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
             if (items != null)
             {
                 foreach (var item in items)
@@ -163,7 +165,8 @@ namespace Dash
                 else
                 {
                     sender.ItemsSource = null;
-                    _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
+                    if (xRootPivot.SelectedItem != null)
+                        _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
                 }
             }
         }
