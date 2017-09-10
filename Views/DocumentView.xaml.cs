@@ -429,9 +429,9 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            this.CanDrag = ViewModel.IsLowestSelected;
-            this.DragStarting -= ViewModel.DocumentView_DragStarting;
-            this.DragStarting += ViewModel.DocumentView_DragStarting;
+            //this.CanDrag = ViewModel.IsLowestSelected;
+            //this.DragStarting -= ViewModel.DocumentView_DragStarting;
+            //this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
