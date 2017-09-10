@@ -393,8 +393,9 @@ namespace Dash
         /// </summary>
         private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < 3; i++)
-                (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth); 
+            // not sure what this was fixing, but it breaks the doc test example
+            //for (int i = 0; i < 3; i++)
+            //  (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
     }
 }

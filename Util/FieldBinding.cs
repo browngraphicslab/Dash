@@ -59,11 +59,8 @@ namespace Dash
         public bool ConvertFromXaml(object xamlData)
         {
             var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
-            var refField = field as ReferenceFieldModelController;
-            if (refField != null) {
-                if ((string)xamlData == (string)refField.GetValue(Context))
-                    return false; // avoid cycles
-                xamlData = new Tuple<Context, string>(Context, xamlData as string);
+            if (field is ReferenceFieldModelController) {
+                xamlData = new Tuple<Context, object>(Context, xamlData);
             }
             
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
@@ -101,7 +98,6 @@ namespace Dash
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
                 {
-                    var prototype = binding.Document.GetPrototype();
                     if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
@@ -150,7 +146,7 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,null);
+                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, binding.Context, false));
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {

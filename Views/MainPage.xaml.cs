@@ -379,7 +379,7 @@ namespace Dash
             for (int i = 0; i < 10; ++i)
             {
                 var delNumbers = protoNumbers.MakeDelegate();
-                if (i != 4)
+                //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);
                 delNumbers.SetField(Numbers.Number5FieldKey,
