@@ -1,0 +1,92 @@
+﻿<UserControl
+    x:Class="Dash.Views.Document_Menu.MainMenu"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views.Document_Menu"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal">
+            <StackPanel  x:Name="MainOptions" Orientation="Vertical">
+                <Border  Background="{StaticResource WindowsBlue}" HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <Border BorderThickness="1.5" CornerRadius="30" Width="24" Height="24" BorderBrush="white">
+                            <SymbolIcon Foreground="White" Margin="-1,-1,0,0" VerticalAlignment="Center"  HorizontalAlignment="Center" Symbol="Add" RenderTransformOrigin="0.5,0.5" >
+                                <SymbolIcon.RenderTransform>
+                                    <CompositeTransform ScaleX="0.6" ScaleY="0.6"/>
+                                </SymbolIcon.RenderTransform>
+                            </SymbolIcon>
+                        </Border>
+                        <TextBlock Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" 
+                               TextAlignment="Center" MaxWidth="60" TextWrapping="Wrap" Text="add node" 
+                               LineStackingStrategy="BaselineToBaseline"/>
+                    </StackPanel>
+                </Border>
+                <Border  HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0" Background="#FF484848">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <SymbolIcon Foreground="White" HorizontalAlignment="Center" Symbol="Calculator" />
+
+                        <TextBlock Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" Text="operator"/>
+                    </StackPanel>
+                </Border>
+
+                <Border  HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0" Background="#FF484848">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <SymbolIcon Foreground="White" HorizontalAlignment="Center" Symbol="Copy" />
+
+                        <TextBlock Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" Text="collection"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+            <StackPanel x:Name="NodeTypes" Orientation="Vertical">
+                <Border x:Name="xBorder" Background="{StaticResource WindowsBlue}" HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <SymbolIcon x:Name="xSymbol" Foreground="White" HorizontalAlignment="Center" Symbol="Page2" />
+                        <TextBlock x:Name="xLabel" Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" 
+                               TextAlignment="Center" MaxWidth="60" TextWrapping="Wrap" Text="document" 
+                               LineStackingStrategy="BaselineToBaseline"/>
+                    </StackPanel>
+                </Border>
+                <Border  HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0" Background="{StaticResource WindowsBlue}">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <SymbolIcon Foreground="White" HorizontalAlignment="Center" Symbol="Calculator" />
+
+                        <TextBlock Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" Text="operator"/>
+                    </StackPanel>
+                </Border>
+
+                <Border  HorizontalAlignment="Stretch" 
+                    Height="65" Width="70" Padding="6,0" Background="{StaticResource WindowsBlue}">
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                            >
+                        <SymbolIcon Foreground="White" HorizontalAlignment="Center" Symbol="Copy" />
+
+                        <TextBlock Padding="0" Foreground="White" FontSize="11" Margin="0,1,0,-2" 
+                               HorizontalAlignment="Center" Text="collection"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>
