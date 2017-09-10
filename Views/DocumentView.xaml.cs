@@ -122,6 +122,7 @@ namespace Dash
         {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
+            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null); 
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
@@ -129,8 +130,18 @@ namespace Dash
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
+
+                moveButton
             };
+
+            var moveButtonView = moveButton.View;
+            moveButtonView.CanDrag = true;
+            moveButtonView.DragStarting += (s, e) =>
+            {
+                ViewModel.DocumentView_DragStarting(this, e);
+            };
+
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
             {

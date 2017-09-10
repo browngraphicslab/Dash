@@ -41,6 +41,7 @@ namespace Dash
             set => _border.Background = value;
         }
 
+        public Border View { get { return _border; } }
 
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
@@ -72,7 +73,7 @@ namespace Dash
                     Foreground = new SolidColorBrush(Colors.White)
                 };
                 // create rounded(circular) border to hold the symbol
-                Border border = new Border()
+                _border = new Border()
                 {
                     Height = 40,
                     Width = 40,
@@ -81,15 +82,15 @@ namespace Dash
                     Child = symbol
                 };
                 // if it's the first button, round the top 
-                if (i == 0) border.CornerRadius = new CornerRadius(20, 20, 0, 0);
+                if (i == 0) _border.CornerRadius = new CornerRadius(20, 20, 0, 0);
                 // if last button, round the buttom  
                 else if (i == icons.Count - 1)
                 {
-                    border.CornerRadius = new CornerRadius(0, 0, 20, 20);
+                    _border.CornerRadius = new CornerRadius(0, 0, 20, 20);
                     //border.Background = new SolidColorBrush(Colors.Gray);
                 }
 
-                if (i == _selectedInd) border.Background = new SolidColorBrush(Colors.Gray);
+                if (i == _selectedInd) _border.Background = new SolidColorBrush(Colors.Gray);
 
                 // create button to contain the border with the symbol
                 var button = new Button()
@@ -97,7 +98,7 @@ namespace Dash
                     Background = new SolidColorBrush(Colors.Transparent),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Padding = new Thickness(-2.5),
-                    Content = border
+                    Content = _border
                 };
 
                 // add all content to stack panel

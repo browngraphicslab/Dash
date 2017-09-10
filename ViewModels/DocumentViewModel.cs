@@ -429,6 +429,8 @@ namespace Dash
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            Debug.WriteLine("djkaldfjkalfjdakl;fd");
+
             var docView = sender as DocumentView;
             DocumentView.DragDocumentView = docView;
 
