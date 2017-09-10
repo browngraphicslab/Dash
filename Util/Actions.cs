@@ -144,7 +144,7 @@ namespace Dash
 
             var fields = new Dictionary<KeyController, FieldModelController>()
             {
-                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document)
             };
 
             collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
