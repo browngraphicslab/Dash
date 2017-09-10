@@ -60,20 +60,22 @@ namespace Dash
 
         public ManipulationControls ManipulationControls;
 
-        private float _backgroundOpacity = .7f;
-
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private CollectionView ParentCollection;
         #endregion
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
 
-        public CollectionFreeformView()
+        public CollectionFreeformView() {
+        }
+
+        public CollectionFreeformView(CollectionView parentCollection)
         {
             InitializeComponent();
             Loaded += Freeform_Loaded;
@@ -81,6 +83,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
 
             DragLeave += Collection_DragLeave;
+            //DragEnter += Collection_DragEnter;
+            ParentCollection = parentCollection;
         }
 
         public IOReference GetCurrentReference()
@@ -293,8 +297,8 @@ namespace Dash
             {
                 e.Handled = true;
                 var line = s as Path;
-                var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-                line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+                var green = _converter.GradientBrush;
+                //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
                 line.IsHoldingEnabled = !line.IsHoldingEnabled;
             };
 
@@ -326,6 +330,9 @@ namespace Dash
             PathGeometry pathGeo = new PathGeometry();
             BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
             _connectionLine.Data = pathGeo;
+
+            _converter.setGradientAngle();
+            _connectionLine.Stroke = _converter.GradientBrush;
 
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
@@ -435,6 +442,8 @@ namespace Dash
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
+                _converter.setGradientAngle();
+                _connectionLine.Stroke = _converter.GradientBrush;
                 _converter.UpdateLine();
                 //_lineBinding.ForceUpdate();
             }
@@ -447,135 +456,46 @@ namespace Dash
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
-        /// </summary>
+        /// </summary>   
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            var delta = transformationDelta.Translate;
 
-            //Create initial translate and scale transforms
+           //Create initial translate and scale transforms
+            //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
-                X = transformationDelta.Translate.X,
-                Y = transformationDelta.Translate.Y
+                X = delta.X,
+                Y = delta.Y
             };
 
             var scale = new ScaleTransform
             {
-                CenterX = transformationDelta.ScaleCenter.X,
-                CenterY = transformationDelta.ScaleCenter.Y,
-                ScaleX = transformationDelta.ScaleAmount.X,
-                ScaleY = transformationDelta.ScaleAmount.Y
+            CenterX = transformationDelta.ScaleCenter.X,
+            CenterY = transformationDelta.ScaleCenter.Y,
+            ScaleX = transformationDelta.ScaleAmount.X,
+            ScaleY = transformationDelta.ScaleAmount.Y
             };
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(itemsPanelCanvas.RenderTransform);
             composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
-            var matrix = new MatrixTransform { Matrix = composite.Value };
-
-            itemsPanelCanvas.RenderTransform = matrix;
-            InkHostCanvas.RenderTransform = matrix;
-            SetTransformOnBackground(composite);
-
-            // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
-            if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
-            {
-                foreach (var converter in _lineToConverter.Values)
-                    converter.UpdateLine();
-            }
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            ParentCollection.SetTransformOnBackground(composite);
         }
 
 
-        #endregion
+#endregion
 
-        #region BackgroundTiling
+#region Clipping
 
-
-        private void SetTransformOnBackground(TransformGroup composite)
-        {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
-
-            if (_resourcesLoaded)
-            {
-                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)composite.Value.M12,
-                    (float)composite.Value.M21,
-                    (float)aliasSafeScale,
-                    (float)composite.Value.OffsetX,
-                    (float)composite.Value.OffsetY);
-                xBackgroundCanvas.Invalidate();
-            }
-        }
-
-        private void SetInitialTransformOnBackground()
-        {
-            var composite = new TransformGroup();
-            var scale = new ScaleTransform
-            {
-                CenterX = 0,
-                CenterY = 0,
-                ScaleX = CanvasScale,
-                ScaleY = CanvasScale
-            };
-
-            composite.Children.Add(scale);
-            SetTransformOnBackground(composite);
-        }
-
-        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
-        {
-            var task = Task.Run(async () =>
-            {
-                // Load the background image and create an image brush from it
-                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
-                _bgBrush = new CanvasImageBrush(sender, _bgImage)
-                {
-                    Opacity = _backgroundOpacity
-                };
-
-                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
-                _resourcesLoaded = true;
-            });
-            args.TrackAsyncAction(task.AsAsyncAction());
-
-            task.ContinueWith(continuationTask =>
-            {
-                SetInitialTransformOnBackground();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
-        {
-            if (!_resourcesLoaded) return;
-
-            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
-            var session = args.DrawingSession;
-            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
-        }
-
-        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
-        {
-            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
-            {
-                currentScale /= numberOfBackgroundRows;
-            }
-
-            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
-            {
-                currentScale *= numberOfBackgroundRows;
-            }
-            return currentScale;
-        }
-
-        #endregion
-
-        #region Clipping
-
-        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
         }
@@ -607,116 +527,14 @@ namespace Dash
         }
 
         #region Flyout
-
-        //private void InitializeFlyout()
-        //{
-        //    _flyout = new MenuFlyout();
-        //    var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
-        //    menuItem.Click += MenuItem_Click;
-        //    _flyout.Items?.Add(menuItem);
-
-        //    var menuItem2 = new MenuFlyoutItem { Text = "Add Document" };
-        //    menuItem2.Click += MenuItem_Click2;
-        //    _flyout.Items?.Add(menuItem2);
-
-        //    var menuItem3 = new MenuFlyoutItem { Text = "Add Collection" };
-        //    menuItem3.Click += MenuItem_Click3;
-        //    _flyout.Items?.Add(menuItem3);
-        //}
-
-        //private void DisposeFlyout()
-        //{
-        //    if (_flyout.Items != null)
-        //        foreach (var item in _flyout.Items)
-        //        {
-        //            var menuFlyoutItem = item as MenuFlyoutItem;
-        //            if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
-        //        }
-        //    _flyout = null;
-        //}
-
-        //private void MenuItem_Click(object sender, RoutedEventArgs e)
-        //{
-        //    var xCanvas = MainPage.Instance.xCanvas;
-        //    if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-        //        xCanvas.Children.Add(OperatorSearchView.Instance);
-        //    // set the operator menu to the current location of the flyout
-        //    var menu = sender as MenuFlyoutItem;
-        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
-        //    var pointOnCanvas = transform.TransformPoint(new Point());
-        //    // reset the render transform on the operator search view
-        //    OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
-        //    var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
-        //    if (floatBorder != null)
-        //    {
-        //        Canvas.SetLeft(floatBorder, 0);
-        //        Canvas.SetTop(floatBorder, 0);
-        //    }
-        //    Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
-        //    Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
-        //    OperatorSearchView.AddsToThisCollection = this;
-
-        //    OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
-
-        //    DisposeFlyout();
-        //}
-
-
-        //private void MenuItem_Click2(object sender, RoutedEventArgs e)
-        //{
-        //    var menu = sender as MenuFlyoutItem;
-        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
-        //    var pointOnCanvas = transform.TransformPoint(new Point());
-
-        //    var fields = new Dictionary<KeyController, FieldModelController>()
-        //    {
-        //        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), pointOnCanvas, new Size(100, 100)).Document)
-        //    };
-
-        //    ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
-
-
-        //    DisposeFlyout();
-        //}
-
-        //private void MenuItem_Click3(object sender, RoutedEventArgs e)
-        //{
-        //    var menu = sender as MenuFlyoutItem;
-        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
-        //    var pointOnCanvas = transform.TransformPoint(new Point());
-
-        //    var fields = new Dictionary<KeyController, FieldModelController>()
-        //    {
-        //        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
-        //    };
-
-        //    var documentController = new DocumentController(fields, DocumentType.DefaultType);
-        //    documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), pointOnCanvas.X, pointOnCanvas.Y).Document, true, true);
-        //    ViewModel.AddDocument(documentController, null);
-
-
-        //    DisposeFlyout();
-        //}
-
-        //private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        //{
-        //    if (InkControl == null || InkControl != null && !InkControl.IsDrawing)
-        //    {
-        //        if (_flyout == null)
-        //            InitializeFlyout();
-        //        e.Handled = true;
-        //        var thisUi = this as UIElement;
-        //        var position = e.GetPosition(thisUi);
-        //        _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
-        //    }
-        //}
-
+      
         #endregion
 
         #region DragAndDrop
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("drop event");
             ViewModel.CollectionViewOnDrop(sender, e);
 
             var carrier = ItemsCarrier.Instance;
@@ -746,7 +564,7 @@ namespace Dash
                         carrier.Destination = null;
                     }
                 }
-
+                
                 // delete connection lines logically and graphically 
                 var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
@@ -759,6 +577,7 @@ namespace Dash
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
+
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -792,7 +611,6 @@ namespace Dash
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-
             OnSelected();
         }
 
@@ -902,6 +720,7 @@ namespace Dash
             _payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
+
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {

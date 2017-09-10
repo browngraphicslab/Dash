@@ -98,6 +98,25 @@ namespace Dash
         }
 
 
+        #region Xaml Styling Methods (used by operator view)
+        private bool isOperator = false;
+        /// <summary>
+        /// Applies custom override styles to the operator view
+        /// </summary>
+        public void StyleOperator(double borderRadiusAmount)
+        {
+            isOperator = true;
+            xShadowTarget.RadiusX = borderRadiusAmount;
+            xShadowTarget.RadiusY = borderRadiusAmount;
+
+            var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
+            Color c = brush.Color;
+            c.A = 204;
+            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
+        }
+
+#endregion
+        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
         /// </summary>
@@ -120,29 +139,25 @@ namespace Dash
 
         private void SetUpMenu()
         {
-            Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
+            var bgcolor = bgbrush.Color;
+            bgcolor.A = 0;
+            var red = new Color();
+            red.A = 204;
+            red.R = 190;
+            red.B = 25;
+            red.G = 25;
 
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
-                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
+                new MenuButton(Symbol.Placeholder, "Cmd",bgcolor, CommandLine),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
+                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
-            Binding visibilityBinding = new Binding
-            {
-                Source = ViewModel,
-                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
-                Mode = BindingMode.OneWay
-            };
-            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
-
-            xMenuCanvas.Children.Add(_docMenu);
         }
-
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -224,6 +239,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Updates the minimized-view icon from the ViewModel's corresponding IconType array.
+        /// </summary>
         private void updateIcon()
         {
             if (ViewModel == null) return;
@@ -338,6 +356,9 @@ namespace Dash
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
+
+            MainPage.Instance.HideDocumentMenu();
+
         }
 
         private void CopyDocument()
@@ -362,13 +383,14 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
         }
 
         private void FadeOut_Completed(object sender, object e)
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            ViewModel.CloseMenu();
         }
 
         private void OpenLayout()
@@ -405,25 +427,49 @@ namespace Dash
 
         #region Activation
 
+        /// <summary>
+        /// Called when the pointer first goes down on the document. Selects it and brings it to the
+        /// foreground of the canvas, in front of all other documents.
+        /// </summary>
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+
+            OnSelected();
+            e.Handled = true;
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInInterfaceBuilder)
-                return;
-
-            OnSelected();
         }
 
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            // if we are being deselected
+            if (!isSelected)
+            {
+                colorStoryboardOut.Begin();
+                MainPage.Instance.HideDocumentMenu();
+            }
+            else
+            {
+                // update the main toolbar in the overlay canvas
+                if (_docMenu == null)
+                {
+                    SetUpMenu();
+                }
+                if (_docMenu != null && MainPage.Instance != null)
+                {
+                    colorStoryboard.Begin();
+                    MainPage.Instance.SetOptionsMenu(_docMenu);
+                    if (MainPage.Instance.MainDocView != this)
+                        MainPage.Instance.ShowDocumentMenu();
+                }
+            }
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)

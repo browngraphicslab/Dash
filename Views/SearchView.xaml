@@ -10,16 +10,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
-        <Grid CornerRadius="15" MaxWidth="300" MaxHeight="300">
-            <Grid.Background>
-                <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
-            </Grid.Background>
+        <Grid CornerRadius="0" MaxWidth="300" MaxHeight="800" Background="{StaticResource WindowsBlue}" Opacity="0.8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
-                <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="15,20,15,10" PlaceholderText="Filter current category"></AutoSuggestBox>
+                <AutoSuggestBox x:Name="xSearch" Background="{StaticResource DocumentBackground}" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="5" PlaceholderText="Filter current category"></AutoSuggestBox>
             </Grid>
             <Grid Grid.Row="1">
                 <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged">

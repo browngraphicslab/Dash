@@ -54,6 +54,16 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Runs a pop-in animation for each of the buttons in this menu. Called
+        /// when the MainPage-level document is set to another menu.
+        /// </summary>
+        public void CreateAndRunInstantiationAnimation(bool isComposite) {
+            if (_documentButtons == null) return;
+            foreach (var item in _documentButtons)
+                item.AnimateAppearance();
+        }
+
         public async void GoToDocumentMenu()
         {
             this.CollapseMenu(_collectionButtons, xCollectionButtonsStackPanel);

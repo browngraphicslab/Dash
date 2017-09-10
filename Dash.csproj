@@ -169,6 +169,12 @@
     <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\MainMenu.xaml.cs">
+      <DependentUpon>MainMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\MenuButtonContainer.xaml.cs">
+      <DependentUpon>MenuButtonContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
       <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
     </Compile>
@@ -489,8 +495,9 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
-    <Content Include="Assets\gridbg.png" />
-    <Content Include="Assets\GRIDTRANSPARENT.png" />
+    <Content Include="Assets\docmenu.png" />
+    <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\gridbg2.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -501,7 +508,6 @@
     <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
-    <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
@@ -572,6 +578,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\CompoundOperatorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MainMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MenuButtonContainer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

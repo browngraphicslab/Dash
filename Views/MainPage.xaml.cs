@@ -24,6 +24,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Visibility = Windows.UI.Xaml.Visibility;
 using static Dash.NoteDocuments;
+using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Media;
+using Windows.ApplicationModel.Core;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -47,6 +50,12 @@ namespace Dash
 
         public MainPage()
         {
+
+            ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
             InitializeComponent();
 
             // create the collection document model using a request
@@ -77,18 +86,6 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
-
-            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
-            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
-            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2, 2, 0, 0, 1, 1);
-            TestMatrix(2, 2, 1, 1, 1, 1);
-            TestMatrix(2, 2, 2, 2, 1, 1);
-            TestMatrix(2, 2, 4, 4, 1, 1);
-            TestMatrix(4, 4, 0, 0, 2, 2);
-            TestMatrix(4, 4, 1, 1, 2, 2);
-            TestMatrix(4, 4, 2, 2, 2, 2);
-            TestMatrix(4, 4, 4, 4, 2, 2);
 
         }
 
@@ -128,6 +125,17 @@ namespace Dash
                 Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
                 Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
+        }
+
+        /// <summary>
+        /// Used to set the top-level options menu. Generally, this is envoked when
+        /// the selected document changes & the options needs to be updated.
+        /// </summary>
+        /// <param name="menu"></param>
+        public void SetOptionsMenu(OverlayMenu menu)
+        {
+            menu.CreateAndRunInstantiationAnimation(true);
+            xMenuCanvas.Content = menu;
         }
 
         /// <summary>
@@ -366,6 +374,26 @@ namespace Dash
             xCanvas.Children.Add(g);
         }
 
+        /// <summary>
+        /// Shows the right-hand docked document options menu. Slides it in with animation.
+        /// </summary>
+        public void ShowDocumentMenu()
+        {
+            slideOut.Begin();
+        }
+
+        /// <summary>
+        /// Hides the right-hand docked document options menu. Slides it out with animation.
+        /// </summary>
+        public void HideDocumentMenu()
+        {
+            slideIn.Begin();
+        }
+
+        private void Border_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
             var protoNumbers = new Numbers().Document;
