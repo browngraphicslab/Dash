@@ -11,7 +11,8 @@ using Newtonsoft.Json;
 
 namespace Dash
 {
-    public class DocumentEndpoint
+
+    public class DocumentEndpoint : IDocumentEndpoint
     {
         private readonly ServerEndpoint _connection;
 

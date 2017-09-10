@@ -9,7 +9,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class KeyEndpoint : Endpoint<KeyModel, KeyModel>
+    public class KeyEndpoint : Endpoint<KeyModel, KeyModel>, IKeyEndpoint
     {
         private readonly ServerEndpoint _connection;
 

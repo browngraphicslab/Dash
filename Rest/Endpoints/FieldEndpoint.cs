@@ -11,7 +11,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class FieldEndpoint : Endpoint<FieldModel, FieldModelDTO>
+    public class FieldEndpoint : Endpoint<FieldModel, FieldModelDTO>, IFieldEndpoint
     {
         private static readonly object l = new object();
         private static int count;

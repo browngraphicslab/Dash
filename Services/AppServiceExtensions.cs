@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -27,9 +30,9 @@ namespace Dash
             serviceCollection.AddSingleton<ServerEndpoint, ServerEndpoint>();
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
-            serviceCollection.AddSingleton<DocumentEndpoint, DocumentEndpoint>();
-            serviceCollection.AddSingleton<FieldEndpoint, FieldEndpoint>();
-            serviceCollection.AddSingleton<KeyEndpoint, KeyEndpoint>(); 
+            serviceCollection.AddSingleton<IDocumentEndpoint, LocalDocumentEndpoint>();
+            serviceCollection.AddSingleton<IFieldEndpoint, LocalFieldEndpoint>();
+            serviceCollection.AddSingleton<IKeyEndpoint, LocalKeyEndpoint>(); 
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors
@@ -41,4 +44,6 @@ namespace Dash
         }
 
     }
+
+    
 }
