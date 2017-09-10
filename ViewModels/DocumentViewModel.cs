@@ -196,7 +196,7 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
-        public Context  Context { get; set; }
+        public Context Context { get; set; }
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
@@ -234,7 +234,7 @@ namespace Dash
             Debug.WriteLine(args.Action);
             OnActiveLayoutChanged(new Context(DocumentController));
             if (args.OldValue == null) return;
-            var oldLayoutDoc = ((DocumentFieldModelController) args.OldValue).Data;
+            var oldLayoutDoc = ((DocumentFieldModelController)args.OldValue).Data;
             RemoveListenersFromLayout(oldLayoutDoc);
         }
 
@@ -251,7 +251,7 @@ namespace Dash
         private void RemoveControllerListeners()
         {
             DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
-            var icon = (NumberFieldModelController) DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
+            var icon = (NumberFieldModelController)DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
 
@@ -436,9 +436,25 @@ namespace Dash
             if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
 
             var carrier = ItemsCarrier.Instance;
-            carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
-            carrier.Payload = new List<DocumentController>() { this.DocumentController };
+            carrier.Payload = new List<DocumentController>() { DocumentController };
             args.Data.RequestedOperation = DataPackageOperation.Move;
+
+            // different sources based on whether it's a collection or a document 
+            carrier.SourceCollection = docView.GetFirstDescendantOfType<CollectionView>(); //TODO this will not work all the time (collection's source) 
+            CollectionView parent;
+            if (carrier.Source == null) // for documents 
+            {
+                var docSource = docView?.ParentCollection;
+                carrier.Source = docSource?.ViewModel;
+                parent = docSource?.ParentCollection; // set CurrBaseModel as the collection containing it 
+            }
+            else // for collections
+                parent = carrier.SourceCollection?.ParentCollection?.ParentCollection;
+
+            if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
+            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
+
+            docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void Dispose()
@@ -447,7 +463,7 @@ namespace Dash
             if (layoutDoc != null)
             {
                 RemoveListenersFromLayout(layoutDoc);
-            } 
+            }
             RemoveControllerListeners();
         }
     }

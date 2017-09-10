@@ -55,6 +55,7 @@ namespace Dash
         public abstract void AddDocument(DocumentController document, Context context);
         public abstract void RemoveDocuments(List<DocumentController> documents);
         public abstract void RemoveDocument(DocumentController document);
+       
 
         private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
@@ -137,6 +138,7 @@ namespace Dash
 
             carrier.Payload.Clear();
             carrier.Source = null;
+            carrier.SourceCollection = null;
             carrier.Destination = null;
         }
 
@@ -147,6 +149,10 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            if (DocumentView.DragDocumentView != null)
+                DocumentView.DragDocumentView.IsHitTestVisible = true;
+            this.RemoveDragDropIndication(sender as SelectionElement);
+
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
@@ -243,10 +249,14 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                if (carrier.Source.Equals(carrier.Destination))
-                {
-                    return; // we don't want to drop items on ourself
-                }
+                
+                // we don't want to drop items on ourself
+                if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
+                    return;
+
+                if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
+                    if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
+                        return;
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -255,7 +265,6 @@ namespace Dash
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
             SetGlobalHitTestVisiblityOnSelectedItems(false);
-            this.RemoveDragDropIndication(sender as SelectionElement);
         }
 
         private static async Task<RenderTargetBitmap> RenderImportImageToBitmapToOvercomeUWPSandbox(Image imagery)
@@ -326,7 +335,7 @@ namespace Dash
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
-                
+                ItemsCarrier.Instance.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
             }
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
@@ -335,7 +344,7 @@ namespace Dash
                 var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);
                 e.AcceptedOperation = sourceIsOurself
                     ? DataPackageOperation.None // don't accept drag event from ourself
-                    : DataPackageOperation.Move;
+                                : DataPackageOperation.Move;
 
                 ItemsCarrier.Instance.Destination = this;
             }
@@ -347,7 +356,7 @@ namespace Dash
                 e.DragUIOverride.IsContentVisible = true;
             }
 
-            e.Handled = true; 
+            e.Handled = true;
         }
 
         /// <summary>
@@ -357,6 +366,14 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
+            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
+            var basemodel = ItemsCarrier.Instance.CurrBaseModel; 
+            if (basemodel != sender as ICollectionView)
+            {
+                basemodel.ViewModel.CollectionViewOnDragEnter(basemodel, e);
+                basemodel = sender as ICollectionView;
+            }
+
             var element = sender as SelectionElement;
             if (element != null)
             {
@@ -377,7 +394,6 @@ namespace Dash
         /// <summary>
         /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
         /// </summary>
-        /// <param name="element"></param>
         private void HighlightPotentialDropTarget(SelectionElement element)
         {
             // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event

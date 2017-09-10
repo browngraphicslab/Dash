@@ -83,7 +83,7 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
 
             DragLeave += Collection_DragLeave;
-            DragEnter += Collection_DragEnter;
+            //DragEnter += Collection_DragEnter;
             ParentCollection = parentCollection;
         }
 
@@ -388,18 +388,11 @@ namespace Dash
             if (!isCompoundOperator)
             {
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
-                bool canLink = true;
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
-                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
-
-                if (!canLink)
-                {
-                    UndoLine();
-                    return;
-                }
+                    inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
             }
 
             //binding line position 
@@ -546,12 +539,32 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
             var carrier = ItemsCarrier.Instance;
 
+            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
+                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
+                    return;
+
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
-                Debug.WriteLine("hello?!?!");
+                if (carrier.Source != null)
+                {
+                    if (!carrier.Source.Equals(carrier.Destination))
+                    {
+                        // for blue drag/drop; must remove the payload from the original collection 
+                        if (carrier._source != null)
+                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
+                        else
+                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
+
+                        carrier.Payload.Clear();
+                        carrier.Source = null;
+                        carrier.SourceCollection = null;
+                        carrier.Destination = null;
+                    }
+                }
+                
                 // delete connection lines logically and graphically 
                 var startingCol = carrier.StartingCollection;
                 if (startingCol != null)
@@ -562,23 +575,9 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
                         startingCol.DeleteLine(pair.Key, pair.Value);
                     }
                     startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-
-                    carrier.Payload.Clear();
-                    carrier.Source = null;
-                    carrier.Destination = null;
                 }
             }
 
-        }
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -612,7 +611,6 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-            
             OnSelected();
         }
 
@@ -710,27 +708,27 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             e.Handled = true;
         }
 
-        private void Collection_DragLeave(object sender, DragEventArgs args)
+        private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+
             if (ItemsCarrier.Instance.StartingCollection == null) return;
             ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
-                
+
             _payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
 
             var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null)
-            {
-                return;
-            }
+            if (carrier.StartingCollection == null) return;
+
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
@@ -755,6 +753,9 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
             carrier.Destination = null;
             carrier.StartingCollection = this;
+            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
+            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
+            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
