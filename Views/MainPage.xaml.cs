@@ -37,6 +37,7 @@ namespace Dash
     {
         public static MainPage Instance;
         private RadialMenuView _radialMenu;
+        private HierarchicalMenu _hierarchicalMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
 
@@ -77,6 +78,9 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            _hierarchicalMenu = new HierarchicalMenu();
+            xCanvas.Children.Add(_hierarchicalMenu);
 
             var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
             Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
@@ -389,6 +393,14 @@ namespace Dash
                 delNumbers.SetActiveLayout(delLayout, true, false);
 
                 DisplayDocument(delNumbers);
+            }
+        }
+
+        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (e.Delta.Translation.X > 0)
+            {
+                _hierarchicalMenu.OpenPane();
             }
         }
     }
