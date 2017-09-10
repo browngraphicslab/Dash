@@ -98,7 +98,6 @@ namespace Dash
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
                 {
-                    var prototype = binding.Document.GetPrototype();
                     if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));

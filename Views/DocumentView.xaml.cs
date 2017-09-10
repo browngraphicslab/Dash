@@ -87,7 +87,6 @@ namespace Dash
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            DoubleTapped -= ExpandContract_DoubleTapped;
             //Loaded -= This_Loaded;
             //Unloaded -= This_Unloaded;
         }
@@ -102,8 +101,6 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped -= ExpandContract_DoubleTapped;
-            DoubleTapped += ExpandContract_DoubleTapped;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
@@ -174,8 +171,7 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            //var scaleCenter = new Point(0, 0);
-            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2); 
+            var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -194,8 +190,6 @@ namespace Dash
             Debug.Assert(dvm != null, "dvm != null");
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
-            //Debug.WriteLine(ActualWidth + ", " + ActualHeight);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, new Point(0, 0), ViewModel.GroupTransform.ScaleAmount);
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -334,8 +328,8 @@ namespace Dash
                 xTextView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
-                IsLowestSelected = false; // to bring up the menu upon click 
             }
+
         }
 
         /// <summary>
@@ -348,17 +342,6 @@ namespace Dash
             if (view == null) return; // we can't always assume we're on a collection		
 
             (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
-        }
-
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            // if in icon view expand to default size
-            if (xIcon.Visibility == Visibility.Visible)
-            {
-                Resize(250, 250);
-                IsLowestSelected = false;
-            }
-            e.Handled = true; // prevent propagating
         }
 
 

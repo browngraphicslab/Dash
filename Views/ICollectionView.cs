@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -11,6 +12,5 @@ namespace Dash
         void ToggleSelectAllItems();
 
         BaseCollectionViewModel ViewModel { get; }
-        
     }
 }
