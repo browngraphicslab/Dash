@@ -230,6 +230,28 @@
 
         <!-- NODE SPECIFIC STYLES -->
 
+        <!-- Menus -->
+        <Style TargetType="Border" x:Name="xMenuItemBorder">
+            <Setter Property="Background" Value="{StaticResource WindowsBlue}"></Setter>
+            <Setter Property="Height" Value="55"></Setter>
+            <Setter Property="Width" Value="60"></Setter>
+            <Setter Property="Padding" Value="3,0"></Setter>
+            <Setter Property="Margin" Value="0,0,0,1"></Setter>
+        </Style>
+        <Style TargetType="StackPanel" x:Name="xMenuItemStackPanel">
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="Margin" Value="0,1,0,0"></Setter>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="xMenuItemLabel">
+            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="Margin" Value="0,0,0,0"></Setter>
+            <Setter Property="FontSize" Value="10"></Setter>
+            <Setter Property="TextAlignment" Value="Center"></Setter>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        </Style>
+
+
         <!-- Operator View (& Links)-->
         <Style TargetType="Ellipse" x:Key="xLinkHandle">
             <Setter Property="Fill" Value="{StaticResource OutputHandleColor}" />
