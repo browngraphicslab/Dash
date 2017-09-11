@@ -108,6 +108,12 @@
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
+    <Compile Include="Rest\Endpoints\IDocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IKeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalDocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="FreeformInkControl.cs" />

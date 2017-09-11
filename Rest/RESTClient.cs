@@ -15,7 +15,9 @@ namespace Dash
         public static RESTClient Instance { get { return lazy.Value; } }
 
         public IKeyEndpoint Keys => App.Instance.Container.GetRequiredService<IKeyEndpoint>();
+
         public IFieldEndpoint Fields => App.Instance.Container.GetRequiredService<IFieldEndpoint>();   
+
         public IDocumentEndpoint Documents => App.Instance.Container.GetRequiredService<IDocumentEndpoint>();
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace DashShared
+﻿using Windows.Storage;
+
+namespace DashShared
 {
     public static class DashConstants
     {
@@ -127,6 +129,17 @@
 
         #endregion
 
+        #region LocalServer
+
+        public static StorageFolder LocalStorageFolder = ApplicationData.Current.LocalFolder;
+
+        public static string LocalServerDocumentFilepath = "dash.documents"; //
+        public static string LocalServerKeyFilepath = "dash.keys"; //
+        public static string LocalServerFieldFilepath =  "dash.fields"; //
+
+        public static int MillisecondBetweenLocalSave = 5000;
+
+        #endregion LocalServer
 
         #region Server
 

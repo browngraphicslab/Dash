@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DashShared;
+using Newtonsoft.Json;
 
 namespace DashShared
 {
@@ -50,6 +51,7 @@ namespace DashShared
         {
             DocumentType = type ?? throw new ArgumentNullException();
             Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value);
+
             //Map.Add(Id, this);
         }
 

@@ -1,32 +1,115 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using DashShared;
+using Newtonsoft.Json;
 
 namespace Dash
 {
     public class LocalFieldEndpoint : IFieldEndpoint
     {
+        /// <summary>
+        /// private dictionary here to save your objects in memory.  Should be synced with the local dash files
+        /// </summary>
+        private Dictionary<string, string> _modelDictionary;
+
+        /// <summary>
+        /// private timer that simple calls a callback every time interval and forces this class to save the current objects
+        /// </summary>
+        private Timer _saveTimer;
+        public LocalFieldEndpoint()
+        {
+            _saveTimer = new Timer(SaveTimerCallback, null, new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond), new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
+            try
+            {
+                var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerFieldFilepath);
+                _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
+            }
+            catch (Exception e)
+            {
+                _modelDictionary = new Dictionary<string, string>();
+            }
+            App.Instance.Suspending += AppSuspending;
+        }
+
+        /// <summary>
+        /// Event handler called every tme interval that saves the current version of your objects
+        /// </summary>
+        /// <param name="state"></param>
+        private async void SaveTimerCallback(object state)
+        {
+            var file = await DashConstants.LocalStorageFolder.CreateFileAsync(DashConstants.LocalServerFieldFilepath,CreationCollisionOption.OpenIfExists);
+            using (var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+            {
+                using (var outgoingStream = stream.GetOutputStreamAt(0))
+                {
+                    using (var dw = new DataWriter(outgoingStream))
+                    {
+                        dw.WriteString(JsonConvert.SerializeObject(_modelDictionary));
+                        await dw.StoreAsync();
+                        await dw.FlushAsync();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Private event handler called whenever the appo is suspending or closing, just saves a final time
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AppSuspending(object sender, SuspendingEventArgs e)
+        {
+            SaveTimerCallback(null);
+        }
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _modelDictionary[newField.Id] = JsonConvert.SerializeObject(newField);
+                success(JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[newField.Id]));
+            }
+            catch (Exception e)
+            {
+                error(e);
+            }
         }
 
         public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            throw new NotImplementedException();
+            AddField(fieldToUpdate, success,error);
         }
 
         public async Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            throw new NotImplementedException();
+            try
+            {
+                success(JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[id]));
+            }
+            catch (Exception e)
+            {
+                error(e);
+            }
         }
 
         public async Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _modelDictionary.Remove(fieldToDelete.Id);
+                success();
+            }
+            catch (Exception e)
+            {
+                error(e);
+            }
         }
     }
 }
