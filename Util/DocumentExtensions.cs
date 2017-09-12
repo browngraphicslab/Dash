@@ -144,7 +144,8 @@ namespace Dash
         {
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                        new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);
-            var fields = new ObservableDictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyController, FieldModelController>();
+            //TODO This doesn't copy the layout and the layout has a reference to the original document, not the copy, so the ui doesn't show the right data
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.WidthFieldKey) ||
@@ -159,7 +160,7 @@ namespace Dash
                 }
                 else
                 {
-                    if (kvp.Key.KeyModel == DashConstants.KeyStore.ThisKey)
+                    if (kvp.Key.Equals(KeyStore.ThisKey))
                         fields[kvp.Key] = new DocumentFieldModelController(copy);
                     else fields[kvp.Key] = kvp.Value.Copy();
                 }

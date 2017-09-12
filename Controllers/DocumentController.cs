@@ -594,7 +594,7 @@ namespace Dash
             {
                 return;
             }
-            if (args.Context.HasAncestorOf(this))
+            if (args.Context.ContainsAncestorOf(this))
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);

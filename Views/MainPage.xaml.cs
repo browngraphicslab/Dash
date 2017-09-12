@@ -391,5 +391,39 @@ namespace Dash
                 DisplayDocument(delNumbers);
             }
         }
+
+        private void DocPointerReferenceOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
+            var innerDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Prototype text")
+            };
+            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
+            var dict = new Dictionary<KeyController, FieldModelController>
+            {
+                [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
+            };
+            var proto = new DocumentController(dict, DocumentType.DefaultType);
+
+            var freeform = new FreeFormDocument(new List<DocumentController>{new TextingBox(new ReferenceFieldModelController(
+                new DocumentFieldReference(proto.GetId(), KeyStore.DataKey), textKey)).Document}, new Point(0, 0), new Size(400, 400)).Document;
+            proto.SetActiveLayout(freeform, true, false);
+
+            var del1 = proto.MakeDelegate();
+            var delLayout = del1.GetActiveLayout().Data.MakeDelegate();
+            delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del1.SetActiveLayout(delLayout, true, false);
+
+            var innerDelDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Delegate 1 text")
+            };
+            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
+            del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
+
+            DisplayDocument(proto);
+            DisplayDocument(del1);
+        }
     }
 }

@@ -429,6 +429,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
+            //TODO This disables dragging in the freeform view, this should be uncommented at some point
             //this.CanDrag = ViewModel.IsLowestSelected;
             //this.DragStarting -= ViewModel.DocumentView_DragStarting;
             //this.DragStarting += ViewModel.DocumentView_DragStarting;
