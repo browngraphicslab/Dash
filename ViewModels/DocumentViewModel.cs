@@ -21,7 +21,6 @@ namespace Dash
     {
 
         // == MEMBERS, GETTERS, SETTERS ==
-        private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
         private TransformGroupData _normalGroupTransform;
@@ -31,9 +30,6 @@ namespace Dash
         private IconTypeEnum iconType;
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
-        private bool _isDetailedUserInterfaceVisible = true;
-        private bool _isMoveable = true;
-        private WidthAndMenuOpenWrapper _widthBinding;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
@@ -188,19 +184,58 @@ namespace Dash
             }
         }
 
+
+        string _displayName = "<doc>";
+
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set {
+                if (SetProperty<string>(ref _displayName, value)) {
+                    OnPropertyChanged("DisplayName");
+                }
+            }
+        }
+
         public void UpdateContent()
         {
             _content = null;
             OnPropertyChanged(nameof(Content));
+            this.DocumentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated1;
         }
 
-        public readonly bool IsInInterfaceBuilder;
+        private void DocumentController_DocumentFieldUpdated1(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var context = args.Context;
+            var primKeys = sender.GetDereferencedField(KeyStore.PrimaryKeyKey, context)?.GetValue(context) as List<FieldModelController>;
+
+            if (primKeys != null && primKeys.Select((k) => (k as TextFieldModelController).Data).Contains(args.Reference.FieldKey.KeyModel.Id))
+            {
+                updateDisplayName();
+            }
+        }
+
+        private void updateDisplayName()
+        {
+            var keyList = DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                var docString = "";
+                foreach (var k in keys.Data)
+                {
+                    var keyField = DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
+                    if (keyField is TextFieldModelController)
+                        docString += (keyField as TextFieldModelController).Data + " ";
+                }
+                DisplayName = docString.TrimEnd(' ');
+            }
+        }
 
         public Context Context { get; set; }
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
@@ -213,6 +248,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
+            updateDisplayName();
         }
 
         private void SetUpSmallIcon()
@@ -429,6 +465,8 @@ namespace Dash
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            Debug.WriteLine("djkaldfjkalfjdakl;fd");
+
             var docView = sender as DocumentView;
             DocumentView.DragDocumentView = docView;
 

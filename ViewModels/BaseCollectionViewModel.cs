@@ -149,6 +149,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            //restore previous conditions 
             if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
             this.RemoveDragDropIndication(sender as SelectionElement);
@@ -341,10 +342,11 @@ namespace Dash
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
             {
-                var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);
-                e.AcceptedOperation = sourceIsOurself
-                    ? DataPackageOperation.None // don't accept drag event from ourself
-                                : DataPackageOperation.Move;
+                //var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);          // technically don't need this anymore 
+                //e.AcceptedOperation = sourceIsOurself
+                //    ? DataPackageOperation.None // don't accept drag event from ourself
+                //                : DataPackageOperation.Move;
+                e.AcceptedOperation = DataPackageOperation.Move; 
 
                 ItemsCarrier.Instance.Destination = this;
             }
