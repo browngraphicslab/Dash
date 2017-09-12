@@ -36,7 +36,7 @@
         <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#99FFFFFF"/> <!--Fill="{StaticResource TranslucentWhite}"-->
 
         <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
-            <TextBox x:Name="xDocumentDisplay" Text="{Binding Converter={StaticResource DocumentViewModelToStringConverter}}"></TextBox>
+            <TextBox x:Name="xDocumentDisplay" Text="{Binding DisplayName}" ></TextBox>
         </Viewbox>
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -50,7 +50,7 @@
                 <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
                      HorizontalAlignment="Center"
                      TextAlignment="Center"
-                     Background="Transparent" Text="Name Here" BorderThickness="0"/>
+                     Background="Transparent" Text="{Binding DisplayName}" BorderThickness="0"/>
             </StackPanel>
         </Grid>
         
