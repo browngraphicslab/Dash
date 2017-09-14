@@ -76,6 +76,25 @@ namespace Dash
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
+        public static DocumentController MakeActiveLayoutDelegate(this DocumentController doc, double ? width=null, double ? height=null)
+        {
+            var layoutDelegateDoc = doc.GetActiveLayout(new Context(doc))?.Data?.MakeDelegate();
+            if (layoutDelegateDoc != null)
+            {
+                if (width.HasValue)
+                    layoutDelegateDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController((double)width), true);
+                else
+                    layoutDelegateDoc.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.HorizontalAlignment.Stretch.ToString()), true);
+                if (height.HasValue)
+                    layoutDelegateDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController((double)height), true);
+                else
+                    layoutDelegateDoc.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.VerticalAlignment.Stretch.ToString()), true);
+                layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
+            }
+            else
+                layoutDelegateDoc = doc;
+            return layoutDelegateDoc;
+        }
 
         public static void SetPrototypeActiveLayout(this DocumentController doc, DocumentController activeLayout, Context context = null)
         {

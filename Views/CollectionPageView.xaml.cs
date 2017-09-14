@@ -29,84 +29,61 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += CollectionPageView_DataContextChanged;
+            xThumbs.SizeChanged += (sender, e) =>
+            {
+                foreach (var t in ViewModel.ThumbDocumentViewModels)
+                    t.Height = xThumbs.ActualHeight;
+            };
         }
+        public static KeyController DocumentContextKey = new KeyController("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC", "Data Context Key");
+
         public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+
 
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            foreach (var vm in ViewModel.DocumentViewModels.Reverse())
+            ViewModel.ThumbDocumentViewModels.Clear();
+            foreach (var pageDoc in ViewModel.DocumentViewModels.Reverse().Select((vm) => vm.DocumentController))
             {
-                var pageDocDelegate = vm.DocumentController.MakeDelegate();
-                var pageDocLayoutDelegate = pageDocDelegate.GetActiveLayout(new Context(pageDocDelegate))?.Data?.MakeDelegate();
-                if (pageDocLayoutDelegate != null)
-                {
-                    pageDocLayoutDelegate.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(double.NaN), true);
-                    pageDocLayoutDelegate.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(double.NaN), true);
-                    pageDocLayoutDelegate.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
-                    pageDocDelegate.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(pageDocLayoutDelegate), true);
-                }
+                var pageDocLayoutDelegate = pageDoc.MakeActiveLayoutDelegate(double.NaN, double.NaN);
+                pageDocLayoutDelegate.SetField(DocumentContextKey, new DocumentFieldModelController(pageDoc), true);
 
-                CurPage = new DocumentViewModel(pageDocDelegate);
+                CurPage = new DocumentViewModel(pageDocLayoutDelegate);
                 PageDocumentViewModels.Insert(0,CurPage);
 
-                var thumbnailImageDoc = (pageDocDelegate.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data?.MakeDelegate();
-                if (thumbnailImageDoc != null)
-                {
-                    var thumbnailLayoutDoc = thumbnailImageDoc.GetActiveLayout(new Context(thumbnailImageDoc))?.Data?.MakeDelegate();
-                    if (thumbnailLayoutDoc != null)
-                    {
-                        thumbnailLayoutDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(double.NaN), true);
-                        thumbnailLayoutDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(double.NaN), true);
-                        thumbnailLayoutDoc.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
-                        thumbnailLayoutDoc.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-                        thumbnailLayoutDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
-                        thumbnailImageDoc.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(thumbnailLayoutDoc), true);
-                    }
-                    pageDocDelegate.SetField(KeyStore.ThumbnailFieldKey, new DocumentFieldModelController(thumbnailImageDoc), true);
-                }
-                else
-                    thumbnailImageDoc = vm.DocumentController;
-                var dvm = new DocumentViewModel(thumbnailImageDoc);
-                var doc = new DocumentView(dvm);
-                
-                xThumbs.Children.Insert(0,doc);
+                var thumbnailImageDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data?.MakeDelegate();
+                var thumbnailImageDocLayout =  thumbnailImageDoc != null ? thumbnailImageDoc.MakeActiveLayoutDelegate(double.NaN,double.NaN) : pageDoc;
+                thumbnailImageDoc.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(thumbnailImageDocLayout), true);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageDoc));
             }
         }
-        
+
         public DocumentViewModel CurPage
         {
             get { return this.xDocView.DataContext as DocumentViewModel; }
             set
             {
-                value.Width = value.Height = double.NaN;
-                this.xDocView.DataContext = value;
+                xDocView.DataContext = value;
 
                 // replace old layout of page name/id with a new one because
                 // fieldbinding's can't be removed yet
                 navBar.Children.Remove(xPageNum);
                 xPageNum = new Button() { Name = "xPageNum" };
                 RelativePanel.SetRightOf(xPageNum, this.fitPageButton);
+
                 var binding = new FieldBinding<DocumentFieldModelController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = value.DocumentController,
-                    Key = KeyStore.ThisKey,
+                    Key = value.DocumentController.GetField(DocumentContextKey, true) == null ? KeyStore.ThisKey : DocumentContextKey,
                     Converter = new DocumentControllerToStringConverter()
                 };
                 
-                xPageNum.AddFieldBinding(Button.ContentProperty, binding);
                 navBar.Children.Add(xPageNum);
+                xPageNum.AddFieldBinding(Button.ContentProperty, binding);
             }
         }
-        private void XGridView_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            //_scrollViewer = xGridView.GetFirstDescendantOfType<ScrollViewer>();
-            //_scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
-            //UpdateVisibleIndices(true);
-        }
-
-        private int _prevOffset;
 
         #region ItemSelection
 
@@ -174,6 +151,21 @@ namespace Dash
         }
 
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+           
+        }
+
+        private void xThumbs_ItemClick(object sender, ItemClickEventArgs e)
         {
 
         }
