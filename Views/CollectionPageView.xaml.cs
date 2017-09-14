@@ -69,9 +69,7 @@ namespace Dash
                     thumbnailImageDoc = vm.DocumentController;
                 var dvm = new DocumentViewModel(thumbnailImageDoc);
                 var doc = new DocumentView(dvm);
-
-                //doc.HorizontalAlignment = HorizontalAlignment.Stretch;
-                //doc.VerticalAlignment = VerticalAlignment.Stretch;
+                
                 xThumbs.Children.Insert(0,doc);
             }
         }
