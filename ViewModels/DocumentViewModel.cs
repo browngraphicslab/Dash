@@ -23,7 +23,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
-        private TransformGroupData _normalGroupTransform;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
@@ -62,15 +62,8 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-                    var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
-
                     var widthFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.WidthFieldKey, context) as
-                            NumberFieldModelController;
+                        LayoutDocument.GetDereferencedField(KeyStore.WidthFieldKey, new Context(DocumentController)) as NumberFieldModelController;
 
                     if (widthFieldModelController != null)
                     {
@@ -87,13 +80,8 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-                    var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
                     var heightFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.HeightFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.HeightFieldKey, new Context(DocumentController)) as
                             NumberFieldModelController;
                     if (heightFieldModelController != null)
                         heightFieldModelController.Data = value;
@@ -114,27 +102,22 @@ namespace Dash
 
                 if (SetProperty(ref _normalGroupTransform, value))
                 {
-                    // get layout
                     var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
                     // set position
                     var posFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.PositionFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
                     //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
                     posFieldModelController.Data = value.Translate;
                     // set scale center
                     var scaleCenterFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
                             PointFieldModelController;
                     if (scaleCenterFieldModelController != null)
                         scaleCenterFieldModelController.Data = value.ScaleCenter;
                     // set scale amount
                     var scaleAmountFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
                             PointFieldModelController;
                     if (scaleAmountFieldModelController != null)
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
@@ -178,7 +161,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
+                    _content = DocumentController.MakeViewUI(new Context(LayoutDocument), IsInInterfaceBuilder);
                 }
                 return _content;
             }
@@ -233,10 +216,10 @@ namespace Dash
         }
 
         public Context Context { get; set; }
-
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;
+
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
@@ -290,7 +273,15 @@ namespace Dash
             var icon = (NumberFieldModelController)DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
-
+        
+        public DocumentController LayoutDocument
+        {
+            get
+            {
+                var layoutDoc = (DocumentController?.GetDereferencedField(KeyStore.ActiveLayoutKey, new Context(DocumentController)) as DocumentFieldModelController)?.Data;
+                return layoutDoc == null ? DocumentController : layoutDoc;
+            }
+        }
         public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
 
         public event OnLayoutChangedHandler LayoutChanged;
@@ -311,7 +302,6 @@ namespace Dash
 
         private void ListenToTransformGroupField(DocumentController docController)
         {
-            var posFieldModelController = docController.GetPositionField();
             var activeLayout = docController.GetActiveLayout()?.Data;
             if (activeLayout != null)
             {
@@ -319,6 +309,7 @@ namespace Dash
                 var scaleAmountFieldModelController = docController.GetScaleAmountField();
                 if (scaleCenterFieldModelController != null)
                 {
+                    var posFieldModelController = docController.GetPositionField();
                     if (scaleAmountFieldModelController != null)
                         GroupTransform = new TransformGroupData(posFieldModelController.Data,
                             scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
@@ -440,7 +431,7 @@ namespace Dash
         {
             var copy = DocumentController.GetCopy();
             var layoutField = copy.GetActiveLayout().Data;
-            var layoutCopy = layoutField.GetCopy();
+            var layoutCopy = layoutField?.GetCopy();
             copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
             var positionField = copy.GetPositionField();
             if (positionField != null)
@@ -497,10 +488,9 @@ namespace Dash
 
         public void Dispose()
         {
-            var layoutDoc = DocumentController.GetActiveLayout()?.Data;
-            if (layoutDoc != null)
+            if (LayoutDocument != null)
             {
-                RemoveListenersFromLayout(layoutDoc);
+                RemoveListenersFromLayout(LayoutDocument);
             }
             RemoveControllerListeners();
         }

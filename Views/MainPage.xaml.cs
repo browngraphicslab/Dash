@@ -53,8 +53,11 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
+            
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection

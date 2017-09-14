@@ -53,7 +53,6 @@ namespace Dash
             // add manipulation code
             manipulator = new ManipulationControls(this, true, true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
-
             // set bounds
             MinWidth = 100;
 
@@ -92,9 +91,13 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
-                ViewModel.Width = ActualWidth;
-                ViewModel.Height = ActualHeight;
-            }
+                //if (Parent == null)
+                //    ViewModel.Width = ActualWidth;
+                //else ViewModel.Width = double.NaN;
+                //if (Parent == null)
+                //    ViewModel.Height = ActualHeight;
+                //else ViewModel.Height = double.NaN;
+              }
         }
 
 
@@ -188,6 +191,11 @@ namespace Dash
             Debug.Assert(dvm != null, "dvm != null");
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
+            // should we allow documents with NaN's for width & height to be resized?
+            //if (double.IsNaN(dvm.Width))
+            //    dvm.Width = ActualWidth + dx;
+            //if (double.IsNaN(dvm.Height))
+            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 

@@ -184,7 +184,7 @@ namespace Dash
                         fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
                         var pdfDoc = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
                         var pdfLayout =
-                            new CollectionBox(new ReferenceFieldModelController(pdfDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, double.NaN, double.NaN, CollectionView.CollectionViewType.Grid).Document;
+                            new CollectionBox(new ReferenceFieldModelController(pdfDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Grid).Document;
                         pdfDoc.SetActiveLayout(pdfLayout, forceMask: true, addToLayoutList: true);
 
 
@@ -205,20 +205,29 @@ namespace Dash
 
                                 // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
                                 var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
+                                var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
+                                    300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50);
 
-                                var pageFields = new Dictionary<KeyController, FieldModelController>();
-                                pageFields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                                // define a new "document type"...
+                                var pageFields = new Dictionary<KeyController, FieldModelController>
+                                {
+                                    // it has a page title
+                                    [AnnotatedImage.TitleFieldKey] = new TextFieldModelController(storageFile.Path + ": Page " + i),
+                                    // the page title is it's primary key
+                                    [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(AnnotatedImage.TitleFieldKey.Id) }),
+                                    // it has a document collection containing the PDF page
+                                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>(new DocumentController[] { image.Document })),
+                                    // it has thumbnail field
+                                    [KeyStore.ThumbnailFieldKey] =  new DocumentFieldModelController(image.Document)
+                                };
                                 var pageDoc = new DocumentController(pageFields, DashConstants.DocumentTypeStore.CollectionDocument);
-                                var pageLayout =
-                                    new CollectionBox(new ReferenceFieldModelController(pageDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-                                pageDoc.SetActiveLayout(pageLayout, forceMask: true, addToLayoutList: true);
-
-                                var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap), 
-                                    "page " + i, 300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth);
-                                DBTest.ResetCycleDetection();
-                                var pagechildren = pageDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
-                                pagechildren?.AddDocument(image.Document);
+                                pageDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(pageDoc), true);
                                 children?.AddDocument(pageDoc);
+
+                                var pageLayout = new CollectionBox(new ReferenceFieldModelController(pageDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 150).Document;
+                                pageLayout.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+                                pageLayout.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
+                                pageDoc.SetActiveLayout(pageLayout, forceMask: true, addToLayoutList: true);
                             }
                         MainPage.Instance.DisplayDocument(pdfDoc, where);
                     }
