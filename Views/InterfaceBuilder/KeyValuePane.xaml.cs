@@ -355,6 +355,7 @@ namespace Dash
                 {
                     DBTest.ResetCycleDetection();
                     var field = _documentControllerDataContext.GetDereferencedField<FieldModelController>(_selectedKV.Key, new Context(_documentControllerDataContext));
+                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();
                 }
             };
