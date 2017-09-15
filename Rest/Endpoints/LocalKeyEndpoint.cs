@@ -31,6 +31,7 @@ namespace Dash
             {
                 var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerKeyFilepath);
                 _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
+                _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
             }
             catch (Exception e)
             {
@@ -89,11 +90,11 @@ namespace Dash
             AddKey(keyToUpdate, success, error);
         }
 
-        public void GetKey(string id, Action<KeyModel> success, Action<Exception> error)
+        public async Task GetKey(string id, Func<KeyModel, Task> success, Action<Exception> error)
         {
             try
             {
-                success(JsonConvert.DeserializeObject<KeyModel>(_modelDictionary[id]));
+                await success(JsonConvert.DeserializeObject<KeyModel>(_modelDictionary[id]));
             }
             catch (Exception e)
             {

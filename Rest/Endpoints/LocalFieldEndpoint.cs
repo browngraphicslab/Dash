@@ -31,6 +31,7 @@ namespace Dash
             {
                 var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerFieldFilepath);
                 _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
+                _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
             }
             catch (Exception e)
             {
@@ -73,7 +74,7 @@ namespace Dash
         {
             try
             {
-                _modelDictionary[newField.Id] = JsonConvert.SerializeObject(newField);
+                _modelDictionary[newField.Id] = JsonConvert.SerializeObject(newField.GetFieldDTO());
                 success(JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[newField.Id]));
             }
             catch (Exception e)
@@ -87,11 +88,12 @@ namespace Dash
             AddField(fieldToUpdate, success,error);
         }
 
-        public async Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
+        public async Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error)
         {
             try
             {
-                success(JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[id]));
+                var model = JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[id]);
+                await success(model);
             }
             catch (Exception e)
             {

@@ -22,7 +22,7 @@ namespace Dash
         /// <param name="error"></param>
         void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error);
 
-        Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error);
+        Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error);
         Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error);
     }
 }

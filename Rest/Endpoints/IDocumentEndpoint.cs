@@ -56,6 +56,6 @@ namespace Dash
         /// <param name="error"></param>
         void DeleteAllDocuments(Action success, Action<Exception> error);
 
-        Task GetDocumentByType(DocumentType documentType, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error);
+        Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error);
     }
 }

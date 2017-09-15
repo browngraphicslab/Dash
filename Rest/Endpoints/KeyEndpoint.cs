@@ -76,13 +76,13 @@ namespace Dash
             }
         }
 
-        public async void GetKey(string id, Action<KeyModel> success, Action<Exception> error)
+        public async Task GetKey(string id, Func<KeyModel, Task> success, Action<Exception> error)
         {
             try
             {
                 var key = await _connection.GetItem<KeyModel>($"api/Key/{id}");
 
-                success(key);
+                await success(key);
             }
             catch (Exception e)
             {

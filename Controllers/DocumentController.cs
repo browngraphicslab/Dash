@@ -160,6 +160,11 @@ namespace Dash
 
                 var fieldController = await FieldModelController.CreateFromServer(field);
 
+                if (keyController.Equals(KeyStore.ActiveLayoutKey))
+                {
+                    var brk = 1;
+                }
+
                 fieldDict.Add(keyController, fieldController);
             }
 

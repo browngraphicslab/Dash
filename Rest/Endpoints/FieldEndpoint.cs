@@ -90,14 +90,14 @@ namespace Dash
             });
         }
 
-        public async Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
+        public async Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error)
         {
             await Task.Run(async () =>
             {
                 try
                 {
                     var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
-                    success(fieldModelDTO);
+                    await success(fieldModelDTO);
                 }
                 catch (Exception e)
                 {

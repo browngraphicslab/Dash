@@ -98,7 +98,7 @@ namespace Dash
         {
             DocumentViewModel homePageViewModel;
 
-            async void Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
+            async Task Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
             {
                 var documentModelDto = homePageDocDtos.FirstOrDefault();
                 if (documentModelDto != null)

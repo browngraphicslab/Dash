@@ -1,5 +1,6 @@
 using System;
 using DashShared;
+using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -19,7 +20,7 @@ namespace Dash
         /// <param name="error"></param>
         void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error);
 
-        void GetKey(string id, Action<KeyModel> success, Action<Exception> error);
+        Task GetKey(string id, Func< KeyModel, Task> success, Action<Exception> error);
         void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error);
     }
 }

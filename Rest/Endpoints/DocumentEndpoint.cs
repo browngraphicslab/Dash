@@ -186,12 +186,12 @@ namespace Dash
         }
 
 
-        public async Task GetDocumentByType(DocumentType documentType, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
+        public async Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
         {
             try
             {
                 var response = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/type/{documentType.Id}");
-                success(response);
+                await success(response);
             }
             catch (Exception e)
             {
