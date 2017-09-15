@@ -106,6 +106,9 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="SearchMenuFlyout.xaml.cs">
+      <DependentUpon>SearchMenuFlyout.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\FileDropHelper.cs" />
     <Compile Include="Views\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
@@ -531,6 +534,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SearchMenuFlyout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

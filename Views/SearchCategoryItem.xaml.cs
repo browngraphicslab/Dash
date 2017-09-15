@@ -51,7 +51,9 @@ namespace Dash
         /// Background color of the listview
         /// </summary>
         public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
-        
+
+        private Action<Func<DocumentController>> _action;
+
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
         /// </summary>
@@ -68,11 +70,25 @@ namespace Dash
             xList.DisplayMemberPath = nameof(OperatorBuilder.Name);
             ListDisplayMemberPath = xList.DisplayMemberPath;
 
+            _action = action;
+
             xList.Tapped += delegate
             {
-                action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
-                MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+                //action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
+                //MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+                ActivateItem();
             };
+
+            
         }
+
+        public void ActivateItem()
+        {
+            _action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
+            MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+        }
+        
+
+        
     }
 }

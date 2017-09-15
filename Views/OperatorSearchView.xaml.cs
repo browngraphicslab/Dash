@@ -87,6 +87,11 @@ namespace Dash
             xMainGrid.Children.Add(SearchView = new SearchView(categories));
         }
 
+        public void SetTextBoxFocus()
+        {
+            SearchView?.SetTextBoxFocus();
+        }
+
         private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             MainPage.Instance.xCanvas.Children.Remove(Instance);

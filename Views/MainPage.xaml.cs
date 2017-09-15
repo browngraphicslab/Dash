@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -41,6 +42,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
+        private Flyout OperatorMenuFlyout;
 
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
@@ -82,9 +84,83 @@ namespace Dash
                 _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
             };
             Loaded += OnLoaded;
-            //xCanvas.Children.Add(_radialMenu);
+
+            //KeyUp += OnKeyUp;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+
+           
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
+        {
+            if (e.VirtualKey == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x, y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                OperatorSearchView.AddsToThisCollection = topCollection as CollectionFreeformView;
+                if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
+                {
+                    xCanvas.Children.Add(OperatorSearchView.Instance);
+                }
+                Canvas.SetLeft(OperatorSearchView.Instance, pos.X);
+                Canvas.SetTop(OperatorSearchView.Instance, pos.Y);
+                //OperatorMenuFlyout.ShowAt(this);
+                OperatorSearchView.Instance.SetTextBoxFocus();
+            }
+
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                xCanvas.Children.Remove(OperatorSearchView.Instance);
+            }
+
+            if (e.VirtualKey == VirtualKey.Down)
+            {
+
+                OperatorSearchView.Instance.SearchView.MoveSelectedDown();
+            }
+
+            if (e.VirtualKey == VirtualKey.Up)
+            {
+
+                OperatorSearchView.Instance.SearchView.MoveSelectedUp();
+            }
+
+            if (e.VirtualKey == VirtualKey.Enter)
+            {
+                OperatorSearchView.Instance.SearchView.ActivateItem();
+            }
 
         }
+
+        private void OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x,y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                OperatorSearchView.AddsToThisCollection = topCollection as CollectionFreeformView;
+                if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
+                xCanvas.Children.Add(OperatorSearchView.Instance);
+                Canvas.SetLeft(OperatorSearchView.Instance, pos.X);
+                Canvas.SetTop(OperatorSearchView.Instance, pos.Y);
+                OperatorSearchView.Instance.SetTextBoxFocus();
+            }
+
+            if (e.Key == VirtualKey.Escape)
+            {
+                xCanvas.Children.Remove(OperatorSearchView.Instance);
+            }
+
+        }
+
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -94,6 +170,12 @@ namespace Dash
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
             GlobalInkSettings.Opacity = 1;
+
+            OperatorMenuFlyout = new Flyout
+            {
+                Content = OperatorSearchView.Instance,
+                
+            };
         }
 
         public CollectionView GetMainCollectionView()
