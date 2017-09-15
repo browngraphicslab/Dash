@@ -223,27 +223,27 @@ namespace Dash
             var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]
 
             var docName = path[0];                       //search for <DocName=a>[.<FieldName=b>]
-            var fieldName = (path.Count() > 1 ? path[1] : "");
+            var fieldName = (path.Length > 1 ? path[1] : "");
             var refDoc = docName == "Proto" ? GetPrototype() : docName == "This" ? this : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
             if (refDoc != null)
             {
-                if (path.Count() == 1)
+                if (path.Length == 1)
                 {
-                    return refDoc.GetField(KeyStore.ThisKey);  // found <DocName=a>
+                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
                 }
-                else
-                    foreach (var e in refDoc.EnumFields())
-                        if (e.Key.Name == path[1])
-                        {
-                            return new ReferenceFieldModelController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
-                        }
-            }
+                foreach (var e in refDoc.EnumFields())
+                    if (e.Key.Name == path[1])
+                    {
+                        return new ReferenceFieldModelController(refDoc.GetId(),
+                            e.Key); // found <DocName=a>.<FieldName=b>
+                    }
 
-            foreach (var e in this.EnumFields())
-                if (e.Key.Name == path[0])
-                {
-                    return new ReferenceFieldModelController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
-                }
+                foreach (var e in this.EnumFields())
+                    if (e.Key.Name == path[0])
+                    {
+                        return new ReferenceFieldModelController(refDoc.GetId(), e.Key); // found This.<FieldName=a>
+                    }
+            }
 
             //if (searchAllDocsIfFail)
             //{
@@ -477,7 +477,8 @@ namespace Dash
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
             }
-            if (shouldExecute) { 
+            if (shouldExecute)
+            {
                 Execute(c, true);
             }
             return shouldExecute;
@@ -754,7 +755,7 @@ namespace Dash
             var isInterfaceBuilder = false; // TODO make this a parameter
 
             Action<KeyValuePair<KeyController, FieldModelController>> a =
-                delegate(KeyValuePair<KeyController, FieldModelController> f)
+                delegate (KeyValuePair<KeyController, FieldModelController> f)
                 {
                     if (f.Key.Equals(KeyStore.DelegatesKey) ||
                         f.Key.Equals(KeyStore.PrototypeKey) ||
@@ -768,8 +769,8 @@ namespace Dash
                     if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController ||
                         f.Value is NumberFieldModelController)
                     {
-                        var hstack = new StackPanel {Orientation = Orientation.Horizontal};
-                        var label = new TextBlock {Text = f.Key.Name + ": "};
+                        var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+                        var label = new TextBlock { Text = f.Key.Name + ": " };
                         var refField = new ReferenceFieldModelController(GetId(), f.Key);
                         var dBox = f.Value is ImageFieldModelController
                             ? new ImageBox(refField).Document
