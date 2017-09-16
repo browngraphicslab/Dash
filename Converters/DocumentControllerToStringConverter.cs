@@ -242,4 +242,21 @@ namespace Dash.Converters
             return null;
         }
     }
+    public class DocumentToViewModelConverter : SafeDataToXamlConverter<DocumentController, DocumentViewModel>
+    {
+        public DocumentToViewModelConverter()
+        {
+        }
+        
+
+        public override DocumentViewModel ConvertDataToXaml(DocumentController data, object parameter = null)
+        {
+            return new DocumentViewModel(data);
+        }
+
+        public override DocumentController ConvertXamlToData(DocumentViewModel xaml, object parameter = null)
+        {
+            return xaml.DocumentController;
+        }
+    }
 }
