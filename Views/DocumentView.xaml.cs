@@ -59,7 +59,6 @@ namespace Dash
             // add manipulation code
             manipulator = new ManipulationControls(this, true, true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
-
             // set bounds
             MinWidth = 100;
 
@@ -105,9 +104,13 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
-                ViewModel.Width = ActualWidth;
-                ViewModel.Height = ActualHeight;
-            }
+                //if (Parent == null)
+                //    ViewModel.Width = ActualWidth;
+                //else ViewModel.Width = double.NaN;
+                //if (Parent == null)
+                //    ViewModel.Height = ActualHeight;
+                //else ViewModel.Height = double.NaN;
+              }
         }
 
 
@@ -135,6 +138,7 @@ namespace Dash
         {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
+            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null); 
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
@@ -142,8 +146,18 @@ namespace Dash
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
+
+                moveButton
             };
+
+            var moveButtonView = moveButton.View;
+            moveButtonView.CanDrag = true;
+            moveButtonView.DragStarting += (s, e) =>
+            {
+                ViewModel.DocumentView_DragStarting(this, e);
+            };
+
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
             {
@@ -190,6 +204,11 @@ namespace Dash
             Debug.Assert(dvm != null, "dvm != null");
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
+            // should we allow documents with NaN's for width & height to be resized?
+            //if (double.IsNaN(dvm.Width))
+            //    dvm.Width = ActualWidth + dx;
+            //if (double.IsNaN(dvm.Height))
+            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -442,9 +461,10 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            this.CanDrag = ViewModel.IsLowestSelected;
-            this.DragStarting -= ViewModel.DocumentView_DragStarting;
-            this.DragStarting += ViewModel.DocumentView_DragStarting;
+            //TODO This disables dragging in the freeform view, this should be uncommented at some point
+            //this.CanDrag = ViewModel.IsLowestSelected;
+            //this.DragStarting -= ViewModel.DocumentView_DragStarting;
+            //this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)

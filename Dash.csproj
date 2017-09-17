@@ -121,6 +121,15 @@
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Data.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Events.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Helper.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Options.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GripperHoverWrapper.cs" />
+    <Compile Include="Views\CollectionPageView.xaml.cs">
+      <DependentUpon>CollectionPageView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionTextView.xaml.cs">
       <DependentUpon>CollectionTextView.xaml</DependentUpon>
     </Compile>
@@ -543,6 +552,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InkSettingsPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

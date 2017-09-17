@@ -224,7 +224,7 @@ namespace Dash
                     double currentValue = 0;
                     if (!xWidthTextBox.Text.Equals(string.Empty))
                     {
-                        currentValue = double.Parse(xWidthTextBox.Text);
+                        double.TryParse(xWidthTextBox.Text, out currentValue);
                     }
                     if (currentValue != 0)
                     {
@@ -241,7 +241,7 @@ namespace Dash
                     double currentValue = 0;
                     if (!xHeightTextBox.Text.Equals(string.Empty))
                     {
-                        currentValue = double.Parse(xHeightTextBox.Text);
+                        double.TryParse(xHeightTextBox.Text, out currentValue);
                     }
                     if (currentValue != 0)
                     {
