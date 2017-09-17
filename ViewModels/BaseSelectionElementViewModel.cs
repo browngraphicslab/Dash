@@ -53,7 +53,7 @@ namespace Dash
             }
         }
 
-        protected readonly bool IsInInterfaceBuilder;
+        public readonly bool IsInInterfaceBuilder;
 
         protected BaseSelectionElementViewModel(bool isInInterfaceBuilder)
         {

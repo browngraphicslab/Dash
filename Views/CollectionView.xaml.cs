@@ -77,8 +77,10 @@ namespace Dash
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
                     break;
+                    CurrentView = new CollectionPageView();
                 case CollectionViewType.List:
-                    CurrentView = new CollectionListView();
+                    CurrentView = new CollectionPageView();
+                   // CurrentView = new CollectionListView();
                     break;
                 case CollectionViewType.Text:
                     CurrentView = new CollectionTextView();
@@ -152,6 +154,12 @@ namespace Dash
         {
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
+            xContentControl.Content = CurrentView;
+        }
+        private void SetBrowseView()
+        {
+            if (CurrentView is CollectionPageView) return;
+            CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
         }
 
@@ -240,6 +248,7 @@ namespace Dash
             var noSelection = new Action(MakeSelectionModeNone);
             var selectAll = new Action(SelectAllItems);
             var setGrid = new Action(SetGridView);
+            var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
@@ -252,7 +261,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))

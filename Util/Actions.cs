@@ -92,7 +92,7 @@ namespace Dash
 
             var fields = new Dictionary<KeyController, FieldModelController>()
             {
-                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document)
             };
 
             collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
@@ -112,7 +112,7 @@ namespace Dash
             documentController.SetActiveLayout(
                 new CollectionBox(
                         new ReferenceFieldModelController(documentController.GetId(),
-                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
+                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y, 400, 400)
                     .Document, true, true);
 
             collection.ViewModel.AddDocument(documentController, null);
@@ -188,41 +188,35 @@ namespace Dash
             }
             var fields = new Dictionary<KeyController, FieldModelController>
             {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(numbers)
-                }
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
-            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
+            var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+            var layoutDocument = new CollectionBox(new ReferenceFieldModelController(collectionDocument.GetId(),  
+                DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+            collectionDocument.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDocument), true);
+            collectionDocument.SetField(KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDocument }), true);
 
-            //Make second collection
+            // Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
             var fields2 = new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new[]
-                    {numbers2, twoImages2})
+                new DocumentCollectionFieldModelController(new[] {numbers2, twoImages2})
             };
             var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
             col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
             col2.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
+                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections
             DisplayDocument(collection, col2, where);
-            DisplayDocument(collection, col, where);
+            DisplayDocument(collection, collectionDocument, where);
         }
 
         public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
@@ -233,7 +227,7 @@ namespace Dash
                 var w = docController.GetWidthField().Data;
 
                 var pos = (Point)where;
-                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
             //DBTest.DBDoc.AddChild(docController);

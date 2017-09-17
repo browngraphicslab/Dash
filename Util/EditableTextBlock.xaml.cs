@@ -27,7 +27,7 @@ namespace Dash
 
         public string Text
         {
-            get { return (string)GetValue(TextProperty); }
+            get { return GetValue(TextProperty)?.ToString(); }
             set { SetValue(TextProperty, value); }
         }
 

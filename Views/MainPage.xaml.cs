@@ -56,8 +56,11 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
+            
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
@@ -442,7 +445,7 @@ namespace Dash
 
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var protoNumbers = new Numbers().Document;
+            var protoNumbers = new Numbers("1").Document;
             protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
             var protoLayout = protoNumbers.GetActiveLayout().Data;
             protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
@@ -452,7 +455,7 @@ namespace Dash
             Random r = new Random();
             for (int i = 0; i < 10; ++i)
             {
-                var delNumbers = protoNumbers.MakeDelegate();
+                var delNumbers = protoNumbers.MakeDelegate((i + 2).ToString());
                 //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);
@@ -464,6 +467,40 @@ namespace Dash
 
                 DisplayDocument(delNumbers);
             }
+        }
+
+        private void DocPointerReferenceOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
+            var innerDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Prototype text")
+            };
+            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
+            var dict = new Dictionary<KeyController, FieldModelController>
+            {
+                [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
+            };
+            var proto = new DocumentController(dict, DocumentType.DefaultType);
+
+            var freeform = new FreeFormDocument(new List<DocumentController>{new TextingBox(new ReferenceFieldModelController(
+                new DocumentFieldReference(proto.GetId(), KeyStore.DataKey), textKey)).Document}, new Point(0, 0), new Size(400, 400)).Document;
+            proto.SetActiveLayout(freeform, true, false);
+
+            var del1 = proto.MakeDelegate();
+            var delLayout = del1.GetActiveLayout().Data.MakeDelegate();
+            delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del1.SetActiveLayout(delLayout, true, false);
+
+            var innerDelDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Delegate 1 text")
+            };
+            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
+            del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
+
+            DisplayDocument(proto);
+            DisplayDocument(del1);
         }
     }
 }

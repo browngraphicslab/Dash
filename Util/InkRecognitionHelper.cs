@@ -269,13 +269,13 @@ namespace Dash
 
         #endregion
 
-
         #region Add collection, doc, operator
 
         private void AddCollectionFromShapeRegion(InkAnalysisInkDrawing region)
         {
             var regions = new List<IInkAnalysisNode>(_shapeRegions);
             List<DocumentController> recognizedDocuments = new List<DocumentController>();
+            //Look for rectangles inside ellipse and add them as docs to collection
             foreach (var child in regions.OfType<InkAnalysisInkDrawing>().Where(
                 r => RectContainsRect(region.BoundingRect, r.BoundingRect)))
             {
@@ -351,15 +351,16 @@ namespace Dash
                     var str = TextBoundsDictionary[rect].Item1;
                     TryGetText(str, out string text, out KeyController key);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                    bool isNumbers = double.TryParse(text, out double n);
-                    if (isNumbers)
-                    {
-                        doc.SetField(key, new NumberFieldModelController(n), true);
-                    }
-                    else
-                    {
-                        doc.SetField(key, new TextFieldModelController(text), true);
-                    }
+                    //bool isNumbers = double.TryParse(text, out double n);
+                    //if (isNumbers)
+                    //{
+                    //    doc.SetField(key, new NumberFieldModelController(n), true);
+                    //}
+                    //else
+                    //{
+                    //    doc.SetField(key, new TextFieldModelController(text), true);
+                    //}
+                    doc.ParseDocField(key, text);
                     var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key),
                         relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                     (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
@@ -448,6 +449,8 @@ namespace Dash
 
         private void TryGetText(string str, out string value, out KeyController key)
         {
+            value = str;
+            key = new KeyController(Guid.NewGuid().ToString(), str);
             if (str.Contains(':'))
             {
                 var splitstring = str.Split(':');
@@ -455,8 +458,7 @@ namespace Dash
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
                 key = new KeyController(Guid.NewGuid().ToString(), keystring);
             }
-            value = str;
-            key = new KeyController(Guid.NewGuid().ToString(), str);
+            
         }
 
         private bool RectContainsRect(Rect outer, Rect inner)
@@ -476,36 +478,6 @@ namespace Dash
                 if (!outer.Contains(point)) return false;
             return true;
         }
-
-        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetListBoundsDictionary()
-        //{
-        //    var textLineRegions = new List<InkAnalysisListItem>(Analyzer.AnalysisRoot
-        //        .FindNodes(InkAnalysisNodeKind.ListItem).Select(o => o as InkAnalysisListItem));
-        //    var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
-        //    foreach (var textLine in textLineRegions)
-        //    {
-        //        textBoundsDictionary[textLine.BoundingRect] =
-        //            new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-        //        Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
-        //    }
-
-        //    return textBoundsDictionary;
-        //}
-
-        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetParagraphBoundsDictionary()
-        //{
-        //    var textLineRegions = new List<InkAnalysisParagraph>(Analyzer.AnalysisRoot
-        //        .FindNodes(InkAnalysisNodeKind.Paragraph).Select(o => o as InkAnalysisParagraph));
-        //    var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
-        //    foreach (var textLine in textLineRegions)
-        //    {
-        //        textBoundsDictionary[textLine.BoundingRect] =
-        //            new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-        //        Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
-        //    }
-
-        //    return textBoundsDictionary;
-        //}
 
     }
 }
