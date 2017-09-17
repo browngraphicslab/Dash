@@ -164,7 +164,7 @@ namespace Dash
             documentController.SetActiveLayout(
                 new CollectionBox(
                         new ReferenceFieldModelController(documentController.GetId(),
-                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
+                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y, 400, 400)
                     .Document, true, true);
 
             collection.ViewModel.AddDocument(documentController, null);

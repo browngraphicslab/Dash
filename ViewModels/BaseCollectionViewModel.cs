@@ -392,7 +392,7 @@ namespace Dash
                 element.HasDragLeft = true;
                 var parent = element.ParentSelectionElement;
                 // if the current collection fires a dragleave event and its parent hasn't
-                if (!parent.HasDragLeft)
+                if (parent != null && !parent.HasDragLeft)
                 {
                     this.ChangeIndicationColor(parent, Colors.LightSteelBlue);
                 }

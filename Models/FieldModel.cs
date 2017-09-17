@@ -16,12 +16,6 @@ namespace Dash
             // Add Any Events
         }
 
-
-        /// <summary>
-        ///     Optional reference to a separate <see cref="FieldModel" /> that this <see cref="FieldModel" /> takes as input
-        /// </summary>
-        public ReferenceFieldModelController InputReference;
-
         /// <summary>
         /// Implemented by inheritors of this class. Builds the server-representation data transfer object
         /// representing this field. This includes two fields: the TypeInfo and Data field.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -63,7 +64,7 @@ namespace Dash
             };
 
             var c = new Context(context);
-            docController.AddFieldUpdatedListener(KeyStore.DataKey, delegate (DocumentController sender,
+            DocumentController.OnDocumentFieldUpdatedHandler onDocumentFieldUpdatedHandler = delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 var collFieldArgs =
@@ -77,7 +78,17 @@ namespace Dash
                 {
                     LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout);
                 }
-            });
+            };
+            grid.Loaded += delegate
+            {
+                Debug.WriteLine($"Add freeform listener {++i}");
+                docController.AddFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
+            };
+            grid.Unloaded += delegate
+            {
+                Debug.WriteLine($"Remove freeform listener {--i}");
+                docController.RemoveFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
+            };
             if (isInterfaceBuilderLayout)
             {
                 var icon = new TextBlock()
@@ -115,6 +126,7 @@ namespace Dash
             AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder);
         }
 
+        private static int i = 0;
         private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder)
         {
             foreach (var layoutDocument in docs)
