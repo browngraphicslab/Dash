@@ -73,6 +73,7 @@ namespace Dash
         {
             e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
+            ParentCollection.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()

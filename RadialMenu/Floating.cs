@@ -73,7 +73,6 @@
             {
                 //this.border.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY | ManipulationModes.TranslateInertia;
                 _border.ManipulationDelta += Border_ManipulationDelta;
-                _border.ManipulationCompleted += BorderOnManipulationCompleted;
 
                 // Move Canvas properties from control to border.
                 Canvas.SetLeft(_border, Canvas.GetLeft(this));
@@ -92,12 +91,6 @@
             }
 
             Loaded += Floating_Loaded;
-        }
-
-        //Stop bounce!
-        private void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
-        {
-            XDirection = YDirection = 1;
         }
 
         /// <summary>
@@ -162,17 +155,12 @@
         /// <param name="expectedWidth">Expected width of the floating control</param>
         public void ManipulateControlPosition(double x, double y, double expectedHeight, double expectedWidth)
         {
-            var left = Canvas.GetLeft(_border) + x;// * XDirection; //Bounce!
-            var top = Canvas.GetTop(_border) + y;// * YDirection; //Bounce!
+            var left = Canvas.GetLeft(_border) + x;
+            var top = Canvas.GetTop(_border) + y;
 
             Rect rect = new Rect(left, top, expectedWidth, expectedHeight);
             AdjustCanvasPosition(rect);
         }
-
-        //Bounce!
-        private int XDirection = 1;
-        //Bounce!
-        private int YDirection = 1;
 
         public void SetControlPosition(double x, double y)
         {
@@ -239,24 +227,20 @@
             if (left < -parentRect.Left)
             {
                 left = -parentRect.Left;
-                XDirection *= -1; //Bounce!
             }
             else if (left + rect.Width > parentRect.Width)
             {
                 left = parentRect.Width - rect.Width;
-                XDirection *= -1; //Bounce!
 
             }
 
             if (top < -parentRect.Top)
             {
                 top = -parentRect.Top;
-                YDirection *= -1; //Bounce!
             }
             else if (top + rect.Height > parentRect.Height)
             {
                 top = parentRect.Height - rect.Height;
-                YDirection *= -1; //Bounce!
             }
 
             return new Point(left, top);
