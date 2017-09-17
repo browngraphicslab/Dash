@@ -6,30 +6,107 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
+    d:DesignHeight="500"
     d:DesignWidth="400">
 
-    <Grid>
-        <StackPanel Orientation="Vertical">
+    <Grid Height="400">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+            <ColumnDefinition Width="220"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Top" x:Name="xDocumentPopout" Grid.Column="1" Margin="0" >
+            
+            <!-- Search Bar -->
+            <Grid BorderThickness="0,0,0,1" BorderBrush="#FFA8A7A7">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBox FontSize="14" BorderThickness="0" Padding="15,12,0,1" PlaceholderText="search documents..." Margin="0"></TextBox>
+                <Border Grid.Column="1" Background="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" BorderBrush="#FFA8A7A7" Height="auto" Width="40" Margin="0" Padding="12">
+                    <Viewbox>
+                        <SymbolIcon Symbol="Find"/>
+                    </Viewbox>
+                </Border>
+            </Grid>
+            
+            <!-- Document Search Panel-->
+            <ListView  Padding="0" Background="{StaticResource SelectedGrey}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="10,0,0,0"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="#FFA8A7A7"></Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="20,0,0,0" Width="205">
+                            <TextBlock Text="{Binding}" HorizontalAlignment="Left" Style="{StaticResource xMenuItemLabel}" 
+                                       FontSize="14" Foreground="#CCFFFFFF" ></TextBlock>
+                            <!-- Drag Out Doc ICON-->
+                            <local:DragOutDocIcon HorizontalAlignment="Right" Margin="0,-10,0,0"></local:DragOutDocIcon>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.Items>
+                    <ListViewItem Background="{StaticResource AccentGreen}">
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <SymbolIcon Symbol="Play" HorizontalAlignment="Left" Margin="-5,0,0,0" RenderTransformOrigin="0.5,0.5">
+                                <SymbolIcon.RenderTransform>
+                                    <CompositeTransform Rotation="90" ScaleX="0.7" ScaleY="0.7" TranslateY="-2"/>
+                                </SymbolIcon.RenderTransform>
+                            </SymbolIcon>
+                            <TextBlock Foreground="#E5FFFFFF" Margin="3,0,0,0" FontSize="14" Padding="0">Favourites</TextBlock>
+                        
+                        </StackPanel>
+                    </ListViewItem>
+                    <x:String>blank doc (default)</x:String>
+                    <x:String>otherdoc</x:String>
+                    <ListViewItem Background="{StaticResource AccentGreen}">
+                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                <SymbolIcon Symbol="Play" HorizontalAlignment="Left" Margin="-5,0,0,0" RenderTransformOrigin="0.5,0.5">
+                                    <SymbolIcon.RenderTransform>
+                                        <CompositeTransform Rotation="90" ScaleX="0.7" ScaleY="0.7" TranslateY="-2"/>
+                                    </SymbolIcon.RenderTransform>
+                                </SymbolIcon>
+                                <TextBlock Foreground="#E5FFFFFF" Margin="3,0,0,0" FontSize="14" Padding="0">API Documents</TextBlock>
 
+                            </StackPanel>
+                        </ListViewItem>
+                    <x:String>twitterdoc</x:String>
+                    <x:String>facebookpost</x:String>
+                    <x:String>pinterestpin</x:String>
+                    <x:String>otherdoc</x:String>
+                </ListView.Items>
+            </ListView>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Grid.Column="0" Margin="0,0,1,0" VerticalAlignment="Top">
+            <Button Tapped="Button_Tapped">
             <Border Style="{StaticResource xMenuItemBorder}">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
                     <SymbolIcon Symbol="Page2" />
-                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Documents"/>
+                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Document"/>
                 </StackPanel>
             </Border>
+            </Button>
+            <Button>
             <Border Style="{StaticResource xMenuItemBorder}">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
                     <SymbolIcon Symbol="Calculator" />
-                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Operators"/>
+                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Operator"/>
                 </StackPanel>
-            </Border>
+                </Border>
+            </Button>
+            <Button>
             <Border Style="{StaticResource xMenuItemBorder}">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
                     <SymbolIcon Symbol="Copy" />
                     <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Collection"/>
                 </StackPanel>
-            </Border>
+                </Border>
+            </Button>
 
 
         </StackPanel>

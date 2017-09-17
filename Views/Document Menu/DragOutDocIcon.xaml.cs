@@ -17,19 +17,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Views.Document_Menu
 {
-    public sealed partial class MainMenu : UserControl
+    public sealed partial class DragOutDocIcon : UserControl
     {
-        public MainMenu()
+        public DragOutDocIcon()
         {
             this.InitializeComponent();
-        }
-
-        private void Button_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (xDocumentPopout.Visibility == Visibility.Visible)
-                xDocumentPopout.Visibility = Visibility.Collapsed;
-            else
-                xDocumentPopout.Visibility = Visibility.Visible;
         }
     }
 }

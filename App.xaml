@@ -46,7 +46,7 @@
 
         <!-- COLORS -->
         <Color x:Key="WindowsBlueColor">#FF17477E</Color>
-        <Color x:Key="AccentGreenColor">#FF698f0f</Color>
+        <Color x:Key="AccentGreenColor">#FF265C49</Color>
         <Color x:Key="DocumentBackgroundColor">#FF303030</Color>
         <Color x:Key="DocumentBackgroundSelectedColor">#FF414141</Color>
         <Color x:Key="MainTextColor">#FFAAABB0</Color>
@@ -81,6 +81,11 @@
 
 
         <!-- DEFAULT STYLES-->
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="Margin" Value="0"></Setter>
+            <Setter Property="BorderThickness" Value="0"></Setter>
+        </Style>
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
             <!-- prevents node from moving while mouse is over UI element-->
@@ -169,7 +174,7 @@
         </Style>
 
         <!-- blue (default) button with white text -->
-        <Style TargetType="Button">
+        <Style TargetType="Button" x:Key="BlueButton">
             <!-- prevents node from moving while mouse is over UI element-->
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
@@ -230,14 +235,16 @@
         <!-- NODE SPECIFIC STYLES -->
 
         <!-- Menus -->
-        <Style TargetType="Border" x:Name="xMenuItemBorder">
+        <Style TargetType="Border" x:Key="xMenuItemBorder">
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"></Setter>
-            <Setter Property="Height" Value="55"></Setter>
-            <Setter Property="Width" Value="60"></Setter>
+            <Setter Property="Height" Value="65"></Setter>
+            <Setter Property="Width" Value="70"></Setter>
             <Setter Property="Padding" Value="3,0"></Setter>
-            <Setter Property="Margin" Value="0,0,0,1"></Setter>
+            <Setter Property="Margin" Value="0"></Setter>
+            <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
+            <Setter Property="BorderBrush" Value="Transparent"></Setter>
         </Style>
-        <Style TargetType="StackPanel" x:Name="xMenuItemStackPanel">
+        <Style TargetType="StackPanel" x:Key="xMenuItemStackPanel">
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
             <Setter Property="Margin" Value="0,1,0,0"></Setter>
         </Style>
@@ -245,7 +252,7 @@
             <Setter Property="Foreground" Value="White"></Setter>
             <Setter Property="Padding" Value="0"></Setter>
             <Setter Property="Margin" Value="0,0,0,0"></Setter>
-            <Setter Property="FontSize" Value="10"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
             <Setter Property="TextAlignment" Value="Center"></Setter>
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
         </Style>
