@@ -68,6 +68,7 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
+            test();
             //var jsonDoc = JsonToDashUtil.RunTests();
 
             //var sw = new Stopwatch();
@@ -90,6 +91,12 @@ namespace Dash
             TestMatrix(4, 4, 2, 2, 2, 2);
             TestMatrix(4, 4, 4, 4, 2, 2);
 
+        }
+
+        private async Task test()
+        {
+            var csv = await JsonToDashUtil.ParseCsv("fdsafdsa");
+            DisplayDocument(csv);
         }
 
         private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)

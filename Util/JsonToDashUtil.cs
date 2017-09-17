@@ -9,7 +9,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage;
+using CsvHelper;
 using DashShared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Dash
@@ -26,6 +28,7 @@ namespace Dash
             stopwatch.Stop();
             return JsonDocument;
         }
+
 
         public static async Task ParseRecipes()
         {
@@ -98,6 +101,179 @@ namespace Dash
             }
         }
 
+
+        public static async Task<DocumentController> ParseCsv(string path)
+        {
+             //var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
+             //var text = await FileIO.ReadTextAsync(file);
+
+
+             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
+            var stream = await file.OpenStreamForReadAsync();
+            var streamReader = new StreamReader(stream);
+
+            var csv = new CsvReader(streamReader);
+            csv.ReadHeader();
+            var headers = csv.FieldHeaders;
+            var records = new List<Dictionary<string, dynamic>>();
+            while (csv.Read())
+            {
+                var record = new Dictionary<string, dynamic>();
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    double double_field;
+                    string string_field;
+                    if (csv.TryGetField(i, out double_field))
+                    {
+                        record[headers[i]] = double_field;
+                    }
+                    else if (csv.TryGetField(i, out string_field))
+                    {
+                        record[headers[i]] = string_field;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Failed to get field");
+                    }
+                }
+                records.Add(record);
+            }
+            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
+            {
+                ["result"] = records,
+            };
+
+            var json = JsonConvert.SerializeObject(resultDict);
+            return Parse(json, path);
+        }
+        /*        public static DocumentController ParseCsv(string csvString, string path)
+        {
+            var reader = new StreamReader(new FileStream(@"ms-appx:///Assets/pokemon_species.csv", FileMode.Open));
+            var csv = new CsvReader(reader);
+            csv.ReadHeader();
+            var headers = csv.FieldHeaders;
+            var records = new List<Dictionary<string, dynamic>>();
+            while (csv.Read())
+            {
+                var record = new Dictionary<string, dynamic>();
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    double double_field;
+                    string string_field;
+                    if (csv.TryGetField(i, out double_field))
+                    {
+                        record[headers[i]] = double_field;
+                    } else if (csv.TryGetField(i, out string_field))
+                    {
+                        record[headers[i]] = string_field;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Failed to get field");
+                    }
+                }
+                records.Add(record);
+            }
+            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
+            {
+               ["result"] = records,
+            };
+
+            var json = JsonConvert.SerializeObject(resultDict);
+            return Parse(json,path);
+        }*/
+
+        /*
+    public async static Task<DocumentController> ParseCsv(string csvString, string path)
+    {
+        StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri(@"ms-appx:///Assets/pokemon_species.csv"));
+        using (Stream stream = (await file.OpenReadAsync()).AsStreamForRead())
+        {
+            var reader = new StreamReader(stream);
+            var csv = new CsvReader(reader);
+            csv.ReadHeader();
+            var headers = csv.FieldHeaders;
+            var records = new List<Dictionary<string, dynamic>>();
+            while (csv.Read())
+            {
+                var record = new Dictionary<string, dynamic>();
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    double double_field;
+                    string string_field;
+                    if (csv.TryGetField(i, out double_field))
+                    {
+                        record[headers[i]] = double_field;
+                    }
+                    else if (csv.TryGetField(i, out string_field))
+                    {
+                        record[headers[i]] = string_field;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Failed to get field");
+                    }
+                }
+                records.Add(record);
+            }
+            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
+            {
+                ["result"] = records,
+            };
+
+            var json = JsonConvert.SerializeObject(resultDict);
+            return Parse(json, path);
+        }
+
+    }
+
+*/
+
+
+        /*
+    public async static Task<DocumentController> ParseCsv(string csvString, string path)
+    {
+
+        var file = await ApplicationData.Current.LocalFolder.GetFileAsync("data.txt");
+        var lines = await FileIO.ReadLinesAsync(file);
+
+
+        var reader = new StreamReader(new FileStream(@"ms-appx:///Assets/pokemon_species.csv", FileMode.Open));
+        var csv = new CsvReader(reader);
+        csv.ReadHeader();
+        var headers = csv.FieldHeaders;
+        var records = new List<Dictionary<string, dynamic>>();
+        while (csv.Read())
+        {
+            var record = new Dictionary<string, dynamic>();
+            for (int i = 0; i < headers.Length; i++)
+            {
+                double double_field;
+                string string_field;
+                if (csv.TryGetField(i, out double_field))
+                {
+                    record[headers[i]] = double_field;
+                }
+                else if (csv.TryGetField(i, out string_field))
+                {
+                    record[headers[i]] = string_field;
+                }
+                else
+                {
+                    Debug.WriteLine("Failed to get field");
+                }
+            }
+            records.Add(record);
+        }
+        var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
+        {
+            ["result"] = records,
+        };
+
+        var json = JsonConvert.SerializeObject(resultDict);
+        return Parse(json, path);
+    }
+    */
         private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
             var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
