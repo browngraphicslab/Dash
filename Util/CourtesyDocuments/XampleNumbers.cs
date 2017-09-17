@@ -20,7 +20,7 @@ namespace Dash
 
         private static Random r = new Random();
 
-        public Numbers()
+        public Numbers(string id = null)
         {
             // create a document with two images
             var fields = new Dictionary<KeyController, FieldModelController>();
@@ -30,7 +30,7 @@ namespace Dash
             fields.Add(Number4FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
             fields.Add(Number5FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
 
-            Document = new DocumentController(fields, NumbersType);
+            Document = id != null ? new DocumentController(fields, NumbersType, id) : new DocumentController(fields, NumbersType);
 
             var tBox1 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number1FieldKey), 0,
                 0, 60, 35).Document;

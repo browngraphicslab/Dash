@@ -413,6 +413,11 @@ namespace Dash
             // if the fields are reference equal just return
             if (!ReferenceEquals(oldField, field))
             {
+                if (proto.CheckCycle(key, field))
+                {
+                    return false;
+                }
+
                 oldField?.Dispose();
 
                 proto._fields[key] = field;
@@ -565,10 +570,18 @@ namespace Dash
         ///     Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>
         /// <returns></returns>
-        public DocumentController MakeDelegate()
+        public DocumentController MakeDelegate(string id = null)
         {
+            DocumentController delegateController;
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType);
+            if (id != null)
+            {
+                delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType, id);
+            }
+            else
+            {
+                delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType);
+            }
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
@@ -603,6 +616,90 @@ namespace Dash
                     new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
                         args.FieldArgs, c, false), true);
             }
+        }
+
+        /// <summary>
+        /// Checks if adding the given field at the given key would cause a cycle
+        /// </summary>
+        /// <param name="key">The key that the given field would be inserted at</param>
+        /// <param name="field">The field that would be inserted into the document</param>
+        /// <returns>True if the field would cause a cycle, false otherwise</returns>
+        private bool CheckCycle(KeyController key, FieldModelController field)
+        {
+            if (!(field is ReferenceFieldModelController))
+            {
+                return false;
+            }
+            var visitedFields = new HashSet<FieldReference>();
+            visitedFields.Add(new DocumentFieldReference(GetId(), key));
+            var rfms = new Queue<Tuple<FieldModelController, Context>>();
+
+            //TODO If this is a DocPointerFieldReference this might not work
+            rfms.Enqueue(Tuple.Create(field, new Context(this)));
+
+            while (rfms.Count > 0)
+            {
+                var t = rfms.Dequeue();
+                var fm = t.Item1;
+                var c = t.Item2;
+                if (!(fm is ReferenceFieldModelController))
+                {
+                    continue;
+                }
+                var rfm = (ReferenceFieldModelController)fm;
+                var fieldRef = rfm.FieldReference.Resolve(c);
+                var doc = rfm.GetDocumentController(c);
+                Context c2;
+                if (c.DocContextList.Contains(doc))
+                {
+                    c2 = c;
+                }
+                else
+                {
+                    c2 = new Context(c);
+                    c2.AddDocumentContext(doc);
+                }
+                foreach (var fieldReference in visitedFields)
+                {
+                    if (fieldReference.Resolve(c2).Equals(fieldRef))
+                    {
+                        return true;
+                    }
+                }
+                visitedFields.Add(fieldRef);
+
+                var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
+                foreach (var keyController in keys)
+                {
+                    var f = doc.GetField(keyController);
+                    if (f != null)
+                    {
+                        rfms.Enqueue(Tuple.Create(f, c2));
+                    }
+                }
+            }
+
+            var delegates = GetField(KeyStore.DelegatesKey, true) as DocumentCollectionFieldModelController;
+            if (delegates != null)
+            {
+                bool cycle = false;
+                foreach (var documentController in delegates.Data)
+                {
+                    cycle = cycle || documentController.CheckCycle(key, field);
+                }
+                return cycle;
+            }
+            return false;
+        }
+
+        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
+        {
+            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, c) as OperatorFieldModelController;
+            if (opField == null)
+            {
+                return new List<KeyController> { key };
+            }
+            return new List<KeyController>(opField.Inputs.Keys);
         }
 
 

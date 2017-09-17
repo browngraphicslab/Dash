@@ -371,7 +371,7 @@ namespace Dash
 
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var protoNumbers = new Numbers().Document;
+            var protoNumbers = new Numbers("1").Document;
             protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
             var protoLayout = protoNumbers.GetActiveLayout().Data;
             protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
@@ -381,7 +381,7 @@ namespace Dash
             Random r = new Random();
             for (int i = 0; i < 10; ++i)
             {
-                var delNumbers = protoNumbers.MakeDelegate();
+                var delNumbers = protoNumbers.MakeDelegate((i + 2).ToString());
                 //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);
