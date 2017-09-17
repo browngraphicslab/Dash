@@ -313,6 +313,8 @@ namespace Dash
             _currReference = ioReference;
             _connectionLine = new Path
             {
+                //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
+                IsHitTestVisible = false,
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHoldingEnabled = false,
