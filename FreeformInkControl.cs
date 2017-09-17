@@ -261,7 +261,7 @@ namespace Dash
             {
                 PressedPoint = e.GetCurrentPoint(SelectionCanvas).Position;
                 IsPressed = true;
-                Debug.WriteLine(IsPressed);
+                //Debug.WriteLine(IsPressed);
             }
         }
 
@@ -271,7 +271,7 @@ namespace Dash
             {
                 PressedPoint = e.GetPosition(SelectionCanvas);
                 IsPressed = true;
-                Debug.WriteLine(IsPressed);
+                //Debug.WriteLine(IsPressed);
             }
         }
 
@@ -280,7 +280,7 @@ namespace Dash
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 //IsPressed = false;
-                Debug.WriteLine(IsPressed);
+                //Debug.WriteLine(IsPressed);
             }
         }
 
@@ -289,7 +289,7 @@ namespace Dash
             if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
             {
                 IsPressed = false;
-                Debug.WriteLine(IsPressed);
+                //Debug.WriteLine(IsPressed);
             }
         }
 

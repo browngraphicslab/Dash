@@ -738,18 +738,25 @@ namespace Dash
             var fields = EnumFields().ToList();
             if (fields.Count > 15)
             {
-                TextBlock block = new TextBlock
+                var lv = new ListView {SelectionMode = ListViewSelectionMode.None};
+                var source = new List<FrameworkElement>();
+                for (var i = 0; i < 15; i++)
                 {
-                    Text = DocumentType.Type,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                return block;
+                    var block = new TextBlock
+                    {
+                        Text = "Field " + i + ": " + fields[i].Key,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    source.Add(block);
+                }
+                lv.ItemsSource = source;
+                return lv;
             }
 
             //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
             var sp = new StackPanel();
-            var source = new List<FrameworkElement>();
+            //var source = new List<FrameworkElement>();
 
             var isInterfaceBuilder = false; // TODO make this a parameter
 
