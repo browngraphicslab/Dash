@@ -57,7 +57,10 @@ namespace Dash
                     case ".png":
                         t = TypeInfo.Image;
                         //Todo: needs to be fixed bc the images wont display if you use the system uri (i.e. storageFile.Path)
-                        data = new Uri("https://img.discogs.com/dMKvzkG5Cx_NXkM1tFekGIniTuw=/fit-in/300x300/filters:strip_icc():format(jpeg):mode_rgb():quality(40)/discogs-images/R-1752886-1374045563-3674.jpeg.jpg", UriKind.Absolute);
+                        var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                        StorageFile file = await localFolder.CreateFileAsync("filename.jpg", CreationCollisionOption.ReplaceExisting);
+                        await storageFile.CopyAndReplaceAsync(file);
+                        data = new Uri(file.Path);
                         break;
                     case ".txt":
                         t = TypeInfo.Text;
