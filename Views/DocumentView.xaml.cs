@@ -71,9 +71,9 @@ namespace Dash
 
         private void OnDrop(object sender, DragEventArgs e)
         {
-            e.Handled = true;
+            if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
-            ParentCollection.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
+            ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
