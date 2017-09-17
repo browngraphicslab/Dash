@@ -31,7 +31,7 @@ namespace Dash
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Reference, args.Action), args.Context);
+            OnFieldModelUpdated(args.FieldArgs, args.Context);
         }
 
         public override void Dispose()

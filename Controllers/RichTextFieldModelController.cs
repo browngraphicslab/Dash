@@ -55,7 +55,7 @@ namespace Dash
             if (richTextFieldModelController != null) Data = richTextFieldModelController.Data;
         }
 
-        public override TypeInfo TypeInfo => TypeInfo.Text;
+        public override TypeInfo TypeInfo => TypeInfo.RichText;
 
         public override IEnumerable<DocumentController> GetReferences()
         {
