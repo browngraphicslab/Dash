@@ -21,8 +21,9 @@ namespace DashShared
         Point = 0x80,
         List = 0x100,
         Ink = 0x200,
+        RichText = 0x400,
 
-        Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink
+        Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink | RichText
     }
 
 }

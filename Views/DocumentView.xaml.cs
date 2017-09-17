@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Media.Effects;
+using Windows.Storage;
+using Windows.System;
+using Windows.System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Input;
@@ -17,6 +22,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Views;
 using Windows.UI.Xaml.Shapes;
+using Dash.Sources.FilePicker.PDF;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -60,6 +66,14 @@ namespace Dash
 
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
+            this.Drop += OnDrop;
+        }
+
+        private void OnDrop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+            FileDropHelper.HandleDropOnDocument(this, e);
+            ParentCollection.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -468,5 +482,22 @@ namespace Dash
         }
 
         #endregion
+
+        private void DocumentView_OnDragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy | DataPackageOperation.Move;
+            }
+        }
+
+        private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var doc = ViewModel.DocumentController;
+            var text = doc.GetField(KeyStore.SystemUriKey) as TextFieldModelController;
+            if (text == null) return;
+            var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+            Debug.WriteLine(query);
+        }
     }
 }

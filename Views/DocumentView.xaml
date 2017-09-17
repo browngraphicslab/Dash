@@ -14,7 +14,8 @@
     PointerPressed="UserControl_PointerPressed"
     Tapped="OnTapped"
     ManipulationMode="{Binding ManipulationMode}"
-    >
+    AllowDrop="True" DragOver="DocumentView_OnDragOver"
+    DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped">
     
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">

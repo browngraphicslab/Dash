@@ -12,9 +12,11 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Flurl;
@@ -40,9 +42,8 @@ namespace Dash
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
 
-
+        public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()
@@ -79,32 +80,23 @@ namespace Dash
             //sw.Stop();
 
             _radialMenu = new RadialMenuView(xCanvas);
-            xCanvas.Children.Add(_radialMenu);
-
-            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
-            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
-            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2, 2, 0, 0, 1, 1);
-            TestMatrix(2, 2, 1, 1, 1, 1);
-            TestMatrix(2, 2, 2, 2, 1, 1);
-            TestMatrix(2, 2, 4, 4, 1, 1);
-            TestMatrix(4, 4, 0, 0, 2, 2);
-            TestMatrix(4, 4, 1, 1, 2, 2);
-            TestMatrix(4, 4, 2, 2, 2, 2);
-            TestMatrix(4, 4, 4, 4, 2, 2);
+            _radialMenu.Loaded += delegate
+            {
+                _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
+            };
+            Loaded += OnLoaded;
+            //xCanvas.Children.Add(_radialMenu);
 
         }
 
-        private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
-            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
-            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
-            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
-            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
-
-
-
+            GlobalInkSettings.Hue = 200;
+            GlobalInkSettings.Brightness = 30;
+            GlobalInkSettings.Size = 4;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.Opacity = 1;
         }
 
         public CollectionView GetMainCollectionView()

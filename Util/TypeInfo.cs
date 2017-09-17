@@ -93,6 +93,8 @@ namespace Dash
                     return null;
                 case TypeInfo.Point:
                     return new PointFieldModelController((Point) data);
+                case TypeInfo.RichText:
+                    return new RichTextFieldModelController(new RichTextFieldModel.RTD("", data as string));
                 case TypeInfo.List:
                     switch (listType) //TODO support list of list?
                     {
