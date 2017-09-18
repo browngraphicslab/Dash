@@ -41,24 +41,25 @@ namespace Dash
                 _searchList.List.SelectedIndex = 0;
 
             } 
-            else
+            else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
             {
                 _searchList.List.SelectedIndex = _searchList.List.SelectedIndex + 1;
                 _searchList.List.ScrollIntoView(_searchList.List.SelectedItem);
 
             }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
 
         }
 
         public void ActivateItem()
         {
-            _searchList.ActivateItem();
+            _searchList.ActivateItem(_searchList.SelectedItem);
 
         }
 
         public void MoveSelectedUp()
         {
-            if (_searchList.List.SelectedIndex < 0)
+            if (_searchList.List.SelectedIndex <= 0)
             {
                 _searchList.List.SelectedIndex = 0;
                 
@@ -67,6 +68,7 @@ namespace Dash
             {
                 _searchList.List.SelectedIndex = _searchList.List.SelectedIndex - 1;
             }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
         }
 
         private void MakeCategories(List<SearchCategoryItem> categories)

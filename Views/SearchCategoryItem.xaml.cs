@@ -54,6 +54,8 @@ namespace Dash
 
         private Action<Func<DocumentController>> _action;
 
+        public object SelectedItem;
+
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
         /// </summary>
@@ -85,6 +87,17 @@ namespace Dash
         public void ActivateItem()
         {
             _action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
+            MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+        }
+
+        public void ActivateItem(object selectedItem)
+        {
+            if (selectedItem == null)
+            {
+                ActivateItem();
+                return;
+            }
+            _action?.Invoke((selectedItem as OperatorBuilder)?.OperationDocumentConstructor);
             MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
         }
         
