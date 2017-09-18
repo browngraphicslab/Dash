@@ -5,10 +5,77 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControl="using:RadialMenuControl.UserControl"
+    xmlns:components="using:RadialMenuControl.Components"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignHeight="327"
+    d:DesignWidth="547">
 
-    <Grid>
-    </Grid>
+
+    <userControl:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
+        <Grid>
+                <local:InkSettingsPane x:Name="SettingsPane" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Center" ManipulationMode="None" x:DeferLoadStrategy="Lazy"></local:InkSettingsPane>
+                <userControl:RadialMenu x:Name="RadialMenu" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,0" CenterButtonTapped="RadialMenu_OnCenterButtonTapped">
+                    <userControl:RadialMenu.Buttons>
+                        <components:RadialMenuButton x:Name="Ink" Label="Ink" IconSymbol="{x:Bind InkMenuSymbol}" Type="Simple" InnerArcPressed="Ink_OnInnerArcPressed">
+                            <components:RadialMenuButton.Submenu>
+                                <userControl:RadialMenu x:Name="InkSubMenu" StartAngle="-90"
+                                                        CenterButtonTapped="InkSubMenu_OnCenterButtonTapped">
+                                    <userControl:RadialMenu.Buttons>
+                                        <components:RadialMenuButton Label="Input"
+                                                                     IconSymbol="{x:Bind SetPen}" Type="Simple"
+                                                                     InnerArcPressed="Input_OnInnerArcPressed">
+                                            <components:RadialMenuButton.Submenu>
+                                                <userControl:RadialMenu x:Name="InputSubMenu" StartAngle="-90">
+                                                    <userControl:RadialMenu.Buttons>
+                                                        <components:RadialMenuButton x:Name="SetMouseInputButton"
+                                                                                     Label="Mouse" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetMouse}"/>
+                                                        <components:RadialMenuButton x:Name="SetTouchInputButton"
+                                                                                     Label="Touch" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetTouch}"/>
+                                                        <components:RadialMenuButton x:Name="SetPenInputButton"
+                                                                                     Label="Pen" Type="Radio"
+                                                                                     IconSymbol="{x:Bind SetPen}"/>
+                                                        <components:RadialMenuButton x:Name="DisableButton"
+                                                                                     Label="Disable" Type="Radio"
+                                                                                     IconSymbol="{x:Bind Disable}"/>
+                                                    </userControl:RadialMenu.Buttons>
+                                                </userControl:RadialMenu>
+                                            </components:RadialMenuButton.Submenu>
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetPenInkButton"
+                                                                     IconSymbol="{x:Bind PenInkSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetPencilInkButton"
+                                                                     IconSymbol="{x:Bind PencilInkSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SetEraserButton"
+                                                                     IconSymbol="{x:Bind EraserSymbol}">
+                                        </components:RadialMenuButton>
+                                        <components:RadialMenuButton x:Name="SelectButton"
+                                                                     IconSymbol="{x:Bind SelectSymbol}">
+                                        </components:RadialMenuButton>
+                                    </userControl:RadialMenu.Buttons>
+                                </userControl:RadialMenu>
+                            </components:RadialMenuButton.Submenu>
+                        </components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="Document" Label="Document" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="Operator" Label="Operator" IconSymbol="{x:Bind OperatorSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="ImportButton" Label="Import" IconSymbol="{x:Bind FilePickerSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="SearchButton" Label="Search"
+                                                     IconSymbol="{x:Bind SearchSymbol}">
+                        </components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="NotesButton" Label="Notes"
+                                                     IconSymbol="{x:Bind NoteSymbol}">
+                        </components:RadialMenuButton>
+                    </userControl:RadialMenu.Buttons>
+                </userControl:RadialMenu>
+            </Grid>
+    </userControl:Floating>
+
 </UserControl>
+
+
+

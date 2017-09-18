@@ -274,6 +274,7 @@ namespace Dash
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
+            
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
@@ -438,7 +439,7 @@ namespace Dash
             DocumentView.DragDocumentView = null;
         }
 
-        private void ChangeIndicationColor(SelectionElement element, Color fill)
+        public void ChangeIndicationColor(SelectionElement element, Color fill)
         {
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));

@@ -1,190 +1,399 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
+    public class InkUpdatedEventArgs
+    {
+        public InkInputProcessingMode InputProcessingMode { get; private set; }
+        public CoreInputDeviceTypes InputDeviceTypes { get; private set; }
+        public InkDrawingAttributes InkAttributes { get; private set; }
+
+        public InkUpdatedEventArgs(InkInputProcessingMode mode, CoreInputDeviceTypes inputs,
+            InkDrawingAttributes attributes)
+        {
+            InputProcessingMode = mode;
+            InputDeviceTypes = inputs;
+            InkAttributes = attributes;
+        }
+    }
     public static class GlobalInkSettings
     {
-        private static ObservableCollection<InkPresenter> _presenters = new ObservableCollection<InkPresenter>();
-        private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
-        private static double _opacity = 1;
-        private static double _size = 3;
-        private static Color _color = Colors.DarkGray;
-        private static StrokeTypes _strokeType;
-        private static CoreInputDeviceTypes _inkInputType;
-        private static bool _isSelectionEnabled;
-        private static ObservableCollection<FreeformInkControl> _freeformInkControls = new ObservableCollection<FreeformInkControl>();
 
-        public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
+        public delegate void InkSettingsUpdatedEventHandler(InkUpdatedEventArgs args);
 
-        public static event InkInputChangedEventHandler InkInputChanged;
+        public static event InkSettingsUpdatedEventHandler InkSettingsUpdated;
 
         public enum StrokeTypes
         {
             Pen,
             Pencil,
-            Eraser
+            Eraser,
+            Selection
         }
+
+        private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
+        private static CoreInputDeviceTypes _inkInputType;
+        private static Color _color;
+        private static double _hue;
+        private static double _brightness;
+        private static StrokeTypes _strokeType;
+        private static double _size;
+        private static double _opacity;
+        
 
         public static StrokeTypes StrokeType
         {
-            get { return _strokeType; }
-            set { _strokeType = value; }
+            get => _strokeType;
+            set
+            {
+                if (_strokeType == value) return;
+                _strokeType = value;
+                var attributes = new InkDrawingAttributes();
+                switch (value)
+                {
+                    case StrokeTypes.Pencil:
+                        attributes = InkDrawingAttributes.CreateForPencil();
+                        attributes.PencilProperties.Opacity = Opacity;
+                        attributes.Color = Color;
+                        attributes.Size = new Size(Size, Size);
+                        Attributes = attributes;
+                        break;
+                    case StrokeTypes.Pen:
+                        attributes.Color = Color;
+                        attributes.Size = new Size(Size, Size);
+                        Attributes = attributes;
+                        break;
+                }
+                FireAttributesUpdatedEvent();
+            }
+
         }
 
         public static CoreInputDeviceTypes InkInputType
         {
-            get { return _inkInputType; }
+            get => _inkInputType;
             set
             {
                 _inkInputType = value;
-                foreach (var inkPresenter in Presenters)
-                {
-                    inkPresenter.InputDeviceTypes = value;
-                }
-                foreach (var ctrls in FreeformInkControls)
-                {
-                    ctrls.UpdateInputType();
-                }
+                FireAttributesUpdatedEvent();
             }
         }
 
-        public static bool IsSelectionEnabled
+        public static double Brightness
         {
-            get { return _isSelectionEnabled; }
+            get => _brightness;
             set
             {
-                _isSelectionEnabled = value;
-                UpdateInkPresenters();
+                _brightness = value;
+                Color = ChangeColorBrightness(Hue, value);
             }
         }
-
-        public static double BrightnessFactor { get; set; }
 
         public static Color Color
         {
-            get { return _color; }
+            get => _color;
             set
             {
                 _color = value;
+                Attributes.Color = Color;
+                FireAttributesUpdatedEvent();
+            }
+        }
+        
+        public static double Hue
+        {
+            get => _hue;
+            set
+            {
+                _hue = value;
+                Color = ChangeColorBrightness(value, Brightness);
             }
         }
 
         public static double Opacity
         {
-            get { return _opacity; }
+            get => _opacity;
             set
             {
                 _opacity = value;
+                if (Attributes.PencilProperties != null) Attributes.PencilProperties.Opacity = Opacity;
+                FireAttributesUpdatedEvent();
             }
         }
 
         public static double Size
         {
-            get { return _size; }
+            get => _size;
             set
             {
                 _size = value;
+                Attributes.Size = new Size(Size, Size);
+                FireAttributesUpdatedEvent();
             }
         }
 
         public static InkDrawingAttributes Attributes
         {
-            get { return _attributes; }
+            get => _attributes;
             set
             {
                 _attributes = value;
-                foreach (var presenter in Presenters)
-                {
-                    presenter.UpdateDefaultDrawingAttributes(_attributes);
-                }
+                FireAttributesUpdatedEvent();
             }
         }
 
-        public static ObservableCollection<InkPresenter> Presenters
+        public static void FireAttributesUpdatedEvent()
         {
-            get { return _presenters; }
-            set
+            InkInputProcessingMode processingMode;
+            switch (StrokeType)
             {
-                _presenters = value;
+                case StrokeTypes.Eraser:
+                    processingMode = InkInputProcessingMode.Erasing;
+                    break;
+                case StrokeTypes.Selection:
+                    processingMode = InkInputProcessingMode.None;
+                    break;
+                default:
+                    processingMode = InkInputProcessingMode.Inking;
+                    break;
             }
+            var args = new InkUpdatedEventArgs(processingMode, InkInputType, Attributes);
+            InkSettingsUpdated?.Invoke(args);
         }
 
-        public static bool IsRecognitionEnabled { get; set; }
-
-        public static ObservableCollection<FreeformInkControl> FreeformInkControls
+        public static void ForceUpdateFromAttributes(InkDrawingAttributes attributes)
         {
-            get { return _freeformInkControls; }
-            set
-            {
-                _freeformInkControls = value;
-            }
+            RgbToHsV(attributes.Color, out double h, out double s,out double v);
+            Hue = h;
+            Brightness = GetBrightnessFromColor(attributes.Color, h);
+            Size = attributes.Size.Width;
+            if (attributes.PencilProperties != null) Opacity = attributes.PencilProperties.Opacity;
         }
 
-        private static Color ChangeColorBrightness()
+        #region Math
+        /// <summary>
+        /// Given double from 0(black)-100(white), adjusts the brightness of the given hue.
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="brightness"></param>
+        /// <returns></returns>
+        public static Color ChangeColorBrightness(double hue, double brightness)
         {
-            double newFactor = BrightnessFactor / 50 - 1;
-            double red = (float)Color.R;
-            double green = (float)Color.G;
-            double blue = (float)Color.B;
+            var newFactor = brightness / 50 - 1;
+            Color midColor = HsvToRgb(hue, 1, 1);
+            double red = midColor.R;
+            double green = midColor.G;
+            double blue = midColor.B;
 
             if (newFactor < 0)
             {
-                newFactor += 1;
-                red *= newFactor;
-                green *= newFactor;
-                blue *= newFactor;
+                //newFactor += 1;
+                red += red * newFactor;
+                green += green * newFactor;
+                blue += blue * newFactor;
             }
             else
             {
-                red = (255 - red) * newFactor + red;
-                green = (255 - green) * newFactor + green;
-                blue = (255 - blue) * newFactor + blue;
+                red += (255 - red) * newFactor;
+                green += (255 - green) * newFactor;
+                blue += (255 - blue) * newFactor;
             }
-
-            return Color.FromArgb(Color.A, (byte)red, (byte)green, (byte)blue);
+            return Color.FromArgb(midColor.A, (byte)red, (byte)green, (byte)blue);
         }
 
-        public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
+        /// <summary>
+        /// Inverses the ChangeColorBrightness function to get the brightness factor (0-100) for a color, given its hue
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="hue"></param>
+        /// <returns></returns>
+        public static double GetBrightnessFromColor(Color color, double hue)
         {
-            if (isSelectionEnabled != null) IsSelectionEnabled = (bool)isSelectionEnabled;
-            foreach (var cntrls in FreeformInkControls)
+            Color midColor = HsvToRgb(hue, 1, 1);
+            double brightness;
+            double x1;
+            double x2;
+            if (color.R == midColor.R)
             {
-                cntrls.UpdateSelectionMode();
-            }
-            if (IsSelectionEnabled)
-            {
-                return;
-            }
-            if (StrokeType == StrokeTypes.Eraser)
-            {
-                foreach (var presenter in Presenters)
+                if (color.B == midColor.B)
                 {
-                    presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
+                    if (color.G == midColor.G)
+                    {
+                        return 0;
+                    }
+                    x1 = midColor.G;
+                    x2 = color.G;
                 }
-                return;
+                else
+                {
+                    x1 = midColor.B;
+                    x2 = color.B;
+                }
             }
-            foreach (var presenter in Presenters)
+            else
             {
-                presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
+                x1 = midColor.R;
+                x2 = color.R;
             }
-            InkDrawingAttributes attributes = new InkDrawingAttributes();
-            if (StrokeType == StrokeTypes.Pencil)
+            if (x1 > x2)
             {
-                attributes = InkDrawingAttributes.CreateForPencil();
-                attributes.PencilProperties.Opacity = GlobalInkSettings.Opacity;
+                brightness = ((x2 - x1) / x1);
             }
-            attributes.Color = ChangeColorBrightness();
-            attributes.Size = new Size(GlobalInkSettings.Size, GlobalInkSettings.Size);
-            Attributes = attributes;
+            else
+            {
+                brightness = (x2 - x1) / (255 - x1);
+            }
+            return (brightness + 1)*50;
         }
+        public static void RgbToHsV(Color rgb, out double h, out double s, out double v)
+        {
+            double delta, min;
+            h = s = v = 0;
+
+            min = Math.Min(Math.Min(rgb.R, rgb.G), rgb.B);
+            v = Math.Max(Math.Max(rgb.R, rgb.G), rgb.B);
+            delta = v - min;
+
+            if (v == 0.0)
+                s = 0;
+            else
+                s = delta / v;
+
+            if (s == 0)
+                h = 0.0;
+
+            else
+            {
+                if (rgb.R == v)
+                    h = (rgb.G - rgb.B) / delta;
+                else if (rgb.G == v)
+                    h = 2 + (rgb.B - rgb.R) / delta;
+                else if (rgb.B == v)
+                    h = 4 + (rgb.R - rgb.G) / delta;
+
+                h *= 60;
+
+                if (h < 0.0)
+                    h = h + 360;
+            }
+        }
+
+        public static Color HsvToRgb(double h, double s, double v)
+        {
+            // ######################################################################
+            // T. Nathan Mundhenk
+            // mundhenk@usc.edu
+            // C/C++ Macro HSV to RGB
+
+            while (h < 0) { h += 360; };
+            while (h >= 360) { h -= 360; };
+            double R;
+            double G;
+            double B;
+            if (v <= 0)
+            { R = G = B = 0; }
+            else if (s <= 0)
+            {
+                R = G = B = v;
+            }
+            else
+            {
+                double hf = h / 60.0;
+                int i = (int)Math.Floor(hf);
+                double f = hf - i;
+                double pv = v * (1 - s);
+                double qv = v * (1 - s * f);
+                double tv = v * (1 - s * (1 - f));
+                switch (i)
+                {
+
+                    // Red is the dominant color
+
+                    case 0:
+                        R = v;
+                        G = tv;
+                        B = pv;
+                        break;
+
+                    // Green is the dominant color
+
+                    case 1:
+                        R = qv;
+                        G = v;
+                        B = pv;
+                        break;
+                    case 2:
+                        R = pv;
+                        G = v;
+                        B = tv;
+                        break;
+
+                    // Blue is the dominant color
+
+                    case 3:
+                        R = pv;
+                        G = qv;
+                        B = v;
+                        break;
+                    case 4:
+                        R = tv;
+                        G = pv;
+                        B = v;
+                        break;
+
+                    // Red is the dominant color
+
+                    case 5:
+                        R = v;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // Just in case we overshoot on our math by a little, we put these here. Since its a switch it won't slow us down at all to put these here.
+
+                    case 6:
+                        R = v;
+                        G = tv;
+                        B = pv;
+                        break;
+                    case -1:
+                        R = v;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // The color is not defined, we should throw an error.
+
+                    default:
+                        //LFATAL("i Value error in Pixel conversion, Value is %d", i);
+                        R = G = B = v; // Just pretend its black/white
+                        break;
+                }
+            }
+            var r = Clamp((int)(R * 255.0));
+            var g = Clamp((int)(G * 255.0));
+            var b = Clamp((int)(B * 255.0));
+            return Color.FromArgb(255, (byte)r, (byte)g, (byte)b);
+        }
+
+        /// <summary>
+        /// Clamp a value to 0-255
+        /// </summary>
+        public static int Clamp(int i)
+        {
+            if (i < 0) return 0;
+            if (i > 255) return 255;
+            return i;
+        }
+
+        #endregion
     }
 }

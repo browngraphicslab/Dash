@@ -5,6 +5,7 @@ using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -19,6 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -48,11 +50,11 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
+        //public Dictionary<FieldReference, LinePackage> LineDict = new Dictionary<FieldReference, LinePackage>();
 
-        private Dictionary<FieldReference, Path> _refToLine = new Dictionary<FieldReference, Path>();
-        private Dictionary<Path, BezierConverter> _lineToConverter = new Dictionary<Path, BezierConverter>();
+        public Dictionary<FieldReference, Path> RefToLine = new Dictionary<FieldReference, Path>();
+        public Dictionary<Path, BezierConverter> LineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
-
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -129,11 +131,11 @@ namespace Dash
 
         #region DraggingLinesAround
 
-        private void DeleteLine(FieldReference reff, Path line)
+        public void DeleteLine(FieldReference reff, Path line)
         {
             itemsPanelCanvas.Children.Remove(line);
-            _refToLine.Remove(reff);
-            _lineToConverter.Remove(line);
+            RefToLine.Remove(reff);
+            LineToConverter.Remove(line);
         }
 
         /// <summary>
@@ -141,11 +143,43 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var refs = _linesToBeDeleted.Keys.ToList();
-            for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
+            var ToBeDeleted = new List<Path>();
+            foreach (var pair in LineToConverter)
             {
-                var fieldRef = refs[i];
-                DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
+                var converter = pair.Value;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+
+                if (view1 == docView || view2 == docView)
+                {
+                    ToBeDeleted.Add(pair.Key);
+                }
+            }
+            foreach (var line in ToBeDeleted)
+            {
+                var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
+                DeleteLine(fieldRef, line);
+            }
+            //var refs = linesToBeDeleted.Keys.ToList();
+            //for (int i = linesToBeDeleted.Count - 1; i >= 0; i--)
+            //{
+            //    var package = linesToBeDeleted[refs[i]];
+            //    itemsPanelCanvas.Children.Remove(package.Line);
+            //    LineDict.Remove(refs[i]);
+            //}
+            //linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+        }
+
+        public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
+        {
+            if (RefToLine.ContainsKey(pair.Key))
+            {
+                var line = pair.Value;
+                var converter = LineToConverter[line];
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
+                DeleteLine(fieldRef, line);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -155,9 +189,9 @@ namespace Dash
         /// <param name="fadeout"></param>
         public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
         {
-            foreach (var pair in _refToLine)
+            foreach (var pair in RefToLine)
             {
-                var converter = _lineToConverter[pair.Value];
+                var converter = LineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
@@ -175,9 +209,9 @@ namespace Dash
         {
             var result = new List<KeyValuePair<FieldReference, Path>>();
             //var views = new HashSet<DocumentView>(_payload.Keys);
-            foreach (var pair in _refToLine)
+            foreach (var pair in RefToLine)
             {
-                var converter = _lineToConverter[pair.Value];
+                var converter = LineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 //if (views.Contains(view1) || views.Contains(view2))
@@ -194,7 +228,7 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var converter in _lineToConverter.Values)
+            foreach (var converter in LineToConverter.Values)
             {
                 DocumentView view1, view2;
                 try
@@ -240,7 +274,7 @@ namespace Dash
         {
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
             {
-                _converter = _lineToConverter[line];
+                _converter = LineToConverter[line];
                 //set up to manipulate connection line again 
                 ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                 _connectionLine = line;
@@ -250,13 +284,13 @@ namespace Dash
                 ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
                 //replace referencefieldmodelcontrollers with the raw fieldmodelcontrollers  
-                var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                var refField = RefToLine.FirstOrDefault(x => x.Value == line).Key;
                 DocumentController inputController = refField.GetDocumentController(null);
                 var rawField = inputController.GetField(refField.FieldKey);
                 if (rawField as ReferenceFieldModelController != null)
                     rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
                 inputController.SetField(refField.FieldKey, rawField, false);
-                _refToLine.Remove(refField);
+                RefToLine.Remove(refField);
             }
         }
 
@@ -330,6 +364,8 @@ namespace Dash
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
 
+        
+
         public void CancelDrag(Pointer p)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -398,8 +434,8 @@ namespace Dash
             {
                 _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
-                _refToLine.Add(ioReference.FieldReference, _connectionLine);
-                if (!_lineToConverter.ContainsKey(_connectionLine)) _lineToConverter.Add(_connectionLine, _converter);
+                RefToLine.Add(ioReference.FieldReference, _connectionLine);
+                if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -422,11 +458,11 @@ namespace Dash
         /// </summary>
         private void CheckLinePresence(FieldReference reference)
         {
-            if (!_refToLine.ContainsKey(reference)) return;
-            var line = _refToLine[reference];
+            if (!RefToLine.ContainsKey(reference)) return;
+            var line = RefToLine[reference];
             itemsPanelCanvas.Children.Remove(line);
-            _refToLine.Remove(reference);
-            _lineToConverter.Remove(line);
+            RefToLine.Remove(reference);
+            LineToConverter.Remove(line);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -482,7 +518,7 @@ namespace Dash
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
             {
-                foreach (var converter in _lineToConverter.Values)
+                foreach (var converter in LineToConverter.Values)
                     converter.UpdateLine();
             }
         }
@@ -914,7 +950,7 @@ namespace Dash
             if (carrier.StartingCollection != this)
             {
                 carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
+                ViewModel.CollectionViewOnDragEnter(sender, e);
                 return;
             }
 
@@ -962,5 +998,12 @@ namespace Dash
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
+
+        private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if(e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
+            Debug.WriteLine("Pointer entered: " + sender.GetType());
+        }
+
     }
 }
