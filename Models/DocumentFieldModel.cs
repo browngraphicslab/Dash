@@ -1,5 +1,6 @@
 ﻿using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -20,11 +21,6 @@ namespace Dash
         public DocumentFieldModel(string data, string id = null) : base(id)
         {
             Data = data;
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Document, Data, Id);
         }
     }
 }

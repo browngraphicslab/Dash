@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -18,7 +19,7 @@ namespace Dash
 
         public static ImageFieldModelController CreateFromServer(ImageFieldModel imageFieldModel)
         {
-            return ContentController.GetController<ImageFieldModelController>(imageFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<ImageFieldModelController>(imageFieldModel.Id) ??
                    new ImageFieldModelController(imageFieldModel);
         }
 
@@ -26,7 +27,7 @@ namespace Dash
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ImageFieldModel ImageFieldModel => FieldModel as ImageFieldModel;
+        public ImageFieldModel ImageFieldModel => Model as ImageFieldModel;
 
         /// <summary>
         ///     The uri which this image is sourced from. This is a wrapper for <see cref="ImageFieldModel.Data" />
@@ -39,7 +40,7 @@ namespace Dash
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
                         
                     }, exception =>

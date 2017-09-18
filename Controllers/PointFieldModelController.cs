@@ -4,6 +4,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -19,7 +20,7 @@ namespace Dash
 
         public static PointFieldModelController CreateFromServer(PointFieldModel pointFieldModel)
         {
-            return ContentController.GetController<PointFieldModelController>(pointFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<PointFieldModelController>(pointFieldModel.Id) ??
                     new PointFieldModelController(pointFieldModel);
         }
 
@@ -27,7 +28,7 @@ namespace Dash
         ///     The <see cref="Dash.PointFieldModel" /> associated with this <see cref="PointFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public PointFieldModel PointFieldModel => FieldModel as PointFieldModel;
+        public PointFieldModel PointFieldModel => Model as PointFieldModel;
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -71,7 +72,7 @@ namespace Dash
                 if (SetProperty(ref PointFieldModel.Data, value))
                 {
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception =>

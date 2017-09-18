@@ -33,7 +33,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -46,7 +46,8 @@ namespace Dash
             var docFieldModelController = new DocumentCollectionFieldModelController(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
             fields[KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
+            var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(model);
             return prototypeDocument;
         }
 

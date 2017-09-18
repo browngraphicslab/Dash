@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace Dash
 {
-
+    /*
     public class DocumentEndpoint : IDocumentEndpoint
     {
         private readonly ServerEndpoint _connection;
@@ -199,5 +199,5 @@ namespace Dash
                 error(e);
             }
         }
-    }
+    }*/
 }

@@ -205,7 +205,7 @@ namespace Dash
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-            DataBindingSource.Add(documentController.DocumentModel);
+            DataBindingSource.Add(documentController.Model);
 
             SetUpSmallIcon();
             _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));

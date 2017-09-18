@@ -9,6 +9,7 @@ using Dash.Converters;
 using Windows.UI.Xaml.Data;
 using static Dash.DocumentController;
 using System.Diagnostics;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -47,7 +48,7 @@ namespace Dash
                     OnFieldModelUpdated(null);
 
                     // Update server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception => throw exception);
@@ -65,12 +66,12 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)), false)
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
         {
             Data = documents.ToList();
         }
 
-        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : base(fieldModel, true)
+        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : base(fieldModel)
         {
             Data = documents.ToList();
         }
@@ -80,14 +81,14 @@ namespace Dash
         ///     <see cref="DocumentCollectionFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public DocumentCollectionFieldModel DocumentCollectionFieldModel => FieldModel as DocumentCollectionFieldModel;
+        public DocumentCollectionFieldModel DocumentCollectionFieldModel => Model as DocumentCollectionFieldModel;
 
         public override TypeInfo TypeInfo => TypeInfo.Collection;
 
         public static async Task<DocumentCollectionFieldModelController> CreateFromServer(
             DocumentCollectionFieldModel docCollectionFieldModel)
         {
-            var localController = ContentController.GetController<DocumentCollectionFieldModelController>(docCollectionFieldModel.Id);
+            var localController = ContentController<FieldModel>.GetController<DocumentCollectionFieldModelController>(docCollectionFieldModel.Id);
             if (localController != null)
             {
                 return localController;
@@ -99,7 +100,7 @@ namespace Dash
             {
                 foreach (var dto in docmodelDtos)
                 {
-                    docControllerList.Add(await DocumentController.CreateFromServer(dto));
+                    docControllerList.Add(new DocumentController(dto));
                 }
                 Debug.WriteLine("done with get documents");
 
@@ -141,7 +142,7 @@ namespace Dash
                 DocumentCollectionFieldModel.Data.Add(docController.GetId());
 
                 // Update server
-                RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                RESTClient.Instance.Fields.UpdateField(Model, dto =>
                 {
 
                 }, exception =>

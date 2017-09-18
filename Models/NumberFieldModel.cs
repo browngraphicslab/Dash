@@ -1,5 +1,6 @@
 using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -16,11 +17,6 @@ namespace Dash
         public override string ToString()
         {
             return $"NumberFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Number, Data, Id);
         }
     }
 }

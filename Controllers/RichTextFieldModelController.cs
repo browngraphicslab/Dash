@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -24,14 +25,14 @@ namespace Dash
 
         public static RichTextFieldModelController CreateFromServer(RichTextFieldModel richTextFieldModel)
         {
-            return ContentController.GetController<RichTextFieldModelController>(richTextFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<RichTextFieldModelController>(richTextFieldModel.Id) ??
                     new RichTextFieldModelController(richTextFieldModel);
         }
 
         /// <summary>
         /// The <see cref="RichTextFieldModel"/> associated with this <see cref="RichTextFieldModelController"/>
         /// </summary>
-        public RichTextFieldModel RichTextFieldModel => FieldModel as RichTextFieldModel;
+        public RichTextFieldModel RichTextFieldModel => Model as RichTextFieldModel;
 
         public RichTextFieldModel.RTD Data
         {
@@ -42,7 +43,7 @@ namespace Dash
                 {
                     OnFieldModelUpdated(null);
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception =>
@@ -78,7 +79,7 @@ namespace Dash
                 var split = link.Split('\"');
                 if (split.Count() > 1)
                 {
-                    var doc = ContentController.GetController<DocumentController>(split[1]);
+                    var doc = ContentController<DocumentModel>.GetController<DocumentController>(split[1]);
                     if (doc != null)
                         yield return doc;
                 }

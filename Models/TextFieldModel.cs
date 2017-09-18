@@ -1,5 +1,6 @@
 ﻿using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -23,9 +24,5 @@ namespace Dash
         /// </summary>
         public string Data;
 
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Text, Data, Id);
-        }
     }
 }

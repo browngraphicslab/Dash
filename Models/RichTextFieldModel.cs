@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -31,11 +32,6 @@ namespace Dash
         public RichTextFieldModel(RTD data = null, string id = null) : base(id)
         {
             Data = data ?? new RTD("");
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.RichTextField, Data, Id);
         }
     }
 }

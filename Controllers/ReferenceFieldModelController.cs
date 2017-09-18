@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -36,7 +37,7 @@ namespace Dash
 
         public static ReferenceFieldModelController CreateFromServer(ReferenceFieldModel referenceFieldModel)
         {
-            return ContentController.GetController<ReferenceFieldModelController>(referenceFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<ReferenceFieldModelController>(referenceFieldModel.Id) ??
                     new ReferenceFieldModelController(referenceFieldModel);
         }
 
@@ -58,7 +59,7 @@ namespace Dash
             {
                 ReferenceFieldModel.Reference = value;
                 // Update the server
-                RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                RESTClient.Instance.Fields.UpdateField(Model, dto =>
                 {
 
                 }, exception =>
@@ -101,7 +102,7 @@ namespace Dash
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
+        public ReferenceFieldModel ReferenceFieldModel => Model as ReferenceFieldModel;
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -137,7 +138,7 @@ namespace Dash
             var opField = refDoc.GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField != null)
             {
-                var str = "=" + (opField.FieldModel as OperatorFieldModel).Type + "(";
+                var str = "=" + (opField.Model as OperatorFieldModel).Type + "(";
                 foreach (var input in opField.Inputs)
                     str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
                 str = str.TrimEnd(',') + ")";

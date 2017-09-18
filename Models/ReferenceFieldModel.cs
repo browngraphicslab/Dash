@@ -1,4 +1,5 @@
 ﻿using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -25,11 +26,6 @@ namespace Dash
         public override int GetHashCode()
         {
             return Reference.GetHashCode();
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Reference, Reference, Id);
         }
     }
 }

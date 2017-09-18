@@ -75,7 +75,8 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
-            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType, "main-document-" + Guid.NewGuid());
+            var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DashConstants.TypeStore.MainDocumentType, "main-document-" + Guid.NewGuid());
+            var newDocument = new DocumentController(model);
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
@@ -98,12 +99,12 @@ namespace Dash
         {
             DocumentViewModel homePageViewModel;
 
-            async Task Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
+            async Task Success(IEnumerable<DocumentModel> homePageDocDtos)
             {
                 var documentModelDto = homePageDocDtos.FirstOrDefault();
                 if (documentModelDto != null)
                 {
-                   _homePageDocument = await DocumentController.CreateFromServer(documentModelDto);
+                   _homePageDocument = new DocumentController(documentModelDto);
                 }
                 else
                 {
@@ -111,7 +112,10 @@ namespace Dash
                     {
                         [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
                     };
-                    _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id: "home-document-" + Guid.NewGuid());
+
+                    var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DashConstants.TypeStore.HomePageType, "home-document-" + Guid.NewGuid());
+
+                    _homePageDocument = new DocumentController(model);
                     var collectionDocumentController =
                         new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
 

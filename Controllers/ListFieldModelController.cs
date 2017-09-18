@@ -75,7 +75,7 @@ namespace Dash
             return TypedData.ToList();
         }
 
-        public ListFieldModel ListFieldModel => FieldModel as ListFieldModel;
+        public ListFieldModel ListFieldModel => Model as ListFieldModel;
 
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
 

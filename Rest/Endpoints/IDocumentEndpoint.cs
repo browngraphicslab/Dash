@@ -30,7 +30,7 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        Task GetDocument(string id, Func<DocumentModelDTO, Task> success, Action<Exception> error);
+        Task GetDocument(string id, Func<DocumentModel, Task> success, Action<Exception> error);
 
         /// <summary>
         ///     Gets a document from the server.
@@ -38,7 +38,7 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error);
+        Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error);
 
         /// <summary>
         ///     Deletes a document from the server.
@@ -56,6 +56,6 @@ namespace Dash
         /// <param name="error"></param>
         void DeleteAllDocuments(Action success, Action<Exception> error);
 
-        Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error);
+        Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error);
     }
 }

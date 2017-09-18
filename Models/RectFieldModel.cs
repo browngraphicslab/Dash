@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -25,11 +26,6 @@ namespace Dash
         public override string ToString()
         {
             return $"RectFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Rectangle, Data, Id);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DashShared;
+using DashShared.Models;
 using Newtonsoft.Json;
 
 namespace DashShared
@@ -35,7 +36,7 @@ namespace DashShared
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<KeyModel, FieldModelDTO> fields, DocumentType type, string id = null) : base(id)
+        public DocumentModel(IDictionary<KeyModel, FieldModel> fields, DocumentType type, string id = null) : base(id)
         {
             DocumentType = type ?? throw new ArgumentNullException();
             Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.Id);

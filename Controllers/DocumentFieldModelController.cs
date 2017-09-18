@@ -8,6 +8,7 @@ using DashShared;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
 using System.Linq;
+using DashShared.Models;
 using static Dash.DocumentController;
 
 namespace Dash
@@ -15,19 +16,19 @@ namespace Dash
     public class DocumentFieldModelController : FieldModelController
     {
 
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document.GetId()), isCreatedFromServer:false)
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document.GetId()))
         {
             Data = document;
         }
 
-        private DocumentFieldModelController(DocumentController document, DocumentFieldModel model) : base(model, isCreatedFromServer:true)
+        private DocumentFieldModelController(DocumentController document, DocumentFieldModel model) : base(model)
         {
             Data = document;
         }
 
         public static async Task<DocumentFieldModelController> CreateFromServer(DocumentFieldModel documentFieldModel)
         {
-            var localController = ContentController.GetController<DocumentFieldModelController>(documentFieldModel.Id);
+            var localController = ContentController<FieldModel>.GetController<DocumentFieldModelController>(documentFieldModel.Id);
             if (localController != null)
             {
                 return localController;
@@ -35,9 +36,9 @@ namespace Dash
 
             DocumentController docController = null;
 
-            await RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data, async dto =>
+            await RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data, async model =>
             {
-                docController = await DocumentController.CreateFromServer(dto);
+                docController = new DocumentController(model);
 
                 foreach (var keyFieldPair in docController.EnumFields(true))
                 {
@@ -47,8 +48,7 @@ namespace Dash
                         await RESTClient.Instance.Documents.GetDocument(
                             dfmc.DocumentFieldModel.Data, async protoDto =>
                             {
-                                dfmc.Data =
-                                    await DocumentController.CreateFromServer(protoDto);
+                                dfmc.Data = new DocumentController(protoDto);
                             }, exception => throw exception);
                     }
 
@@ -63,7 +63,7 @@ namespace Dash
                         {
                             foreach (var docDto in docmodelDtos)
                             {
-                                await DocumentController.CreateFromServer(docDto);
+                                new  DocumentController(docDto);
                             }
                         }, exception => throw exception);
                     }
@@ -79,7 +79,7 @@ namespace Dash
         ///     The <see cref="DocumentFieldModel" /> associated with this <see cref="DocumentFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public DocumentFieldModel DocumentFieldModel => FieldModel as DocumentFieldModel;
+        public DocumentFieldModel DocumentFieldModel => Model as DocumentFieldModel;
 
 
         private DocumentController _data;
@@ -119,7 +119,7 @@ namespace Dash
                     };
                     value.DocumentFieldUpdated += primaryKeyHandler;
                     OnFieldModelUpdated(null);
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto => { }, exception => throw exception);
+                    RESTClient.Instance.Fields.UpdateField(Model, dto => { }, exception => throw exception);
                 }
             }
         }
@@ -142,8 +142,7 @@ namespace Dash
 
         public override FieldModelController GetDefaultController()
         {
-            return new DocumentFieldModelController(Data.GetPrototype() ?? 
-                new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
+            return new DocumentFieldModelController(Data.GetPrototype() ?? new DocumentController(new DocumentModel(new Dictionary<KeyModel, FieldModel>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document")))));
         }
 
         public override FieldModelController Copy()

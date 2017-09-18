@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,11 +7,11 @@ using DashShared;
 
 namespace Dash
 {
-    public static class ContentController
+    public static class ContentController<T> where T: EntityBase
     {
         #region Caches
 
-        private static ConcurrentDictionary<string, IController> _controllers = new ConcurrentDictionary<string, IController>();
+        private static ConcurrentDictionary<string, IController<T>> _controllers = new ConcurrentDictionary<string, IController<T>>();
 
         private static ConcurrentDictionary<string, EntityBase> _models = new ConcurrentDictionary<string, EntityBase>();
 
@@ -23,7 +24,7 @@ namespace Dash
         /// Adds a controller to the current list of 
         /// </summary>
         /// <param name="newController"></param>
-        public static void AddController(IController newController)
+        public static void AddController(IController<T> newController)
         {
             // get the newController's id and make sure it isn't null
             var newControllerId = newController.GetId();
@@ -41,13 +42,13 @@ namespace Dash
                 // otherwise add the new controller to the saved controllers
                 _controllers[newControllerId] = newController;
             }
-
+            AddModel(newController.Model);
         }
 
         /// <summary>
         /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
         /// </summary>
-        public static TControllerType GetController<TControllerType>(string controllerId) where TControllerType : class, IController
+        public static TControllerType GetController<TControllerType>(string controllerId) where TControllerType : class, IController<T>
         {
             if (_controllers.ContainsKey(controllerId))
             {
@@ -66,7 +67,7 @@ namespace Dash
         /// <summary>
         /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
         /// </summary>
-        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController<T>
         {
             List< string > ids = new List<string>();
             foreach (var c in _controllers)
@@ -82,7 +83,7 @@ namespace Dash
         /// </summary>
         /// <param name="controllerId"></param>
         /// <returns></returns>
-        public static IController GetController(string controllerId)
+        public static IController<T> GetController(string controllerId)
         {
             if (_controllers.ContainsKey(controllerId))
             {
@@ -98,7 +99,7 @@ namespace Dash
         /// <typeparam name="TControllerType"></typeparam>
         /// <param name="controllerIds"></param>
         /// <returns></returns>
-        public static IEnumerable<TControllerType> GetControllers<TControllerType>(IEnumerable<string> controllerIds) where TControllerType : class, IController
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>(IEnumerable<string> controllerIds) where TControllerType : class, IController<T>
         {
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
@@ -136,7 +137,7 @@ namespace Dash
         /// Adds a model to the current list of models
         /// </summary>
         /// <param name="newModel"></param>
-        public static void AddModel(EntityBase newModel)
+        private static void AddModel(EntityBase newModel)
         {
             // get the new Model's id and make sure it isn't null
             var newModelId = newModel.Id;

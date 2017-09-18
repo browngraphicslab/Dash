@@ -3,23 +3,23 @@ using DashShared;
 
 namespace Dash
 {
-    public class KeyController : ViewModelBase, IController
+    public class KeyController : ViewModelBase, IController<KeyModel>
     {
         /// <summary>
         ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
         ///     on the fieldModel!
         /// </summary>
-        public KeyModel KeyModel { get; set; }
+        public KeyModel Model { get; set; }
 
         private readonly int _hash;
 
         public string Name
         {
-            get => KeyModel.Name;
+            get => Model.Name;
             set
             {
-                KeyModel.Name = value;
-                RESTClient.Instance.Keys.UpdateKey(KeyModel, model =>
+                Model.Name = value;
+                RESTClient.Instance.Keys.UpdateKey(Model, model =>
                 {
                     // Yay!
                 }, exception =>
@@ -29,19 +29,18 @@ namespace Dash
             }
         }
 
-        public string Id => KeyModel.Id;
+        public string Id => Model.Id;
 
         public KeyController(KeyModel keyModel, bool sendToServer = true)
         {
             // Initialize Local Variables
-            KeyModel = keyModel;
-            _hash = KeyModel.GetHashCode();
-            ContentController.AddModel(keyModel);
-            ContentController.AddController(this);
+            Model = keyModel;
+            _hash = Model.GetHashCode();
+            ContentController<KeyModel>.AddController(this);
 
             if (sendToServer)
             {
-                RESTClient.Instance.Keys.AddKey(KeyModel, model =>
+                RESTClient.Instance.Keys.AddKey(Model, model =>
                 {
                     // Yay!
                 }, exception =>
@@ -68,7 +67,7 @@ namespace Dash
         /// </summary>
         public string GetId()
         {
-            return KeyModel.Id;
+            return Model.Id;
         }
 
         /// <summary>
@@ -77,7 +76,7 @@ namespace Dash
         /// <returns></returns>
         public string GetName()
         {
-            return KeyModel.Name;
+            return Model.Name;
         }
 
         public override bool Equals(object obj)
@@ -93,7 +92,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return KeyModel.Name;
+            return Model.Name;
         }
 
         public virtual void Dispose()

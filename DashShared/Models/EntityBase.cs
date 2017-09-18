@@ -12,7 +12,7 @@ namespace DashShared
     /// the base class for anything that is stored in the Database, with few exceptions every model
     /// should inherit from this class.
     /// </summary>
-    public abstract class EntityBase
+    public abstract class EntityBase : ISerializable
     {
 
         protected EntityBase(string id = null)

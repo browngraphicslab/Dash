@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using DashShared;
+using DashShared.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -19,14 +20,15 @@ namespace Dash
             [typeof(DocumentFieldModelController)] = TypeInfo.Document
         };
 
+        /*
         // TODO move this to FieldModel
-        public static FieldModel CreateFieldModel(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        public static FieldModel CreateFieldModel(FieldModel fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
            return CreateFieldModelHelper(fieldModelDTO, listType);
         }
 
         // TODO move this to FieldModel
-        private static FieldModel CreateFieldModelHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        private static FieldModel CreateFieldModelHelper(FieldModel fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
             try
             {
@@ -101,7 +103,7 @@ namespace Dash
                 throw;
             }
         }
-
+        */
         public static TypeInfo TypeToTypeInfo(Type type)
         {
             if (TypeDict.ContainsKey(type))

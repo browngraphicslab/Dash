@@ -248,7 +248,7 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            var docType = ViewModel.DocumentController.Model.DocumentType;
             if (docType.Type != null)
             {
 
@@ -256,14 +256,14 @@ namespace Dash
             else
             {
 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Source = ViewModel.DocumentController.Model.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };

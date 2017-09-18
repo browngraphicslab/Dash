@@ -2,6 +2,7 @@
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+ using DashShared.Models;
 
 namespace Dash
 {
@@ -17,7 +18,7 @@ namespace Dash
 
         public static TextFieldModelController CreateFromServer(TextFieldModel textFieldModel)
         {
-            return ContentController.GetController<TextFieldModelController>(textFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<TextFieldModelController>(textFieldModel.Id) ??
                     new TextFieldModelController(textFieldModel);
         }
 
@@ -25,7 +26,7 @@ namespace Dash
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public TextFieldModel TextFieldModel => FieldModel as TextFieldModel;
+        public TextFieldModel TextFieldModel => Model as TextFieldModel;
 
         public override object GetValue(Context context)
         {
@@ -49,7 +50,7 @@ namespace Dash
                 {
                     OnFieldModelUpdated(null);
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception =>

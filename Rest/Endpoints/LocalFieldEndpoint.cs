@@ -9,6 +9,7 @@ using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using DashShared;
+using DashShared.Models;
 using Newtonsoft.Json;
 
 namespace Dash
@@ -70,12 +71,12 @@ namespace Dash
         {
             SaveTimerCallback(null);
         }
-        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
+        public void AddField(FieldModel newField, Action<FieldModel> success, Action<Exception> error)
         {
             try
             {
-                _modelDictionary[newField.Id] = JsonConvert.SerializeObject(newField.GetFieldDTO());
-                success(JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[newField.Id]));
+                _modelDictionary[newField.Id] = JsonConvert.SerializeObject(newField);
+                success(JsonConvert.DeserializeObject<FieldModel>(_modelDictionary[newField.Id]));
             }
             catch (Exception e)
             {
@@ -83,16 +84,16 @@ namespace Dash
             }
         }
 
-        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
+        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModel> success, Action<Exception> error)
         {
             AddField(fieldToUpdate, success,error);
         }
 
-        public async Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error)
+        public async Task GetField(string id, Func<FieldModel, Task> success, Action<Exception> error)
         {
             try
             {
-                var model = JsonConvert.DeserializeObject<FieldModelDTO>(_modelDictionary[id]);
+                var model = JsonConvert.DeserializeObject<FieldModel>(_modelDictionary[id]);
                 await success(model);
             }
             catch (Exception e)

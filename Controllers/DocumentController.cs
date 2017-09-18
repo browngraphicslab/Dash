@@ -14,10 +14,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class DocumentController : ViewModelBase, IController
+    public class DocumentController : ViewModelBase, IController<DocumentModel>
     {
         public enum FieldUpdatedAction
         {
@@ -88,28 +89,41 @@ namespace Dash
         }
 
         /// <summary>
-        ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
+        ///     A wrapper for <see cref="Model.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         private Dictionary<KeyController, FieldModelController> _fields = new Dictionary<KeyController, FieldModelController>();
 
-        public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null, bool sendToServer = true)
+        public DocumentController(DocumentModel model)
         {
-            DocumentModel =
-                new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.FieldModel.GetFieldDTO()), type, id);
-            ContentController.AddModel(DocumentModel);
+            Model = model;
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
-            ContentController.AddController(this);
+            ContentController<DocumentModel>.AddController(this);
+            LayoutName = Model.DocumentType.Type;
 
-            LayoutName = DocumentModel.DocumentType.Type;
+            var fields = model.Fields.Select(kvp => 
+            new KeyValuePair<KeyController, FieldModelController>(
+                ContentController<KeyModel>.GetController<KeyController>(kvp.Key), 
+                ContentController<FieldModel>.GetController<FieldModelController>(kvp.Value)));
+
+            SetFields(fields, true);
+        }
+
+        /*
+        public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null, bool sendToServer = true)
+        {
+            Model = new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model.GetFieldDTO()), type, id);
+
+            LayoutName = Model.DocumentType.Type;
+
 
             SetFields(fields, true, sendToServer: sendToServer);
             if (sendToServer)
             {
                 // Add Events
 #pragma warning disable 4014
-                RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
+                RESTClient.Instance.Documents.AddDocument(Model, model =>
 #pragma warning restore 4014
                 {
                     // Yay!
@@ -119,12 +133,12 @@ namespace Dash
                 });
             }
         }
-
-
+        */
+        /*
         public static int threadCount = 0;
         public static object l = new object();
 
-        public static async Task<DocumentController> CreateFromServer(DocumentModelDTO docModelDto)
+        public static async Task<DocumentController> CreateFromServer(DocumentModel docModel)
         {
 
             lock (l)
@@ -133,18 +147,18 @@ namespace Dash
                 Debug.WriteLine($"enter dc : {threadCount}");
             }
 
-            var localDocController = ContentController.GetController<DocumentController>(docModelDto.Id);
+            var localDocController = ContentController<DocumentModel>.GetController<DocumentController>(docModel.Id);
             if (localDocController != null)
             {
                 return localDocController;
             }
 
-            var fieldList = docModelDto.FieldList.ToList();
-            var keyList = docModelDto.KeyList.ToList();
+            var fieldList = docModel.Fields.Values.ToArray();
+            var keyList = docModel.Fields.Keys.ToArray();
 
             var fieldDict = new Dictionary<KeyController, FieldModelController>();
 
-            for (var i = 0; i < docModelDto.FieldList.Count(); i++)
+            for (var i = 0; i < docModel.Fields.Count(); i++)
             {
                 var field = fieldList[i];
                 var key = keyList[i];
@@ -178,13 +192,13 @@ namespace Dash
             }
 
             return new DocumentController(fieldDict, type, id, sendToServer: false);
-        }
+        }*/
 
         /// <summary>
-        ///     The <see cref="DocumentModel" /> associated with this <see cref="DocumentController" />,
+        ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public DocumentModel DocumentModel { get; }
+        public DocumentModel Model { get; }
 
         public string LayoutName { get; set; }
         /// <summary>
@@ -193,10 +207,10 @@ namespace Dash
         /// </summary>
         public DocumentType DocumentType
         {
-            get { return DocumentModel.DocumentType; }
+            get { return Model.DocumentType; }
             set
             {
-                if (SetProperty(ref DocumentModel.DocumentType, value))
+                if (SetProperty(ref Model.DocumentType, value))
                 {
                     //RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
                     //{
@@ -215,7 +229,7 @@ namespace Dash
         /// </summary>
         public string GetId()
         {
-            return DocumentModel.Id;
+            return Model.Id;
         }
 
 
@@ -246,7 +260,7 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            foreach (var dmc in ContentController.GetControllers<DocumentController>())
+            foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                 if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
                     var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
@@ -441,7 +455,7 @@ namespace Dash
 
 
         /// <summary>
-        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="DocumentModel" />,
+        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
         ///     and returns null if no prototype exists
         /// </summary>
         public DocumentController GetPrototype()
@@ -477,7 +491,7 @@ namespace Dash
             return result;
         }
 
-        private bool SetFieldHelper(KeyController key, FieldModelController field, bool forceMask, bool sendToServer = true)
+        private bool SetFieldHelper(KeyController key, FieldModelController field, bool forceMask)
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
@@ -489,21 +503,9 @@ namespace Dash
             {
                 oldField?.Dispose();
                 proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.FieldModel.Id;
+                proto.Model.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 SetupNewFieldListeners(key, field, oldField, new Context(proto));
-
-                if (sendToServer)
-                {
-                    // update the server
-                    RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
-                    {
-                        //Yay!
-                    }, exception =>
-                    {
-                        //Hayyyyy!
-                    });
-                }
 
                 return true;
             }
@@ -630,13 +632,13 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="forceMask"></param>
-        public bool SetFields(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields, bool forceMask, bool sendToServer = true)
+        public bool SetFields(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields, bool forceMask)
         {
             Context c = new Context(this);
             bool shouldExecute = false;
             foreach (var field in fields)
             {
-                if (SetFieldHelper(field.Key, field.Value, forceMask, sendToServer))
+                if (SetFieldHelper(field.Key, field.Value, forceMask))
                 {
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                 }
@@ -657,8 +659,10 @@ namespace Dash
         /// <returns></returns>
         public DocumentController MakeDelegate()
         {
+            var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType, id: "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+            var delegateController = new DocumentController(delegateModel);
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {

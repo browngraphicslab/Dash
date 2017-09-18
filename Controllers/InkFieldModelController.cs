@@ -16,6 +16,7 @@ using Dash.Converters;
 using Dash.Models;
 using Dash.Views;
 using DashShared;
+using DashShared.Models;
 using Newtonsoft.Json;
 
 namespace Dash
@@ -53,7 +54,7 @@ namespace Dash
 
         public static InkFieldModelController CreateFromServer(InkFieldModel inkFieldModel)
         {
-            return ContentController.GetController<InkFieldModelController>(inkFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<InkFieldModelController>(inkFieldModel.Id) ??
                    new InkFieldModelController(inkFieldModel);
         }
 
@@ -61,7 +62,7 @@ namespace Dash
         ///     The <see cref="InkFieldModel" /> associated with this <see cref="InkFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public InkFieldModel InkFieldModel => FieldModel as InkFieldModel;
+        public InkFieldModel InkFieldModel => Model as InkFieldModel;
 
         
         public string InkData
@@ -72,7 +73,7 @@ namespace Dash
                 if (SetProperty(ref InkFieldModel.Data, value))
                 {
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception =>

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Security.Authentication.Web.Provider;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -18,9 +20,10 @@ namespace Dash
             
         }
 
+
         public static NumberFieldModelController CreateFromServer(NumberFieldModel numberFieldModel)
         {
-            return ContentController.GetController<NumberFieldModelController>(numberFieldModel.Id) ??
+            return ContentController<FieldModel>.GetController<NumberFieldModelController>(numberFieldModel.Id) ??
                      new NumberFieldModelController(numberFieldModel);
         }
 
@@ -28,7 +31,7 @@ namespace Dash
         ///     The <see cref="NumberFieldModel" /> associated with this <see cref="NumberFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public NumberFieldModel NumberFieldModel => FieldModel as NumberFieldModel;
+        public NumberFieldModel NumberFieldModel => Model as NumberFieldModel;
 
 
         public override FieldModelController GetDefaultController()
@@ -64,7 +67,7 @@ namespace Dash
                 if (SetProperty(ref NumberFieldModel.Data, value))
                 {
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
 
                     }, exception =>

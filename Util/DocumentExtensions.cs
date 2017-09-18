@@ -145,8 +145,8 @@ namespace Dash
 
         public static DocumentController GetCopy(this DocumentController doc, Context context = null)
         {
-            var copy = doc.GetPrototype()?.MakeDelegate() ??
-                       new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);
+            var model = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), doc.DocumentType);
+            var copy = doc.GetPrototype()?.MakeDelegate() ?? new DocumentController(model);
             var fields = new ObservableDictionary<KeyController, FieldModelController>();
             foreach (var kvp in doc.EnumFields(true))
             {
@@ -162,7 +162,7 @@ namespace Dash
                 }
                 else
                 {
-                    if (kvp.Key.KeyModel == DashConstants.KeyStore.ThisKey)
+                    if (kvp.Key.Model == DashConstants.KeyStore.ThisKey)
                         fields[kvp.Key] = new DocumentFieldModelController(copy);
                     else fields[kvp.Key] = kvp.Value.Copy();
                 }

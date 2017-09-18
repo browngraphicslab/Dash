@@ -1,5 +1,6 @@
 ﻿using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -15,11 +16,6 @@ namespace Dash
             Type = type;
             IsCompound = isCompound;
         }
-
-        protected override FieldModelDTO GetFieldDTOHelper() {
-            return new FieldModelDTO(TypeInfo.Operator, Tuple.Create(Type, IsCompound), Id);
-		}
-		
         public override string ToString() {
             return Type;
         }

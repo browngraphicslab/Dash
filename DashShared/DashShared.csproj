@@ -45,6 +45,7 @@
     <Compile Include="Models\AuthenticationTokenModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentModelDTO.cs" />
+    <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\KeyModel.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />

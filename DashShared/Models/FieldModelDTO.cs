@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DashShared
 {
-
+    /*
     public class FieldModelDTO : EntityBase
     {
         public FieldModelDTO(TypeInfo type, object data, string id) : base(id)
@@ -18,5 +18,5 @@ namespace DashShared
         [Required]
         public TypeInfo Type { get; set; }
         
-    }
+    }*/
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using DashShared;
 using Windows.Foundation;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -21,11 +22,6 @@ namespace Dash
         public override string ToString()
         {
             return $"PointFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Point, Data, Id);
         }
     }
 }

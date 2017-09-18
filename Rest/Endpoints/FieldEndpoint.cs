@@ -8,9 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dash.Rest.Endpoints;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    /*
     public class FieldEndpoint : Endpoint<FieldModel, FieldModelDTO>, IFieldEndpoint
     {
         private static readonly object l = new object();
@@ -124,5 +126,5 @@ namespace Dash
                 }
             });
         }
-    }
+    }*/
 }

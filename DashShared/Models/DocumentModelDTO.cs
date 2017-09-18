@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
+    /*
     public class DocumentModelDTO : EntityBase
     {
         [Required]
@@ -25,5 +26,5 @@ namespace DashShared
             DocumentType = type;
         }
 
-    }
+    }*/
 }

@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using DashShared.Models;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
-    public abstract class FieldModelController : ViewModelBase, IController, IDisposable
+    public abstract class FieldModelController : ViewModelBase, IController<FieldModel>, IDisposable
     {
         public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args,
             Context context);
@@ -19,7 +20,7 @@ namespace Dash
         public static object l = new object();
 
         /// <summary>
-        ///     A wrapper for <see cref="Dash.FieldModel.OutputReferences" />. Change this to propogate changes
+        ///     A wrapper for <see cref="DashShared.Models.FieldModel.OutputReferences" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
@@ -29,22 +30,11 @@ namespace Dash
         public abstract object GetValue(Context context);
 
 
-        protected FieldModelController(FieldModel fieldModel, bool isCreatedFromServer)
+        protected FieldModelController(FieldModel fieldModel)
         {
             // Initialize Local Variables
-            FieldModel = fieldModel;
-            ContentController.AddModel(fieldModel);
-            ContentController.AddController(this);
-
-            if (isCreatedFromServer == false)
-                RESTClient.Instance.Fields.AddField(fieldModel, fieldModelDto =>
-                {
-                    // Yay!
-                }, exception =>
-                {
-                    // Haaay
-                    Debug.WriteLine(exception);
-                });
+            Model = fieldModel;
+            ContentController<FieldModel>.AddController(this);
         }
 
         /// <summary>
@@ -52,7 +42,7 @@ namespace Dash
         ///     controller, never directly
         ///     on the fieldModel!
         /// </summary>
-        public FieldModel FieldModel { get; set; }
+        public FieldModel Model { get; set; }
 
         public abstract TypeInfo TypeInfo { get; }
 
@@ -62,7 +52,7 @@ namespace Dash
         /// </summary>
         public string GetId()
         {
-            return FieldModel.Id;
+            return Model.Id;
         }
 
         public virtual void Dispose()
@@ -191,12 +181,12 @@ namespace Dash
             var cont = obj as FieldModelController;
             if (cont == null)
                 return false;
-            return FieldModel.Equals(cont.FieldModel);
+            return Model.Equals(cont.Model);
         }
 
         public override int GetHashCode()
         {
-            return FieldModel.GetHashCode();
+            return Model.GetHashCode();
         }
 
         public abstract FieldModelController Copy();
@@ -208,24 +198,31 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
-        public static async Task<FieldModelController> CreateFromServer(FieldModelDTO fieldModelDto)
+        public static async Task<FieldModelController> CreateFromServer(FieldModel fieldModel)
         {
-            lock (l)
+            FieldModelController returnController = null;
+            if (fieldModel is NumberFieldModel)
             {
-                threadCount++;
-                Debug.WriteLine($"enter fc : {threadCount}");
+                returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
+            }
+            else if (fieldModel is TextFieldModel)
+            {
+                returnController = TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
             }
 
-            var fieldModel = TypeInfoHelper.CreateFieldModel(fieldModelDto);
 
+            //TODO fill this is
+
+            return returnController;
+            /*
             FieldModelController returnController;
 
 
-            switch (fieldModelDto.Type)
+            switch (fieldModel.GetType())
             {
                 case TypeInfo.None:
                     throw new NotImplementedException();
-                case TypeInfo.Number:
+                case NumberFieldModel:
                     returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
                     break;
                 case TypeInfo.Text:
@@ -274,7 +271,7 @@ namespace Dash
                 Debug.WriteLine($"exit fc : {threadCount}");
             }
 
-            return returnController;
+            return returnController;*/
         }
 
         public event InkFieldModelController.InkUpdatedHandler InkUpdated;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -25,11 +26,6 @@ namespace Dash
         public InkFieldModel(string data = null, string id = null) : base(id)
         {
             Data = data ?? "";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Ink, Data, Id);
         }
     }
 }

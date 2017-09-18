@@ -11,6 +11,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using DashShared;
+using DashShared.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
@@ -92,12 +93,12 @@ namespace Dash
             success(documentToUpdate);
         }
 
-        public async Task GetDocument(string id, Func<DocumentModelDTO, Task> success, Action<Exception> error)
+        public async Task GetDocument(string id, Func<DocumentModel, Task> success, Action<Exception> error)
         {
             try
             {
                 var doc = _modelDictionary[id];
-                await success(JsonConvert.DeserializeObject<DocumentModelDTO>(doc));
+                await success(JsonConvert.DeserializeObject<DocumentModel>(doc));
             }
             catch (Exception e)
             {
@@ -105,7 +106,7 @@ namespace Dash
             }
         }
 
-        public async Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
+        public async Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error)
         {
             try
             {
@@ -146,7 +147,7 @@ namespace Dash
             success();
         }
 
-        public async Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
+        public async Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error)
         {
             try
             {
@@ -163,24 +164,24 @@ namespace Dash
             }
         }
 
-        private async Task<IEnumerable<DocumentModelDTO>> CreateModels(IEnumerable<DocumentModel> models, Dictionary<string, FieldModelDTO> fields, Dictionary<string, KeyModel> keys, Func<IEnumerable<DocumentModelDTO>,Task> success )
+        private async Task<IEnumerable<DocumentModel>> CreateModels(IEnumerable<DocumentModel> models, Dictionary<string, FieldModel> fields, Dictionary<string, KeyModel> keys, Func<IEnumerable<DocumentModel>,Task> success )
         {
-            var list = new List<DocumentModelDTO>();
+            var list = new List<DocumentModel>();
             foreach (var model in models)
             {
-                var fieldObjs = model.Fields.Values.Select(fieldId => fields[fieldId]).ToArray();
-                var keyObjs = model.Fields.Keys.Select(keyId => keys[keyId]).ToArray();
-                list.Add(new DocumentModelDTO(fieldObjs,keyObjs, model.DocumentType, model.Id));
+                //var fieldObjs = model.Fields.Values.Select(fieldId => fields[fieldId]).ToArray();
+                //var keyObjs = model.Fields.Keys.Select(keyId => keys[keyId]).ToArray();
+                list.Add(model);
             }
             await success?.Invoke(list);
             return list;
         }
 
-        private async Task ToDtoAsync(IEnumerable<DocumentModel> models, Func<IEnumerable<DocumentModelDTO>, Task> success)
+        private async Task ToDtoAsync(IEnumerable<DocumentModel> models, Func<IEnumerable<DocumentModel>, Task> success)
         {
             if (!(models.Any()))
             {
-                await success(new List<DocumentModelDTO>());
+                await success(new List<DocumentModel>());
                 return;
             }
             var returnedFields = 0;
@@ -192,11 +193,11 @@ namespace Dash
             var neededFields = fieldIds.Count();
             var neededKeys = fieldIds.Count();
 
-            var fieldIdsToFields = new Dictionary<string, FieldModelDTO>();
+            var fieldIdsToFields = new Dictionary<string, FieldModel>();
             var keyIdsToKeys = new Dictionary<string, KeyModel>();
 
 
-            async Task fieldPoll (FieldModelDTO field) 
+            async Task fieldPoll (FieldModel field) 
             {
                 returnedFields++;
                 fieldIdsToFields[field.Id] = field;

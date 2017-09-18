@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -18,10 +19,5 @@ namespace Dash
         public List<string> Data;
 
         public TypeInfo SubTypeInfo;
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.List, Data, Id);
-        }
     }
 }
