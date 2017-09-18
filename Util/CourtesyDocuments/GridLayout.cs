@@ -169,7 +169,8 @@ namespace Dash
         {
             var children = document.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
             Debug.Assert(children != null);
-            children.AddDocument(child);
+            if (!children.GetDocuments().Contains(child))
+                children.AddDocument(child);
         }
     }
 }

@@ -95,7 +95,10 @@ namespace Dash
                 [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document)
             };
 
-            collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+            var newDoc = new DocumentController(fields, DocumentType.DefaultType);
+            collection.ViewModel.AddDocument(newDoc, null);
+
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
@@ -230,7 +233,7 @@ namespace Dash
                 docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            //DBTest.DBDoc.AddChild(docController);
+            DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)

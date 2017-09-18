@@ -40,7 +40,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Text
+            Freeform, List, Grid, Page, Text
         }
 
         private CollectionViewType _viewType;
@@ -53,7 +53,14 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
+        public static CollectionView GetParentCollectionView(DependencyObject sender)
+        {
+            var item = VisualTreeHelper.GetParent(sender);
+            while (item != null && !(item is CollectionView))
+                item = VisualTreeHelper.GetParent(item);
 
+            return item as CollectionView;
+        }
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -77,10 +84,11 @@ namespace Dash
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
                     break;
+                case CollectionViewType.Page:
                     CurrentView = new CollectionPageView();
+                    break;
                 case CollectionViewType.List:
-                    CurrentView = new CollectionPageView();
-                   // CurrentView = new CollectionListView();
+                    CurrentView = new CollectionListView();
                     break;
                 case CollectionViewType.Text:
                     CurrentView = new CollectionTextView();

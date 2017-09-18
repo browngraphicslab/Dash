@@ -57,6 +57,27 @@ namespace Dash
             return doc;
         }
 
+        /// <summary>
+        /// Copies 
+        /// </summary>
+        /// <returns></returns>
+        public static DocumentController Copy(this DocumentController doc, Point? where=null)
+        {
+            var copy = doc.GetCopy();
+            var layoutField = copy.GetActiveLayout().Data;
+            var layoutCopy = layoutField?.GetCopy();
+            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
+            var positionField = copy.GetPositionField();
+            if (positionField != null)
+            {
+                var oldPosition = doc.GetPositionField().Data;
+                if (where == null)
+                    positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
+                else positionField.Data = (Point)where;
+            }
+            return copy;
+        }
+
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {
