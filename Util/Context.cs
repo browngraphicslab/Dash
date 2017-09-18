@@ -69,7 +69,7 @@ namespace Dash
                 var dcbPrototype = dcb.GetAllPrototypes().First();
                 bool skip = false;
                 for (int j = i+1; j < docSet.Count && !skip; j++)
-                    if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
+                    if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
                     {
                         skip = true;
                     }

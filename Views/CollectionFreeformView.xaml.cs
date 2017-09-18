@@ -313,6 +313,8 @@ namespace Dash
             _currReference = ioReference;
             _connectionLine = new Path
             {
+                //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
+                IsHitTestVisible = false,
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHoldingEnabled = false,
@@ -755,32 +757,24 @@ namespace Dash
         {
             ViewModel.CollectionViewOnDrop(sender, e);
 
-            var carrier = ItemsCarrier.Instance;
+            if (e.AcceptedOperation != DataPackageOperation.Move)
+                return;
 
-            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
-                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
-                    return;
+            var carrier = ItemsCarrier.Instance;
+            
 
             // if dropping back to the original collection, just reset the payload 
             if (carrier.StartingCollection == this)
                 _payload = new Dictionary<DocumentView, DocumentController>();
             else
             {
-                if (carrier.Source != null)
+                if (carrier.SourceCollection != null)
                 {
-                    if (!carrier.Source.Equals(carrier.Destination))
-                    {
-                        // for blue drag/drop; must remove the payload from the original collection 
-                        if (carrier._source != null)
-                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
-                        else
-                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
+                    // for blue drag/drop; must remove the payload from the original collection 
+                    carrier.SourceCollection?.ViewModel?.RemoveDocuments(carrier.Payload); //for collections 
 
-                        carrier.Payload.Clear();
-                        carrier.Source = null;
-                        carrier.SourceCollection = null;
-                        carrier.Destination = null;
-                    }
+                    carrier.Payload.Clear();
+                    carrier.SourceCollection = null;
                 }
 
                 // delete connection lines logically and graphically 
@@ -928,6 +922,7 @@ namespace Dash
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
 
             if (ItemsCarrier.Instance.StartingCollection == null) return;
@@ -941,25 +936,9 @@ namespace Dash
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
-            var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
-            // if dropping to a collection within the source collection 
-            if (carrier.StartingCollection != this)
-            {
-                carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);
-                return;
-            }
-
-            ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
-            foreach (var cont in ItemsCarrier.Instance.Payload)
-            {
-                var view = new DocumentView(new DocumentViewModel(cont));
-                _documentViews.Add(view);
-            }
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -967,13 +946,8 @@ namespace Dash
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var carrier = ItemsCarrier.Instance;
-
-            carrier.Destination = null;
+            
             carrier.StartingCollection = this;
-            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
-            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
-            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
-            carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }

@@ -212,7 +212,7 @@ namespace Dash
         DocumentController lookupOperator(string opname)
         {
             if (opname == "Add")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController(new OperatorFieldModel("Add")));
+                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController());
             if (opname == "Divide")
                 return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
             return null;

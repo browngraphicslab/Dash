@@ -427,21 +427,6 @@ namespace Dash
             MenuOpen = true;
         }
 
-        public DocumentController Copy()
-        {
-            var copy = DocumentController.GetCopy();
-            var layoutField = copy.GetActiveLayout().Data;
-            var layoutCopy = layoutField?.GetCopy();
-            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
-            var positionField = copy.GetPositionField();
-            if (positionField != null)
-            {
-                var oldPosition = DocumentController.GetPositionField().Data;
-                positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
-            }
-            return copy;
-        }
-
         public DocumentController GetDelegate()
         {
             var del = DocumentController.MakeDelegate();
@@ -456,8 +441,6 @@ namespace Dash
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            Debug.WriteLine("djkaldfjkalfjdakl;fd");
-
             var docView = sender as DocumentView;
             DocumentView.DragDocumentView = docView;
 
@@ -466,22 +449,11 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
             carrier.Payload = new List<DocumentController>() { DocumentController };
-            args.Data.RequestedOperation = DataPackageOperation.Move;
 
             // different sources based on whether it's a collection or a document 
-            carrier.SourceCollection = docView.GetFirstDescendantOfType<CollectionView>(); //TODO this will not work all the time (collection's source) 
-            CollectionView parent;
-            if (carrier.Source == null) // for documents 
-            {
-                var docSource = docView?.ParentCollection;
-                carrier.Source = docSource?.ViewModel;
-                parent = docSource?.ParentCollection; // set CurrBaseModel as the collection containing it 
-            }
-            else // for collections
-                parent = carrier.SourceCollection?.ParentCollection?.ParentCollection;
+            var item = CollectionView.GetParentCollectionView(docView);
 
-            if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
-            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
+            carrier.SourceCollection = item as CollectionView;
 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }

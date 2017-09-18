@@ -74,11 +74,12 @@ namespace Dash
             //DBTest.DBDoc.AddChild(docController);
         }
 
-        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
+        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers)
         {
             foreach (var documentController in docControllers)
             {
-                DisplayDocument(collectionView, documentController, where);
+                AddDocument(documentController, null);
+                //DisplayDocument(collectionView, documentController, where);
             }
         }
 
@@ -108,6 +109,8 @@ namespace Dash
 
         #region DragAndDrop
 
+
+        DateTime _dragStart = DateTime.MinValue;
         /// <summary>
         /// fired by the starting collection when a drag event is initiated
         /// </summary>
@@ -116,9 +119,12 @@ namespace Dash
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var carrier = ItemsCarrier.Instance;
-            carrier.Source = this;
             carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList();
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            e.Data.RequestedOperation = DateTime.Now.Subtract(_dragStart).TotalMilliseconds > 1000 ? DataPackageOperation.Move : DataPackageOperation.Copy;
+        }
+        public void XGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            _dragStart = DateTime.Now;
         }
 
         /// <summary>
@@ -129,17 +135,12 @@ namespace Dash
             SetGlobalHitTestVisiblityOnSelectedItems(false);
 
             var carrier = ItemsCarrier.Instance;
-
-            if (carrier.Source == carrier.Destination)
-                return; // we don't want to drop items on ourself
-
+            
             if (e.DropResult == DataPackageOperation.Move)
                 RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
-            carrier.Source = null;
             carrier.SourceCollection = null;
-            carrier.Destination = null;
         }
 
         /// <summary>
@@ -243,7 +244,7 @@ namespace Dash
                     {
                         var sFile = items[0] as StorageFile;
                         var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                        StorageFile file = await localFolder.CreateFileAsync("filename.jpg", CreationCollisionOption.ReplaceExisting);
+                        StorageFile file = await localFolder.CreateFileAsync(Path.GetFileName(sFile.Path), CreationCollisionOption.ReplaceExisting);
                         await sFile.CopyAndReplaceAsync(file);
 
                         var where = sender is CollectionFreeformView ?
@@ -256,23 +257,15 @@ namespace Dash
                 }
             }
             var carrier = ItemsCarrier.Instance;
-            var sourceIsCollection = carrier.Source != null;
+            var sourceIsCollection = carrier.SourceCollection != null;
             if (sourceIsCollection)
             {
-                
-                // we don't want to drop items on ourself
-                if (carrier.Source.Equals(carrier.Destination)) // works with documents? 
-                    return;
-
-                if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
-                    if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
-                        return;
-
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
+                var payloadLayoutDelegates = carrier.Payload.Select((p) => p.Copy(where));
+                DisplayDocuments(sender as ICollectionView, payloadLayoutDelegates);
             }
             
             SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -334,6 +327,7 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragEnter Base");
             this.HighlightPotentialDropTarget(sender as SelectionElement);
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -341,35 +335,34 @@ namespace Dash
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
             {
-                e.AcceptedOperation = DataPackageOperation.Move;
+                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
                 e.DragUIOverride.Clear();
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
-                ItemsCarrier.Instance.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
             }
 
-            var sourceIsCollection = ItemsCarrier.Instance.Source != null;
+            var sourceIsCollection = ItemsCarrier.Instance.SourceCollection != null;
             if (sourceIsCollection)
             {
                 //var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);          // technically don't need this anymore 
                 //e.AcceptedOperation = sourceIsOurself
                 //    ? DataPackageOperation.None // don't accept drag event from ourself
                 //                : DataPackageOperation.Move;
-                e.AcceptedOperation = DataPackageOperation.Move; 
-
-                ItemsCarrier.Instance.Destination = this;
+                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
             }
 
             // the soruce is assumed to be outside the app
             if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                e.AcceptedOperation |= DataPackageOperation.Copy;
+                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
                 e.DragUIOverride.IsContentVisible = true;
             }
 
             e.Handled = true;
         }
+
+        
 
         /// <summary>
         /// Fired by a collection when the item being dragged is no longer over it
@@ -378,12 +371,12 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragLeave Base");
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var basemodel = ItemsCarrier.Instance.CurrBaseModel; 
-            if (basemodel != sender as ICollectionView)
+            var parentCollection = CollectionView.GetParentCollectionView(CollectionView.GetParentCollectionView(sender as DependencyObject));
+            if (parentCollection != null)
             {
-                basemodel.ViewModel.CollectionViewOnDragEnter(basemodel, e);
-                basemodel = sender as ICollectionView;
+                parentCollection.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
             }
 
             var element = sender as SelectionElement;

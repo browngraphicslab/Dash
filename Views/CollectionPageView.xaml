@@ -98,9 +98,9 @@
             </ListView>
             <RelativePanel x:Name="navBar" Grid.Row="1" Height="40" HorizontalAlignment="Center">
                 <Button x:Name="prevButton" RelativePanel.AlignLeftWithPanel="True"  Content="&lt;&lt;"  Click="PrevButton_Click"/>
-                <Button x:Name="fitPageButton" RelativePanel.RightOf="prevButton"  Content="Fit"   Click="FitPageButton_Click"/>
-                <Button x:Name="xPageNum"  RelativePanel.RightOf="fitPageButton" Content=""   />
-                <Button RelativePanel.RightOf="xPageNum" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
+                <Button x:Name="xPageNum"  RelativePanel.RightOf="prevButton" Content=""   Click="FitPageButton_Click" CanDrag="True" />
+                <Button x:Name="xPopOutPage"  RelativePanel.RightOf="xPageNum" Content="PopOut"   Click="PopOutPage_Click" CanDrag="True" />
+                <Button RelativePanel.RightOf="xPopOutPage" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
             </RelativePanel>
         </Grid>
 

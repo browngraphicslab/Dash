@@ -85,7 +85,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            throw new NotImplementedException();
+            return new InkFieldModelController(InkData);
         }
 
         public override FieldModelController GetDefaultController()
