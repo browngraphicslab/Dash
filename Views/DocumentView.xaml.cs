@@ -136,20 +136,22 @@ namespace Dash
         //}
 
         DateTime copyDown = DateTime.MinValue;
+        MenuButton copyButton;
         private void SetUpMenu()
         {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-            var copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+                copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            var delegateButton = new MenuButton(Symbol.SetTile, "Delegate", bgcolor, MakeDelegate);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
-                copyButton,
-                new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
-                new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
+                copyButton,
+                delegateButton,
+                //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
+                //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
 
             var moveButtonView = moveButton.View;
@@ -159,12 +161,22 @@ namespace Dash
                 e.Data.RequestedOperation = DataPackageOperation.Move;
                 ViewModel.DocumentView_DragStarting(this, e);
             };
+            moveButtonView.DropCompleted += MoveButtonView_DropCompleted;
             var copyButtonView = copyButton.View;
             copyButtonView.CanDrag = true;
             copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
             copyButtonView.DragStarting += (s, e) =>
             {
-                e.Data.RequestedOperation = (DateTime.Now.Subtract(copyDown).TotalMilliseconds > 1000) ? DataPackageOperation.Move : DataPackageOperation.Copy;
+                _moveTimer.Stop();
+                e.Data.RequestedOperation = copyButton.ButtonIcon.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
+                ViewModel.DocumentView_DragStarting(this, e);
+            };
+            copyButtonView.DropCompleted += CopyButtonView_DropCompleted1;
+            var delegateButtonView = delegateButton.View;
+            delegateButtonView.CanDrag = true;
+            delegateButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e);
             };
 
@@ -178,11 +190,41 @@ namespace Dash
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
 
             xMenuCanvas.Children.Add(_docMenu);
+            _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
+            _moveTimer.Tick += Timer_Tick;
         }
+
+        private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
+        {
+            if (args.DropResult == DataPackageOperation.Move)
+            {
+                var coll = CollectionView.GetParentCollectionView(this);
+                coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            }
+        }
+
+        private void MoveButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+        }
+
+        private void CopyButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            copyButton.ButtonIcon.Symbol = Symbol.Copy;
+            copyButton.ButtonText.Text = "Copy";
+            _moveTimer.Stop();
+        }
+
+        DispatcherTimer _moveTimer = new DispatcherTimer();
 
         private void CopyButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            copyDown = DateTime.Now;
+            _moveTimer.Start();
+        }
+
+        private void Timer_Tick(object sender, object e)
+        {
+            copyButton.ButtonIcon.Symbol = Symbol.MoveToFolder;
+            copyButton.ButtonText.Text = "Move";
         }
 
 
@@ -389,12 +431,12 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.Copy(), null);
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(), null);
         }
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.GetDelegate(), null);
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDelegate(), null);
         }
 
         public void ScreenCap()

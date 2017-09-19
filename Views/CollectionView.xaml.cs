@@ -56,10 +56,14 @@ namespace Dash
         public static CollectionView GetParentCollectionView(DependencyObject sender)
         {
             var item = VisualTreeHelper.GetParent(sender);
+            var cv = item as CollectionView;
             while (item != null && !(item is CollectionView))
+            {
                 item = VisualTreeHelper.GetParent(item);
-
-            return item as CollectionView;
+                if (item is CollectionView)
+                    cv = item as CollectionView;
+            }
+            return cv;
         }
         #region Load And Unload Initialization and Cleanup
 

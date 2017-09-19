@@ -58,24 +58,43 @@ namespace Dash
         }
 
         /// <summary>
-        /// Copies 
+        /// Copies a document by copying each field of the document and making a copy of the
+        /// ActiveLayout if it exists.  The layout is offset by 15, or set to 'where' if specified
         /// </summary>
         /// <returns></returns>
-        public static DocumentController Copy(this DocumentController doc, Point? where=null)
+        public static DocumentController GetCopy(this DocumentController doc, Point? where=null)
         {
-            var copy = doc.GetCopy();
-            var layoutField = copy.GetActiveLayout().Data;
-            var layoutCopy = layoutField?.GetCopy();
-            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
+            var copy = doc.MakeCopy();
+            var layoutCopy = copy.GetActiveLayout()?.Data?.MakeCopy();
+            if (layoutCopy != null)
+                copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
             var positionField = copy.GetPositionField();
-            if (positionField != null)
+            if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
-                var oldPosition = doc.GetPositionField().Data;
-                if (where == null)
-                    positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
-                else positionField.Data = (Point)where;
+                positionField.Data = new Point((where == null ? positionField.Data.X +15:((Point)where).X), (where == null ? positionField.Data.Y + 15 : ((Point)where).Y));
             }
             return copy;
+        }
+        /// <summary>
+        /// Creates a delegate of a document and sets the ActiveLayout field of the delegate to be a delegate of the original document's Activate Layout.
+        /// The layout position will be offset by 15 or set to 'where' if specified
+        /// </summary>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static DocumentController GetDelegate(this DocumentController doc, Point? where = null)
+        {
+            var del = doc.MakeDelegate();
+            var delLayout = doc.GetActiveLayout()?.Data?.MakeDelegate();
+            if (delLayout != null)
+                del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
+            var oldPosition = doc.GetPositionField();
+            if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
+            {
+                delLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                    true);
+            }
+            return del;
         }
 
 
@@ -180,7 +199,7 @@ namespace Dash
             return scaleAmountField;
         }
 
-        public static DocumentController GetCopy(this DocumentController doc, Context context = null)
+        public static DocumentController MakeCopy(this DocumentController doc, Context context = null)
         {
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                        new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);

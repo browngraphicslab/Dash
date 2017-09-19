@@ -756,39 +756,6 @@ namespace Dash
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
-
-            if (e.AcceptedOperation != DataPackageOperation.Move)
-                return;
-
-            var carrier = ItemsCarrier.Instance;
-            
-
-            // if dropping back to the original collection, just reset the payload 
-            if (carrier.StartingCollection == this)
-                _payload = new Dictionary<DocumentView, DocumentController>();
-            else
-            {
-                if (carrier.SourceCollection != null)
-                {
-                    // for blue drag/drop; must remove the payload from the original collection 
-                    carrier.SourceCollection?.ViewModel?.RemoveDocuments(carrier.Payload); //for collections 
-
-                    carrier.Payload.Clear();
-                    carrier.SourceCollection = null;
-                }
-
-                // delete connection lines logically and graphically 
-                var startingCol = carrier.StartingCollection;
-                if (startingCol != null)
-                {
-                    var linesToDelete = startingCol.GetLinesToDelete();
-                    foreach (var pair in linesToDelete)
-                    {
-                        startingCol.DeleteLine(pair.Key, pair.Value);
-                    }
-                    startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-                }
-            }
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -925,12 +892,13 @@ namespace Dash
             Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
 
-            if (ItemsCarrier.Instance.StartingCollection == null) return;
-            ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            foreach (var view in _payload.Keys.ToList())
-                _documentViews.Remove(view);
+            //if (ItemsCarrier.Instance.StartingCollection == null)
+            //    return;
+            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
+            //foreach (var view in _payload.Keys.ToList())
+            //    _documentViews.Remove(view);
 
-            _payload = new Dictionary<DocumentView, DocumentController>();
+            //_payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
@@ -944,11 +912,7 @@ namespace Dash
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            var carrier = ItemsCarrier.Instance;
             
-            carrier.StartingCollection = this;
-            carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion

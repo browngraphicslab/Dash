@@ -117,10 +117,10 @@ namespace Dash
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            var carrier = ItemsCarrier.Instance;
-            carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList();
+            
+            e.Data.Properties.Add("DocumentControllerList", e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList());
             e.Data.RequestedOperation = DateTime.Now.Subtract(_dragStart).TotalMilliseconds > 1000 ? DataPackageOperation.Move : DataPackageOperation.Copy;
+            Debug.WriteLine("Request = " + e.Data.RequestedOperation);
         }
         public void XGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -133,14 +133,9 @@ namespace Dash
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
-
-            var carrier = ItemsCarrier.Instance;
             
             if (e.DropResult == DataPackageOperation.Move)
-                RemoveDocuments(ItemsCarrier.Instance.Payload);
-
-            carrier.Payload.Clear();
-            carrier.SourceCollection = null;
+                RemoveDocuments(e.Items.Select((i)=>(i as DocumentViewModel).DocumentController).ToList());
         }
 
         /// <summary>
@@ -173,7 +168,7 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
 
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            else if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0)
@@ -256,15 +251,15 @@ namespace Dash
                     }
                 }
             }
-            var carrier = ItemsCarrier.Instance;
-            var sourceIsCollection = carrier.SourceCollection != null;
-            if (sourceIsCollection)
+            else
             {
+                var items = e.DataView?.Properties.ContainsKey("DocumentControllerList") == true ?                  
+                          e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                var payloadLayoutDelegates = carrier.Payload.Select((p) => p.Copy(where));
+                var payloadLayoutDelegates = items.Select((p) => e.AcceptedOperation == DataPackageOperation.Link ? p.GetDelegate(where) : p.GetCopy(where));
                 DisplayDocuments(sender as ICollectionView, payloadLayoutDelegates);
             }
             
@@ -335,29 +330,15 @@ namespace Dash
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
             {
-                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
+                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
                 e.DragUIOverride.Clear();
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
             }
-
-            var sourceIsCollection = ItemsCarrier.Instance.SourceCollection != null;
-            if (sourceIsCollection)
-            {
-                //var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);          // technically don't need this anymore 
-                //e.AcceptedOperation = sourceIsOurself
-                //    ? DataPackageOperation.None // don't accept drag event from ourself
-                //                : DataPackageOperation.Move;
-                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
-            }
-
-            // the soruce is assumed to be outside the app
-            if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
-            {
-                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
-                e.DragUIOverride.IsContentVisible = true;
-            }
+            
+            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
+            e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
         }
