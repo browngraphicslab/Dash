@@ -147,7 +147,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -172,7 +172,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -203,7 +203,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -227,7 +227,7 @@ namespace DashWebServer
                 }
                 catch (DocumentClientException e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
                     throw;
                 }
             }
@@ -292,7 +292,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -312,7 +312,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -334,7 +334,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }

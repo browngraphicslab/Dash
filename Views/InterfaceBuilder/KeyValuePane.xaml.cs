@@ -354,7 +354,8 @@ namespace Dash
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
                     DBTest.ResetCycleDetection();
-                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, _selectedKV.Controller.FieldModelController);
+                    var field = _documentControllerDataContext.GetDereferencedField<FieldModelController>(_selectedKV.Key, new Context(_documentControllerDataContext));
+                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();
                 }
             };

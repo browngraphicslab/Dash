@@ -21,7 +21,7 @@ namespace Dash
 
         public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
 
-        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
+        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[CollectionViewTypeKey] = new TextFieldModelController(viewType.ToString());

@@ -9,13 +9,17 @@ namespace Dash
     {
         public static DocumentType ImageDocType = new DocumentType("41E1280D-1BA9-4C3F-AE72-4080677E199E", "Image Doc");
         public static KeyController Image1FieldKey = new KeyController("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
-        public static KeyController TextFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+        public static KeyController TitleFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
         static DocumentController _prototypeDoc = CreatePrototypeDoc();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
         static DocumentController CreatePrototypeDoc()
         {
-            return new DocumentController(new Dictionary<KeyController, FieldModelController>(), ImageDocType);
+            
+            var fields = new Dictionary<KeyController, FieldModelController>
+            {
+            };
+            return new DocumentController(fields, ImageDocType);
         }
 
         /// <summary>
@@ -29,30 +33,42 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, double.NaN, 20);
+            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TitleFieldKey), 0, 0, double.NaN, 20);
             var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
 
             var prototypeLayout = new StackLayout(new DocumentController[] { prototypeTextLayout.Document, prototypeImage1Layout.Document}, false);
 
             return prototypeLayout.Document;
         }
-        public AnnotatedImage(Uri imageUri, string imageBytes, string text, double width = 200, double height = 250)
+        public AnnotatedImage(Uri imageUri, string imageBytes, double width = 200, double height = 250, double x = 0, double y = 0)
         {
             Document = _prototypeDoc.MakeDelegate();
             Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
-            Document.SetField(TextFieldKey, new TextFieldModelController(text), true);
+            Document.SetField(TitleFieldKey, new TextFieldModelController(imageUri.AbsolutePath), true);
+            var docLayout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document;
+
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(x, y)), true);
+            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+            SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
+        }
+        public AnnotatedImage(Uri imageUri, string imageBytes, string title, double width = 200, double height = 250, double x=0, double y=0)
+        {
+            Document = _prototypeDoc.MakeDelegate();
+            Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
+            Document.SetField(TitleFieldKey, new TextFieldModelController(title), true);
             var docLayout = _prototypeLayout.MakeDelegate();
-            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(x, y)), true);
             docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
             docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
             SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
         }
 
-        public AnnotatedImage(Uri imageUri, string text)
+        public AnnotatedImage(Uri imageUri, string title)
         {
             Document = _prototypeDoc.MakeDelegate();
             Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri), true);
-            Document.SetField(TextFieldKey, new TextFieldModelController(text), true);
+            Document.SetField(TitleFieldKey, new TextFieldModelController(title), true);
             var docLayout = _prototypeLayout.MakeDelegate();
             docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
             docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);

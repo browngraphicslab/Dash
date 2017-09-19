@@ -51,6 +51,7 @@ namespace Dash
                     xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                     xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                     xListView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+                    xListView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
                 }
 
                 ViewModel = vm;
@@ -59,6 +60,8 @@ namespace Dash
                 xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
                 xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
                 xListView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
+                xListView.PointerPressed += ViewModel.XGridView_PointerPressed;
+                xListView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
             }
         }
 
@@ -70,6 +73,7 @@ namespace Dash
                 xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                 xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                 xListView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+                xListView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
             }
             this.Unloaded -= CollectionListView_Unloaded;
         }

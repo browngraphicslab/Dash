@@ -57,7 +57,7 @@ namespace Dash
                 e.Data.Properties.Add(CompoundOperatorFieldController.OperationBarDragKey, item);
             }
 
-            ItemsCarrier.Instance.Source = _collectionViewModel; 
+           // ItemsCarrier.Instance.SourceCollection = _collectionViewModel; 
         }
         
         private void XFreeFormEditor_OnDragOver(object sender, DragEventArgs e)

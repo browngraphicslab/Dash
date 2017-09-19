@@ -47,7 +47,7 @@ namespace Dash
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        public bool HasAncestorOf(DocumentController doc)
+        public bool ContainsAncestorOf(DocumentController doc)
         {
             var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
             return doc.IsDelegateOf(deepestRelative); 
@@ -69,7 +69,7 @@ namespace Dash
                 var dcbPrototype = dcb.GetAllPrototypes().First();
                 bool skip = false;
                 for (int j = i+1; j < docSet.Count && !skip; j++)
-                    if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
+                    if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
                     {
                         skip = true;
                     }

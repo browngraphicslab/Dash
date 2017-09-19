@@ -1,0 +1,101 @@
+﻿<UserControl
+    x:Class="Dash.RadialMenuSlider"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControl="using:RadialMenuControl.UserControl"
+    mc:Ignorable="d">
+
+    <Canvas x:Name="Canvas">
+        <Path x:Name="OuterPath" RenderTransformOrigin="0.5,0.5" Stroke="LightGray"
+              StrokeThickness="{x:Bind Thickness}" UseLayoutRounding="False" Stretch="None" StrokeEndLineCap="Round"
+              StrokeStartLineCap="Round" ManipulationStarted="Dragger_OnManipulationStarted"
+              ManipulationDelta="Dragger_OnManipulationDelta" ManipulationMode="TranslateX, TranslateY"
+              CompositeMode="SourceOver" ManipulationCompleted="OuterPath_OnManipulationCompleted"
+              Tapped="OuterPath_OnTapped">
+            <Path.RenderTransform>
+                <CompositeTransform Rotation="0" />
+            </Path.RenderTransform>
+            <Path.Data>
+                <PathGeometry>
+                    <PathGeometry.Figures>
+                        <PathFigureCollection>
+                            <PathFigure x:Name="OuterPathFigure" StartPoint="0,0">
+                                <PathFigure.Segments>
+                                    <PathSegmentCollection>
+                                        <ArcSegment x:Name="OuterPathArcSegment" Size="{x:Bind ArcRadius}"
+                                                    IsLargeArc="False" SweepDirection="Clockwise"
+                                                    Point="{x:Bind EndPoint}" />
+                                    </PathSegmentCollection>
+                                </PathFigure.Segments>
+                            </PathFigure>
+                        </PathFigureCollection>
+                    </PathGeometry.Figures>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
+        <Path x:Name="SliderPath" RenderTransformOrigin="0.5,0.5" Stroke="LightGray" StrokeThickness="1"
+              UseLayoutRounding="False" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Margin="0,0,0,-10"
+              Stretch="None">
+            <Path.RenderTransform>
+                <CompositeTransform Rotation="0" />
+            </Path.RenderTransform>
+            <Path.Data>
+                <PathGeometry>
+                    <PathGeometry.Figures>
+                        <PathFigureCollection>
+                            <PathFigure x:Name="SliderPathFigure" StartPoint="0,0">
+                                <PathFigure.Segments>
+                                    <PathSegmentCollection>
+                                        <ArcSegment x:Name="SliderPathArcSegment" Size="{x:Bind ArcRadius}"
+                                                    IsLargeArc="False" SweepDirection="Clockwise"
+                                                    Point="{x:Bind EndPoint}" />
+                                    </PathSegmentCollection>
+                                </PathFigure.Segments>
+                            </PathFigure>
+                        </PathFigureCollection>
+                    </PathGeometry.Figures>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
+        <Path x:Name="SliderIndicatorPath" RenderTransformOrigin="0.5,0.5" Stroke="White" StrokeThickness="1"
+              UseLayoutRounding="False" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Margin="0,0,0,-10"
+              Stretch="None">
+            <Path.RenderTransform>
+                <CompositeTransform Rotation="0" />
+            </Path.RenderTransform>
+            <Path.Data>
+                <PathGeometry>
+                    <PathGeometry.Figures>
+                        <PathFigureCollection>
+                            <PathFigure x:Name="SliderIndicatorPathFigure" StartPoint="0,0">
+                                <PathFigure.Segments>
+                                    <PathSegmentCollection>
+                                        <ArcSegment x:Name="SliderIndicatorPathArcSegment" Size="{x:Bind ArcRadius}"
+                                                    IsLargeArc="False" SweepDirection="Clockwise"
+                                                    Point="{x:Bind EndPoint}" />
+                                    </PathSegmentCollection>
+                                </PathFigure.Segments>
+                            </PathFigure>
+                        </PathFigureCollection>
+                    </PathGeometry.Figures>
+                </PathGeometry>
+            </Path.Data>
+        </Path>
+        <Grid x:Name="RotationGrid" Width="20" Height="207" RenderTransformOrigin="0.5,1" VerticalAlignment="Top"
+              HorizontalAlignment="Left" Margin="-10,0,0,0" IsHitTestVisible="False">
+            <Grid.RenderTransform>
+                <CompositeTransform Rotation="0.932" />
+            </Grid.RenderTransform>
+            <Ellipse x:Name="DraggerEllipse" VerticalAlignment="Top" HorizontalAlignment="Center" Width="10" Height="10" Fill="White"
+                         Margin="0,5,0,0" IsHitTestVisible="False" CompositeMode="SourceOver" >
+            </Ellipse>
+
+        </Grid>
+        <Grid x:Name="ReferencePoint" Width="1" Height="1"></Grid>
+        <TextBlock x:Name="Label" Width="30" Height="15" FontSize="10" TextAlignment="Left" Visibility="Collapsed" IsHitTestVisible="False" Foreground="Black" FontWeight="Bold"></TextBlock>
+    </Canvas>
+
+</UserControl>

@@ -22,7 +22,7 @@ namespace Dash
             _col.Add(_figure);
 
             Pos2 = Element1.TransformToVisual(ToElement)
-                .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
+                .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
         }
 
         public FrameworkElement Element1 { get; set; }

@@ -21,19 +21,15 @@ namespace Dash
     {
 
         // == MEMBERS, GETTERS, SETTERS ==
-        private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
-        private TransformGroupData _normalGroupTransform;
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
-        private bool _isDetailedUserInterfaceVisible = true;
-        private bool _isMoveable = true;
-        private WidthAndMenuOpenWrapper _widthBinding;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
@@ -66,15 +62,8 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-                    var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
-
                     var widthFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.WidthFieldKey, context) as
-                            NumberFieldModelController;
+                        LayoutDocument.GetDereferencedField(KeyStore.WidthFieldKey, new Context(DocumentController)) as NumberFieldModelController;
 
                     if (widthFieldModelController != null)
                     {
@@ -91,13 +80,8 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-                    var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
                     var heightFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.HeightFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.HeightFieldKey, new Context(DocumentController)) as
                             NumberFieldModelController;
                     if (heightFieldModelController != null)
                         heightFieldModelController.Data = value;
@@ -118,27 +102,22 @@ namespace Dash
 
                 if (SetProperty(ref _normalGroupTransform, value))
                 {
-                    // get layout
                     var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
-
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
                     // set position
                     var posFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.PositionFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
                     //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
                     posFieldModelController.Data = value.Translate;
                     // set scale center
                     var scaleCenterFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
                             PointFieldModelController;
                     if (scaleCenterFieldModelController != null)
                         scaleCenterFieldModelController.Data = value.ScaleCenter;
                     // set scale amount
                     var scaleAmountFieldModelController =
-                        layoutDocController.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
+                        LayoutDocument.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
                             PointFieldModelController;
                     if (scaleAmountFieldModelController != null)
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
@@ -182,9 +161,22 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
+                    _content = DocumentController.MakeViewUI(new Context(LayoutDocument), IsInInterfaceBuilder);
                 }
                 return _content;
+            }
+        }
+
+
+        string _displayName = "<doc>";
+
+        public string DisplayName
+        {
+            get { return _displayName; }
+            set {
+                if (SetProperty<string>(ref _displayName, value)) {
+                    OnPropertyChanged("DisplayName");
+                }
             }
         }
 
@@ -192,16 +184,42 @@ namespace Dash
         {
             _content = null;
             OnPropertyChanged(nameof(Content));
+            this.DocumentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated1;
         }
 
-        public readonly bool IsInInterfaceBuilder;
+        private void DocumentController_DocumentFieldUpdated1(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var context = args.Context;
+            var primKeys = sender.GetDereferencedField(KeyStore.PrimaryKeyKey, context)?.GetValue(context) as List<FieldModelController>;
+
+            if (primKeys != null && primKeys.Select((k) => (k as TextFieldModelController).Data).Contains(args.Reference.FieldKey.KeyModel.Id))
+            {
+                updateDisplayName();
+            }
+        }
+
+        private void updateDisplayName()
+        {
+            var keyList = DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                var docString = "";
+                foreach (var k in keys.Data)
+                {
+                    var keyField = DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
+                    if (keyField is TextFieldModelController)
+                        docString += (keyField as TextFieldModelController).Data + " ";
+                }
+                DisplayName = docString.TrimEnd(' ');
+            }
+        }
 
         public Context Context { get; set; }
-
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
+
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
@@ -213,6 +231,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
+            updateDisplayName();
         }
 
         private void SetUpSmallIcon()
@@ -254,7 +273,15 @@ namespace Dash
             var icon = (NumberFieldModelController)DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
-
+        
+        public DocumentController LayoutDocument
+        {
+            get
+            {
+                var layoutDoc = (DocumentController?.GetDereferencedField(KeyStore.ActiveLayoutKey, new Context(DocumentController)) as DocumentFieldModelController)?.Data;
+                return layoutDoc == null ? DocumentController : layoutDoc;
+            }
+        }
         public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
 
         public event OnLayoutChangedHandler LayoutChanged;
@@ -275,7 +302,6 @@ namespace Dash
 
         private void ListenToTransformGroupField(DocumentController docController)
         {
-            var posFieldModelController = docController.GetPositionField();
             var activeLayout = docController.GetActiveLayout()?.Data;
             if (activeLayout != null)
             {
@@ -283,6 +309,7 @@ namespace Dash
                 var scaleAmountFieldModelController = docController.GetScaleAmountField();
                 if (scaleCenterFieldModelController != null)
                 {
+                    var posFieldModelController = docController.GetPositionField();
                     if (scaleAmountFieldModelController != null)
                         GroupTransform = new TransformGroupData(posFieldModelController.Data,
                             scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
@@ -400,32 +427,6 @@ namespace Dash
             MenuOpen = true;
         }
 
-        public DocumentController Copy()
-        {
-            var copy = DocumentController.GetCopy();
-            var layoutField = copy.GetActiveLayout().Data;
-            var layoutCopy = layoutField.GetCopy();
-            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
-            var positionField = copy.GetPositionField();
-            if (positionField != null)
-            {
-                var oldPosition = DocumentController.GetPositionField().Data;
-                positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
-            }
-            return copy;
-        }
-
-        public DocumentController GetDelegate()
-        {
-            var del = DocumentController.MakeDelegate();
-            var delLayout = DocumentController.GetActiveLayout().Data.MakeDelegate();
-            var oldPosition = DocumentController.GetPositionField().Data;
-            delLayout.SetField(KeyStore.PositionFieldKey,
-                new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
-                true);
-            del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
-            return del;
-        }
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
@@ -433,36 +434,19 @@ namespace Dash
             DocumentView.DragDocumentView = docView;
 
             // create border around the doc being dragged
-            if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
+            if (docView != null)
+                docView.OuterGrid.BorderThickness = new Thickness(5);
 
-            var carrier = ItemsCarrier.Instance;
-            carrier.Payload = new List<DocumentController>() { DocumentController };
-            args.Data.RequestedOperation = DataPackageOperation.Move;
-
-            // different sources based on whether it's a collection or a document 
-            carrier.SourceCollection = docView.GetFirstDescendantOfType<CollectionView>(); //TODO this will not work all the time (collection's source) 
-            CollectionView parent;
-            if (carrier.Source == null) // for documents 
-            {
-                var docSource = docView?.ParentCollection;
-                carrier.Source = docSource?.ViewModel;
-                parent = docSource?.ParentCollection; // set CurrBaseModel as the collection containing it 
-            }
-            else // for collections
-                parent = carrier.SourceCollection?.ParentCollection?.ParentCollection;
-
-            if (parent == null) carrier.CurrBaseModel = (MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView);
-            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
-
+            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
+                // different sources based on whether it's a collection or a document 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void Dispose()
         {
-            var layoutDoc = DocumentController.GetActiveLayout()?.Data;
-            if (layoutDoc != null)
+            if (LayoutDocument != null)
             {
-                RemoveListenersFromLayout(layoutDoc);
+                RemoveListenersFromLayout(LayoutDocument);
             }
             RemoveControllerListeners();
         }

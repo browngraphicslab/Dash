@@ -5,6 +5,7 @@ using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -19,6 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -48,11 +50,11 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
+        //public Dictionary<FieldReference, LinePackage> LineDict = new Dictionary<FieldReference, LinePackage>();
 
-        private Dictionary<FieldReference, Path> _refToLine = new Dictionary<FieldReference, Path>();
-        private Dictionary<Path, BezierConverter> _lineToConverter = new Dictionary<Path, BezierConverter>();
+        public Dictionary<FieldReference, Path> RefToLine = new Dictionary<FieldReference, Path>();
+        public Dictionary<Path, BezierConverter> LineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
-
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -64,9 +66,10 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private CollectionView ParentCollection;
+        private float _backgroundOpacity = .95f;
         #endregion
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
@@ -141,11 +144,11 @@ namespace Dash
 
         #region DraggingLinesAround
 
-        private void DeleteLine(FieldReference reff, Path line)
+        public void DeleteLine(FieldReference reff, Path line)
         {
             itemsPanelCanvas.Children.Remove(line);
-            _refToLine.Remove(reff);
-            _lineToConverter.Remove(line);
+            RefToLine.Remove(reff);
+            LineToConverter.Remove(line);
         }
 
         /// <summary>
@@ -153,11 +156,43 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var refs = _linesToBeDeleted.Keys.ToList();
-            for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
+            var ToBeDeleted = new List<Path>();
+            foreach (var pair in LineToConverter)
             {
-                var fieldRef = refs[i];
-                DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
+                var converter = pair.Value;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+
+                if (view1 == docView || view2 == docView)
+                {
+                    ToBeDeleted.Add(pair.Key);
+                }
+            }
+            foreach (var line in ToBeDeleted)
+            {
+                var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
+                DeleteLine(fieldRef, line);
+            }
+            //var refs = linesToBeDeleted.Keys.ToList();
+            //for (int i = linesToBeDeleted.Count - 1; i >= 0; i--)
+            //{
+            //    var package = linesToBeDeleted[refs[i]];
+            //    itemsPanelCanvas.Children.Remove(package.Line);
+            //    LineDict.Remove(refs[i]);
+            //}
+            //linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+        }
+
+        public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
+        {
+            if (RefToLine.ContainsKey(pair.Key))
+            {
+                var line = pair.Value;
+                var converter = LineToConverter[line];
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
+                DeleteLine(fieldRef, line);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -167,9 +202,9 @@ namespace Dash
         /// <param name="fadeout"></param>
         public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
         {
-            foreach (var pair in _refToLine)
+            foreach (var pair in RefToLine)
             {
-                var converter = _lineToConverter[pair.Value];
+                var converter = LineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
@@ -187,9 +222,9 @@ namespace Dash
         {
             var result = new List<KeyValuePair<FieldReference, Path>>();
             //var views = new HashSet<DocumentView>(_payload.Keys);
-            foreach (var pair in _refToLine)
+            foreach (var pair in RefToLine)
             {
-                var converter = _lineToConverter[pair.Value];
+                var converter = LineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 //if (views.Contains(view1) || views.Contains(view2))
@@ -206,7 +241,7 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var converter in _lineToConverter.Values)
+            foreach (var converter in LineToConverter.Values)
             {
                 DocumentView view1, view2;
                 try
@@ -252,7 +287,7 @@ namespace Dash
         {
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
             {
-                _converter = _lineToConverter[line];
+                _converter = LineToConverter[line];
                 //set up to manipulate connection line again 
                 ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                 _connectionLine = line;
@@ -262,13 +297,13 @@ namespace Dash
                 ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
                 //replace referencefieldmodelcontrollers with the raw fieldmodelcontrollers  
-                var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                var refField = RefToLine.FirstOrDefault(x => x.Value == line).Key;
                 DocumentController inputController = refField.GetDocumentController(null);
                 var rawField = inputController.GetField(refField.FieldKey);
                 if (rawField as ReferenceFieldModelController != null)
                     rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
                 inputController.SetField(refField.FieldKey, rawField, false);
-                _refToLine.Remove(refField);
+                RefToLine.Remove(refField);
             }
         }
 
@@ -291,6 +326,8 @@ namespace Dash
             _currReference = ioReference;
             _connectionLine = new Path
             {
+                //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
+                IsHitTestVisible = false,
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHoldingEnabled = false,
@@ -344,6 +381,8 @@ namespace Dash
 
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
+
+        
 
         public void CancelDrag(Pointer p)
         {
@@ -413,8 +452,8 @@ namespace Dash
             {
                 _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
-                _refToLine.Add(ioReference.FieldReference, _connectionLine);
-                if (!_lineToConverter.ContainsKey(_connectionLine)) _lineToConverter.Add(_connectionLine, _converter);
+                RefToLine.Add(ioReference.FieldReference, _connectionLine);
+                if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -437,11 +476,11 @@ namespace Dash
         /// </summary>
         private void CheckLinePresence(FieldReference reference)
         {
-            if (!_refToLine.ContainsKey(reference)) return;
-            var line = _refToLine[reference];
+            if (!RefToLine.ContainsKey(reference)) return;
+            var line = RefToLine[reference];
             itemsPanelCanvas.Children.Remove(line);
-            _refToLine.Remove(reference);
-            _lineToConverter.Remove(line);
+            RefToLine.Remove(reference);
+            LineToConverter.Remove(line);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -493,9 +532,105 @@ namespace Dash
             composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-
+            
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            ParentCollection.SetTransformOnBackground(composite);
+            //ParentCollection.SetTransformOnBackground(composite);
+            var matrix = new MatrixTransform { Matrix = composite.Value };
+
+            itemsPanelCanvas.RenderTransform = matrix;
+            InkHostCanvas.RenderTransform = matrix;
+            SetTransformOnBackground(composite);
+
+            // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
+            if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
+            {
+                foreach (var converter in LineToConverter.Values)
+                    converter.UpdateLine();
+            }
+        }
+
+
+        #endregion
+
+        #region BackgroundTiling
+
+
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+            return currentScale;
+        }
+        private void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+        }
+
+        private void SetInitialTransformOnBackground()
+        {
+            var composite = new TransformGroup();
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = CanvasScale,
+                ScaleY = CanvasScale
+            };
+
+            composite.Children.Add(scale);
+            SetTransformOnBackground(composite);
+        }
+
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            var task = Task.Run(async () =>
+            {
+                // Load the background image and create an image brush from it
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+            });
+            args.TrackAsyncAction(task.AsAsyncAction());
+
+            task.ContinueWith(continuationTask =>
+            {
+                SetInitialTransformOnBackground();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (!_resourcesLoaded) return;
+
+            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+            var session = args.DrawingSession;
+            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
         }
 
 
@@ -544,6 +679,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             Debug.WriteLine("drop event");
             ViewModel.CollectionViewOnDrop(sender, e);
+/*<<<<<<< HEAD
 
             var carrier = ItemsCarrier.Instance;
 
@@ -586,6 +722,8 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
                 }
             }
 
+=======
+>>>>>>> d99760a2997ecb129255609a57043b0e754b6a67*/
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -718,54 +856,31 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
 
-            if (ItemsCarrier.Instance.StartingCollection == null) return;
-            ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            foreach (var view in _payload.Keys.ToList())
-                _documentViews.Remove(view);
+            //if (ItemsCarrier.Instance.StartingCollection == null)
+            //    return;
+            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
+            //foreach (var view in _payload.Keys.ToList())
+            //    _documentViews.Remove(view);
 
-            _payload = new Dictionary<DocumentView, DocumentController>();
+            //_payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
-            var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
-            // if dropping to a collection within the source collection 
-            if (carrier.StartingCollection != this)
-            {
-                carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
-                return;
-            }
-
-            ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
-            foreach (var cont in ItemsCarrier.Instance.Payload)
-            {
-                var view = new DocumentView(new DocumentViewModel(cont));
-                _documentViews.Add(view);
-            }
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            var carrier = ItemsCarrier.Instance;
-
-            carrier.Destination = null;
-            carrier.StartingCollection = this;
-            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
-            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
-            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
-            carrier.Source = ViewModel;
-            carrier.Payload = _payload.Values.ToList();
+            
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion
@@ -789,5 +904,12 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
+
+        private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if(e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
+            Debug.WriteLine("Pointer entered: " + sender.GetType());
+        }
+
     }
 }

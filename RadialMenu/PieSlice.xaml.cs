@@ -652,6 +652,12 @@ namespace RadialMenuControl.UserControl
             innerPieSlicePath_PointerReleased(this, new RoutedEventArgs() as PointerRoutedEventArgs);
         }
 
+        public void ToggleClickedIndicator()
+        {
+            
+          VisualStateManager.GoToState(this, "InnerNormal", true);
+        }
+
         /// <summary>
         ///     Programmatically "click" the outer arc in the PieSlice
         /// </summary>
@@ -771,7 +777,7 @@ namespace RadialMenuControl.UserControl
             }
             else
             {
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                if (e != null && e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
                     InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
