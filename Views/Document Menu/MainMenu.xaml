@@ -6,109 +6,133 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="500"
-    d:DesignWidth="400">
+    d:DesignHeight="470"
+    d:DesignWidth="220">
 
-    <Grid Height="400">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"></ColumnDefinition>
-            <ColumnDefinition Width="220"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <StackPanel VerticalAlignment="Top" x:Name="xDocumentPopout" Grid.Column="1" Margin="0" >
-            
-            <!-- Search Bar -->
-            <Grid BorderThickness="0,0,0,1" BorderBrush="#FFA8A7A7">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="auto"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <TextBox FontSize="14" BorderThickness="0" Padding="15,12,0,1" PlaceholderText="search documents..." Margin="0"></TextBox>
-                <Border Grid.Column="1" Background="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" BorderBrush="#FFA8A7A7" Height="auto" Width="40" Margin="0" Padding="12">
-                    <Viewbox>
-                        <SymbolIcon Symbol="Find"/>
-                    </Viewbox>
-                </Border>
-            </Grid>
-            
-            <!-- Document Search Panel-->
-            <ListView  Padding="0" Background="{StaticResource SelectedGrey}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="10,0,0,0"/>
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#FFA8A7A7"></Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="20,0,0,0" Width="205">
-                            <TextBlock Text="{Binding}" HorizontalAlignment="Left" Style="{StaticResource xMenuItemLabel}" 
-                                       FontSize="14" Foreground="#CCFFFFFF" ></TextBlock>
-                            <!-- Drag Out Doc ICON-->
-                            <local:DragOutDocIcon HorizontalAlignment="Right" Margin="0,-10,0,0"></local:DragOutDocIcon>
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-                <ListView.Items>
-                    <ListViewItem Background="{StaticResource AccentGreen}">
-                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                            <SymbolIcon Symbol="Play" HorizontalAlignment="Left" Margin="-5,0,0,0" RenderTransformOrigin="0.5,0.5">
-                                <SymbolIcon.RenderTransform>
-                                    <CompositeTransform Rotation="90" ScaleX="0.7" ScaleY="0.7" TranslateY="-2"/>
-                                </SymbolIcon.RenderTransform>
-                            </SymbolIcon>
-                            <TextBlock Foreground="#E5FFFFFF" Margin="3,0,0,0" FontSize="14" Padding="0">Favourites</TextBlock>
-                        
-                        </StackPanel>
-                    </ListViewItem>
-                    <x:String>blank doc (default)</x:String>
-                    <x:String>otherdoc</x:String>
-                    <ListViewItem Background="{StaticResource AccentGreen}">
-                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <SymbolIcon Symbol="Play" HorizontalAlignment="Left" Margin="-5,0,0,0" RenderTransformOrigin="0.5,0.5">
-                                    <SymbolIcon.RenderTransform>
-                                        <CompositeTransform Rotation="90" ScaleX="0.7" ScaleY="0.7" TranslateY="-2"/>
-                                    </SymbolIcon.RenderTransform>
-                                </SymbolIcon>
-                                <TextBlock Foreground="#E5FFFFFF" Margin="3,0,0,0" FontSize="14" Padding="0">API Documents</TextBlock>
-
-                            </StackPanel>
-                        </ListViewItem>
-                    <x:String>twitterdoc</x:String>
-                    <x:String>facebookpost</x:String>
-                    <x:String>pinterestpin</x:String>
-                    <x:String>otherdoc</x:String>
-                </ListView.Items>
-            </ListView>
-        </StackPanel>
-        <StackPanel Orientation="Vertical" Grid.Column="0" Margin="0,0,1,0" VerticalAlignment="Top">
-            <Button Tapped="Button_Tapped">
+    <Grid>
+        <Grid.Background>
+            <SolidColorBrush Color="#FF303030"/>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <!-- Top icon navigation -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0">
             <Border Style="{StaticResource xMenuItemBorder}">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
-                    <SymbolIcon Symbol="Page2" />
-                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Document"/>
+                    <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                        <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf067;" FontSize="13" Padding="0,2,0,0" ></TextBlock>
+                        <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="add"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
-            </Button>
-            <Button>
-            <Border Style="{StaticResource xMenuItemBorder}">
+            <Border Style="{StaticResource xMenuItemBorder}" Opacity=".7">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
-                    <SymbolIcon Symbol="Calculator" />
-                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Operator"/>
+                    <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf044;"></TextBlock>
+                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="edit"/>
                 </StackPanel>
-                </Border>
-            </Button>
-            <Button>
-            <Border Style="{StaticResource xMenuItemBorder}">
+            </Border>
+            <Border Style="{StaticResource xMenuItemBorder}" Opacity=".7">
                 <StackPanel Style="{StaticResource xMenuItemStackPanel}">
-                    <SymbolIcon Symbol="Copy" />
-                    <TextBlock Style="{StaticResource xMenuItemLabel}" Text="Collection"/>
+                    <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf085;" ></TextBlock>
+                    <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="settings"/>
                 </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Add Menu -->
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+
+            <!-- documents -->
+            <Grid Background="{StaticResource WindowsBlue}" Padding="10" Margin="0,0,0,1">
+                <Border BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
+                    <TextBox Text="search all..." Background="Transparent" BorderThickness="0" Padding="10,9,0,0"  FontSize="11" BorderBrush="#4CFFFFFF" ></TextBox>
                 </Border>
-            </Button>
+                <TextBlock Opacity=".5" FontFamily="{StaticResource FontAwesome}" HorizontalAlignment="Right" Margin="0,10,10,0" TextAlignment="Right" 
+                           Style="{StaticResource xMenuItemExpand}" Text="{StaticResource SearchIcon}" />
+            </Grid>
+           
+            <!-- favourites -->
+            <Grid Style="{StaticResource xMenuItemHeaderContainer}" >
+                <TextBlock FontFamily="{StaticResource FontAwesome}" FontSize="16" Style="{StaticResource xMenuItemExpand}" Text="{StaticResource FavoriteIcon}" />
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ContractArrowIcon}" />
+                <TextBlock Text="Favorites" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+            </Grid>
+            <!-- documents -->
+            <Grid Style="{StaticResource xMenuItemHeaderContainer}" >
+                <TextBlock FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{StaticResource DocumentIcon}" />
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
+                <TextBlock Text="Document" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+                
+            </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}">
+                <TextBlock Text="blank_document" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource DocumentPlainIcon}" />
+            </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0">
+                <TextBlock Text="two_cats" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource DocumentPlainIcon}" />
+            </Grid>
 
+            <!-- operators -->
+            <Grid Style="{StaticResource xMenuItemHeaderContainer}" >
+                <TextBlock FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{StaticResource OperatorIcon}" />
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
+                <TextBlock Text="Operator" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+            </Grid>
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                
+                <Border Style="{StaticResource xMenuItemBorderGray}">
+                    <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                        <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                            <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf1ec;" FontSize="14" Padding="1" ></TextBlock>
+                            <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="math"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource xMenuItemBorderGray}" Opacity=".3">
+                    <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                        <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf0ce;"></TextBlock>
+                        <TextBlock Style="{StaticResource xMenuItemLabel}" Text="set"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource xMenuItemBorderGray}">
+                    <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                        <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                            <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf1cc;"></TextBlock>
+                            <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="APIs"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource xMenuItemBorderGray}" Opacity=".3">
+                    <StackPanel Style="{StaticResource xMenuItemStackPanel}">
+                        <TextBlock Style="{StaticResource xFontAwesomeIcon}" Text="&#xf0eb;" ></TextBlock>
+                        <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="misc."/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0,1,0,1">
+                <TextBlock Text="add_two_numbers" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource OperatorIcon}" />
+            </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0">
+                <TextBlock Text="twitter_api" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource OperatorIcon}" />
+            </Grid>
 
+            <!-- collections-->
+            <Grid  Style="{StaticResource xMenuItemHeaderContainer}" >
+                <TextBlock FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{StaticResource CollectionIcon}" />
+                <TextBlock Text="Collection" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
+            </Grid>
+
+            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0">
+                <TextBlock Text="ten_cats" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource CollectionIcon}" />
+            </Grid>
+            
         </StackPanel>
     </Grid>
 </UserControl>
