@@ -259,7 +259,7 @@ namespace Dash
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                var payloadLayoutDelegates = items.Select((p) => e.AcceptedOperation == DataPackageOperation.Link ? p.GetDelegate(where) : p.GetCopy(where));
+                var payloadLayoutDelegates = items.Select((p) => e.AcceptedOperation == DataPackageOperation.Link ? p.GetDelegate(where) : p.GetCopy(where, false));
                 DisplayDocuments(sender as ICollectionView, payloadLayoutDelegates);
             }
             

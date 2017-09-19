@@ -431,7 +431,8 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(), null);
+            _moveTimer.Stop();
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null, false), null);
         }
 
         private void MakeDelegate()

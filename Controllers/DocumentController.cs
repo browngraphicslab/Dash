@@ -49,6 +49,7 @@ namespace Dash
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
+        public static KeyController DocumentContextKey = new KeyController("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC", "Data Context Key");
         private readonly Dictionary<KeyController, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;

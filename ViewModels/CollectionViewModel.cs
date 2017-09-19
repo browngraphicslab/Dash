@@ -157,7 +157,7 @@ namespace Dash
                     return;
             }
 
-            if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+            if (context != null && context.DocContextList.Contains(doc))
             {
                 return;
             }

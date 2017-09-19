@@ -62,12 +62,22 @@ namespace Dash
         /// ActiveLayout if it exists.  The layout is offset by 15, or set to 'where' if specified
         /// </summary>
         /// <returns></returns>
-        public static DocumentController GetCopy(this DocumentController doc, Point? where=null)
+        public static DocumentController GetCopy(this DocumentController doc, Point? where, bool onlyCopyLayout)
         {
-            var copy = doc.MakeCopy();
-            var layoutCopy = copy.GetActiveLayout()?.Data?.MakeCopy();
-            if (layoutCopy != null)
-                copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
+            //var copy = doc.MakeCopy();
+            //var layoutCopy = copy.GetActiveLayout()?.Data?.MakeCopy();
+            //if (layoutCopy != null)
+            //    copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
+            //var copy = doc.GetDereferencedField<DocumentFieldModelController>(DocumentController.DocumentContextKey, new Context(doc))?.Data?.MakeCopy()?.
+            //    MakeActiveLayoutDelegate(doc.GetWidthField()?.Data, doc.GetHeightField()?.Data, doc.GetPositionField()?.Data);
+            var data = doc.GetDereferencedField<DocumentFieldModelController>(DocumentController.DocumentContextKey, new Context(doc))?.Data;
+            var copy = (onlyCopyLayout ? data : data?.MakeCopy())?.MakeActiveLayoutDelegate(doc.GetWidthField()?.Data, doc.GetHeightField()?.Data, doc.GetPositionField()?.Data);
+            if (copy == null)
+            {
+                copy = doc.GetActiveLayout()?.Data.MakeCopy();
+                if (copy != null)
+                    copy.SetField(DocumentController.DocumentContextKey, new DocumentFieldModelController(doc.MakeCopy()), true);
+            }
             var positionField = copy.GetPositionField();
             if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
@@ -87,6 +97,7 @@ namespace Dash
             var delLayout = doc.GetActiveLayout()?.Data?.MakeDelegate();
             if (delLayout != null)
                 del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
+            else delLayout = del;
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
@@ -116,9 +127,9 @@ namespace Dash
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
-        public static DocumentController MakeActiveLayoutDelegate(this DocumentController doc, double ? width=null, double ? height=null)
+        public static DocumentController MakeActiveLayoutDelegate(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
         {
-            var layoutDelegateDoc = doc.GetActiveLayout(new Context(doc))?.Data?.MakeDelegate();
+            var layoutDelegateDoc = doc.GetActiveLayout(new Context(doc))?.Data?.MakeDelegate() ?? doc.MakeDelegate();
             if (layoutDelegateDoc != null)
             {
                 if (width.HasValue)
@@ -129,10 +140,12 @@ namespace Dash
                     layoutDelegateDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController((double)height), true);
                 else
                     layoutDelegateDoc.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.VerticalAlignment.Stretch.ToString()), true);
-                layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
+                if (pos.HasValue)
+                    layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController((Point)pos), true);
             }
             else
                 layoutDelegateDoc = doc;
+            layoutDelegateDoc.SetField(DocumentController.DocumentContextKey, new DocumentFieldModelController(doc.GetField(DocumentController.DocumentContextKey) == null ? doc : doc.GetDereferencedField<DocumentFieldModelController>(DocumentController.DocumentContextKey, new Context(doc)).Data), true);
             return layoutDelegateDoc;
         }
 

@@ -161,7 +161,14 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(new Context(LayoutDocument), IsInInterfaceBuilder);
+                    var context = new Context(DocumentController);
+                    if (LayoutDocument == DocumentController)
+                    {
+                        var contextKey = DocumentController.GetField(DocumentController.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+                        if (contextKey != null)
+                            context.AddDocumentContext(contextKey);
+                    }
+                    _content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
                 }
                 return _content;
             }
@@ -303,6 +310,8 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout == null)
+                activeLayout = docController;
             if (activeLayout != null)
             {
                 var scaleCenterFieldModelController = docController.GetScaleCenterField();

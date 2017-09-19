@@ -35,7 +35,6 @@ namespace Dash
                     t.Height = xThumbs.ActualHeight;
             };
         }
-        public static KeyController DocumentContextKey = new KeyController("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC", "Data Context Key");
 
         public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
@@ -47,17 +46,13 @@ namespace Dash
             foreach (var pageDoc in ViewModel.DocumentViewModels.Reverse().Select((vm) => vm.DocumentController))
             {
                 var pageDocLayoutDelegate = pageDoc.MakeActiveLayoutDelegate(double.NaN, double.NaN);
-                pageDocLayoutDelegate.SetField(DocumentContextKey, new DocumentFieldModelController(pageDoc), true);
 
                 CurPage = new DocumentViewModel(pageDocLayoutDelegate);
                 PageDocumentViewModels.Insert(0,CurPage);
 
-                var thumbnailImageDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data?.MakeDelegate();
-                var thumbnailImageDocLayout =  thumbnailImageDoc != null ? thumbnailImageDoc.MakeActiveLayoutDelegate(double.NaN,double.NaN) : pageDoc;
-                if (thumbnailImageDoc == null)
-                    thumbnailImageDoc = thumbnailImageDocLayout;
-                else thumbnailImageDoc.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(thumbnailImageDocLayout), true);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageDoc));
+                var thumbnailImageDoc       = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc;
+                var thumbnailImageDocLayout = thumbnailImageDoc.MakeActiveLayoutDelegate(double.NaN,double.NaN);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageDocLayout));
             }
         }
 
@@ -79,7 +74,7 @@ namespace Dash
                 {
                     Mode = BindingMode.TwoWay,
                     Document = value.DocumentController,
-                    Key = value.DocumentController.GetField(DocumentContextKey, true) == null ? KeyStore.ThisKey : DocumentContextKey,
+                    Key = value.DocumentController.GetField(DocumentController.DocumentContextKey, true) == null ? KeyStore.ThisKey : DocumentController.DocumentContextKey,
                     Converter = new DocumentControllerToStringConverter()
                 };
 
@@ -186,7 +181,7 @@ namespace Dash
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
         {
             var _element = ((CurPage.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element.ManipulationControls.FitToParent();
+            _element?.ManipulationControls.FitToParent();
         }
 
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -207,7 +202,10 @@ namespace Dash
 
         private void PopOutPage_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.DisplayDocument(CurPage.DocumentController.GetDereferencedField<DocumentFieldModelController>(DocumentContextKey,null).Data);
+            var page = CurPage.DocumentController.GetCopy(null, true);
+            page.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+            page.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+            MainPage.Instance.DisplayDocument(page);
         }
     }
 }
