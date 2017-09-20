@@ -161,14 +161,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    var context = new Context(DocumentController);
-                    if (LayoutDocument == DocumentController)
-                    {
-                        var contextKey = DocumentController.GetField(DocumentController.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
-                        if (contextKey != null)
-                            context.AddDocumentContext(contextKey);
-                    }
-                    _content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
+                    _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
                 }
                 return _content;
             }

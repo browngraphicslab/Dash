@@ -927,6 +927,10 @@ namespace Dash
             context = new Context(context);
             context.AddDocumentContext(this);
 
+            var contextKey = GetField(DocumentController.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            if (contextKey != null)
+                context.AddDocumentContext(contextKey);
+
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {

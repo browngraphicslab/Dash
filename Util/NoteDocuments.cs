@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 
 namespace Dash
@@ -35,7 +36,7 @@ namespace Dash
             public abstract DocumentController CreatePrototype();
             public abstract DocumentController CreatePrototypeLayout();
 
-            protected DocumentController GetLayoutPrototype()
+            protected DocumentController GetDocumentPrototype()
             {
                 var prototype = ContentController.GetController<DocumentController>(_prototypeID);
                 if (prototype == null)
@@ -67,8 +68,8 @@ namespace Dash
 
             public override DocumentController CreatePrototypeLayout()
             {
-                var prototype = GetLayoutPrototype(); 
-                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25);
+                var prototype = GetDocumentPrototype(); 
+                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
                 var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
                 prototpeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
@@ -78,22 +79,33 @@ namespace Dash
 
                 return prototpeLayout.Document;
             }
-
+            
             public RichTextNote(DocumentType type) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
-                _prototypeLayout = CreatePrototypeLayout();
 
-                Document = GetLayoutPrototype().MakeDelegate();
-                Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
-                Document.SetField(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Something to fill this space?")), true);
-                Document.SetField(KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
+                var dataDocument = GetDocumentPrototype().MakeDelegate();
+                dataDocument.SetField(TitleKey, new TextFieldModelController("Title?"), true);
+                dataDocument.SetField(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Something to fill this space?")), true);
+                dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDocument), true);
 
-                var docLayout = _prototypeLayout.MakeDelegate();
+                if (_prototypeLayout == null)
+                    _prototypeLayout = CreatePrototypeLayout();
+                var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
 
-                Document.AddLayoutToLayoutList(docLayout);
-                Document.SetActiveLayout(docLayout, true, true);
+                if (true)
+                {
+                    dataDocument.AddLayoutToLayoutList(docLayout);
+                    dataDocument.SetActiveLayout(docLayout, true, true);
+                    Document = dataDocument;
+                } else
+                {
+                    docLayout.SetField(DocumentController.DocumentContextKey, new DocumentFieldModelController(dataDocument), true);
+                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+                    Document = docLayout;
+                }
             }
         }
 
@@ -112,7 +124,7 @@ namespace Dash
 
             public override DocumentController CreatePrototypeLayout()
             {
-                var prototype = GetLayoutPrototype();
+                var prototype = GetDocumentPrototype();
 
                 var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
                 var imageLayout = new ImageBox(new ReferenceFieldModelController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
@@ -126,7 +138,7 @@ namespace Dash
                 _prototypeID = "C48C8AF2-5609-40F0-9FAA-E300C582AF5F";
                 _prototypeLayout = CreatePrototypeLayout();
 
-                Document = GetLayoutPrototype().MakeDelegate();
+                Document = GetDocumentPrototype().MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
@@ -153,7 +165,7 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototypeTextLayout =
-                    new TextingBox(new ReferenceFieldModelController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    new TextingBox(new ReferenceFieldModelController(GetDocumentPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
                 prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeTextLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
@@ -165,7 +177,7 @@ namespace Dash
                 _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
                 _prototypeLayout = CreatePrototypeLayout();
 
-                Document = GetLayoutPrototype().MakeDelegate();
+                Document = GetDocumentPrototype().MakeDelegate();
                 Document.SetField(NotesFieldKey, new TextFieldModelController("Write something amazing!"), true);
                 Document.SetField(KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 

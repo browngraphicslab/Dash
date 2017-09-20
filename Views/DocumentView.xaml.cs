@@ -432,12 +432,12 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null, false), null);
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDelegate(), null);
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetNewData(), null);
         }
 
         public void ScreenCap()
