@@ -204,9 +204,10 @@ namespace Dash
         private void PopOutPage_Click(object sender, RoutedEventArgs e)
         {
             var page = (CurPage.DocumentController).GetViewCopy(null);
-            page.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-            page.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
-            page.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
+            var activeLayout = page.GetActiveLayout()?.Data ?? page;
+            activeLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+            activeLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
             MainPage.Instance.DisplayDocument(page);
         }
     }
