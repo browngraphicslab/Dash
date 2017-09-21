@@ -26,7 +26,7 @@
     
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue">
+          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="0"/>

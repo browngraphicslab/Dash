@@ -9,10 +9,23 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CornerRadius="10" Margin="0,10,0,10">
+    <Grid CornerRadius="10" Margin="0" Padding="0">
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList" ItemsSource="{x:Bind ListContent}"/>
+        <ListView x:Name="xList" ItemsSource="{x:Bind ListContent}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                    <Setter Property="FontSize" Value="11"></Setter>
+                    <Setter Property="Height" Value="1"></Setter>
+                    <Setter Property="Padding" Value="15,10"></Setter>
+                    <Setter Property="Margin" Value="0"></Setter>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
+                    <Setter Property="BorderBrush" Value="#FF444444"></Setter>
+                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
     </Grid>
 </UserControl>

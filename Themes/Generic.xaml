@@ -29,7 +29,7 @@
                             <Rectangle x:Name="PART_Header" Fill="{StaticResource DocumentHighlightBackground}"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                             <Button x:Name="PART_CloseButton" Width="30" Height="25" Background="Transparent"
-                                   VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0">
+                                   VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0" Padding="10">
                                 <Viewbox>
                                     <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
                                 </Viewbox>
