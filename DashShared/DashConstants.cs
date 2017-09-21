@@ -103,6 +103,8 @@ namespace DashShared
 
         public static class KeyStore
         {
+            public static KeyModel DocumentContextKey = new KeyModel("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC", "_DocumentContext");
+            public static KeyModel AbstractInterfaceKey = new KeyModel("E579C81B-EE13-4B16-BB96-80688D30A73A", "_AbstractInterface");
             public static KeyModel LayoutListKey = new KeyModel("6546DD08-C753-4C34-924E-3C4016C4B95B", "_LayoutList");
             public static KeyModel ActiveLayoutKey = new KeyModel("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA", "_ActiveLayout");
 

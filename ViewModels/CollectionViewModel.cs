@@ -55,9 +55,6 @@ namespace Dash
                                     }
                             if (newDoc)
                             {
-                                DocumentViewModels.Clear();
-                                //AddDocuments(documents, copiedContext);
-
                                 if (cargs == null)
                                     cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
                                 UpdateViewModels(cargs, copiedContext);

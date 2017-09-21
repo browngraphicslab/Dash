@@ -63,9 +63,9 @@ namespace Dash
         /// ActiveLayout if it exists.  The layout is offset by 15, or set to 'where' if specified
         /// </summary>
         /// <returns></returns>
-        public static DocumentController GetCopy(this DocumentController doc, Point? where)
+        public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
-            var copy = doc.MakeCopy();
+            var copy = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey } ));
             var positionField = copy.GetPositionField();
             if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
@@ -79,37 +79,64 @@ namespace Dash
         /// </summary>
         /// <param name="where"></param>
         /// <returns></returns>
-        public static DocumentController GetNewData(this DocumentController doc, Point? where = null)
+        public static DocumentController GetDataCopy(this DocumentController doc, Point? where = null)
         {
-            var del = doc.MakeDelegate();
-            var delLayout = doc.GetActiveLayout()?.Data?.MakeDelegate();
-            if (delLayout != null)
-                del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
-            else delLayout = del;
+            //return GetViewCopy(doc, where);
+            var del = doc;
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            DocumentController newDoc = null;
+            if (activeLayout == null && docContext != null)  // has DocumentContext
+            {
+                var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey })); // copy the data and skip any layouts
+                activeLayout = doc.MakeDelegate(); // inherit the layout
+                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(copiedData), true); // point the inherited layout at the copied document
+                docContext = copiedData;
+                newDoc = activeLayout;
+            }
+            else if (docContext == null && activeLayout != null) // has a layout
+            {
+                var copiedLayout = activeLayout.MakeDelegate(); // inherit the layout (so we can at least override location ... maybe width, height, too)
+                docContext = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }));// copy the data but skip the layout
+                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true); // add the inherited layout back
+                activeLayout = copiedLayout;
+                newDoc = docContext;
+            }
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
-                 delLayout.SetField(KeyStore.PositionFieldKey,
-                new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point) where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point) where).Y))),
-                    true);
+                activeLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point) where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point) where).Y))),
+                        true);
             }
-            return del;
+            return newDoc;
         }
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
-            var dataDoc = doc.GetDereferencedField<DocumentFieldModelController>(DocumentController.DocumentContextKey, new Context(doc))?.Data ??
-                doc;
-            var delLayout = doc.GetActiveLayout()?.Data?.GetCopy(where) ?? doc.MakeCopy(true);
-            if (delLayout != null)
-                delLayout.SetField(DocumentController.DocumentContextKey, new DocumentFieldModelController(dataDoc), true);
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            var newDoc = doc;
+            if (activeLayout == null && docContext != null)  // has DocumentContext
+            {
+                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                newDoc = activeLayout;
+            }
+            else if (docContext == null && activeLayout != null) // has a layout
+            {
+                docContext = doc.MakeDelegate(); // inherit the document so we can override its layout
+                var copiedLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true);
+                newDoc = docContext;
+                activeLayout = copiedLayout;
+            }
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
-                delLayout.SetField(KeyStore.PositionFieldKey,
+                activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
-                    true);
+                        true);
             }
-            return delLayout;
+            return newDoc;
         }
 
 
@@ -131,9 +158,9 @@ namespace Dash
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
-        public static DocumentController MakeActiveLayoutDelegate(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
+        public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
         {
-            var layoutDelegateDoc = doc.GetActiveLayout(new Context(doc))?.Data?.MakeDelegate() ?? doc.MakeDelegate();
+            var layoutDelegateDoc = (doc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data ?? doc;
             if (layoutDelegateDoc != null)
             {
                 if (width.HasValue)
@@ -147,10 +174,6 @@ namespace Dash
                 if (pos.HasValue)
                     layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController((Point)pos), true);
             }
-            else
-                layoutDelegateDoc = doc;
-            layoutDelegateDoc.SetField(DocumentController.DocumentContextKey, new DocumentFieldModelController(doc.GetField(DocumentController.DocumentContextKey) == null ? doc : doc.GetDereferencedField<DocumentFieldModelController>(DocumentController.DocumentContextKey, new Context(doc)).Data), true);
-            return layoutDelegateDoc;
         }
 
         public static void SetPrototypeActiveLayout(this DocumentController doc, DocumentController activeLayout, Context context = null)
@@ -216,11 +239,11 @@ namespace Dash
             return scaleAmountField;
         }
 
-        public static DocumentController MakeCopy(this DocumentController doc, bool shallow = false)
+        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys)
         {
             var refs = new List<ReferenceFieldModelController>();
             var docIds = new Dictionary<DocumentController, DocumentController>();
-            var copy   = doc.makeCopy(ref refs, ref docIds, shallow);
+            var copy   = doc.makeCopy(ref refs, ref docIds, excludeKeys);
             foreach (var d2 in docIds)
             {
                 foreach (var r in refs)
@@ -233,8 +256,12 @@ namespace Dash
             return copy;
         }
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceFieldModelController> refs,
-                ref Dictionary<DocumentController, DocumentController> docs, bool shallow)
+                ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys)
         {
+            if (doc == null)
+                return doc;
+            if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                return doc;
             if (docs.ContainsKey(doc))
                 return docs[doc];
 
@@ -247,16 +274,16 @@ namespace Dash
             {
                 if (kvp.Key.Equals(KeyStore.ThisKey))
                     fields[kvp.Key] = new DocumentFieldModelController(doc);
-                else if (shallow || kvp.Key.Equals(KeyStore.DelegatesKey) || kvp.Key.Equals(KeyStore.LayoutListKey))
+                else if (excludeKeys.Contains(kvp.Key))
                     fields[kvp.Key] = kvp.Value.Copy();
                 else if (kvp.Value is DocumentFieldModelController)
-                    fields[kvp.Key] = new DocumentFieldModelController(kvp.Value.DereferenceToRoot<DocumentFieldModelController>(new Context(doc)).Data.makeCopy(ref refs, ref docs, shallow));
+                    fields[kvp.Key] = new DocumentFieldModelController(kvp.Value.DereferenceToRoot<DocumentFieldModelController>(new Context(doc)).Data.makeCopy(ref refs, ref docs, excludeKeys));
                 else if (kvp.Value is DocumentCollectionFieldModelController)
                 {
                     var docList = new List<DocumentController>();
                     foreach (var d in kvp.Value.DereferenceToRoot<DocumentCollectionFieldModelController>(new Context(doc)).Data)
                     {
-                        docList.Add(d.makeCopy(ref refs, ref docs, shallow));
+                        docList.Add(d.makeCopy(ref refs, ref docs, excludeKeys));
                     }
                     fields[kvp.Key] = new DocumentCollectionFieldModelController(docList);
                 }

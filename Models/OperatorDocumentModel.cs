@@ -72,7 +72,7 @@ namespace Dash
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
-            OperationCreationHelper.AddOperator(doc.GetId(), () => doc.MakeCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);
+            OperationCreationHelper.AddOperator(doc.GetId(), () => doc.GetCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);
 
             return doc;
         }

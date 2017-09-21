@@ -45,14 +45,15 @@ namespace Dash
             ViewModel.ThumbDocumentViewModels.Clear();
             foreach (var pageDoc in ViewModel.DocumentViewModels.Reverse().Select((vm) => vm.DocumentController))
             {
-                var pageDocLayoutDelegate = pageDoc.MakeActiveLayoutDelegate(double.NaN, double.NaN);
+                var pageViewDoc = pageDoc.GetViewCopy();
+                pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
-                CurPage = new DocumentViewModel(pageDocLayoutDelegate);
+                CurPage = new DocumentViewModel(pageViewDoc);
                 PageDocumentViewModels.Insert(0,CurPage);
 
-                var thumbnailImageDoc       = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc;
-                var thumbnailImageDocLayout = thumbnailImageDoc.MakeActiveLayoutDelegate(double.NaN,double.NaN);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageDocLayout));
+                var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,double.NaN);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc));
             }
         }
 
@@ -74,7 +75,7 @@ namespace Dash
                 {
                     Mode = BindingMode.TwoWay,
                     Document = value.DocumentController,
-                    Key = value.DocumentController.GetField(DocumentController.DocumentContextKey, true) == null ? KeyStore.ThisKey : DocumentController.DocumentContextKey,
+                    Key = value.DocumentController.GetField(KeyStore.DocumentContextKey, true) == null ? KeyStore.ThisKey : KeyStore.DocumentContextKey,
                     Converter = new DocumentControllerToStringConverter()
                 };
 
@@ -187,7 +188,7 @@ namespace Dash
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var ind = xThumbs.SelectedIndex;
-            CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind)];
+            CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
         }
 
         private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -202,7 +203,7 @@ namespace Dash
 
         private void PopOutPage_Click(object sender, RoutedEventArgs e)
         {
-            var page = CurPage.DocumentController.GetViewCopy(null);
+            var page = (CurPage.DocumentController).GetViewCopy(null);
             page.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
             page.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
             page.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);

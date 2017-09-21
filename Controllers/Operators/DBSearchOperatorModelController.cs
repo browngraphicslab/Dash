@@ -135,7 +135,7 @@ namespace Dash.Controllers.Operators
             foreach (var field in dmc.EnumFields()) 
                 if (field.Key != KeyStore.ThisKey) {
                     foreach (var docRef in field.Value.GetReferences())
-                        if (docRef.GetId() == targetDocument.GetId())
+                        if (docRef?.GetId() == targetDocument.GetId())
                             return new ReferenceFieldModelController(dmc.GetId(), field.Key);
                 }
             return null;

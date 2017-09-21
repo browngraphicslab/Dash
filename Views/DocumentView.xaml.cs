@@ -143,13 +143,15 @@ namespace Dash
 
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
                 copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
-            var delegateButton = new MenuButton(Symbol.SetTile, "Delegate", bgcolor, MakeDelegate);
+            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 copyButton,
-                delegateButton,
+                copyDataButton,
+                copyViewButton,
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
@@ -172,13 +174,22 @@ namespace Dash
                 ViewModel.DocumentView_DragStarting(this, e);
             };
             copyButtonView.DropCompleted += CopyButtonView_DropCompleted1;
-            var delegateButtonView = delegateButton.View;
-            delegateButtonView.CanDrag = true;
-            delegateButtonView.DragStarting += (s, e) =>
+            var copyDataButtonView = copyDataButton.View;
+            copyDataButtonView.CanDrag = true;
+            copyDataButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e);
             };
+            var copyViewButtonView = copyViewButton.View;
+            copyViewButtonView.CanDrag = true;
+            copyViewButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                e.Data.Properties.Add("View", true);
+                ViewModel.DocumentView_DragStarting(this, e);
+            };
+
 
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
@@ -434,10 +445,15 @@ namespace Dash
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
-
-        private void MakeDelegate()
+        private void CopyViewDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetNewData(), null);
+            _moveTimer.Stop();
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+        }
+
+        private void CopyDataDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
         public void ScreenCap()

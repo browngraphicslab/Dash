@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -120,7 +121,6 @@ namespace Dash
             
             e.Data.Properties.Add("DocumentControllerList", e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList());
             e.Data.RequestedOperation = DateTime.Now.Subtract(_dragStart).TotalMilliseconds > 1000 ? DataPackageOperation.Move : DataPackageOperation.Copy;
-            Debug.WriteLine("Request = " + e.Data.RequestedOperation);
         }
         public void XGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -176,56 +176,30 @@ namespace Dash
                     var storageFile = items[0] as StorageFile;
                     if (storageFile.Path.EndsWith(".pdf"))
                     {
-                        var fields = new Dictionary<KeyController, FieldModelController>();
-                        fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-                        var pdfDoc = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
-                        var pdfLayout =
-                            new CollectionBox(new ReferenceFieldModelController(pdfDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Grid).Document;
-                        pdfDoc.SetActiveLayout(pdfLayout, forceMask: true, addToLayoutList: true);
-
-
                         var where = sender is CollectionFreeformView ?
                             Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                             new Point();
+                        var pdfDoc = new CollectionNote(where);
                         var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
-                        var children = pdfDoc.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+                        var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as DocumentCollectionFieldModelController;
                         for (uint i = 0; i < pdf.PageCount; i++)
-                            using (PdfPage page = pdf.GetPage(i))
+                            using (var page = pdf.GetPage(i))
                             {
+                                var src    = new BitmapImage();
                                 var stream = new InMemoryRandomAccessStream();
                                 await page.RenderToStreamAsync(stream);
-                                BitmapImage src = new BitmapImage();
                                 await src.SetSourceAsync(stream);
-                                var pageImage = new Image();
-                                pageImage.Source = src;
+                                var pageImage = new Image() { Source = src };
 
                                 // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
                                 var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
                                 var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
                                     300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50);
-
-                                // define a new "document type"...
-                                var pageFields = new Dictionary<KeyController, FieldModelController>
-                                {
-                                    // it has a page title
-                                    [AnnotatedImage.TitleFieldKey] = new TextFieldModelController(storageFile.Path + ": Page " + i),
-                                    // the page title is it's primary key
-                                    [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(AnnotatedImage.TitleFieldKey.Id) }),
-                                    // it has a document collection containing the PDF page
-                                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>(new DocumentController[] { image.Document })),
-                                    // it has thumbnail field
-                                    [KeyStore.ThumbnailFieldKey] =  new DocumentFieldModelController(image.Document)
-                                };
-                                var pageDoc = new DocumentController(pageFields, DashConstants.DocumentTypeStore.CollectionDocument);
-                                pageDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(pageDoc), true);
+                                
+                                var pageDoc = new CollectionNote(new Point(), Path.GetFileName(storageFile.Path) + ": Page " + i, image.Document).Document;
                                 children?.AddDocument(pageDoc);
-
-                                var pageLayout = new CollectionBox(new ReferenceFieldModelController(pageDoc.GetId(), DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 150).Document;
-                                pageLayout.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
-                                pageLayout.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-                                pageDoc.SetActiveLayout(pageLayout, forceMask: true, addToLayoutList: true);
                             }
-                        MainPage.Instance.DisplayDocument(pdfDoc, where);
+                        MainPage.Instance.DisplayDocument(pdfDoc.Document, where);
                     }
                     else if (storageFile.Path.EndsWith(".pptx"))
                     {
@@ -259,7 +233,7 @@ namespace Dash
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                var payloadLayoutDelegates = items.Select((p) => e.AcceptedOperation == DataPackageOperation.Link ? p.GetNewData(where) : p.GetCopy(where));
+                var payloadLayoutDelegates = items.Select((p) => e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where): e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where));
                 DisplayDocuments(sender as ICollectionView, payloadLayoutDelegates);
             }
             
@@ -330,8 +304,7 @@ namespace Dash
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
             {
-                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation); //  ; 
-                e.DragUIOverride.Clear();
+               e.DragUIOverride.Clear();
                 e.DragUIOverride.Caption = e.DataView.Properties.Title;
                 e.DragUIOverride.IsContentVisible = false;
                 e.DragUIOverride.IsGlyphVisible = false;
