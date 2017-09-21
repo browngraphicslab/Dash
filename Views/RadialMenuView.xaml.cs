@@ -205,7 +205,7 @@ namespace Dash
             xRadialMenu.UseIndicationArcs = true;
             xRadialMenu.IndicationArcStrokeThickness = 3;
             xRadialMenu.IndicationArcDistanceFromEdge = 20;
-            xRadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["TranslucentWhite"]).Color;
+            xRadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
             xRadialMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.InnerReleasedColor = ((SolidColorBrush) App.Instance.Resources["SelectedGrey"]).Color;

@@ -24,7 +24,7 @@ namespace Dash
         {
             try
             {
-                Debug.WriteLine(newField.Id);
+                //Debug.WriteLine(newField.Id);
                 // convert from field model to DTO
                 FieldModelDTO dto = newField.GetFieldDTO();
                 HttpResponseMessage result = _connection.Post("api/Field", dto);
@@ -50,7 +50,7 @@ namespace Dash
         {
             try
             {
-                Debug.WriteLine(FieldToUpdate.Id);
+                //Debug.WriteLine(FieldToUpdate.Id);
                 FieldModelDTO dto = FieldToUpdate.GetFieldDTO();
                 HttpResponseMessage result = _connection.Put("api/Field", dto);
                 FieldModelDTO resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
@@ -85,7 +85,7 @@ namespace Dash
         public Result DeleteField(FieldModel fieldToDelete)
         {
             string id = fieldToDelete.Id;
-            Debug.WriteLine(id);
+            //Debug.WriteLine(id);
             try
             {
                 _connection.Delete($"api/Field/{id}");

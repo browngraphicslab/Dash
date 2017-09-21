@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DashShared;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -26,6 +27,10 @@ namespace Dash
             return doc;
         }
 
+        public static DocumentController CreateDBFilterDocumentController()
+        {
+            return DBFilterOperatorFieldModelController.CreateFilter(DBTest.DBDoc, "");
+        }
         public static DocumentController CreateFilterDocumentController()
         {
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
@@ -72,7 +77,7 @@ namespace Dash
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
-            OperationCreationHelper.AddOperator(doc.GetId(), () => doc.MakeCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);
+            OperationCreationHelper.AddOperator(doc.GetId(), () => doc.GetCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);
 
             return doc;
         }

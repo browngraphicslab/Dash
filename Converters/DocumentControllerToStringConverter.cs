@@ -11,26 +11,40 @@ namespace Dash.Converters
     {
         
         private Context _context;
+        private bool _returnCount = false;
 
-        public DocumentCollectionToStringConverter()
+        public DocumentCollectionToStringConverter(bool returnCount=false)
         {
+            _returnCount = returnCount;
         }
 
-        public DocumentCollectionToStringConverter(Context context)
+        public DocumentCollectionToStringConverter(Context context, bool returnCount=false)
         {
             _context = context;
+            _returnCount = returnCount;
         }
 
         string GetPrimaryKeyString(DocumentController data)
         {
             var keyList = data.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
+            var context = _context;
+            if (keyList == null)
+            {
+                var docContext = data.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(data))?.Data;
+                if (docContext != null)
+                {
+                    context = new Context(docContext);
+                    keyList = docContext.GetDereferencedField(KeyStore.PrimaryKeyKey, context);
+                    data = docContext;
+                }
+            }
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), _context);
+                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                     else if (keyField is DocumentFieldModelController)
@@ -45,6 +59,8 @@ namespace Dash.Converters
 
         public override string ConvertDataToXaml(List<DocumentController> dataList, object parameter = null)
         {
+            if (_returnCount)
+                return dataList.Count().ToString();
             var docListString = "{";
             foreach (var data in dataList)
             {

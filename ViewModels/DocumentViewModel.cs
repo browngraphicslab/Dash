@@ -161,7 +161,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(new Context(LayoutDocument), IsInInterfaceBuilder);
+                    _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
                 }
                 return _content;
             }
@@ -303,6 +303,8 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout == null)
+                activeLayout = docController;
             if (activeLayout != null)
             {
                 var scaleCenterFieldModelController = docController.GetScaleCenterField();

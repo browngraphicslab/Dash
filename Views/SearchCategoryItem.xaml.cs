@@ -73,6 +73,16 @@ namespace Dash
                 action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
                 MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
+
+            xList.Loaded += (s, e) =>
+            {
+                xList.GetFirstDescendantOfType<ScrollViewer>().GetFirstDescendantOfType<ScrollBar>()
+                        .ManipulationDelta +=
+                    (ss, ee) =>
+                    {
+                        ee.Handled = true;
+                    };
+            };
         }
     }
 }

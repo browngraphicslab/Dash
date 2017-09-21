@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
 
@@ -62,12 +63,9 @@ namespace Dash
         /// ActiveLayout if it exists.  The layout is offset by 15, or set to 'where' if specified
         /// </summary>
         /// <returns></returns>
-        public static DocumentController GetCopy(this DocumentController doc, Point? where=null)
+        public static DocumentController GetCopy(this DocumentController doc, Point? where = null)
         {
-            var copy = doc.MakeCopy();
-            var layoutCopy = copy.GetActiveLayout()?.Data?.MakeCopy();
-            if (layoutCopy != null)
-                copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
+            var copy = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey } ));
             var positionField = copy.GetPositionField();
             if (positionField != null)  // if original had a position field, then copy will, too.  Set it to 'where' or offset it 15 from original
             {
@@ -81,20 +79,64 @@ namespace Dash
         /// </summary>
         /// <param name="where"></param>
         /// <returns></returns>
-        public static DocumentController GetDelegate(this DocumentController doc, Point? where = null)
+        public static DocumentController GetDataCopy(this DocumentController doc, Point? where = null)
         {
-            var del = doc.MakeDelegate();
-            var delLayout = doc.GetActiveLayout()?.Data?.MakeDelegate();
-            if (delLayout != null)
-                del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
+            //return GetViewCopy(doc, where);
+            var del = doc;
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            DocumentController newDoc = null;
+            if (activeLayout == null && docContext != null)  // has DocumentContext
+            {
+                var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey })); // copy the data and skip any layouts
+                activeLayout = doc.MakeDelegate(); // inherit the layout
+                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(copiedData), true); // point the inherited layout at the copied document
+                docContext = copiedData;
+                newDoc = activeLayout;
+            }
+            else if (docContext == null && activeLayout != null) // has a layout
+            {
+                var copiedLayout = activeLayout.MakeDelegate(); // inherit the layout (so we can at least override location ... maybe width, height, too)
+                docContext = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }));// copy the data but skip the layout
+                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true); // add the inherited layout back
+                activeLayout = copiedLayout;
+                newDoc = docContext;
+            }
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
-                delLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
-                    true);
+                activeLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point) where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point) where).Y))),
+                        true);
             }
-            return del;
+            return newDoc;
+        }
+        public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            var newDoc = doc;
+            if (activeLayout == null && docContext != null)  // has DocumentContext
+            {
+                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                newDoc = activeLayout;
+            }
+            else if (docContext == null && activeLayout != null) // has a layout
+            {
+                docContext = doc.MakeDelegate(); // inherit the document so we can override its layout
+                var copiedLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true);
+                newDoc = docContext;
+                activeLayout = copiedLayout;
+            }
+            var oldPosition = doc.GetPositionField();
+            if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
+            {
+                activeLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                        true);
+            }
+            return newDoc;
         }
 
 
@@ -116,9 +158,9 @@ namespace Dash
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
-        public static DocumentController MakeActiveLayoutDelegate(this DocumentController doc, double ? width=null, double ? height=null)
+        public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
         {
-            var layoutDelegateDoc = doc.GetActiveLayout(new Context(doc))?.Data?.MakeDelegate();
+            var layoutDelegateDoc = (doc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data ?? doc;
             if (layoutDelegateDoc != null)
             {
                 if (width.HasValue)
@@ -129,11 +171,9 @@ namespace Dash
                     layoutDelegateDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController((double)height), true);
                 else
                     layoutDelegateDoc.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.VerticalAlignment.Stretch.ToString()), true);
-                layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
+                if (pos.HasValue)
+                    layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController((Point)pos), true);
             }
-            else
-                layoutDelegateDoc = doc;
-            return layoutDelegateDoc;
         }
 
         public static void SetPrototypeActiveLayout(this DocumentController doc, DocumentController activeLayout, Context context = null)
@@ -199,30 +239,64 @@ namespace Dash
             return scaleAmountField;
         }
 
-        public static DocumentController MakeCopy(this DocumentController doc, Context context = null)
+        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys)
         {
+            var refs = new List<ReferenceFieldModelController>();
+            var docIds = new Dictionary<DocumentController, DocumentController>();
+            var copy   = doc.makeCopy(ref refs, ref docIds, excludeKeys);
+            foreach (var d2 in docIds)
+            {
+                foreach (var r in refs)
+                {
+                    var rdoc = ContentController.GetController<DocumentController>((r.FieldReference as DocumentFieldReference)?.DocumentId);
+                    if (rdoc?.GetId() == d2.Key.GetId())
+                        r.ChangeFieldDoc(d2.Value.GetId());
+                }
+            }
+            return copy;
+        }
+        private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceFieldModelController> refs,
+                ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys)
+        {
+            if (doc == null)
+                return doc;
+            if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                return doc;
+            if (docs.ContainsKey(doc))
+                return docs[doc];
+
             var copy = doc.GetPrototype()?.MakeDelegate() ??
-                       new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);
+                            new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);
+            docs.Add(doc, copy);
+
             var fields = new Dictionary<KeyController, FieldModelController>();
-            //TODO This doesn't copy the layout and the layout has a reference to the original document, not the copy, so the ui doesn't show the right data
             foreach (var kvp in doc.EnumFields(true))
             {
-                if (kvp.Key.Equals(KeyStore.WidthFieldKey) ||
-                    kvp.Key.Equals(KeyStore.HeightFieldKey)
-                    )
+                if (kvp.Key.Equals(KeyStore.ThisKey))
+                    fields[kvp.Key] = new DocumentFieldModelController(doc);
+                else if (excludeKeys.Contains(kvp.Key))
+                    fields[kvp.Key] = kvp.Value.Copy();
+                else if (kvp.Value is DocumentFieldModelController)
+                    fields[kvp.Key] = new DocumentFieldModelController(kvp.Value.DereferenceToRoot<DocumentFieldModelController>(new Context(doc)).Data.makeCopy(ref refs, ref docs, excludeKeys));
+                else if (kvp.Value is DocumentCollectionFieldModelController)
                 {
-                    fields[kvp.Key] = new NumberFieldModelController((kvp.Value as NumberFieldModelController)?.Data ?? 0);
+                    var docList = new List<DocumentController>();
+                    foreach (var d in kvp.Value.DereferenceToRoot<DocumentCollectionFieldModelController>(new Context(doc)).Data)
+                    {
+                        docList.Add(d.makeCopy(ref refs, ref docs, excludeKeys));
+                    }
+                    fields[kvp.Key] = new DocumentCollectionFieldModelController(docList);
                 }
-                else if (kvp.Key.Equals(KeyStore.PositionFieldKey))
-                {
-                    fields[kvp.Key] = new PointFieldModelController((kvp.Value as PointFieldModelController)?.Data ?? new Point());
-                }
+                else if (kvp.Value is ReferenceFieldModelController)
+                    fields[kvp.Key] = kvp.Value.Copy();
                 else
+                    fields[kvp.Key] = kvp.Value.Copy();
+
+                if (kvp.Value is ReferenceFieldModelController)
                 {
-                    if (kvp.Key.Equals(KeyStore.ThisKey))
-                        fields[kvp.Key] = new DocumentFieldModelController(copy);
-                    else fields[kvp.Key] = kvp.Value.Copy();
+                    refs.Add(fields[kvp.Key] as ReferenceFieldModelController);
                 }
+
             }
             copy.SetFields(fields, true);
 

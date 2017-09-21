@@ -15,11 +15,6 @@ namespace Dash.Controllers.Operators
     }
     public class DBSearchOperatorFieldModelController : OperatorFieldModelController
     {
-        public static void ForceUpdate(DocumentFieldReference docFieldRef)
-        {
-            var opDoc = ContentController.GetController<DocumentController>(docFieldRef.DocumentId);
-            opDoc.Execute(null, true);
-        }
         public DBSearchOperatorFieldModel DBSearchOperatorFieldModel {  get { return OperatorFieldModel as DBSearchOperatorFieldModel; } }
        
         static public DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
@@ -135,7 +130,7 @@ namespace Dash.Controllers.Operators
             foreach (var field in dmc.EnumFields()) 
                 if (field.Key != KeyStore.ThisKey) {
                     foreach (var docRef in field.Value.GetReferences())
-                        if (docRef.GetId() == targetDocument.GetId())
+                        if (docRef?.GetId() == targetDocument.GetId())
                             return new ReferenceFieldModelController(dmc.GetId(), field.Key);
                 }
             return null;

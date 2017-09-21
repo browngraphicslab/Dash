@@ -836,18 +836,25 @@ namespace Dash
             var fields = EnumFields().ToList();
             if (fields.Count > 15)
             {
-                TextBlock block = new TextBlock
+                var lv = new ListView {SelectionMode = ListViewSelectionMode.None};
+                var source = new List<FrameworkElement>();
+                for (var i = 0; i < 15; i++)
                 {
-                    Text = DocumentType.Type,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                return block;
+                    var block = new TextBlock
+                    {
+                        Text = "Field " + i + ": " + fields[i].Key,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    source.Add(block);
+                }
+                lv.ItemsSource = source;
+                return lv;
             }
 
             //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
             var sp = new StackPanel();
-            var source = new List<FrameworkElement>();
+            //var source = new List<FrameworkElement>();
 
             var isInterfaceBuilder = false; // TODO make this a parameter
 
@@ -926,6 +933,10 @@ namespace Dash
             context = new Context(context);
             context.AddDocumentContext(this);
 
+            var contextKey = GetField(KeyStore.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            if (contextKey != null)
+                context.AddDocumentContext(contextKey);
+
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
@@ -990,6 +1001,10 @@ namespace Dash
             if (DocumentType == CollectionMapOperatorBox.DocumentType)
             {
                 return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == DBFilterOperatorBox.DocumentType)
+            {
+                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DBSearchOperatorBox.DocumentType)
             {
