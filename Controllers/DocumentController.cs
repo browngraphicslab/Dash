@@ -995,6 +995,10 @@ namespace Dash
             {
                 return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
+            if (DocumentType == DBFilterOperatorBox.DocumentType)
+            {
+                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType == DBSearchOperatorBox.DocumentType)
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);

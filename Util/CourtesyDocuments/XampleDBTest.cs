@@ -287,7 +287,7 @@ namespace Dash
                 Documents.Add(Ump2Doc);
             }
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 1; i++)
             {
                 var udoc = PrototypeUmp.MakeDelegate();
                 udoc.SetField(UmpNameKey, new TextFieldModelController("Matt" + i), true);

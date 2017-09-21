@@ -112,6 +112,7 @@ namespace Dash
             var newDoc = cnote.Document;
             
             collection.ViewModel.AddDocument(newDoc, null);
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static async void ImportFields(ICollectionView collection, DragEventArgs e)

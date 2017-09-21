@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DashShared;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -26,6 +27,10 @@ namespace Dash
             return doc;
         }
 
+        public static DocumentController CreateDBFilterDocumentController()
+        {
+            return DBFilterOperatorFieldModelController.CreateFilter(DBTest.DBDoc, "");
+        }
         public static DocumentController CreateFilterDocumentController()
         {
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
