@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -106,19 +107,12 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var fields = new Dictionary<KeyController, FieldModelController>()
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
-            };
-
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                        new ReferenceFieldModelController(documentController.GetId(),
-                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y, 400, 400)
-                    .Document, true, true);
-
-            collection.ViewModel.AddDocument(documentController, null);
+            var cnote = new CollectionNote(where);
+            cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+            var newDoc = cnote.Document;
+            
+            collection.ViewModel.AddDocument(newDoc, null);
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static async void ImportFields(ICollectionView collection, DragEventArgs e)

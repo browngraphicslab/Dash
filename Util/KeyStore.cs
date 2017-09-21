@@ -9,6 +9,8 @@ namespace Dash
 {
     class KeyStore
     {
+        public static KeyController DocumentContextKey = new KeyController(DashConstants.KeyStore.DocumentContextKey);
+        public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController PrimaryKeyKey = new KeyController(DashConstants.KeyStore.PrimaryKeyKey);

@@ -933,6 +933,10 @@ namespace Dash
             context = new Context(context);
             context.AddDocumentContext(this);
 
+            var contextKey = GetField(KeyStore.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            if (contextKey != null)
+                context.AddDocumentContext(contextKey);
+
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
@@ -997,6 +1001,10 @@ namespace Dash
             if (DocumentType == CollectionMapOperatorBox.DocumentType)
             {
                 return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == DBFilterOperatorBox.DocumentType)
+            {
+                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DBSearchOperatorBox.DocumentType)
             {

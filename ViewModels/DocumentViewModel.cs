@@ -161,7 +161,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(new Context(LayoutDocument), IsInInterfaceBuilder);
+                    _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
                 }
                 return _content;
             }
@@ -303,6 +303,8 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout == null)
+                activeLayout = docController;
             if (activeLayout != null)
             {
                 var scaleCenterFieldModelController = docController.GetScaleCenterField();
@@ -427,17 +429,6 @@ namespace Dash
             MenuOpen = true;
         }
 
-        public DocumentController GetDelegate()
-        {
-            var del = DocumentController.MakeDelegate();
-            var delLayout = DocumentController.GetActiveLayout().Data.MakeDelegate();
-            var oldPosition = DocumentController.GetPositionField().Data;
-            delLayout.SetField(KeyStore.PositionFieldKey,
-                new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
-                true);
-            del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
-            return del;
-        }
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
@@ -445,16 +436,11 @@ namespace Dash
             DocumentView.DragDocumentView = docView;
 
             // create border around the doc being dragged
-            if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
+            if (docView != null)
+                docView.OuterGrid.BorderThickness = new Thickness(5);
 
-            var carrier = ItemsCarrier.Instance;
-            carrier.Payload = new List<DocumentController>() { DocumentController };
-
-            // different sources based on whether it's a collection or a document 
-            var item = CollectionView.GetParentCollectionView(docView);
-
-            carrier.SourceCollection = item as CollectionView;
-
+            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
+                // different sources based on whether it's a collection or a document 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 

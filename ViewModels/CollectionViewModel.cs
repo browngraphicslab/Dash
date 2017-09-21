@@ -55,9 +55,6 @@ namespace Dash
                                     }
                             if (newDoc)
                             {
-                                DocumentViewModels.Clear();
-                                //AddDocuments(documents, copiedContext);
-
                                 if (cargs == null)
                                     cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
                                 UpdateViewModels(cargs, copiedContext);
@@ -157,7 +154,7 @@ namespace Dash
                     return;
             }
 
-            if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+            if (context != null && context.DocContextList.Contains(doc))
             {
                 return;
             }

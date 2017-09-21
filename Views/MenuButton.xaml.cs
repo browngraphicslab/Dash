@@ -122,6 +122,9 @@ namespace Dash
             }
         }
 
+        SymbolIcon _symbol;
+        public SymbolIcon ButtonIcon { get { return _symbol; } }
+        public TextBlock ButtonText { get { return _descriptionText; } }
         /// <summary>
         /// Create a circular button with an icon and a string description
         /// </summary>
@@ -131,7 +134,7 @@ namespace Dash
         private void InstantiateButton(Symbol icon, string name, Color background)
         {
             // create symbol for button
-            var symbol = new SymbolIcon()
+            _symbol = new SymbolIcon()
             {
                 Symbol = icon,
                 Foreground = new SolidColorBrush(Colors.White)
@@ -144,7 +147,7 @@ namespace Dash
                 CornerRadius = new CornerRadius(20),
                 Background = new SolidColorBrush(background),
                 BorderBrush = new SolidColorBrush(background),
-                Child = symbol
+                Child = _symbol
             };
             // create button to contain the border with the symbol
             _button = new Button()
