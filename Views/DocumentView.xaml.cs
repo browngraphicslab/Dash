@@ -198,7 +198,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
-            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
+            xMenuCanvas.SetBinding(VisibilityProperty, visibilityBinding);
 
             xMenuCanvas.Children.Add(_docMenu);
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
@@ -206,20 +206,53 @@ namespace Dash
 
             makeDelegateDiamond(); 
         }
+        
+        private class BoolToBrushConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                return (bool)value ? new SolidColorBrush(Colors.Transparent) : new SolidColorBrush(Colors.Violet); 
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private void makeDelegateDiamond()
         {
+            Debug.WriteLine("THE THING HAS DELEGATES? " + ViewModel.DocumentController.HasDelegates); 
+
             _delegateDiamond.Width = 30;
             _delegateDiamond.Height = 30;
-            //_delegateDiamond.Stroke = new SolidColorBrush(Colors.Transparent); 
+            _delegateDiamond.Stroke = new SolidColorBrush(Colors.Black);
             //_delegateDiamond.Fill = new SolidColorBrush(Colors.Transparent);
+
+            var visibilityBinding = new Binding // actually... this should bind to HasPrototype || HasDelegate 
+            {
+                Source = ViewModel.DocumentController,
+                Path = new PropertyPath("HasPrototype"),
+                Mode = BindingMode.OneWay,
+                Converter = new BoolToVisibilityConverter()
+            };
+            _delegateDiamond.SetBinding(VisibilityProperty, visibilityBinding);
+
+            var colorBindinng = new Binding
+            {
+                Source = ViewModel.DocumentController,
+                Path = new PropertyPath("HasDelegates"), 
+                Mode = BindingMode.OneWay, 
+                Converter = new BoolToBrushConverter() // TODO make this 
+            };
+            //_delegateDiamond.SetBinding(BackgroundProperty, colorBindinng);
 
             var rotate = new RotateTransform { Angle = 45 };
             _delegateDiamond.RenderTransform = rotate; 
 
             xMenuCanvas.Children.Add(_delegateDiamond);
 
-            Canvas.SetTop(_delegateDiamond, 200);
+            Canvas.SetTop(_delegateDiamond, 250);
             Canvas.SetLeft(_delegateDiamond, 30);
         }
 

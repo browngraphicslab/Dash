@@ -16,6 +16,20 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        private bool _hasDelegates; 
+        public bool HasDelegates
+        {
+            get { return _hasDelegates = _fields.ContainsKey(KeyStore.DelegatesKey); }
+            set { _hasDelegates = value; }
+        }
+
+        private bool _hasPrototype;
+        public bool HasPrototype
+        {
+            get { return _hasPrototype = _fields.ContainsKey(KeyStore.PrototypeKey); }
+            set { _hasPrototype = value; }
+        }
+
         public enum FieldUpdatedAction
         {
             Add,
@@ -602,6 +616,7 @@ namespace Dash
             return delegateController;
         }
 
+
         private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
@@ -733,7 +748,7 @@ namespace Dash
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
             }
-
+            _hasDelegates = true; 
             return currentDelegates;
         }
 
@@ -836,7 +851,7 @@ namespace Dash
             var fields = EnumFields().ToList();
             if (fields.Count > 15)
             {
-                var lv = new ListView {SelectionMode = ListViewSelectionMode.None};
+                var lv = new ListView { SelectionMode = ListViewSelectionMode.None };
                 var source = new List<FrameworkElement>();
                 for (var i = 0; i < 15; i++)
                 {

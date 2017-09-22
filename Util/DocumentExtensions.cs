@@ -136,6 +136,9 @@ namespace Dash
                     new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
                         true);
             }
+            newDoc.SetField(KeyStore.PrototypeKey, new DocumentFieldModelController(doc), true); // KB TODO remove this later 
+            newDoc.HasPrototype = true;
+
             return newDoc;
         }
 
