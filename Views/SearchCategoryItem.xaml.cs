@@ -25,7 +25,7 @@ namespace Dash
         /// <summary>
         /// All objects under this category
         /// </summary>
-        public ObservableCollection<OperatorBuilder> ListContent { get; }
+        public ObservableCollection<DocumentController> ListContent { get; }
 
         /// <summary>
         /// Returns the list view used to display objects
@@ -63,31 +63,36 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<OperatorBuilder> content, Action<Func<DocumentController>> action)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<DocumentController> content)
         {
             this.InitializeComponent();
             Icon = icon;
             Title = title;
             ListContent = content;
-            xList.DisplayMemberPath = nameof(OperatorBuilder.Name);
+            xList.DisplayMemberPath = nameof(DocumentController.Title);
             ListDisplayMemberPath = xList.DisplayMemberPath;
 
-            _action = action;
+            //_action = action;
 
-            xList.Tapped += delegate
-            {
-                //action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
-                //MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
-                ActivateItem();
-            };
+            xList.Tapped += XList_Tapped;
 
             
         }
 
+        private void XList_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ActivateItem();
+        }
+
         public void ActivateItem()
         {
-            _action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
-            MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+            var doc = xList.SelectedItem as DocumentController;
+            if (doc != null)
+            {
+                Actions.CopyAndAddDocument(doc);
+            }
+
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
         }
 
         public void ActivateItem(object selectedItem)
@@ -97,8 +102,14 @@ namespace Dash
                 ActivateItem();
                 return;
             }
-            _action?.Invoke((selectedItem as OperatorBuilder)?.OperationDocumentConstructor);
-            MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
+            var doc = selectedItem as DocumentController;
+            if (doc != null)
+            {
+                Actions.CopyAndAddDocument(doc);
+            }
+
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
         }
         
 

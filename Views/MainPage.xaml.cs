@@ -104,39 +104,36 @@ namespace Dash
                 var pos = new Point(x, y);
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                     .FirstOrDefault();
-                OperatorSearchView.AddsToThisCollection = topCollection as CollectionFreeformView;
-                if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-                {
-                    xCanvas.Children.Add(OperatorSearchView.Instance);
-                }
-                Canvas.SetLeft(OperatorSearchView.Instance, pos.X);
-                Canvas.SetTop(OperatorSearchView.Instance, pos.Y);
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                TabMenu.ShowAt(xCanvas, pos);
                 //OperatorMenuFlyout.ShowAt(this);
-                OperatorSearchView.Instance.SetTextBoxFocus();
+                TabMenu.Instance.SetTextBoxFocus();
             }
 
-            if (e.VirtualKey == VirtualKey.Escape)
+            if (xCanvas.Children.Contains(TabMenu.Instance))
             {
-                xCanvas.Children.Remove(OperatorSearchView.Instance);
+                if (e.VirtualKey == VirtualKey.Escape)
+                {
+                    xCanvas.Children.Remove(TabMenu.Instance);
+                }
+
+                if (e.VirtualKey == VirtualKey.Down)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                }
+
+                if (e.VirtualKey == VirtualKey.Up)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                }
+
+                if (e.VirtualKey == VirtualKey.Enter)
+                {
+                    TabMenu.Instance.SearchView.ActivateItem();
+                }
             }
-
-            if (e.VirtualKey == VirtualKey.Down)
-            {
-
-                OperatorSearchView.Instance.SearchView.MoveSelectedDown();
-            }
-
-            if (e.VirtualKey == VirtualKey.Up)
-            {
-
-                OperatorSearchView.Instance.SearchView.MoveSelectedUp();
-            }
-
-            if (e.VirtualKey == VirtualKey.Enter)
-            {
-                OperatorSearchView.Instance.SearchView.ActivateItem();
-            }
-
         }
 
         private void OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -149,17 +146,17 @@ namespace Dash
                 var pos = new Point(x,y);
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                     .FirstOrDefault();
-                OperatorSearchView.AddsToThisCollection = topCollection as CollectionFreeformView;
-                if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-                xCanvas.Children.Add(OperatorSearchView.Instance);
-                Canvas.SetLeft(OperatorSearchView.Instance, pos.X);
-                Canvas.SetTop(OperatorSearchView.Instance, pos.Y);
-                OperatorSearchView.Instance.SetTextBoxFocus();
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+                xCanvas.Children.Add(TabMenu.Instance);
+                Canvas.SetLeft(TabMenu.Instance, pos.X);
+                Canvas.SetTop(TabMenu.Instance, pos.Y);
+                TabMenu.Instance.SetTextBoxFocus();
             }
 
             if (e.Key == VirtualKey.Escape)
             {
-                xCanvas.Children.Remove(OperatorSearchView.Instance);
+                xCanvas.Children.Remove(TabMenu.Instance);
             }
 
         }
@@ -176,7 +173,7 @@ namespace Dash
 
             OperatorMenuFlyout = new Flyout
             {
-                Content = OperatorSearchView.Instance,
+                Content = TabMenu.Instance,
                 
             };
         }
@@ -188,12 +185,12 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-            xCanvas.Children.Add(OperatorSearchView.Instance);
+            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
+            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+            xCanvas.Children.Add(TabMenu.Instance);
             Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            Canvas.SetLeft(TabMenu.Instance, absPos.X);
+            Canvas.SetTop(TabMenu.Instance, absPos.Y);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)

@@ -9,10 +9,19 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CornerRadius="10" Margin="0,10,0,10">
+    <Grid Margin="0,5,0,5">
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList" ItemsSource="{x:Bind ListContent}" />
+        <ListView x:Name="xList"  ItemsSource="{x:Bind ListContent}" MinWidth="75">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="2"/>
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Height" Value="10"/>
+                    <Setter Property="MinHeight" Value="25"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
     </Grid>
 </UserControl>

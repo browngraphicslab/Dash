@@ -321,14 +321,14 @@ namespace Dash
 
         private void AddOperatorFromRegion(InkAnalysisInkDrawing region)
         {
-            OperatorSearchView.AddsToThisCollection = FreeformInkControl.FreeformView;
-            if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-            MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
+            TabMenu.AddsToThisCollection = FreeformInkControl.FreeformView;
+            if (MainPage.Instance.xCanvas.Children.Contains(TabMenu.Instance)) return;
+            MainPage.Instance.xCanvas.Children.Add(TabMenu.Instance);
             Point absPos =
                 Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
                     FreeformInkControl.TargetCanvas, MainPage.Instance);
-            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            Canvas.SetLeft(TabMenu.Instance, absPos.X);
+            Canvas.SetTop(TabMenu.Instance, absPos.Y);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
         }

@@ -11,10 +11,11 @@ namespace Dash
         public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
         public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
-        public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
+        public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController, string title="")
         {
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
             fields[OperatorKey] = opController;
+            if(title != "") fields[KeyStore.TitleKey] = new TextFieldModelController(title);
             
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());

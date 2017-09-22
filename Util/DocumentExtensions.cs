@@ -165,7 +165,7 @@ namespace Dash
                        new DocumentController(new Dictionary<KeyController, FieldModelController>(), doc.DocumentType);
             var fields = new Dictionary<KeyController, FieldModelController>();
             //TODO This doesn't copy the layout and the layout has a reference to the original document, not the copy, so the ui doesn't show the right data
-            foreach (var kvp in doc.EnumFields(true))
+            foreach (var kvp in doc.EnumFields())
             {
                 if (kvp.Key.Equals(KeyStore.WidthFieldKey) ||
                     kvp.Key.Equals(KeyStore.HeightFieldKey)

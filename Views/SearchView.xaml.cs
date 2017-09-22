@@ -23,7 +23,7 @@ namespace Dash
     {
         private Dictionary<PivotItem, SearchCategoryItem> _items = new Dictionary<PivotItem, SearchCategoryItem>();
         private SearchCategoryItem _searchList;
-        public SearchView(List<SearchCategoryItem> categories)
+        public SearchView(SearchCategoryItem categories)
         {
             this.InitializeComponent();
             this.MakeCategories(categories);
@@ -71,19 +71,18 @@ namespace Dash
             _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
         }
 
-        private void MakeCategories(List<SearchCategoryItem> categories)
+        private void MakeCategories(SearchCategoryItem categories)
         {
-            _searchList = categories[0];
+            _searchList = categories;
+            xContentPresenter.Content = categories;
+        }
 
-            xTitleList.Items?.Add(categories[0]);
-            //foreach (var category in categories)
-            //{
-            //    //var pivotItem = new PivotItem();
-            //    //pivotItem.Content = category;
-            //    //pivotItem.Header = MakePivotItemHeader(category);
-            //    //_items.Add(pivotItem, category);
-            //    xTitleList.Items?.Add(category);
-            //}
+        public void SetNoSelection()
+        {
+            if (_searchList != null)
+            {
+                _searchList.List.SelectedIndex = -1;
+            }
         }
 
         public void SetTextBoxFocus()
@@ -188,7 +187,7 @@ namespace Dash
                 foreach (var item in items)
                 {
                     // don't know what to filter yet (how to filter document, collection, fields... etc.)
-                    var type = item.Name.ToLower();
+                    var type = item.GetType().FullName.ToLower();
                     var input = searchInput.ToLower();
                     if (type.Contains(input))
                     {
