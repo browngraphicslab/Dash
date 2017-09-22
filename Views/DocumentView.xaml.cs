@@ -203,7 +203,27 @@ namespace Dash
             xMenuCanvas.Children.Add(_docMenu);
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
+
+            makeDelegateDiamond(); 
         }
+
+        private void makeDelegateDiamond()
+        {
+            _delegateDiamond.Width = 30;
+            _delegateDiamond.Height = 30;
+            //_delegateDiamond.Stroke = new SolidColorBrush(Colors.Transparent); 
+            //_delegateDiamond.Fill = new SolidColorBrush(Colors.Transparent);
+
+            var rotate = new RotateTransform { Angle = 45 };
+            _delegateDiamond.RenderTransform = rotate; 
+
+            xMenuCanvas.Children.Add(_delegateDiamond);
+
+            Canvas.SetTop(_delegateDiamond, 200);
+            Canvas.SetLeft(_delegateDiamond, 30);
+        }
+
+        private Rectangle _delegateDiamond = new Rectangle(); 
 
         private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
         {
@@ -537,10 +557,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            //TODO This disables dragging in the freeform view, this should be uncommented at some point
-            //this.CanDrag = ViewModel.IsLowestSelected;
-            //this.DragStarting -= ViewModel.DocumentView_DragStarting;
-            //this.DragStarting += ViewModel.DocumentView_DragStarting;
+
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
