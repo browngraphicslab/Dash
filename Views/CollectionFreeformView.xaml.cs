@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash;
+using static Dash.NoteDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -640,6 +641,20 @@ namespace Dash
                 var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
+            }
+            else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
+            {
+                //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
+                var pos = e.GetCurrentPoint(this).Position;
+                var cnote = new CollectionNote(pos);
+                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+                var newDoc = cnote.Document;
+
+                ViewModel.AddDocument(newDoc, null);
+                DBTest.DBDoc.AddChild(newDoc);
+
+
+
             }
             CancelDrag(e.Pointer);
         }
