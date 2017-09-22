@@ -86,6 +86,13 @@ namespace Dash
             //DragEnter += Collection_DragEnter;
         }
 
+        public void setBackgroundDarkness(bool isDark) {
+            if (isDark)
+                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+            else
+                _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        }
+
         public CollectionFreeformView(CollectionView parentCollection)
         {
             InitializeComponent();

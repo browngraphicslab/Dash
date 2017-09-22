@@ -85,7 +85,7 @@ namespace Dash
         private void BindFontSize(DocumentController docController, Context context)
         {
             var fontSizeController =
-                    docController.GetDereferencedField(TextingBox.FontSizeKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextingBox .FontSizeKey, context) as NumberFieldModelController;
             Debug.Assert(fontSizeController != null);
 
             var fontSizeBinding = new Binding()

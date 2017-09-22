@@ -134,6 +134,7 @@ namespace Dash
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
             }
 
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
