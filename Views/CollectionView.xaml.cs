@@ -203,7 +203,13 @@ namespace Dash
         {
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
-            (xContentControl.Content as UIElement).GetFirstDescendantOfType<ListViewBase>().SelectedItems.Clear();
+            try
+            {
+                (xContentControl.Content as UIElement).GetFirstDescendantOfType<ListViewBase>().SelectedItems.Clear();
+            } catch (Exception)
+            {
+                // bcz: this was throwing a "catastrophic exception".  Don't know why
+            }
         }
 
         private void SelectAllItems()
