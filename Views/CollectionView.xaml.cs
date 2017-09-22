@@ -65,6 +65,11 @@ namespace Dash
             }
             return cv;
         }
+
+        public void TryBindToParentDocumentSize()
+        {
+            Util.ForceBindHeightToParentDocumentHeight(this);
+        }
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -198,6 +203,7 @@ namespace Dash
         {
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
+            (xContentControl.Content as UIElement).GetFirstDescendantOfType<ListViewBase>().SelectedItems.Clear();
         }
 
         private void SelectAllItems()

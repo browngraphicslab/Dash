@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -73,16 +74,11 @@ namespace Dash
                 action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
                 MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
+        }
 
-            xList.Loaded += (s, e) =>
-            {
-                xList.GetFirstDescendantOfType<ScrollViewer>().GetFirstDescendantOfType<ScrollBar>()
-                        .ManipulationDelta +=
-                    (ss, ee) =>
-                    {
-                        ee.Handled = true;
-                    };
-            };
+        private void XList_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xList);
         }
     }
 }
