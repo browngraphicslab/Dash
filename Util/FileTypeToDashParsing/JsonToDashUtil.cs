@@ -16,60 +16,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Dash
 {
-    public class JsonToDashUtil
+    public class JsonToDashUtil : IFileParser
     {
-        static DocumentController JsonDocument = null;
-        public static DocumentController RunTests()
+        public Task<DocumentController> ParseAsync(IStorageFile item, string uniquePath)
         {
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            ParseRecipes().Wait();
-            stopwatch.Stop();
-            return JsonDocument;
-        }
-
-
-        public static async Task ParseRecipes()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/RecipeReturn.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
-        }
-
-        public static async Task ParseArrayOfObjects()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
-        }
-
-        public static async Task ParseYoutube()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "ms-appx:///Assets/youtubeJson.txt");
-        }
-
-        public static async Task ParseA()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
-            var jsonString = File.ReadAllText(file.Path);
-            //var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, file.Path);
-        }
-
-        public static async Task ParseCustomer()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, file.Path);
-        }
-
-        public static void ParseSingleItem()
-        {
-            var jsonString = @"[1,2,3]";
-            JsonDocument = Parse(jsonString, "an/example/base/path");
+            throw new NotImplementedException();
         }
 
         public static DocumentController Parse(string json, string path)
@@ -104,11 +55,7 @@ namespace Dash
 
         public static async Task<DocumentController> ParseCsv(string path)
         {
-             //var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
-             //var text = await FileIO.ReadTextAsync(file);
-
-
-             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
+            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
             var stream = await file.OpenStreamForReadAsync();
             var streamReader = new StreamReader(stream);
 
@@ -146,134 +93,8 @@ namespace Dash
             var json = JsonConvert.SerializeObject(resultDict);
             return Parse(json, path);
         }
-        /*        public static DocumentController ParseCsv(string csvString, string path)
-        {
-            var reader = new StreamReader(new FileStream(@"ms-appx:///Assets/pokemon_species.csv", FileMode.Open));
-            var csv = new CsvReader(reader);
-            csv.ReadHeader();
-            var headers = csv.FieldHeaders;
-            var records = new List<Dictionary<string, dynamic>>();
-            while (csv.Read())
-            {
-                var record = new Dictionary<string, dynamic>();
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    double double_field;
-                    string string_field;
-                    if (csv.TryGetField(i, out double_field))
-                    {
-                        record[headers[i]] = double_field;
-                    } else if (csv.TryGetField(i, out string_field))
-                    {
-                        record[headers[i]] = string_field;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Failed to get field");
-                    }
-                }
-                records.Add(record);
-            }
-            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
-            {
-               ["result"] = records,
-            };
+       
 
-            var json = JsonConvert.SerializeObject(resultDict);
-            return Parse(json,path);
-        }*/
-
-        /*
-    public async static Task<DocumentController> ParseCsv(string csvString, string path)
-    {
-        StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri(@"ms-appx:///Assets/pokemon_species.csv"));
-        using (Stream stream = (await file.OpenReadAsync()).AsStreamForRead())
-        {
-            var reader = new StreamReader(stream);
-            var csv = new CsvReader(reader);
-            csv.ReadHeader();
-            var headers = csv.FieldHeaders;
-            var records = new List<Dictionary<string, dynamic>>();
-            while (csv.Read())
-            {
-                var record = new Dictionary<string, dynamic>();
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    double double_field;
-                    string string_field;
-                    if (csv.TryGetField(i, out double_field))
-                    {
-                        record[headers[i]] = double_field;
-                    }
-                    else if (csv.TryGetField(i, out string_field))
-                    {
-                        record[headers[i]] = string_field;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Failed to get field");
-                    }
-                }
-                records.Add(record);
-            }
-            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
-            {
-                ["result"] = records,
-            };
-
-            var json = JsonConvert.SerializeObject(resultDict);
-            return Parse(json, path);
-        }
-
-    }
-
-*/
-
-
-        /*
-    public async static Task<DocumentController> ParseCsv(string csvString, string path)
-    {
-
-        var file = await ApplicationData.Current.LocalFolder.GetFileAsync("data.txt");
-        var lines = await FileIO.ReadLinesAsync(file);
-
-
-        var reader = new StreamReader(new FileStream(@"ms-appx:///Assets/pokemon_species.csv", FileMode.Open));
-        var csv = new CsvReader(reader);
-        csv.ReadHeader();
-        var headers = csv.FieldHeaders;
-        var records = new List<Dictionary<string, dynamic>>();
-        while (csv.Read())
-        {
-            var record = new Dictionary<string, dynamic>();
-            for (int i = 0; i < headers.Length; i++)
-            {
-                double double_field;
-                string string_field;
-                if (csv.TryGetField(i, out double_field))
-                {
-                    record[headers[i]] = double_field;
-                }
-                else if (csv.TryGetField(i, out string_field))
-                {
-                    record[headers[i]] = string_field;
-                }
-                else
-                {
-                    Debug.WriteLine("Failed to get field");
-                }
-            }
-            records.Add(record);
-        }
-        var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
-        {
-            ["result"] = records,
-        };
-
-        var json = JsonConvert.SerializeObject(resultDict);
-        return Parse(json, path);
-    }
-    */
         private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
             var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
@@ -434,11 +255,9 @@ namespace Dash
                 }
             }
         }
-
-       
     }
 
-    internal class DocumentSchema 
+    public class DocumentSchema 
     {
         public readonly string BasePath;
 
