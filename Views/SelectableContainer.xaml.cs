@@ -126,11 +126,13 @@ namespace Dash
             Loaded += SelectableContainer_Loaded;
             Unloaded += SelectableContainer_Unloaded;
             Tapped += CompositeLayoutContainer_Tapped;
+            DoubleTapped += CompositeLayoutContainer_DoubleTapped;
 
             var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
             var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
             xKeyNameTextBox.Text = keyName;
         }
+
 
         private void SelectableContainer_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -144,12 +146,14 @@ namespace Dash
             _parentContainer?.AddChild(this);
             InitiateManipulators();
             IsSelected = IsRoot();
+            //If the container being loaded is the root or the child of a selected container, then it is hittestvisible
+            IsHitTestVisible = IsRoot() || ParentContainer.IsSelected;
             SetEllipseVisibility();
             SetContent();
             if (IsRoot())
             {
                 OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
-            }
+            } 
             UpdateSizeMarkers(ContentElement.ActualWidth, ContentElement.ActualHeight);
         }
 
@@ -173,31 +177,58 @@ namespace Dash
         }
 
         #region Selection
+        private void CompositeLayoutContainer_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var hitElementList = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(this), this).ToList();
+            if (hitElementList.Count > 0)
+            {
+                var containerToBeSelected = hitElementList.Last();
+
+            }
+
+            e.Handled = true;
+        }
 
         private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsLowestSelected)
             {
+                SetSelectedContainer(null);
                 _parentContainer?.SetSelectedContainer(this);
-                _parentContainer?.FireSelectionChanged(this);
+                //_parentContainer?.FireSelectionChanged(this);
                 IsLowestSelected = true;
                 if (IsRoot())
                 {
-                    FireSelectionChanged(this);
+                   // FireSelectionChanged(this);
                 }
+                FireSelectionChanged(this);
+
             }
-            SetSelectedContainer(null);
-            e.Handled = true;
+           // e.Handled = true;
         }
 
         private void FireSelectionChanged(SelectableContainer selectedContainer)
         {
+            foreach (var child in _childContainers)
+            {
+                child.IsHitTestVisible = true;
+            }
+            
             OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument, selectedContainer.DataDocument);
             _parentContainer?.FireSelectionChanged(selectedContainer);
         }
 
         public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
+
+            if (layoutContainer == null && !IsRoot())
+            {
+                foreach (var child in _childContainers)
+                {
+                    child.IsHitTestVisible = false;
+                }
+            }
+
             if (_selectedLayoutContainer != null)
             {
                 _selectedLayoutContainer.IsSelected = false;
