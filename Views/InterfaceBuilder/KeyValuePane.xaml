@@ -27,7 +27,7 @@
             <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
             <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
         </Grid>
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
                   IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
@@ -44,7 +44,7 @@
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
                     <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged" Loaded="xContentGrid_Loaded">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*" MaxWidth="100"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="{Binding ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}"/> 
                         </Grid.ColumnDefinitions>

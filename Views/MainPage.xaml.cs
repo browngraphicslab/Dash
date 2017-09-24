@@ -12,9 +12,11 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Flurl;
@@ -40,9 +42,8 @@ namespace Dash
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
 
-
+        public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()
@@ -53,8 +54,11 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
+            
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
@@ -68,47 +72,24 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            test();
-            //var jsonDoc = JsonToDashUtil.RunTests();
-
-            //var sw = new Stopwatch();
-            //sw.Start();
-            //DisplayDocument(jsonDoc);
-            //sw.Stop();
-
             _radialMenu = new RadialMenuView(xCanvas);
-            xCanvas.Children.Add(_radialMenu);
-
-            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
-            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
-            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2, 2, 0, 0, 1, 1);
-            TestMatrix(2, 2, 1, 1, 1, 1);
-            TestMatrix(2, 2, 2, 2, 1, 1);
-            TestMatrix(2, 2, 4, 4, 1, 1);
-            TestMatrix(4, 4, 0, 0, 2, 2);
-            TestMatrix(4, 4, 1, 1, 2, 2);
-            TestMatrix(4, 4, 2, 2, 2, 2);
-            TestMatrix(4, 4, 4, 4, 2, 2);
+            _radialMenu.Loaded += delegate
+            {
+                _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
+            };
+            Loaded += OnLoaded;
+            //xCanvas.Children.Add(_radialMenu);
 
         }
 
-        private async Task test()
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            var csv = await JsonToDashUtil.ParseCsv("fdsafdsa");
-            DisplayDocument(csv);
-        }
-
-        private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
-        {
-            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
-            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
-            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
-            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
-            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
-
-
-
+            GlobalInkSettings.Hue = 200;
+            GlobalInkSettings.Brightness = 30;
+            GlobalInkSettings.Size = 4;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.Opacity = 1;
         }
 
         public CollectionView GetMainCollectionView()
@@ -375,7 +356,7 @@ namespace Dash
 
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var protoNumbers = new Numbers().Document;
+            var protoNumbers = new Numbers("1").Document;
             protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
             var protoLayout = protoNumbers.GetActiveLayout().Data;
             protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
@@ -385,7 +366,7 @@ namespace Dash
             Random r = new Random();
             for (int i = 0; i < 10; ++i)
             {
-                var delNumbers = protoNumbers.MakeDelegate();
+                var delNumbers = protoNumbers.MakeDelegate((i + 2).ToString());
                 //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);
@@ -397,6 +378,40 @@ namespace Dash
 
                 DisplayDocument(delNumbers);
             }
+        }
+
+        private void DocPointerReferenceOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
+            var innerDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Prototype text")
+            };
+            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
+            var dict = new Dictionary<KeyController, FieldModelController>
+            {
+                [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
+            };
+            var proto = new DocumentController(dict, DocumentType.DefaultType);
+
+            var freeform = new FreeFormDocument(new List<DocumentController>{new TextingBox(new ReferenceFieldModelController(
+                new DocumentFieldReference(proto.GetId(), KeyStore.DataKey), textKey)).Document}, new Point(0, 0), new Size(400, 400)).Document;
+            proto.SetActiveLayout(freeform, true, false);
+
+            var del1 = proto.MakeDelegate();
+            var delLayout = del1.GetActiveLayout().Data.MakeDelegate();
+            delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del1.SetActiveLayout(delLayout, true, false);
+
+            var innerDelDict = new Dictionary<KeyController, FieldModelController>
+            {
+                [textKey] = new TextFieldModelController("Delegate 1 text")
+            };
+            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
+            del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
+
+            DisplayDocument(proto);
+            DisplayDocument(del1);
         }
     }
 }

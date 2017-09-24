@@ -122,7 +122,7 @@ namespace Dash
                 }
             }
 
-            if (allText.TrimEnd('\r') != GetText().ReadableString.TrimEnd('\r'))
+            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
             {
                 string allRtfText;
                 xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);

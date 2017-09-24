@@ -40,7 +40,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Text
+            Freeform, List, Grid, Page, Text
         }
 
         private CollectionViewType _viewType;
@@ -53,7 +53,23 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
+        public static CollectionView GetParentCollectionView(DependencyObject sender)
+        {
+            var item = VisualTreeHelper.GetParent(sender);
+            var cv = item as CollectionView;
+            while (item != null && !(item is CollectionView))
+            {
+                item = VisualTreeHelper.GetParent(item);
+                if (item is CollectionView)
+                    cv = item as CollectionView;
+            }
+            return cv;
+        }
 
+        public void TryBindToParentDocumentSize()
+        {
+            Util.ForceBindHeightToParentDocumentHeight(this);
+        }
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -76,6 +92,9 @@ namespace Dash
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
+                    break;
+                case CollectionViewType.Page:
+                    CurrentView = new CollectionPageView();
                     break;
                 case CollectionViewType.List:
                     CurrentView = new CollectionListView();
@@ -154,6 +173,12 @@ namespace Dash
             CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
         }
+        private void SetBrowseView()
+        {
+            if (CurrentView is CollectionPageView) return;
+            CurrentView = new CollectionPageView();
+            xContentControl.Content = CurrentView;
+        }
 
         private void SetGridView()
         {
@@ -178,6 +203,13 @@ namespace Dash
         {
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
+            try
+            {
+                (xContentControl.Content as UIElement).GetFirstDescendantOfType<ListViewBase>().SelectedItems.Clear();
+            } catch (Exception)
+            {
+                // bcz: this was throwing a "catastrophic exception".  Don't know why
+            }
         }
 
         private void SelectAllItems()
@@ -240,6 +272,7 @@ namespace Dash
             var noSelection = new Action(MakeSelectionModeNone);
             var selectAll = new Action(SelectAllItems);
             var setGrid = new Action(SetGridView);
+            var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
@@ -252,7 +285,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))

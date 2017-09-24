@@ -21,6 +21,8 @@ namespace Dash
             return GetDocumentController(context)?.GetId();
         }
 
+        public abstract FieldReference Copy();
+
         public abstract DocumentController GetDocumentController(Context context);
 
         /// <summary>

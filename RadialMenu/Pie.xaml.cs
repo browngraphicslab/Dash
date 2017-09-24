@@ -238,7 +238,7 @@ namespace RadialMenuControl.UserControl
                 PieSlices.Add(pieSlice);
                 startAngle += sliceSize;
             }
-
+            SourceRadialMenu.FireMenuOpenedOrClosed(true);
             FindSelectedPieSlice();
         }
 

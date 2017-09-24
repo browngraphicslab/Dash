@@ -20,6 +20,16 @@ namespace Dash
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
+        public void ChangeFieldDoc(string docId)
+        {
+            var docController = ReferenceFieldModel.Reference.GetDocumentController(null);
+            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            if (ReferenceFieldModel.Reference is DocumentFieldReference)
+                (ReferenceFieldModel.Reference as DocumentFieldReference).DocumentId = docId;
+            var docController2 = ReferenceFieldModel.Reference.GetDocumentController(null);
+            docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+        }
+
         public ReferenceFieldModelController(string documentId, KeyController fieldKey) : this(
             new DocumentFieldReference(documentId, fieldKey))
         { }
@@ -31,7 +41,7 @@ namespace Dash
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Reference, args.Action), args.Context);
+            OnFieldModelUpdated(args.FieldArgs, args.Context);
         }
 
         public override void Dispose()
@@ -107,7 +117,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new ReferenceFieldModelController(FieldReference);
+            return new ReferenceFieldModelController(FieldReference.Copy());
         }
         public override object GetValue(Context context)
         {

@@ -85,7 +85,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            throw new NotImplementedException();
+            return new InkFieldModelController(InkData);
         }
 
         public override FieldModelController GetDefaultController()
@@ -112,8 +112,8 @@ namespace Dash
                 await outputStream.FlushAsync();
             }
             InkData = JsonConvert.SerializeObject(stream.ToArray());
-            _redoStack.Clear();
-            _undoStack.Push(InkData);
+            //_redoStack.Clear();
+            //_undoStack.Push(InkData);
             stream.Dispose();
             var args = new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Update);
             OnFieldModelUpdated(args);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Controllers.Operators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,6 +18,7 @@ namespace Dash
             AddOperator<IntersectionOperatorModelController>("Intersection", "∩");
             AddOperator<UnionOperatorFieldModelController>("Union", "∪");
             AddOperator<ZipOperatorFieldController>("Zip");
+            AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentModel.CreateDBFilterDocumentController, "⊇");
             AddOperator<ConcatOperator>("Concat");
             AddOperator<DocumentAppendOperatorController>("Append");
             AddOperator<ImageOperatorFieldModelController>("UriToImage", "◑");
