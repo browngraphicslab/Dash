@@ -57,16 +57,11 @@
             </StackPanel>
         </Grid>
 
+        
         <!--canvas to hold the document view menu-->
         <Canvas x:Name="xMenuCanvas" Grid.Column="1">
-            <Rectangle x:Name="xDelegateDiamond" Width="25" Height="25" Stroke="Black" Canvas.Left="30" Canvas.Top="290" Visibility="Collapsed"
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}">
-                <Rectangle.RenderTransform>
-                    <RotateTransform Angle="45"></RotateTransform>
-                </Rectangle.RenderTransform>
-            </Rectangle>
+            
         </Canvas>
-                       <!--Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={local: BoolToBrushConverter}}"-->
 
         <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
@@ -101,5 +96,18 @@
             </Button>
         </Grid>
         <ProgressRing x:Name="xProgressRing" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
+
+
+
+        <Canvas x:Name="xIndicationCanvas" Grid.Column="0">
+            <Rectangle x:Name="xDelegateDiamond" Width="25" Height="25" Stroke="Gray" Canvas.Left="10" Canvas.Top="30" 
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"
+                       Visibility="{Binding Path=DocumentController.HasPrototype, ConverterParameter={Binding Path=DocumentController.HasDelegates}, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                >
+                <Rectangle.RenderTransform>
+                    <RotateTransform Angle="45"></RotateTransform>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+        </Canvas>
     </Grid>
 </local:SelectionElement>

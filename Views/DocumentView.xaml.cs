@@ -203,39 +203,8 @@ namespace Dash
             xMenuCanvas.Children.Add(_docMenu);
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
-
-            makeDelegateDiamond(); 
         }
         
-        //public class BoolToBrushConverter : IValueConverter
-        //{
-        //    public object Convert(object value, Type targetType, object parameter, string language)
-        //    {
-        //        Debug.WriteLine("wyyyyy " + (bool)value); 
-        //        return (bool)value ? new SolidColorBrush(Colors.Violet) : new SolidColorBrush(Colors.Red); 
-        //    }
-
-        //    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-        //}
-
-        
-       
-        private void makeDelegateDiamond()
-        {
-            //    var colorBinding = new Binding
-            //    {
-            //        Source = ViewModel.DocumentController,
-            //        Path = new PropertyPath("HasPrototype"),
-            //        Mode = BindingMode.OneWay,
-            //        Converter = new BoolToBrushConverter()
-            //    };
-            //    xDelegateDiamond.SetBinding(BackgroundProperty, colorBinding);
-        }
-
-
         private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move)
@@ -576,7 +545,6 @@ namespace Dash
                     SetUpMenu();
                 }
                 ViewModel?.OpenMenu();
-                xDelegateDiamond.Visibility = ViewModel.ConvertTwoBoolToVisibility(); 
                 _docMenu.AddAndPlayOpenAnimation();
             }
             else
