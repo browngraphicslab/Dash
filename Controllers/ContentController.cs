@@ -56,8 +56,8 @@ namespace Dash
                 {
                     return controller as TControllerType;
                 }
-                Debug.Assert(false,
-                    "The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
+                //Debug.Assert(false,
+                    //"The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
             }
             //Debug.Assert(false, "No controller exists with the passed in id");
             return null;
