@@ -54,6 +54,17 @@ namespace Dash
         private ManipulationControls _centerManipulator;
         private bool _isLoaded;
 
+        public bool IsParentSelected
+        {
+            get
+            {
+                if (_parentContainer == null)
+                {
+                    return true;
+                }
+                return _parentContainer.IsSelected;
+            }
+        }
         public FrameworkElement ContentElement
         {
             get { return _contentElement; }
@@ -169,7 +180,7 @@ namespace Dash
             if (XLayoutDisplay == null || !_isLoaded) return;
             XLayoutDisplay.Content = ContentElement;
 
-            //ContentElement.IsHitTestVisible = IsSelected;
+            ContentElement.IsHitTestVisible = IsSelected;
         }
 
         #region Selection
