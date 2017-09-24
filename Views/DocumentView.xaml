@@ -16,14 +16,14 @@
     ManipulationMode="{Binding ManipulationMode}"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped">
-    
+
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
         <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter"/>
     </UserControl.Resources>
-    
+
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue">
@@ -34,7 +34,8 @@
 
         <!--drop shadow ui elements-->
         <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-        <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#99FFFFFF"/> <!--Fill="{StaticResource TranslucentWhite}"-->
+        <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#99FFFFFF"/>
+        <!--Fill="{StaticResource TranslucentWhite}"-->
 
         <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
             <TextBox x:Name="xDocumentDisplay" Text="{Binding DisplayName}" ></TextBox>
@@ -54,10 +55,18 @@
                      Background="Transparent" Text="{Binding DisplayName}" BorderThickness="0"/>
             </StackPanel>
         </Grid>
-        
+
         <!--canvas to hold the document view menu-->
-        <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
-        
+        <Canvas x:Name="xMenuCanvas" Grid.Column="1">
+            <Rectangle x:Name="xDelegateDiamond" Width="25" Height="25" Stroke="Black" Canvas.Left="30" Canvas.Top="290" Visibility="Collapsed"
+                       Fill="Brown">
+                <Rectangle.RenderTransform>
+                    <RotateTransform Angle="45"></RotateTransform>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+        </Canvas>
+                       <!--Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={local: BoolToBrushConverter}}"-->
+
         <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
             <!-- Container for document fields view -->
@@ -70,7 +79,8 @@
                         <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
-                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" /> <!--IsHitTestVisible="{Binding IsSelected}"-->
+                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" />
+                <!--IsHitTestVisible="{Binding IsSelected}"-->
             </Grid>
             <!-- Dragger Button-->
             <Button x:Name="DraggerButton"

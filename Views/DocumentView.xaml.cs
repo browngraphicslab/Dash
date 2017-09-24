@@ -207,11 +207,12 @@ namespace Dash
             makeDelegateDiamond(); 
         }
         
-        private class BoolToBrushConverter : IValueConverter
+        public class BoolToBrushConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, string language)
             {
-                return (bool)value ? new SolidColorBrush(Colors.Transparent) : new SolidColorBrush(Colors.Violet); 
+                Debug.WriteLine("wyyyyy " + (bool)value); 
+                return (bool)value ? new SolidColorBrush(Colors.Violet) : new SolidColorBrush(Colors.Red); 
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -220,43 +221,20 @@ namespace Dash
             }
         }
 
+        
+       
         private void makeDelegateDiamond()
         {
-            Debug.WriteLine("THE THING HAS DELEGATES? " + ViewModel.DocumentController.HasDelegates); 
-
-            _delegateDiamond.Width = 30;
-            _delegateDiamond.Height = 30;
-            _delegateDiamond.Stroke = new SolidColorBrush(Colors.Black);
-            //_delegateDiamond.Fill = new SolidColorBrush(Colors.Transparent);
-
-            var visibilityBinding = new Binding // actually... this should bind to HasPrototype || HasDelegate 
+            var colorBinding = new Binding
             {
                 Source = ViewModel.DocumentController,
                 Path = new PropertyPath("HasPrototype"),
                 Mode = BindingMode.OneWay,
-                Converter = new BoolToVisibilityConverter()
+                Converter = new BoolToBrushConverter()
             };
-            _delegateDiamond.SetBinding(VisibilityProperty, visibilityBinding);
-
-            var colorBindinng = new Binding
-            {
-                Source = ViewModel.DocumentController,
-                Path = new PropertyPath("HasDelegates"), 
-                Mode = BindingMode.OneWay, 
-                Converter = new BoolToBrushConverter() // TODO make this 
-            };
-            //_delegateDiamond.SetBinding(BackgroundProperty, colorBindinng);
-
-            var rotate = new RotateTransform { Angle = 45 };
-            _delegateDiamond.RenderTransform = rotate; 
-
-            xMenuCanvas.Children.Add(_delegateDiamond);
-
-            Canvas.SetTop(_delegateDiamond, 250);
-            Canvas.SetLeft(_delegateDiamond, 30);
+            xDelegateDiamond.SetBinding(BackgroundProperty, colorBinding);
         }
 
-        private Rectangle _delegateDiamond = new Rectangle(); 
 
         private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
         {
@@ -598,6 +576,7 @@ namespace Dash
                     SetUpMenu();
                 }
                 ViewModel?.OpenMenu();
+                xDelegateDiamond.Visibility = ViewModel.ConvertTwoBoolToVisibility(); 
                 _docMenu.AddAndPlayOpenAnimation();
             }
             else

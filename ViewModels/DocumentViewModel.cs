@@ -429,6 +429,10 @@ namespace Dash
             MenuOpen = true;
         }
 
+        public Visibility ConvertTwoBoolToVisibility()
+        {
+            return (DocumentController.HasDelegates || DocumentController.HasPrototype) ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {

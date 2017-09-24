@@ -16,19 +16,18 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
-        private bool _hasDelegates; 
-        public bool HasDelegates
-        {
-            get { return _hasDelegates = _fields.ContainsKey(KeyStore.DelegatesKey); }
-            set { _hasDelegates = value; }
+        public bool HasDelegates {
+            get {
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
+                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+                : null;
+
+                if (currentDelegates == null) return false;
+                return currentDelegates.Data.Count() > 0;
+            }
         }
 
-        private bool _hasPrototype;
-        public bool HasPrototype
-        {
-            get { return _hasPrototype = _fields.ContainsKey(KeyStore.PrototypeKey); }
-            set { _hasPrototype = value; }
-        }
+        public bool HasPrototype { get { return _fields.ContainsKey(KeyStore.PrototypeKey); } }
 
         public enum FieldUpdatedAction
         {
@@ -748,7 +747,6 @@ namespace Dash
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
             }
-            _hasDelegates = true; 
             return currentDelegates;
         }
 
