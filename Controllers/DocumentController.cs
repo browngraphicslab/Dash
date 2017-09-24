@@ -903,11 +903,11 @@ namespace Dash
                             new CollectionView(
                                 new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key),
                                     isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
-                        colView.HorizontalAlignment = HorizontalAlignment.Stretch;
-                        colView.VerticalAlignment = VerticalAlignment.Stretch;
-                        colView.Height = 300;
+                        //colView.Height = 300;
 
                         sp.Children.Add(colView);
+                        colView.TryBindToParentDocumentSize();
+
                         //source.Add(border);
                     }
                 };

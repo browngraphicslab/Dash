@@ -49,7 +49,9 @@
                          To="-55" Duration="0:0:0.075"/>
                 </Storyboard>
             </StackPanel.Resources>
-            <Border Tapped="Border_Tapped" HorizontalAlignment="Right" Padding="8,15" VerticalAlignment="Center" Background="#FF303030">
+            
+            <!-- fixed document menu -->
+                <Border Visibility="Collapsed" Tapped="Border_Tapped" HorizontalAlignment="Right" Padding="8,15" VerticalAlignment="Center" Background="#FF303030">
                 <Image Source="ms-appx:///Assets/docmenu.png" Stretch="None" Opacity=".75"></Image>
             </Border>
             <ScrollViewer x:Name="xMenuCanvas" RelativePanel.AlignVerticalCenterWithPanel="True" Width="55" Margin="0" Padding="0" Background="#CC0850A0"  HorizontalAlignment="Right"  VerticalAlignment="Center" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5">

@@ -13,7 +13,7 @@
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList" ItemsSource="{x:Bind ListContent}">
+        <ListView x:Name="xList" Loaded="XList_OnLoaded"  ItemsSource="{x:Bind ListContent}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>

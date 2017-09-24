@@ -112,6 +112,15 @@
     <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
     <Compile Include="Util\FileDropHelper.cs" />
+    <Compile Include="Views\DBFilterChart.xaml.cs">
+      <DependentUpon>DBFilterChart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChartBar.xaml.cs">
+      <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\InterfaceBuilderDocumentIcon.xaml.cs">
+      <DependentUpon>InterfaceBuilderDocumentIcon.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
     </Compile>
@@ -551,6 +560,18 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\InterfaceBuilderDocumentIcon.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -41,7 +41,7 @@
     <Application.Resources>
         <!-- NUMBERS, THICKNESSES --> 
         <x:Double x:Key="DocumentOpacity">.8</x:Double>
-        <x:Double x:Key="DefaultFontSize">11</x:Double>
+        <x:Double x:Key="DefaultFontSize">12</x:Double>
         <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
         <!-- COLORS -->
