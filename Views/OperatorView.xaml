@@ -42,7 +42,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Foreground="{StaticResource MainTextColor}" Grid.Column="1"  Margin="-10,0,0,0" 
+                            <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" 
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
@@ -65,7 +65,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,5,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,-10,0" Foreground="{StaticResource MainTextColor}" 
+                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,-10,0"  
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
