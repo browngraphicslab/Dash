@@ -207,32 +207,32 @@ namespace Dash
             makeDelegateDiamond(); 
         }
         
-        public class BoolToBrushConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                Debug.WriteLine("wyyyyy " + (bool)value); 
-                return (bool)value ? new SolidColorBrush(Colors.Violet) : new SolidColorBrush(Colors.Red); 
-            }
+        //public class BoolToBrushConverter : IValueConverter
+        //{
+        //    public object Convert(object value, Type targetType, object parameter, string language)
+        //    {
+        //        Debug.WriteLine("wyyyyy " + (bool)value); 
+        //        return (bool)value ? new SolidColorBrush(Colors.Violet) : new SolidColorBrush(Colors.Red); 
+        //    }
 
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
-        }
+        //    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        //    {
+        //        throw new NotImplementedException();
+        //    }
+        //}
 
         
        
         private void makeDelegateDiamond()
         {
-            var colorBinding = new Binding
-            {
-                Source = ViewModel.DocumentController,
-                Path = new PropertyPath("HasPrototype"),
-                Mode = BindingMode.OneWay,
-                Converter = new BoolToBrushConverter()
-            };
-            xDelegateDiamond.SetBinding(BackgroundProperty, colorBinding);
+            //    var colorBinding = new Binding
+            //    {
+            //        Source = ViewModel.DocumentController,
+            //        Path = new PropertyPath("HasPrototype"),
+            //        Mode = BindingMode.OneWay,
+            //        Converter = new BoolToBrushConverter()
+            //    };
+            //    xDelegateDiamond.SetBinding(BackgroundProperty, colorBinding);
         }
 
 

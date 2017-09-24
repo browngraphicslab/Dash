@@ -22,6 +22,7 @@
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
         <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter"/>
+        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
     </UserControl.Resources>
 
     <!-- Main document view -->
@@ -59,7 +60,7 @@
         <!--canvas to hold the document view menu-->
         <Canvas x:Name="xMenuCanvas" Grid.Column="1">
             <Rectangle x:Name="xDelegateDiamond" Width="25" Height="25" Stroke="Black" Canvas.Left="30" Canvas.Top="290" Visibility="Collapsed"
-                       Fill="Brown">
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}">
                 <Rectangle.RenderTransform>
                     <RotateTransform Angle="45"></RotateTransform>
                 </Rectangle.RenderTransform>
