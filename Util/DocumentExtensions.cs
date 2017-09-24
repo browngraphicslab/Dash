@@ -273,7 +273,7 @@ namespace Dash
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.ThisKey))
-                    fields[kvp.Key] = new DocumentFieldModelController(doc);
+                    fields[kvp.Key] = new DocumentFieldModelController(copy);
                 else if (excludeKeys.Contains(kvp.Key))
                     fields[kvp.Key] = kvp.Value.Copy();
                 else if (kvp.Value is DocumentFieldModelController)
