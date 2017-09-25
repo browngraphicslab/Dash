@@ -14,7 +14,7 @@ namespace Dash
 {
     public class PdfToDashUtil : IFileParser
     {
-        public async Task<DocumentController> ParseAsync(IStorageFile item, string uniquePath)
+        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath=null)
         {
             //var where = sender is CollectionFreeformView ?
             //    Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :

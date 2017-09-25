@@ -150,10 +150,17 @@ namespace Dash
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
             if (sourceIsFileSystem)
             {
-                await FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                try
+                {
+                    await FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                }
             }
 
-            else if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0)

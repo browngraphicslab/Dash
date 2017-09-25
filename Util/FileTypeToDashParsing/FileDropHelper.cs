@@ -174,7 +174,12 @@ namespace Dash
                 foreach (var file in files)
                 {
                     var fileType = GetSupportedFileType(file);
-                    var documentController = ParseFile(fileType, file, where);
+                    var documentController = await ParseFileAsync(fileType, file, where);
+                    if (documentController != null)
+                    {
+                        documentController.GetPositionField().Data = where;
+                        collectionViewModel.AddDocument(documentController, null);
+                    }
                 }
             }
             else
@@ -183,27 +188,19 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        ///     Parses the file of the passed in type
-        /// </summary>
-        /// <param name="fileType"></param>
-        /// <param name="storageItem"></param>
-        /// <param name="where"></param>
-        /// <returns></returns>
-        private static async Task<DocumentController> ParseFile(FileType fileType, IStorageFile storageItem, Point where)
+        // TODO comment this method - LM
+        private static async Task<DocumentController> ParseFileAsync(FileType fileType, IStorageFile file, Point where)
         {
             switch (fileType)
             {
                 case FileType.Ppt:
-                    return await new PptToDashUtil().ParseAsync(storageItem, "TODO GET UNIQUE PATH");
+                    return null;//await new PptToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Json:
-                    return await new JsonToDashUtil().ParseAsync(storageItem, "TODO GET A UNIQUE PATH");
-                    break;
+                    return await new JsonToDashUtil().ParseFileAsync(file);
                 case FileType.Csv:
-                    break;
+                    return await new CsvToDashUtil().ParseFileAsync(file);
                 case FileType.Pdf:
-                    return await new PdfToDashUtil().ParseAsync(storageItem, "TODO GET A UNIQUE PATH");
-                    break;
+                    return null;//await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
             }
             throw new NotImplementedException("We need to implement the proper parser!");
         }
@@ -279,6 +276,4 @@ namespace Dash
             }
         }
     }
-}
-
 }

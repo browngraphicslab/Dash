@@ -171,7 +171,7 @@ namespace Dash
             var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
-            var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));
+            var responseAsDocument = new JsonToDashUtil().ParseJsonString(tweetsByUser, tweetsByUserURL.ToString(true));
             DisplayDocument(responseAsDocument);
 
         }

@@ -112,8 +112,12 @@
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
-    <Compile Include="Util\FileDropHelper.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\IFileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
     <Compile Include="Views\DBFilterChart.xaml.cs">
       <DependentUpon>DBFilterChart.xaml</DependentUpon>
     </Compile>

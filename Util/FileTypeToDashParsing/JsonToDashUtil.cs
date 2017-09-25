@@ -18,84 +18,49 @@ namespace Dash
 {
     public class JsonToDashUtil : IFileParser
     {
-        public Task<DocumentController> ParseAsync(IStorageFile item, string uniquePath)
+        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath=null)
         {
-            throw new NotImplementedException();
+            var text = await FileIO.ReadTextAsync(item);
+            return ParseJsonString(text, item.Path);
         }
 
-        public static DocumentController Parse(string json, string path)
+        public DocumentController ParseJsonString(string json, string path)
         {
             var jtoken = JToken.Parse(json);
             var newSchema = new DocumentSchema(path);
             return ParseRoot(jtoken, newSchema);
         }
 
-        private static DocumentController ParseRoot(JToken jtoken, DocumentSchema schema)
+        /// <summary>
+        /// Parses the root of the Json object, this will recursively parse the rest of the json object
+        /// </summary>
+        /// <param name="jtoken"></param>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        private DocumentController ParseRoot(JToken jtoken, DocumentSchema schema)
         {
+            // if the root is an object parse the object
             if (jtoken.Type == JTokenType.Object)
             {
                 var obj = ParseObject(jtoken, schema);
                 return obj;
             }
-            else
-            {
-                var key = schema.GetKey(jtoken);
-                var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
-                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyController, FieldModelController>{[key]=field});
-
-                // wrap the field in an instance of the prototype
-                var protoInstance = schema.Prototype.MakeDelegate();
-                protoInstance.SetField(key, field, true);
-
-                SetDefaultsOnActiveLayout(schema, protoInstance);
-                return protoInstance;
-            }
-        }
 
 
-        public static async Task<DocumentController> ParseCsv(string path)
-        {
-            var file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/pokemon_species.csv"));
-            var stream = await file.OpenStreamForReadAsync();
-            var streamReader = new StreamReader(stream);
+            var key = schema.GetKey(jtoken);
+            var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
+            SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyController, FieldModelController>{[key]=field});
 
-            var csv = new CsvReader(streamReader);
-            csv.ReadHeader();
-            var headers = csv.FieldHeaders;
-            var records = new List<Dictionary<string, dynamic>>();
-            while (csv.Read())
-            {
-                var record = new Dictionary<string, dynamic>();
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    double double_field;
-                    string string_field;
-                    if (csv.TryGetField(i, out double_field))
-                    {
-                        record[headers[i]] = double_field;
-                    }
-                    else if (csv.TryGetField(i, out string_field))
-                    {
-                        record[headers[i]] = string_field;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Failed to get field");
-                    }
-                }
-                records.Add(record);
-            }
-            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
-            {
-                ["result"] = records,
-            };
+            // wrap the field in an instance of the prototype
+            var protoInstance = schema.Prototype.MakeDelegate();
+            protoInstance.SetField(key, field, true);
 
-            var json = JsonConvert.SerializeObject(resultDict);
-            return Parse(json, path);
+            SetDefaultsOnActiveLayout(schema, protoInstance);
+            return protoInstance;
         }
        
 
-        private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
+        private void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
             var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
             protoInstance.SetActiveLayout(activeLayout, true, false);
@@ -103,7 +68,7 @@ namespace Dash
             activeLayout.SetFields(defaultLayoutFields, true);
         }
 
-        private static FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
+        private FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
         {
             if (jtoken.Type == JTokenType.Object)
             {
@@ -124,7 +89,7 @@ namespace Dash
             }
         }
 
-        private static DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
+        private DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
         {
             var jObject = jtoken as JObject;
 
@@ -147,7 +112,7 @@ namespace Dash
             return protoInstance;
         }
 
-        private static FieldModelController ParseArray(JToken jtoken, DocumentSchema schema)
+        private FieldModelController ParseArray(JToken jtoken, DocumentSchema schema)
         {
             var jArray = jtoken as JArray;
 
@@ -200,7 +165,7 @@ namespace Dash
             throw new NotImplementedException(" we don't support arrays of documents and values");
         }
 
-        private static FieldModelController ParseValue(JToken jtoken)
+        private FieldModelController ParseValue(JToken jtoken)
         {
             try
             {
@@ -231,7 +196,7 @@ namespace Dash
             }
         }
 
-        private static FieldModelController ParseText(string text)
+        private FieldModelController ParseText(string text)
         {
             string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
             foreach (var ext in _imageExtensions)
@@ -244,7 +209,7 @@ namespace Dash
             return new TextFieldModelController(text);
         }
 
-        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldModelController> fields)
+        private void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldModelController> fields)
         {
             foreach (var field in fields)
             {
@@ -257,6 +222,9 @@ namespace Dash
         }
     }
 
+    /// <summary>
+    /// Essentially a utility class for maintaining a single prototype over a collection of documents that are parsed
+    /// </summary>
     public class DocumentSchema 
     {
         public readonly string BasePath;
