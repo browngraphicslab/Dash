@@ -48,11 +48,16 @@ namespace Dash
 
             var stack = new StackPanel() { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top };
             var opView = new OperatorView { DataContext = opfmc.FieldReference, OperatorContent = stack };
-            var chart = new Dash.DBFilterChart() { Width = 200, Height = 250, NumberBars = 4, OpDoc = opDoc };
+            var chart = new Dash.DBFilterChart() { Width = 250, Height = 250, OpDoc = opDoc };
             stack.Children.Add(chart);
            
 
-            opDoc.DocumentFieldUpdated += (sender, args) => chart.UpdateChart();
+            opDoc.DocumentFieldUpdated += (sender, args) =>
+            {
+                var opFieldModelController = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                if (opFieldModelController.Outputs.ContainsKey(args.Reference.FieldKey))
+                    chart.OperatorOutputChanged(args.Context);
+            };
 
             if (isInterfaceBuilderLayout)
                 return new SelectableContainer(opView, docController);

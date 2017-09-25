@@ -217,7 +217,7 @@ namespace Dash
                     }
                 }
             }
-            else
+            else if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
                 var items = e.DataView?.Properties.ContainsKey("DocumentControllerList") == true ?                  
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;

@@ -27,8 +27,12 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Found:" FontSize="9"></TextBlock>
                 <TextBlock x:Name="xFound" x:FieldModifier="public" FontSize="9" Text="x"/>
+                <TextBlock Text="Avg:" FontSize="9" />
+                <TextBlock x:Name="xAvg" x:FieldModifier="public" FontSize="9" Text="x"/>
             </StackPanel>
-            <Button FontSize="10" HorizontalAlignment="Right" Click="Button_Click"  >Auto Fit</Button>
+            <Grid HorizontalAlignment="Right" Width="70" >
+                <CheckBox x:Name="xAutoFit" FontSize="10">Auto Fit</CheckBox>
+            </Grid>
             <Line StrokeThickness="3" Stroke="Black" X1="0" Y1="0" X2="{Binding ElementName=LineGrid,Path=ActualWidth}" Y2="0"></Line>
         </Grid>
     </Grid>

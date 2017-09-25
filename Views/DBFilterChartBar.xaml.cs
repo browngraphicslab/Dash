@@ -25,10 +25,21 @@ namespace Dash
             this.InitializeComponent();
         }
 
+        public int BucketIndex { get; set; }
 
         public DBFilterChart FilterChart { get; set; }
 
-        public double MaxDomain { get; set; } = 0;
+        double _maxDomain = 0;
+        public double MaxDomain
+        {
+            get { return _maxDomain; }
+            set
+            {
+                _maxDomain = value;
+                if (xDomain.Text != _maxDomain.ToString())
+                    xDomain.Text = _maxDomain.ToString();
+            }
+        }
 
         public double ItemCount { get; set; } = 0;
 
@@ -37,10 +48,11 @@ namespace Dash
             double result;
             if (double.TryParse(xDomain.Text, out result))
             {
-                MaxDomain = result;
-                FilterChart.UpdateChart();
+                if (result != MaxDomain)
+                {
+                    FilterChart.UpdateBucket(BucketIndex, result);
+                }
             }
-            FilterChart.UpdateFilter();
         }
 
         public bool IsSelected { get; set; }
@@ -51,7 +63,7 @@ namespace Dash
                 xBar.Background = new SolidColorBrush(Colors.Salmon);
             else xBar.Background = new SolidColorBrush(Colors.SteelBlue);
             IsSelected = ((xBar.Background as SolidColorBrush)?.Color == Colors.Salmon);
-            FilterChart.UpdateFilter();
+            FilterChart.UpdateSelection(BucketIndex, IsSelected);
         }
     }
 }
