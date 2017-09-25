@@ -22,26 +22,26 @@ namespace Dash
         public bool Required { get; set; }
         public bool Displayed { get; set; }
 
-        public KeyController Key { get; set; }
+        public KeyControllerBase Key { get; set; }
     }
 
     public class ApiOperatorController : OperatorFieldModelController
     {
         public static readonly DocumentType ApiType = new DocumentType("478628DA-AB98-4402-B827-F8CB625D4233", "Api");
 
-        public static readonly KeyController UrlKey = new KeyController("662E0839-51A7-4FBA-8BF8-BAE5FE92F701", "Url");
-        public static readonly KeyController AuthUrlKey = new KeyController("60159AFB-ADAE-414B-A47B-F9F3272C8681", "Auth Url");
-        public static readonly KeyController MethodKey = new KeyController("FBB7AE95-CD1C-4C69-A602-4F2BC2B78A3E", "Method");
-        public static readonly KeyController AuthMethodKey = new KeyController("2AA724ED-C282-46AC-A844-053F42A6748F", "Auth Method");
+        public static readonly KeyControllerBase UrlKey = new KeyControllerBase("662E0839-51A7-4FBA-8BF8-BAE5FE92F701", "Url");
+        public static readonly KeyControllerBase AuthUrlKey = new KeyControllerBase("60159AFB-ADAE-414B-A47B-F9F3272C8681", "Auth Url");
+        public static readonly KeyControllerBase MethodKey = new KeyControllerBase("FBB7AE95-CD1C-4C69-A602-4F2BC2B78A3E", "Method");
+        public static readonly KeyControllerBase AuthMethodKey = new KeyControllerBase("2AA724ED-C282-46AC-A844-053F42A6748F", "Auth Method");
 
-        public static readonly KeyController AuthSecretKey = new KeyController("1CBC001E-6536-4B3C-B870-4682DFEB4158", "Auth Secret");
-        public static readonly KeyController AuthKeyKey = new KeyController("564F0A13-4DDD-4446-B8D9-21AA206B62BF", "Auth Key");
+        public static readonly KeyControllerBase AuthSecretKey = new KeyControllerBase("1CBC001E-6536-4B3C-B870-4682DFEB4158", "Auth Secret");
+        public static readonly KeyControllerBase AuthKeyKey = new KeyControllerBase("564F0A13-4DDD-4446-B8D9-21AA206B62BF", "Auth Key");
 
-        public static readonly KeyController OutputKey = new KeyController("EF1C2E17-3AD2-4780-8219-F4EAC683979D", "Output Document");
+        public static readonly KeyControllerBase OutputKey = new KeyControllerBase("EF1C2E17-3AD2-4780-8219-F4EAC683979D", "Output Document");
 
-        public static readonly KeyController TestKey = new KeyController("51BD8321-C685-43E2-837A-F287421BF7D3", "Output Test");
-        public static readonly KeyController Test2Key = new KeyController("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
-        public static readonly KeyController Test3Key = new KeyController("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
+        public static readonly KeyControllerBase TestKey = new KeyControllerBase("51BD8321-C685-43E2-837A-F287421BF7D3", "Output Test");
+        public static readonly KeyControllerBase Test2Key = new KeyControllerBase("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
+        public static readonly KeyControllerBase Test3Key = new KeyControllerBase("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
 
         public ApiOperatorController() : base(new OperatorFieldModel("api"))
         {
@@ -55,7 +55,7 @@ namespace Dash
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ApiOperatorController(this);
         }
@@ -68,7 +68,7 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
         {
             [UrlKey] = new IOInfo(TypeInfo.Text, true),
             [MethodKey] = new IOInfo(TypeInfo.Text, true),
@@ -78,20 +78,20 @@ namespace Dash
             [AuthSecretKey] = new IOInfo(TypeInfo.Text, false)
         };
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
         {
             [OutputKey] = TypeInfo.Document
         };
 
-        public ObservableDictionary<KeyController, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
-        public ObservableDictionary<KeyController, ApiParameter> Headers { get; } = new ObservableDictionary<KeyController, ApiParameter>();
-        public ObservableDictionary<KeyController, ApiParameter> AuthParameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
-        public ObservableDictionary<KeyController, ApiParameter> AuthHeaders { get; } = new ObservableDictionary<KeyController, ApiParameter>();
+        public ObservableDictionary<KeyControllerBase, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyControllerBase, ApiParameter>();
+        public ObservableDictionary<KeyControllerBase, ApiParameter> Headers { get; } = new ObservableDictionary<KeyControllerBase, ApiParameter>();
+        public ObservableDictionary<KeyControllerBase, ApiParameter> AuthParameters { get; } = new ObservableDictionary<KeyControllerBase, ApiParameter>();
+        public ObservableDictionary<KeyControllerBase, ApiParameter> AuthHeaders { get; } = new ObservableDictionary<KeyControllerBase, ApiParameter>();
 
         public void AddParameter(ApiParameter parameter)
         {
             int index = Parameters.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
+            KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
             parameter.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             Parameters[key] = parameter;
@@ -105,7 +105,7 @@ namespace Dash
         public void AddHeader(ApiParameter header)
         {
             int index = Headers.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
+            KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
             header.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             Headers[key] = header;
@@ -119,7 +119,7 @@ namespace Dash
         public void AddAuthParameter(ApiParameter parameter)
         {
             int index = AuthParameters.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
+            KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
             parameter.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             AuthParameters[key] = parameter;
@@ -133,7 +133,7 @@ namespace Dash
         public void AddAuthHeader(ApiParameter header)
         {
             int index = AuthHeaders.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
+            KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
             header.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             AuthHeaders[key] = header;
@@ -158,12 +158,12 @@ namespace Dash
             throw new ArgumentException();
         }
 
-        private bool BuildParamList(Dictionary<KeyController, FieldModelController> inputs, IDictionary<KeyController, ApiParameter> parameters,
+        private bool BuildParamList(Dictionary<KeyControllerBase, FieldControllerBase> inputs, IDictionary<KeyControllerBase, ApiParameter> parameters,
             List<KeyValuePair<string, string>> outParameters)
         {
             foreach (var parameter in parameters)
             {
-                FieldModelController param;
+                FieldControllerBase param;
                 bool hasValue = inputs.TryGetValue(parameter.Key, out param);
                 if (!hasValue)
                 {
@@ -182,7 +182,7 @@ namespace Dash
             return true;
         }
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
             var method = (inputs[MethodKey] as TextFieldModelController).Data;

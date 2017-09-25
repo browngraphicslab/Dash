@@ -87,7 +87,7 @@ namespace Dash
             {
                 var key = schema.GetKey(jtoken);
                 var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
-                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyController, FieldModelController>{[key]=field});
+                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyControllerBase, FieldControllerBase>{[key]=field});
 
                 // wrap the field in an instance of the prototype
                 var protoInstance = schema.Prototype.MakeDelegate();
@@ -106,7 +106,7 @@ namespace Dash
             activeLayout.SetFields(defaultLayoutFields, true);
         }
 
-        private static FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
+        private static FieldControllerBase ParseChild(JToken jtoken, DocumentSchema parentSchema)
         {
             if (jtoken.Type == JTokenType.Object)
             {
@@ -132,7 +132,7 @@ namespace Dash
             var jObject = jtoken as JObject;
 
             // parse each of the fields on the object into a field model controller
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             foreach (var jProperty in jObject)
             {
                 var key = schema.GetKey(jProperty.Value);
@@ -150,14 +150,14 @@ namespace Dash
             return protoInstance;
         }
 
-        private static FieldModelController ParseArray(JToken jtoken, DocumentSchema schema)
+        private static FieldControllerBase ParseArray(JToken jtoken, DocumentSchema schema)
         {
             var jArray = jtoken as JArray;
 
             if (jArray.Count == 0) return null; // if the array is empty we cannot know anything about it
 
             var fieldTypes = new HashSet<Type>(); // keep track of the number of field types we see
-            var fieldList = new List<FieldModelController>(); // hold any fields we parse
+            var fieldList = new List<FieldControllerBase>(); // hold any fields we parse
             var docList = new List<DocumentController>(); // hold any documents we parse
             foreach (var item in jArray)
             {
@@ -195,7 +195,7 @@ namespace Dash
             }
             if (fieldList.Count != 0 && docList.Count == 0)
             {
-                var listController = new ListFieldModelController<FieldModelController>();
+                var listController = new ListFieldModelController<FieldControllerBase>();
                 listController.AddRange(fieldList);
                 return listController;
             }
@@ -203,7 +203,7 @@ namespace Dash
             throw new NotImplementedException(" we don't support arrays of documents and values");
         }
 
-        private static FieldModelController ParseValue(JToken jtoken)
+        private static FieldControllerBase ParseValue(JToken jtoken)
         {
             try
             {
@@ -234,7 +234,7 @@ namespace Dash
             }
         }
 
-        private static FieldModelController ParseText(string text)
+        private static FieldControllerBase ParseText(string text)
         {
             string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
             foreach (var ext in _imageExtensions)
@@ -247,7 +247,7 @@ namespace Dash
             return new TextFieldModelController(text);
         }
 
-        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldModelController> fields)
+        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyControllerBase, FieldControllerBase> fields)
         {
             foreach (var field in fields)
             {
@@ -271,7 +271,7 @@ namespace Dash
         public DocumentSchema(string basePath)
         {
             BasePath = basePath;
-            Prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), 
+            Prototype = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>(), 
                 new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -279,10 +279,10 @@ namespace Dash
 
         public DocumentController Prototype { get; set; }
 
-        public KeyController GetKey(JToken jToken)
+        public KeyControllerBase GetKey(JToken jToken)
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
-            return new KeyController(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
+            return new KeyControllerBase(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

@@ -10,9 +10,9 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class ReferenceFieldModelController : FieldModelController
+    public class ReferenceFieldModelController : FieldModelController<ReferenceFieldModel>
     {
-        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference), false)
+        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
@@ -21,16 +21,16 @@ namespace Dash
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public ReferenceFieldModelController(string documentId, KeyController fieldKey) : this(
+        public ReferenceFieldModelController(string documentId, KeyControllerBase fieldKey) : this(
             new DocumentFieldReference(documentId, fieldKey))
         { }
 
-        public ReferenceFieldModelController(FieldReference documentReference, KeyController fieldKey) : this(
+        public ReferenceFieldModelController(FieldReference documentReference, KeyControllerBase fieldKey) : this(
             new DocumentPointerFieldReference(documentReference, fieldKey))
         {
         }
 
-        private ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel, true)
+        private ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel)
         {
 
         }
@@ -69,7 +69,7 @@ namespace Dash
             }
         }
 
-        public KeyController FieldKey => FieldReference.FieldKey;
+        public KeyControllerBase FieldKey => FieldReference.FieldKey;
 
         public DocumentController GetDocumentController(Context context)
         {
@@ -81,12 +81,12 @@ namespace Dash
             yield return GetDocumentController(null);
         }
 
-        public override FieldModelController Dereference(Context context)
+        public override FieldControllerBase Dereference(Context context)
         {
             return FieldReference.Dereference(context);
         }
 
-        public override FieldModelController DereferenceToRoot(Context context)
+        public override FieldControllerBase DereferenceToRoot(Context context)
         {
             return FieldReference.DereferenceToRoot(context);
         }
@@ -109,7 +109,7 @@ namespace Dash
             return GetTableCellViewOfScrollableText((tb) => BindTextOrSetOnce(tb, context));
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
         }
@@ -128,7 +128,7 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<ReferenceFieldModel> Copy()
         {
             return new ReferenceFieldModelController(FieldReference);
         }
@@ -150,7 +150,7 @@ namespace Dash
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
-            var field = doc.GetDereferencedField<FieldModelController>(FieldKey, refValue.Item1);
+            var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
             if (refValue.Item2 is string)
                 return doc.ParseDocField(FieldKey, refValue.Item2 as string, field);
             else if (refValue.Item2 is RichTextFieldModel.RTD)

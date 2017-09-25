@@ -602,7 +602,7 @@ namespace Dash
             {
                 //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
                 var pos = e.GetCurrentPoint(this).Position;
-                var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+                var doc = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>
                 {
                     [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
                 }, DocumentType.DefaultType);

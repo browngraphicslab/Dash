@@ -82,7 +82,7 @@ namespace Dash
                     var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
-                    KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
+                    KeyControllerBase newInput = new KeyControllerBase(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
                     compoundFMCont.Inputs.Add(newInput, new IOInfo(ioRef.Type, true));
                     compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
                 };
@@ -93,7 +93,7 @@ namespace Dash
                     var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (!ioRef.IsOutput) return;
-                    KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
+                    KeyControllerBase newOutput = new KeyControllerBase(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
                     compoundFMCont.Outputs.Add(newOutput, ioRef.Type);
                     compoundFMCont.AddOutputreference(newOutput, ioRef.FieldReference);
                     _currOutputRef = ioRef;
@@ -111,7 +111,7 @@ namespace Dash
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
-            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyControllerBase;
 
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             if (XPresenter.Content is CompoundOperatorEditor)
@@ -148,7 +148,7 @@ namespace Dash
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
-            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyControllerBase;
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             bool isCompound = false;
             if (XPresenter.Content is CompoundOperatorEditor)
@@ -167,7 +167,7 @@ namespace Dash
                 view.CancelDrag(ioref.PointerArgs.Pointer);
                 StartNewLink(sender, ioref.PointerArgs, false, view);
                 view.EndDrag(ioref, true);
-                var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
+                var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyControllerBase;
                 (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref.FieldReference);
             }
             else
@@ -232,7 +232,7 @@ namespace Dash
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
-            var documentController = ContentController.GetController<DocumentController>(docId);
+            var documentController = ContentController<DocumentModel>.GetController<DocumentController>(docId);
             var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor(documentController, operatorFieldModelController);

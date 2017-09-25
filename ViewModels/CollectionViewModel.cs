@@ -20,7 +20,7 @@ namespace Dash
 
         public InkFieldModelController InkFieldModelController;
 
-        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             if (collection == null) return;
             _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
@@ -67,7 +67,7 @@ namespace Dash
             }
             else
             {
-                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
+                collection.FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
                     UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs,
                         copiedContext);
@@ -76,8 +76,8 @@ namespace Dash
             CellSize = 250; // TODO figure out where this should be set
         }
 
-        private KeyController _collectionKey = null;
-        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
+        private KeyControllerBase _collectionKey = null;
+        public override KeyControllerBase CollectionKey => _collectionKey ?? base.CollectionKey;
 
 
         #region Event Handlers

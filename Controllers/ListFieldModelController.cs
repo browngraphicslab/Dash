@@ -10,7 +10,7 @@ using DashShared;
 
 namespace Dash
 {
-    class ListFieldModelController<T> : BaseListFieldModelController where T : FieldModelController
+    public class ListFieldModelController<T> : BaseListFieldModelController where T : FieldControllerBase
     {
         public List<T> TypedData { get; set; } = new List<T>();
 
@@ -21,16 +21,16 @@ namespace Dash
 
         public override bool SetValue(object value)
         {
-            if (Data is List<FieldModelController>)
+            if (Data is List<FieldControllerBase>)
             {
-                Data = value as List<FieldModelController>;
+                Data = value as List<FieldControllerBase>;
                 return true;
             }
             return false;
         }
-        public override List<FieldModelController> Data
+        public override List<FieldControllerBase> Data
         {
-            get { return TypedData.Cast<FieldModelController>().ToList(); }
+            get { return TypedData.Cast<FieldControllerBase>().ToList(); }
             set { TypedData = value.Cast<T>().ToList(); }
         }
 
@@ -79,12 +79,12 @@ namespace Dash
 
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
 
-        public override void Add(FieldModelController fmc)
+        public override void Add(FieldControllerBase fmc)
         {
             Add(fmc as T);
         }
 
-        public override void AddRange(IList<FieldModelController> fmcs)
+        public override void AddRange(IList<FieldControllerBase> fmcs)
         {
             AddRange(fmcs.Cast<T>().ToList());
         }
@@ -101,12 +101,12 @@ namespace Dash
             });
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<ListFieldModel> Copy()
         {
             return new ListFieldModelController<T>(new List<T>(TypedData));
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ListFieldModelController<T>();
         }

@@ -43,6 +43,7 @@
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AuthenticationTokenModel.cs" />
+    <Compile Include="Models\ISerializable.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentModelDTO.cs" />
     <Compile Include="Models\FieldModel.cs" />
@@ -57,6 +58,7 @@
     <Compile Include="Push\InvocationDescriptor.cs" />
     <Compile Include="Push\Message.cs" />
     <Compile Include="Push\PushMessage.cs" />
+    <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\Util.cs" />
   </ItemGroup>

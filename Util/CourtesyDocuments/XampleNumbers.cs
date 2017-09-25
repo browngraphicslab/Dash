@@ -12,18 +12,18 @@ namespace Dash
         public static DocumentType NumbersType =
             new DocumentType("8FC422AB-015E-4B72-A28B-16271808C888", "Numbers");
 
-        public static KeyController Number1FieldKey = new KeyController("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
-        public static KeyController Number2FieldKey = new KeyController("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
-        public static KeyController Number3FieldKey = new KeyController("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
-        public static KeyController Number4FieldKey = new KeyController("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
-        public static KeyController Number5FieldKey = new KeyController("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
+        public static KeyControllerBase Number1FieldKey = new KeyControllerBase("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
+        public static KeyControllerBase Number2FieldKey = new KeyControllerBase("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
+        public static KeyControllerBase Number3FieldKey = new KeyControllerBase("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+        public static KeyControllerBase Number4FieldKey = new KeyControllerBase("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
+        public static KeyControllerBase Number5FieldKey = new KeyControllerBase("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
 
         private static Random r = new Random();
 
         public Numbers()
         {
             // create a document with two images
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(Number1FieldKey, new NumberFieldModelController(789));
             fields.Add(Number2FieldKey, new NumberFieldModelController(23));
             fields.Add(Number3FieldKey, new NumberFieldModelController(8));

@@ -10,6 +10,7 @@ namespace Dash
     /// <summary>
     /// A field model which encapsulates a list of Documents
     /// </summary>
+    [FieldModelType(FieldTypeEnum.DocumentCollection)]
     public class DocumentCollectionFieldModel : FieldModel
     {
         /// <summary>

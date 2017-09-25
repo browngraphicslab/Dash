@@ -8,12 +8,12 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class PointFieldModelController : FieldModelController
+    public class PointFieldModelController : FieldModelController<PointFieldModel>
     {
-        public PointFieldModelController(Point data) :base(new PointFieldModel(data), false) { }
-        public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y), false) { }
+        public PointFieldModelController(Point data) :base(new PointFieldModel(data) ) { }
+        public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y)) { }
 
-        private PointFieldModelController(PointFieldModel pointFieldModel) : base(pointFieldModel, true)
+        public PointFieldModelController(PointFieldModel pointFieldModel) : base(pointFieldModel)
         {
 
         }
@@ -46,7 +46,7 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new PointFieldModelController(0, 0);
         }
@@ -69,8 +69,9 @@ namespace Dash
             get { return PointFieldModel.Data; }
             set
             {
-                if (SetProperty(ref PointFieldModel.Data, value))
+                if(PointFieldModel.Data != value)
                 {
+                    PointFieldModel.Data = value;
                     // Update the server
                     RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
@@ -92,7 +93,7 @@ namespace Dash
             return $"({Data})";
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<PointFieldModel> Copy()
         {
             return new PointFieldModelController(Data);
         }

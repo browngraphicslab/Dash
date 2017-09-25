@@ -20,14 +20,14 @@ namespace Dash
     {
 
         public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
-        public static readonly KeyController OpacityKey = new KeyController("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
-        public static readonly KeyController ClipKey = new KeyController("8411212B-D56B-4B08-A0B3-094876D2BED2", "Clip Location Key");
+        public static readonly KeyControllerBase OpacityKey = new KeyControllerBase("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
+        public static readonly KeyControllerBase ClipKey = new KeyControllerBase("8411212B-D56B-4B08-A0B3-094876D2BED2", "Clip Location Key");
         private const double DefaultOpacity = 1;
         private readonly RectangleGeometry _defaultClip = new RectangleGeometry { Rect = new Rect(0, 0, 100, 100) };
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
-        public ImageBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -104,7 +104,7 @@ namespace Dash
             BindImageSource(image, controller, context, KeyStore.DataKey);
         }
 
-        protected static void BindImageSource(Image image, DocumentController docController, Context context, KeyController key)
+        protected static void BindImageSource(Image image, DocumentController docController, Context context, KeyControllerBase key)
         {
             var data = docController.GetDereferencedField(key, context) as ImageFieldModelController;
             if (data == null)
@@ -193,7 +193,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();

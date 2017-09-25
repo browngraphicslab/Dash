@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,6 +19,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using DashShared.Models;
 using Flurl;
 using Flurl.Http;
 using Flurl.Http.Content;
@@ -309,7 +311,7 @@ namespace Dash
                 docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
             }
 
-            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+            var doc = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);

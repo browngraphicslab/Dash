@@ -13,7 +13,7 @@ using static Dash.DocumentController;
 
 namespace Dash
 {
-    public class DocumentFieldModelController : FieldModelController
+    public class DocumentFieldModelController : FieldModelController<DocumentFieldModel>
     {
 
         public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document.GetId()))
@@ -107,8 +107,10 @@ namespace Dash
             set
             {
                 var oldData = _data;
-                if (SetProperty(ref _data, value))
+
+                if (_data.Equals(value))
                 {
+                    _data = value;
                     if (oldData != null)
                         oldData.DocumentFieldUpdated -= primaryKeyHandler;
                     primaryKeyHandler = (sender, args) =>
@@ -140,12 +142,12 @@ namespace Dash
             yield return Data;
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? new DocumentController(new DocumentModel(new Dictionary<KeyModel, FieldModel>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document")))));
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<DocumentFieldModel> Copy()
         {
             return new DocumentFieldModelController(Data);
         }

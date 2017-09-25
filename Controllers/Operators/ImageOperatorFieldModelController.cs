@@ -14,21 +14,21 @@ namespace Dash
         {
         }
 
-        public static readonly KeyController URIKey = new KeyController("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
+        public static readonly KeyControllerBase URIKey = new KeyControllerBase("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
 
-        public static readonly KeyController ImageKey = new KeyController("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
+        public static readonly KeyControllerBase ImageKey = new KeyControllerBase("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
         {
             [URIKey] = new IOInfo(TypeInfo.Text, true)
         };
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
         {
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             //throw new NotImplementedException();
 
@@ -38,7 +38,7 @@ namespace Dash
             //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
         
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ImageOperatorFieldModelController(OperatorFieldModel);
         }

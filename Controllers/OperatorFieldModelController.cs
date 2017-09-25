@@ -19,29 +19,29 @@ namespace Dash
         }
     }
 
-    public abstract class OperatorFieldModelController : FieldModelController
+    public abstract class OperatorFieldModelController : FieldModelController<OperatorFieldModel>
     {
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, IOInfo> Inputs { get; }
+        public abstract ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
+        public abstract ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs);
+        public abstract void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
         /// </summary>
         /// <param name="operatorFieldModel">The model which this controller will be operating over</param>
-        protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel, false)
+        protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
         }
@@ -63,7 +63,7 @@ namespace Dash
             textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
         }

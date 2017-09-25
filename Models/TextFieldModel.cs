@@ -7,6 +7,7 @@ namespace Dash
     /// <summary>
     /// A Field Model which holds text data
     /// </summary>
+   [FieldModelType(FieldTypeEnum.Text)]
     public class TextFieldModel : FieldModel
     {
 

@@ -9,9 +9,9 @@ namespace Dash
 {
     public abstract class FieldReference
     {
-        public KeyController FieldKey { get; set; }
+        public KeyControllerBase FieldKey { get; set; }
 
-        protected FieldReference(KeyController fieldKey)
+        protected FieldReference(KeyControllerBase fieldKey)
         {
             FieldKey = fieldKey;
         }
@@ -30,9 +30,9 @@ namespace Dash
         /// <returns>A new FieldModelController that points to the same field in the lowest delegate of the pointed to document</returns>
         public abstract FieldReference Resolve(Context context);
 
-        public FieldModelController Dereference(Context context)
+        public FieldControllerBase Dereference(Context context)
         {
-            FieldModelController controller;
+            FieldControllerBase controller;
             if (context != null)
             {
                 if (context.TryDereferenceToRoot(this, out controller))
@@ -60,9 +60,9 @@ namespace Dash
             return fmc;
         }
 
-        public FieldModelController DereferenceToRoot(Context context)
+        public FieldControllerBase DereferenceToRoot(Context context)
         {
-            FieldModelController reference = Dereference(context);
+            FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceFieldModelController)
             {
                 reference = reference.Dereference(context);
@@ -78,7 +78,7 @@ namespace Dash
             return reference;
         }
 
-        public T DereferenceToRoot<T>(Context context) where T : FieldModelController
+        public T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
         {
             return DereferenceToRoot(context) as T;
         }

@@ -11,7 +11,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("ED3B2D3C-C3EA-4FDC-9C0C-71E10F549C5F", "Rich Text");
 
-        public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
+        public RichTextBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
             Document = new DocumentController(fields, DocumentType);
@@ -22,7 +22,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,

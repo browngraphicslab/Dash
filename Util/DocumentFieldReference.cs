@@ -11,7 +11,7 @@ namespace Dash
     {
         public string DocumentId { get; set; }
 
-        public DocumentFieldReference(string documentId, KeyController fieldKey) : base(fieldKey)
+        public DocumentFieldReference(string documentId, KeyControllerBase fieldKey) : base(fieldKey)
         {
             DocumentId = documentId;
         }
@@ -23,7 +23,7 @@ namespace Dash
             {
                 docId = context.GetDeepestDelegateOf(docId) ?? docId;
             }
-            return ContentController.GetController<DocumentController>(docId);
+            return ContentController<DocumentModel>.GetController<DocumentController>(docId);
         }
 
         public override FieldReference Resolve(Context context)

@@ -6,13 +6,13 @@ using DashShared;
 
 namespace Dash
 {
-    public class TextFieldModelController : FieldModelController
+    public class TextFieldModelController : FieldModelController<TextFieldModel>
     {
-        public TextFieldModelController(string data) : base(new TextFieldModel(data), false)
+        public TextFieldModelController(string data) : base(new TextFieldModel(data))
         {
         }
 
-        private TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel, true)
+        private TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel)
         {
         }
 
@@ -46,8 +46,9 @@ namespace Dash
             get { return TextFieldModel.Data; }
             set
             {
-                if (SetProperty(ref TextFieldModel.Data, value))
+                if (TextFieldModel.Data != value)
                 {
+                    TextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                     // Update the server
                     RESTClient.Instance.Fields.UpdateField(Model, dto =>
@@ -63,7 +64,7 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new TextFieldModelController("Default Value");
         }
@@ -73,7 +74,7 @@ namespace Dash
             return Data;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<TextFieldModel> Copy()
         {
             return new TextFieldModelController(Data);
         }

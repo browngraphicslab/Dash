@@ -13,13 +13,13 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class DocumentCollectionFieldModelController : FieldModelController
+    public class DocumentCollectionFieldModelController : FieldModelController<DocumentCollectionFieldModel>
     {
         /// <summary>
         ///     Key for collection data
         ///     TODO This might be better in a different class
         /// </summary>
-        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public static KeyControllerBase CollectionKey = new KeyControllerBase("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
         public override object GetValue(Context context)
         {
             return GetDocuments();
@@ -42,8 +42,9 @@ namespace Dash
                         docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
                 foreach (var docController in value)
                     docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
-                if (SetProperty(ref _documents, value))
+                if (_documents != value)
                 {
+                    _documents = value;
                     // update 
                     OnFieldModelUpdated(null);
 
@@ -66,12 +67,16 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
+        public DocumentCollectionFieldModelController(DocumentCollectionFieldModel model) : base (model)
+        {
+        }
+
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : this(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
         {
             Data = documents.ToList();
         }
 
-        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : base(fieldModel)
+        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : this(fieldModel)
         {
             Data = documents.ToList();
         }
@@ -196,12 +201,12 @@ namespace Dash
             return _documents.ToList();
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
         
-        public override FieldModelController Copy()
+        public override FieldModelController<DocumentCollectionFieldModel> Copy()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
         }

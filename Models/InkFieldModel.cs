@@ -12,6 +12,7 @@ namespace Dash
     /// <summary>
     /// A Field Model which holds ink data
     /// </summary>
+    [FieldModelType(FieldTypeEnum.Ink)]
     public class InkFieldModel : FieldModel
     {
         /// <summary>

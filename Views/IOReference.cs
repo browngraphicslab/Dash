@@ -20,10 +20,10 @@ namespace Dash
         public FrameworkElement FrameworkElement { get; }
         public DocumentView ContainerView { get; }
 
-        public FieldModelController FMController { get; }
+        public FieldControllerBase FMController { get; }
 
-        public KeyController FieldKey { get; }
-        public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, TypeInfo type, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+        public KeyControllerBase FieldKey { get; }
+        public IOReference(KeyControllerBase fieldKey, FieldControllerBase controller, FieldReference fieldReference, bool isOutput, TypeInfo type, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
         {
             FieldKey = fieldKey;
             FMController = controller;

@@ -30,7 +30,7 @@ namespace Dash.Converters
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), _context);
+                    var keyField = data.GetDereferencedField(new KeyControllerBase((k as TextFieldModelController).Data), _context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                     else if (keyField is DocumentFieldModelController)
@@ -93,7 +93,7 @@ namespace Dash.Converters
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), _context);
+                    var keyField = data.GetDereferencedField(new KeyControllerBase((k as TextFieldModelController).Data), _context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                 }
@@ -109,13 +109,13 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
                         foreach (var k in keys.Data)
                         {
-                            var key = new KeyController((k as TextFieldModelController).Data);
+                            var key = new KeyControllerBase((k as TextFieldModelController).Data);
                             var index = keys.Data.IndexOf(k);
                             var derefValue = (dmc.GetDereferencedField(key, _context) as TextFieldModelController)?.Data;
                             if (derefValue != null)
@@ -187,7 +187,7 @@ namespace Dash.Converters
                 var docString = "";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), data.Context);
+                    var keyField = data.DocumentController.GetDereferencedField(new KeyControllerBase((k as TextFieldModelController).Data), data.Context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                 }
@@ -203,13 +203,13 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
                         foreach (var k in keys.Data)
                         {
-                            var key = new KeyController((k as TextFieldModelController).Data);
+                            var key = new KeyControllerBase((k as TextFieldModelController).Data);
                             var index = keys.Data.IndexOf(k);
                             var derefValue = (dmc.GetDereferencedField(key, _vm.Context) as TextFieldModelController)?.Data;
                             if (derefValue != null)

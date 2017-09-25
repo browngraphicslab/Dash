@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Input;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,6 +22,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 using Flurl;
 using Flurl.Http;
 using Flurl.Http.Content;
@@ -70,7 +72,7 @@ namespace Dash
         private DocumentController CreateNewWorkspace()
         {
             // create the collection document model using a request
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
@@ -108,7 +110,7 @@ namespace Dash
                 }
                 else
                 {
-                    var fields = new Dictionary<KeyController, FieldModelController>
+                    var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
                     {
                         [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
                     };
@@ -136,6 +138,8 @@ namespace Dash
                 });
 
             }
+
+            DocumentControllerFactory.CreateFromModel(new DocumentModel(new ConcurrentDictionary<KeyModel, FieldModel>(), DocumentType.DefaultType));
 
             RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.HomePageType, Success, exception => throw exception);
         }

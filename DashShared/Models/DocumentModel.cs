@@ -27,7 +27,7 @@ namespace DashShared
         public DocumentType DocumentType;
         private DocumentType type;
 
-        private DocumentModel() : base(null)
+        public DocumentModel() : base(null)
         {
         }
 

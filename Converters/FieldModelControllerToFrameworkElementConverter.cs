@@ -9,9 +9,9 @@ namespace Dash
 {
     public class BoundFieldModelController
     {
-        public FieldModelController FieldModelController;
+        public FieldControllerBase FieldModelController;
         public DocumentController   ContextDocumentController;
-        public BoundFieldModelController(FieldModelController fieldModelController, DocumentController contextDocument)
+        public BoundFieldModelController(FieldControllerBase fieldModelController, DocumentController contextDocument)
         {
             FieldModelController = fieldModelController;
             ContextDocumentController = contextDocument;

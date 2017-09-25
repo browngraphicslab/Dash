@@ -9,25 +9,25 @@ using DashShared;
 
 namespace Dash
 {
-    class FilterOperatorFieldModelController : OperatorFieldModelController
+    public class FilterOperatorFieldModelController : OperatorFieldModelController
     {
         public static readonly DocumentType FilterType = new DocumentType("B82CEB25-47C1-4575-83A7-B527F8C0E7FD", "Filter");
         public static readonly DocumentType FilterParams = new DocumentType("62BADA87-D54D-42B8-9F4C-8A33B776C6C7", "Filter Params");
 
         //Input Keys
-        public static readonly KeyController InputCollection = new KeyController("EB742A82-EA9E-4D23-B841-B927615ADB53", "Input Collection");
-        public static readonly KeyController FilterTypeKey = new KeyController("BB52FCB0-65FB-4C7F-89BC-71510CDDFF37", "Filter Type");
-        public static readonly KeyController KeyNameKey = new KeyController("0FEB77C7-F92A-46B6-A069-94E283EE1655", "Key Name");
-        public static readonly KeyController FilterValueKey = new KeyController("6D1D5CBC-11CF-4E6A-8269-4C047AC4DF99", "Filter Value");
+        public static readonly KeyControllerBase InputCollection = new KeyControllerBase("EB742A82-EA9E-4D23-B841-B927615ADB53", "Input Collection");
+        public static readonly KeyControllerBase FilterTypeKey = new KeyControllerBase("BB52FCB0-65FB-4C7F-89BC-71510CDDFF37", "Filter Type");
+        public static readonly KeyControllerBase KeyNameKey = new KeyControllerBase("0FEB77C7-F92A-46B6-A069-94E283EE1655", "Key Name");
+        public static readonly KeyControllerBase FilterValueKey = new KeyControllerBase("6D1D5CBC-11CF-4E6A-8269-4C047AC4DF99", "Filter Value");
 
         //Output Keys
-        public static readonly KeyController OutputCollection = new KeyController("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
+        public static readonly KeyControllerBase OutputCollection = new KeyControllerBase("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
 
         public FilterOperatorFieldModelController() : base(new OperatorFieldModel("Filter"))
         {
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
         {
             [InputCollection] = new IOInfo(TypeInfo.Collection, true),
             [FilterTypeKey] = new IOInfo(TypeInfo.Text, true),
@@ -35,12 +35,12 @@ namespace Dash
             [FilterValueKey] = new IOInfo(TypeInfo.Text, true)
         };
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
         {
             [OutputCollection] = TypeInfo.Collection
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             var docs = (inputs[InputCollection] as DocumentCollectionFieldModelController).GetDocuments();
 
@@ -60,7 +60,7 @@ namespace Dash
             outputs[OutputCollection] = new DocumentCollectionFieldModelController(filteredDocs);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new FilterOperatorFieldModelController();
         }

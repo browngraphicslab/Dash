@@ -9,13 +9,13 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class NumberFieldModelController : FieldModelController
+    public class NumberFieldModelController : FieldModelController<NumberFieldModel>
     {
-        public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data), false)
+        public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data))
         {
         }
 
-        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel, true)
+        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
             
         }
@@ -34,7 +34,7 @@ namespace Dash
         public NumberFieldModel NumberFieldModel => Model as NumberFieldModel;
 
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new NumberFieldModelController(0);
         }
@@ -64,19 +64,10 @@ namespace Dash
             get { return NumberFieldModel.Data; }
             set
             {
-                if (SetProperty(ref NumberFieldModel.Data, value))
+                if (NumberFieldModel.Data != value)
                 {
-                    // Update the server
-                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                    {
-
-                    }, exception =>
-                    {
-
-                    });
+                    NumberFieldModel.Data = value;
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
         }
@@ -87,7 +78,7 @@ namespace Dash
             return Data.ToString();
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<NumberFieldModel> Copy()
         {
             return new NumberFieldModelController(Data);
         }

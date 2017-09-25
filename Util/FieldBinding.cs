@@ -13,18 +13,18 @@ using Dash.Converters;
 
 namespace Dash
 {
-    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldModelController;
+    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldControllerBase;
 
     public enum XamlDerefernceLevel {
         DereferenceToRoot,
         DereferenceOneLevel
     };
 
-    public class FieldBinding<T> where T : FieldModelController
+    public class FieldBinding<T> where T : FieldControllerBase
     {
         public BindingMode Mode;
         public DocumentController Document;
-        public KeyController Key;
+        public KeyControllerBase Key;
         public GetConverter<T> GetConverter;
         public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
         public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;
@@ -72,7 +72,7 @@ namespace Dash
 
     public static class BindingExtension
     {
-        public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             switch (binding.Mode)
             {
@@ -88,12 +88,12 @@ namespace Dash
             }
         }
 
-        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             binding.ConvertToXaml(element, property, binding.Context);
         }
 
-        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
@@ -120,7 +120,7 @@ namespace Dash
         }
 
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
-            where T : FrameworkElement where U : FieldModelController
+            where T : FrameworkElement where U : FieldControllerBase
         {
             bool updateUI = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =

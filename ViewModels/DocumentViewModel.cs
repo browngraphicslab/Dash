@@ -335,7 +335,7 @@ namespace Dash
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
 
-        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var heightFieldModelController = sender as NumberFieldModelController;
             if (heightFieldModelController != null)
@@ -344,7 +344,7 @@ namespace Dash
             }
         }
 
-        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var widthFieldModelController = sender as NumberFieldModelController;
             if (widthFieldModelController != null)
@@ -353,7 +353,7 @@ namespace Dash
             }
         }
 
-        private void IconFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void IconFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var iconFieldModelController = sender as NumberFieldModelController;
             if (iconFieldModelController != null)
@@ -362,7 +362,7 @@ namespace Dash
             }
         }
 
-        private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void PosFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var posFieldModelController = sender as PointFieldModelController;
             if (posFieldModelController != null)
@@ -371,7 +371,7 @@ namespace Dash
             }
         }
 
-        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var scaleCenterFieldModelController = sender as PointFieldModelController;
             if (scaleCenterFieldModelController != null)
@@ -380,7 +380,7 @@ namespace Dash
             }
         }
 
-        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var scaleAmountFieldModelController = sender as PointFieldModelController;
             if (scaleAmountFieldModelController != null)

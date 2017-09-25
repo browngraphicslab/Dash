@@ -22,7 +22,7 @@ using Newtonsoft.Json;
 namespace Dash
 {
     
-    public class InkFieldModelController : FieldModelController
+    public class InkFieldModelController : FieldModelController<InkFieldModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
         private Stack<string> _undoStack = new Stack<string>();
@@ -33,19 +33,19 @@ namespace Dash
         public delegate void InkUpdatedHandler(InkCanvas sender, FieldUpdatedEventArgs args);
         public event InkUpdatedHandler InkUpdated;
 
-        public InkFieldModelController() : base(new InkFieldModel(), false)
+        public InkFieldModelController() : base(new InkFieldModel())
         {
             UpdateStrokesFromList(null, null);
         }
 
-        public InkFieldModelController(string data) : base(new InkFieldModel(data), false)
+        public InkFieldModelController(string data) : base(new InkFieldModel(data))
         {
             InkData = data;
             _undoStack.Push(data);
             SetState(data, null);
         }
 
-        private InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel, true)
+        private InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel)
         {
             InkData = inkFieldModel.Data;
             _undoStack.Push(inkFieldModel.Data);
@@ -70,8 +70,9 @@ namespace Dash
             get { return InkFieldModel.Data; }
             set
             {
-                if (SetProperty(ref InkFieldModel.Data, value))
+                if (InkFieldModel.Data != value)
                 {
+                    InkFieldModel.Data = value;
                     // Update the server
                     RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
@@ -98,12 +99,12 @@ namespace Dash
             return false;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<InkFieldModel> Copy()
         {
             throw new NotImplementedException();
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new InkFieldModelController();
         }

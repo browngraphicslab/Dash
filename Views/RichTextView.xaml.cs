@@ -243,7 +243,7 @@ namespace Dash
                 if (this.xRichEitBox.Document.Selection.Link.Length > 1)
                 {
                     var target = this.xRichEitBox.Document.Selection.Link.Split('\"')[1];
-                    var theDoc = ContentController.GetController<DocumentController>(target);
+                    var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
                     if (theDoc != null && theDoc != DBTest.DBNull)
                     {
                         var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());

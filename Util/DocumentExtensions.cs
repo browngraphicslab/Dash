@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -147,7 +148,7 @@ namespace Dash
         {
             var model = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), doc.DocumentType);
             var copy = doc.GetPrototype()?.MakeDelegate() ?? new DocumentController(model);
-            var fields = new ObservableDictionary<KeyController, FieldModelController>();
+            var fields = new ObservableDictionary<KeyControllerBase, FieldControllerBase>();
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.WidthFieldKey) ||
@@ -164,7 +165,7 @@ namespace Dash
                 {
                     if (kvp.Key.Model == DashConstants.KeyStore.ThisKey)
                         fields[kvp.Key] = new DocumentFieldModelController(copy);
-                    else fields[kvp.Key] = kvp.Value.Copy();
+                    else fields[kvp.Key] = kvp.Value.GetCopy();
                 }
             }
             copy.SetFields(fields, true);

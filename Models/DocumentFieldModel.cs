@@ -7,6 +7,7 @@ namespace Dash
     /// <summary>
     ///     A field model used to represent a Document
     /// </summary>
+    [FieldModelType(FieldTypeEnum.Document)]
     public class DocumentFieldModel : FieldModel
     {
         /// <summary>

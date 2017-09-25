@@ -8,7 +8,8 @@ using DashShared.Models;
 
 namespace Dash
 {
-    class ListFieldModel : FieldModel
+    [FieldModelType(FieldTypeEnum.List)]
+    public class ListFieldModel : FieldModel
     {
         public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo, string id = null) : base(id)
         {

@@ -13,12 +13,12 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class RichTextFieldModelController: FieldModelController
+    public class RichTextFieldModelController: FieldModelController<RichTextFieldModel>
     {
-        public RichTextFieldModelController(): base(new RichTextFieldModel(), false) { }
-        public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data), false) { }
+        public RichTextFieldModelController(): base(new RichTextFieldModel()) { }
+        public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data)) { }
 
-        private RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel, true)
+        private RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel)
         {
 
         }
@@ -39,8 +39,9 @@ namespace Dash
             get { return RichTextFieldModel.Data; }
             set
             {
-                if (SetProperty(ref RichTextFieldModel.Data, value))
+                if (RichTextFieldModel.Data != value)
                 {
+                    RichTextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                     // Update the server
                     RESTClient.Instance.Fields.UpdateField(Model, dto =>
@@ -98,7 +99,7 @@ namespace Dash
             return richTextView;
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RichTextFieldModelController(new RichTextFieldModel.RTD("Default Value"));
         }
@@ -108,7 +109,7 @@ namespace Dash
             return Data.ReadableString;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<RichTextFieldModel> Copy()
         {
             return new RichTextFieldModelController(Data);
         }

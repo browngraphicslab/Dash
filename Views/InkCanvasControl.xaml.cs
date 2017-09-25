@@ -87,7 +87,7 @@ namespace Dash
             }
         }
 
-        private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void InkFieldModelControllerOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (!IsLowestSelected || args?.Action == DocumentController.FieldUpdatedAction.Replace)
             {

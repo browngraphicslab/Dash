@@ -103,7 +103,7 @@ namespace Dash
             xActiveLayoutComboBox.ItemsSource = documents;
         }
 
-        private void LayoutList_OnDocumentsChanged(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void LayoutList_OnDocumentsChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             SetActiveLayoutComboBoxItems((sender as DocumentCollectionFieldModelController).GetDocuments());
         }

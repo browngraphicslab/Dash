@@ -5,6 +5,7 @@ using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelType(FieldTypeEnum.Point)]
     public class PointFieldModel : FieldModel
     { 
 

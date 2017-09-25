@@ -15,13 +15,13 @@ namespace Dash
     /// </summary>
     public class CollectionBox : CourtesyDocument
     {
-        public static KeyController CollectionViewKey = new KeyController("FA7002C4-0EB2-44F7-8D25-ECA5C618D10C", "Collection View Key");
+        public static KeyControllerBase CollectionViewKey = new KeyControllerBase("FA7002C4-0EB2-44F7-8D25-ECA5C618D10C", "Collection View Key");
         public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "Prototype-Collection-Box";
 
-        public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
+        public static KeyControllerBase CollectionViewTypeKey = new KeyControllerBase("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
 
-        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
+        public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[CollectionViewTypeKey] = new TextFieldModelController(viewType.ToString());
@@ -62,7 +62,7 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
 
-            var opacity = (docController.GetDereferencedField(new KeyController("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
+            var opacity = (docController.GetDereferencedField(new KeyControllerBase("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
 
             double opacityValue = opacity.HasValue ? (double)opacity : 1;
 

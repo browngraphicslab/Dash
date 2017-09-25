@@ -32,7 +32,10 @@ namespace Dash
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
             serviceCollection.AddSingleton<IDocumentEndpoint, LocalDocumentEndpoint>();
             serviceCollection.AddSingleton<IFieldEndpoint, LocalFieldEndpoint>();
-            serviceCollection.AddSingleton<IKeyEndpoint, LocalKeyEndpoint>(); 
+            serviceCollection.AddSingleton<IKeyEndpoint, LocalKeyEndpoint>();
+
+
+            serviceCollection.AddTransient<IController<DocumentModel>, DocumentController>();
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors

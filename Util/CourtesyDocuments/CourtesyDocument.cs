@@ -24,13 +24,13 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
-        public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
-        public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+        public static readonly KeyControllerBase HorizontalAlignmentKey = new KeyControllerBase("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
+        public static readonly KeyControllerBase VerticalAlignmentKey = new KeyControllerBase("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
 
-        public static readonly KeyController GridRowKey = new KeyController("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
-        public static readonly KeyController GridColumnKey = new KeyController("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
-        public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
-        public static readonly KeyController GridColumnSpanKey = new KeyController("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
+        public static readonly KeyControllerBase GridRowKey = new KeyControllerBase("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
+        public static readonly KeyControllerBase GridColumnKey = new KeyControllerBase("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
+        public static readonly KeyControllerBase GridRowSpanKey = new KeyControllerBase("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
+        public static readonly KeyControllerBase GridColumnSpanKey = new KeyControllerBase("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
 
         protected abstract DocumentController GetLayoutPrototype();
 
@@ -38,7 +38,7 @@ namespace Dash
 
         protected abstract DocumentController InstantiatePrototypeLayout();
 
-        protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
+        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             Debug.Assert(refToData != null);
@@ -72,7 +72,7 @@ namespace Dash
 
         
 
-        protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
+        protected static void AddBinding<T>(T element, DocumentController docController, KeyControllerBase k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler = (sender, args) =>
@@ -84,7 +84,7 @@ namespace Dash
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
-        protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
+        protected static void AddHandlers<T>(T element, DocumentController docController, KeyControllerBase k, Context context,
             BindingDelegate<T> bindingDelegate, DocumentController.OnDocumentFieldUpdatedHandler handler) where T : FrameworkElement
         {
             element.Loaded += delegate
@@ -237,16 +237,16 @@ namespace Dash
         }
 
         [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
-        protected static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
-            FieldModelController data)
+        protected static Dictionary<KeyControllerBase, FieldControllerBase> DefaultLayoutFields(double x, double y, double w, double h,
+            FieldControllerBase data)
         {
             return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
         }
 
-        public static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+        public static Dictionary<KeyControllerBase, FieldControllerBase> DefaultLayoutFields(Point pos, Size size, FieldControllerBase data = null)
         {
             // assign the default fields
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
             {
                 [KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
@@ -273,7 +273,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyControllerBase fieldKey, FieldControllerBase fmController)
         {
             //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;

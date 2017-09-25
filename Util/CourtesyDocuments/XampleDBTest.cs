@@ -15,24 +15,24 @@ namespace Dash
         public static DocumentType VolunteerType  = new DocumentType("CC865EF7-A0C3-4740-9E02-3D6E1ACCC7D1", "Volunteer");
         public static DocumentType WebType = new DocumentType("ED1EDECE-2434-4BDB-A8E8-3DF7A0CE4BB0", "Web Doc");
 
-        public static KeyController NullDocNameKey = new KeyController("3E74836B-CDD2-4F0A-9031-6786B03A40A4");
+        public static KeyControllerBase NullDocNameKey = new KeyControllerBase("3E74836B-CDD2-4F0A-9031-6786B03A40A4");
         
-        public static KeyController GameDateKey        = new KeyController("48A9F432-8757-4B8D-A2F4-51E1BAE44E5B", "GameDate");
-        public static KeyController GameTimeKey        = new KeyController("0EF91257-92E2-44F6-8D12-A2D9AAFFD941", "GameTime");
+        public static KeyControllerBase GameDateKey        = new KeyControllerBase("48A9F432-8757-4B8D-A2F4-51E1BAE44E5B", "GameDate");
+        public static KeyControllerBase GameTimeKey        = new KeyControllerBase("0EF91257-92E2-44F6-8D12-A2D9AAFFD941", "GameTime");
 
-        public static KeyController AssigmentGameKey   = new KeyController("2787E322-1E7B-4606-B892-CB3F2195E7E3", "AssignedGame");
-        public static KeyController AssigmentPersonKey = new KeyController("FF312C91-46D9-4DE1-A38D-1FC6323AF9E2", "AssignedPerson");
+        public static KeyControllerBase AssigmentGameKey   = new KeyControllerBase("2787E322-1E7B-4606-B892-CB3F2195E7E3", "AssignedGame");
+        public static KeyControllerBase AssigmentPersonKey = new KeyControllerBase("FF312C91-46D9-4DE1-A38D-1FC6323AF9E2", "AssignedPerson");
 
-        public static KeyController UmpAssignmentsKey  = new KeyController("9BB856BE-D3C5-425E-A6EF-0F09B28414D3", "UmpAssignments");
-        public static KeyController UmpNameKey         = new KeyController("462664D8-11B9-4561-B65B-AB3A2DAADB3B", "UmpName");
-        public static KeyController UmpNameLabelKey    = new KeyController("69079F30-ACFE-442C-8ABE-9115B7B7C974", "UmpNameLabel");
-        public static KeyController UmpPictureKey      = new KeyController("6B9AD824-C82B-4E11-A216-E83FC87F98C6", "UmpPicture");
-        public static KeyController VolNameKey         = new KeyController("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
-        public static KeyController VolNameLabelKey    = new KeyController("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolNameLabel");
-        public static KeyController AgeLabelKey        = new KeyController("C7724C9E-FB0A-4855-86C6-27461D0EF769", "AgeLabel");
-        public static KeyController AgeKey             = new KeyController("CEFAA1C9-C21D-4429-905B-AB5A68550F76", "Age");
+        public static KeyControllerBase UmpAssignmentsKey  = new KeyControllerBase("9BB856BE-D3C5-425E-A6EF-0F09B28414D3", "UmpAssignments");
+        public static KeyControllerBase UmpNameKey         = new KeyControllerBase("462664D8-11B9-4561-B65B-AB3A2DAADB3B", "UmpName");
+        public static KeyControllerBase UmpNameLabelKey    = new KeyControllerBase("69079F30-ACFE-442C-8ABE-9115B7B7C974", "UmpNameLabel");
+        public static KeyControllerBase UmpPictureKey      = new KeyControllerBase("6B9AD824-C82B-4E11-A216-E83FC87F98C6", "UmpPicture");
+        public static KeyControllerBase VolNameKey         = new KeyControllerBase("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
+        public static KeyControllerBase VolNameLabelKey    = new KeyControllerBase("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolNameLabel");
+        public static KeyControllerBase AgeLabelKey        = new KeyControllerBase("C7724C9E-FB0A-4855-86C6-27461D0EF769", "AgeLabel");
+        public static KeyControllerBase AgeKey             = new KeyControllerBase("CEFAA1C9-C21D-4429-905B-AB5A68550F76", "Age");
 
-        public static KeyController WebUrlKey = new KeyController("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
+        public static KeyControllerBase WebUrlKey = new KeyControllerBase("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
 
         public static DocumentController DBNull = CreateNull();
         public static DocumentController DBDoc = CreateDB();
@@ -51,7 +51,7 @@ namespace Dash
 
         static DocumentController CreateNull()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             var dc = new DocumentController(fields, new DocumentType("DBNull", "DBNull"));
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
             dc.SetField(NullDocNameKey, new TextFieldModelController(""), true);
@@ -61,7 +61,7 @@ namespace Dash
         }
         static DocumentController CreateDB()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(KeyStore.DataKey, new DocumentCollectionFieldModelController());
             var dc = new DocumentController(fields, new DocumentType("DBDoc", "DBDoc"));
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
@@ -69,7 +69,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeUmp()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(UmpNameKey, new TextFieldModelController("Prototype Umpire"));
             var dc = new DocumentController(fields, UmpType);
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
@@ -85,7 +85,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeVol()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(VolNameKey, new TextFieldModelController("Prototype Volunteer"));
             var dc = new DocumentController(fields, VolunteerType);
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
@@ -97,7 +97,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeGame()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(GameDateKey, new TextFieldModelController("Prototype Game Date"));
             fields.Add(GameTimeKey, new TextFieldModelController("Prototype Game Time"));
             var dc = new DocumentController(fields, GameType);
@@ -108,7 +108,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeAssignment()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(AssigmentGameKey,   new DocumentFieldModelController(PrototypeGame));
             fields.Add(AssigmentPersonKey, new DocumentFieldModelController(PrototypeUmp));
             var dc = new DocumentController(fields, AssignmentType);
@@ -119,7 +119,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeWeb()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
             fields.Add(WebUrlKey, new TextFieldModelController("http://www.cs.brown.edu"));
             var dc = new DocumentController(fields, WebType);
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
@@ -321,7 +321,7 @@ namespace Dash
                 game1Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(gameDoc, game1Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(gameDoc);
-                gameDoc.SetField(new KeyController("AKEY", "AKEY"), new DocumentCollectionFieldModelController(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
+                gameDoc.SetField(new KeyControllerBase("AKEY", "AKEY"), new DocumentCollectionFieldModelController(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
             }
             {
                 game2Doc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(game2Doc), true);

@@ -4,6 +4,7 @@ using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelType(FieldTypeEnum.Operator)]
     public class OperatorFieldModel : FieldModel {
         /// <summary>
         /// Type of operator it is; to be used by the server to determine what controller to use for operations 

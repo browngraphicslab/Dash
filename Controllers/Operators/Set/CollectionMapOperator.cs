@@ -13,15 +13,15 @@ namespace Dash
     {
         public static readonly DocumentType MapType = new DocumentType("60B60218-966F-47F1-8291-B2FD5EEE444F", "Map");
 
-        public static readonly KeyController InputOperatorKey = new KeyController("520F5DC4-005E-4F0D-91A3-099358990E40", "Input Operator");
+        public static readonly KeyControllerBase InputOperatorKey = new KeyControllerBase("520F5DC4-005E-4F0D-91A3-099358990E40", "Input Operator");
 
-        public static readonly KeyController OutputCollectionKey = new KeyController("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
+        public static readonly KeyControllerBase OutputCollectionKey = new KeyControllerBase("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
 
         public CollectionMapOperator() : base(new OperatorFieldModel("CollectionMap"))
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new CollectionMapOperator();
         }
@@ -34,12 +34,12 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>()
         {
             [InputOperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>()
         {
             [OutputCollectionKey] = TypeInfo.Collection
         };
@@ -66,15 +66,15 @@ namespace Dash
             }
         }
 
-        public Dictionary<KeyController, KeyController> InputKeyMap { get; set; } = new Dictionary<KeyController, KeyController>();
+        public Dictionary<KeyControllerBase, KeyControllerBase> InputKeyMap { get; set; } = new Dictionary<KeyControllerBase, KeyControllerBase>();
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             OperatorFieldModelController operatorController = inputs[InputOperatorKey] as OperatorFieldModelController;
-            Dictionary<KeyController, FieldModelController> operatorInputs = new Dictionary<KeyController, FieldModelController>();
-            Dictionary<KeyController, FieldModelController> operatorOutputs = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyControllerBase, FieldControllerBase> operatorInputs = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyControllerBase, FieldControllerBase> operatorOutputs = new Dictionary<KeyControllerBase, FieldControllerBase>();
 
-            List<KeyController> keys = new List<KeyController>();
+            List<KeyControllerBase> keys = new List<KeyControllerBase>();
             List<List<DocumentController>> collections = new List<List<DocumentController>>();
             int numDocuments = -1;
             foreach (var key in inputs.Keys)
@@ -103,7 +103,7 @@ namespace Dash
 
             List<DocumentController> documents = new List<DocumentController>();
 
-            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            DocumentController prototype = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>(), DocumentType.DefaultType);
 
             for (int i = 0; i < numDocuments; i++)
             {

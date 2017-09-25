@@ -23,9 +23,9 @@ namespace Dash
     /// </summary>
     public class TextingBox : CourtesyDocument
     {
-        public static KeyController FontWeightKey = new KeyController("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
-        public static KeyController FontSizeKey = new KeyController("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
-        public static KeyController TextAlignmentKey = new KeyController("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
+        public static KeyControllerBase FontWeightKey = new KeyControllerBase("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
+        public static KeyControllerBase FontSizeKey = new KeyControllerBase("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
+        public static KeyControllerBase TextAlignmentKey = new KeyControllerBase("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
         public static DocumentType DocumentType =
             new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
@@ -35,7 +35,7 @@ namespace Dash
         public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null)
+        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -47,7 +47,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -120,7 +120,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,
@@ -132,7 +132,7 @@ namespace Dash
             }
         }
 
-        protected static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
+        protected static IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
             if (fieldModelController is TextFieldModelController)
             {

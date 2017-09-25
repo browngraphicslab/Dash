@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
+    //THIS IS EMPTY SO FAR BUT STILL IMPORTANT
     public interface ISerializable
     {
     }

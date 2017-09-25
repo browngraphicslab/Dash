@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -11,10 +12,8 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
-    public abstract class FieldModelController : ViewModelBase, IController<FieldModel>, IDisposable
+    public abstract class FieldModelController<T> : FieldControllerBase, IDisposable where T : FieldModel
     {
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args,
-            Context context);
 
         public static int threadCount;
         public static object l = new object();
@@ -25,16 +24,10 @@ namespace Dash
         /// </summary>
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
 
-        public abstract bool SetValue(object value);
 
-        public abstract object GetValue(Context context);
-
-
-        protected FieldModelController(FieldModel fieldModel)
+        protected FieldModelController(FieldModel fieldModel) : base(fieldModel)
         {
             // Initialize Local Variables
-            Model = fieldModel;
-            ContentController<FieldModel>.AddController(this);
         }
 
         /// <summary>
@@ -43,8 +36,6 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel Model { get; set; }
-
-        public abstract TypeInfo TypeInfo { get; }
 
 
         /// <summary>
@@ -58,127 +49,10 @@ namespace Dash
         public virtual void Dispose()
         {
         }
-
-        public event FieldModelUpdatedHandler FieldModelUpdated;
-
-        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
-        {
-            FieldModelUpdated?.Invoke(this,
-                args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update),
-                context);
-        }
-
-        public virtual bool CheckType(FieldModelController fmc)
-        {
-            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
-        }
-
-        public virtual IEnumerable<DocumentController> GetReferences()
-        {
-            return new List<DocumentController>();
-        }
-
-        public virtual FieldModelController Dereference(Context context)
-        {
-            return this;
-        }
-
-        public virtual FieldModelController DereferenceToRoot(Context context)
-        {
-            return this;
-        }
-
-        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
-        {
-            return DereferenceToRoot(context) as T;
-        }
-
-        /// <summary>
-        ///     Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
-        /// </summary>
-        /// <returns></returns>
-        public virtual FrameworkElement GetTableCellView(Context context)
-        {
-            var tb = new TextingBox(this);
-            tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
-            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true); 
-            return tb.makeView(tb.Document, context);
-        }
-
-        /// <summary>
-        ///     Helper method for generating a table cell view in <see cref="GetTableCellView" /> for textboxes which may have to
-        ///     scroll
-        /// </summary>
-        /// <param name="bindTextOrSetOnce">
-        ///     A method which will create a binding on the passed in textbox, or set the text of the
-        ///     textbox to some initial value
-        /// </param>
-        protected FrameworkElement GetTableCellViewOfScrollableText(Action<TextBlock> bindTextOrSetOnce)
-        {
-            var textBlock = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap,
-                FontSize = 11
-            };
-            bindTextOrSetOnce(textBlock);
-
-
-            var scrollViewer = new ScrollViewer
-            {
-                HorizontalScrollMode = ScrollMode.Enabled,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollMode = ScrollMode.Disabled,
-                Content = textBlock
-            };
-
-            return scrollViewer;
-        }
-
-        /// <summary>
-        ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
-        ///     displaying the number of items stored in collection/list
-        /// </summary>
-        protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
-        {
-            var grid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
-            };
-            grid.RowDefinitions.Add(new RowDefinition {Height = GridLength.Auto});
-            grid.RowDefinitions.Add(new RowDefinition {Height = GridLength.Auto});
-
-            var symbol = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                FontSize = 40,
-                Text = icon
-            };
-            grid.Children.Add(symbol);
-
-            var textBlock = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.Wrap
-            };
-            bindTextOrSetOnce(textBlock);
-            grid.Children.Add(textBlock);
-            Grid.SetRow(textBlock, 1);
-
-            return grid;
-        }
-
+        
         public override bool Equals(object obj)
         {
-            var cont = obj as FieldModelController;
+            var cont = obj as FieldModelController<T>;
             if (cont == null)
                 return false;
             return Model.Equals(cont.Model);
@@ -189,18 +63,22 @@ namespace Dash
             return Model.GetHashCode();
         }
 
-        public abstract FieldModelController Copy();
+        public override FieldControllerBase GetCopy()
+        {
+            return Copy();
+        }
 
-        public T Copy<T>() where T : FieldModelController
+        public abstract FieldModelController<T> Copy();
+
+        public T Copy<T>() where T : FieldControllerBase
         {
             return Copy() as T;
         }
 
-        public abstract FieldModelController GetDefaultController();
-
-        public static async Task<FieldModelController> CreateFromServer(FieldModel fieldModel)
+        public static async Task<FieldControllerBase> CreateFromServer(FieldModel fieldModel)
         {
-            FieldModelController returnController = null;
+            throw new NotImplementedException();
+            FieldControllerBase returnController = null;
             if (fieldModel is NumberFieldModel)
             {
                 returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);

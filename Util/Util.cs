@@ -132,7 +132,7 @@ namespace Dash
                     if (enumFieldsA.Count != enumFieldsB.Count) continue;
 
                     bool equal = true;
-                    foreach (KeyValuePair<KeyController, FieldModelController> pair in enumFieldsA)
+                    foreach (KeyValuePair<KeyControllerBase, FieldControllerBase> pair in enumFieldsA)
                     {
                         if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
                         {
@@ -184,10 +184,10 @@ namespace Dash
         /// If there is a nested collection, nests the json recursively 
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
+        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<KeyControllerBase, FieldControllerBase>> fields)
         {
             Dictionary<string, object> jsonDict = new Dictionary<string, object>();
-            foreach (KeyValuePair<KeyController, FieldModelController> pair in fields)
+            foreach (KeyValuePair<KeyControllerBase, FieldControllerBase> pair in fields)
             {
                 object data = null;
                 if (pair.Value is TextFieldModelController)
@@ -235,7 +235,7 @@ namespace Dash
         /// <summary>
         /// Exports the document's key to field as json object and saves it locally as .txt 
         /// </summary>
-        public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
+        public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyControllerBase, FieldControllerBase>> fields)
         {
             Dictionary<string, object> jsonDict = JsonSerializeHelper(fields);
             string json = JsonConvert.SerializeObject(jsonDict);

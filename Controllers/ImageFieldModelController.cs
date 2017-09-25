@@ -8,11 +8,11 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class ImageFieldModelController : FieldModelController
+    public class ImageFieldModelController : FieldModelController<ImageFieldModel>
     {
-        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data), false) { }
+        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
 
-        private ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel, true)
+        private ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
         {
 
         }
@@ -37,15 +37,16 @@ namespace Dash
             get { return ImageFieldModel.Data; }
             set
             {
-                if (SetProperty(ref ImageFieldModel.Data, value))
+                if (ImageFieldModel.Data != value)
                 {
+                    ImageFieldModel.Data = value;
                     // Update the server
                     RESTClient.Instance.Fields.UpdateField(Model, dto =>
                     {
-                        
+
                     }, exception =>
                     {
-                        
+
                     });
                     OnFieldModelUpdated(null);
                     // update local
@@ -74,7 +75,7 @@ namespace Dash
             return image;
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
@@ -108,11 +109,10 @@ namespace Dash
             get { return UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data); }//TODO We shouldn't create a new BitmapImage every time Data is accessed
             set
             {
-                if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
+                if (value.UriSource != ImageFieldModel.Data)
                 {
+                    ImageFieldModel.Data = UriToBitmapImageConverter.Instance.ConvertXamlToData(value);
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
         }
@@ -123,7 +123,7 @@ namespace Dash
             return ImageSource.ToString();
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<ImageFieldModel> Copy()
         {
             return new ImageFieldModelController(Data.UriSource);
         }

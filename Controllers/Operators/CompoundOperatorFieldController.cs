@@ -23,13 +23,13 @@ namespace Dash
 
         private CompoundOperatorFieldController(CompoundOperatorFieldController copy) : this()
         {
-            Inputs = new ObservableDictionary<KeyController, IOInfo>(copy.Inputs);
-            Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
-            InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>(copy.InputFieldReferences);
-            OutputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.OutputFieldReferences);
+            Inputs = new ObservableDictionary<KeyControllerBase, IOInfo>(copy.Inputs);
+            Outputs = new ObservableDictionary<KeyControllerBase, TypeInfo>(copy.Outputs);
+            InputFieldReferences = new Dictionary<KeyControllerBase, List<FieldReference>>(copy.InputFieldReferences);
+            OutputFieldReferences = new Dictionary<KeyControllerBase, FieldReference>(copy.OutputFieldReferences);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             Debug.Assert(OperatorFieldModel is CompoundOperatorFieldModel);
             return new CompoundOperatorFieldController(this);
@@ -43,14 +43,14 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>();
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>();
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>();
 
-        public Dictionary<KeyController, List<FieldReference>> InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>();
-        public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
+        public Dictionary<KeyControllerBase, List<FieldReference>> InputFieldReferences = new Dictionary<KeyControllerBase, List<FieldReference>>();
+        public Dictionary<KeyControllerBase, FieldReference> OutputFieldReferences = new Dictionary<KeyControllerBase, FieldReference>();
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             Context c = new Context();
             foreach (var reference in InputFieldReferences)
@@ -59,7 +59,7 @@ namespace Dash
                 foreach (var fieldReference in refList)
                 {
                     var doc = fieldReference.GetDocumentController(c);
-                    doc.SetField(fieldReference.FieldKey, inputs[reference.Key].Copy(), true);
+                    doc.SetField(fieldReference.FieldKey, inputs[reference.Key].GetCopy(), true);
                 }
             }
             foreach (var output in OutputFieldReferences)
@@ -68,7 +68,7 @@ namespace Dash
             }
         }
 
-        public void AddInputreference(KeyController key, FieldReference reference)
+        public void AddInputreference(KeyControllerBase key, FieldReference reference)
         {
             if (!InputFieldReferences.ContainsKey(key))
             {
@@ -79,7 +79,7 @@ namespace Dash
             (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Add(reference);
         }
 
-        public void RemoveInputReference(KeyController key, FieldReference reference)
+        public void RemoveInputReference(KeyControllerBase key, FieldReference reference)
         {
             if (!InputFieldReferences.ContainsKey(key))
             {
@@ -89,13 +89,13 @@ namespace Dash
             (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Remove(reference);
         }
 
-        public void AddOutputreference(KeyController key, FieldReference reference)
+        public void AddOutputreference(KeyControllerBase key, FieldReference reference)
         {
             OutputFieldReferences.Add(key, reference);
             (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Add(key, reference);
         }
 
-        public void RemoveOutputReference(KeyController key)
+        public void RemoveOutputReference(KeyControllerBase key)
         {
             OutputFieldReferences.Remove(key);
             (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Remove(key);

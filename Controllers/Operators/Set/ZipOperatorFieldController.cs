@@ -7,12 +7,12 @@ using DashShared;
 
 namespace Dash
 {
-    class ZipOperatorFieldController : OperatorFieldModelController
+    public class ZipOperatorFieldController : OperatorFieldModelController
     {
-        public static readonly KeyController AKey = new KeyController("0252A0F7-E6A3-498E-A728-8B23B16FA0E5", "Input A");
-        public static readonly KeyController BKey = new KeyController("BC72A0FF-C707-488E-A03A-29A6515AB441", "Input B");
+        public static readonly KeyControllerBase AKey = new KeyControllerBase("0252A0F7-E6A3-498E-A728-8B23B16FA0E5", "Input A");
+        public static readonly KeyControllerBase BKey = new KeyControllerBase("BC72A0FF-C707-488E-A03A-29A6515AB441", "Input B");
 
-        public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
+        public static readonly KeyControllerBase OutputKey = new KeyControllerBase("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
 
         public ZipOperatorFieldController() : base(new OperatorFieldModel("zip"))
         {
@@ -22,7 +22,7 @@ namespace Dash
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ZipOperatorFieldController(OperatorFieldModel);
         }
@@ -35,19 +35,19 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
         {
             [AKey] = new IOInfo(TypeInfo.Collection, true),
             [BKey] = new IOInfo(TypeInfo.Collection, true)
         };
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
         {
             [OutputKey] = TypeInfo.Collection
         };
 
-        private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
+        private static readonly List<KeyControllerBase> ExcludedKeys = new List<KeyControllerBase> {KeyStore.ActiveLayoutKey};
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
         {
             var aDocs = (inputs[AKey] as DocumentCollectionFieldModelController).GetDocuments();
             var bDocs = (inputs[BKey] as DocumentCollectionFieldModelController).GetDocuments();
@@ -58,7 +58,7 @@ namespace Dash
             {
                 var aDoc = aDocs[i];
                 var bDoc = bDocs[i];
-                var fields = new Dictionary<KeyController, FieldModelController>();
+                var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
                 AddFields(fields, aDoc);
                 AddFields(fields, bDoc);
                 var newDoc = new DocumentController(fields, DocumentType.DefaultType);
@@ -68,7 +68,7 @@ namespace Dash
             outputs[OutputKey] = new DocumentCollectionFieldModelController(newDocs);
         }
 
-        private void AddFields(Dictionary<KeyController, FieldModelController> fields, DocumentController doc)
+        private void AddFields(Dictionary<KeyControllerBase, FieldControllerBase> fields, DocumentController doc)
         {
             foreach (var field in doc.EnumFields())
             {
