@@ -100,15 +100,23 @@
         </Grid>
         <ProgressRing x:Name="xProgressRing" Grid.Row="1" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
 
-
-        <Canvas x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" HorizontalAlignment="Left" Height="25"
+        <!--Rectangles that indicate whether document is a delegate or a copy-->
+        <Canvas x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" HorizontalAlignment="Left" Height="23"
             Visibility="{Binding Path=DocumentController.HasPrototype, ConverterParameter={Binding Path=DocumentController.HasDelegates}, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" >
-            <Rectangle x:Name="xDelegateDiamond" Width="10" Height="10" Stroke="Gray" 
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}">
-                <Rectangle.RenderTransform>
+            <Rectangle x:Name="xDelegateDiamond" Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
+            <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="1"
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
+            <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="12"
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
+            <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="12"
+                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
+            <Canvas.RenderTransform>
+                <TransformGroup>
                     <RotateTransform Angle="45"></RotateTransform>
-                </Rectangle.RenderTransform>
-            </Rectangle>
+                    <TranslateTransform X="14" Y="-11"></TranslateTransform>
+                </TransformGroup>
+            </Canvas.RenderTransform>
         </Canvas>
     </Grid>
 </local:SelectionElement>
