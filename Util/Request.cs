@@ -158,7 +158,7 @@ namespace Dash
         {
             try
             {
-                DocumentController documentController = JsonToDashUtil.Parse(Response.Content.ToString(),
+                DocumentController documentController = new JsonToDashUtil().ParseJsonString(Response.Content.ToString(),
                     Message.RequestUri.ToString());
                 var dcfm = documentController.EnumFields()
                     .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as
@@ -174,7 +174,7 @@ namespace Dash
 
         public DocumentController GetResult()
         {
-            return JsonToDashUtil.Parse(Response.Content.ToString(),
+            return new JsonToDashUtil().ParseJsonString(Response.Content.ToString(),
                 Message.RequestUri.ToString());
         }
     }

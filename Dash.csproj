@@ -90,6 +90,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\pokemon_species.csv" />
+    <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
   </ItemGroup>
   <ItemGroup>
@@ -110,7 +112,12 @@
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
-    <Compile Include="Util\FileDropHelper.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\IFileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
     <Compile Include="Views\DBFilterChart.xaml.cs">
       <DependentUpon>DBFilterChart.xaml</DependentUpon>
     </Compile>
@@ -407,7 +414,7 @@
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\GlobalInkSettings.cs" />
-    <Compile Include="Util\JsonToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
@@ -864,6 +871,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <PackageReference Include="CsvHelper">
+      <Version>2.16.3</Version>
+    </PackageReference>
     <PackageReference Include="Flurl.Http">
       <Version>1.2.0</Version>
     </PackageReference>

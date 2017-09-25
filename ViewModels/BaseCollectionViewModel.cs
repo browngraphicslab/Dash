@@ -58,32 +58,6 @@ namespace Dash
         public abstract void RemoveDocuments(List<DocumentController> documents);
         public abstract void RemoveDocument(DocumentController document);
 
-        private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
-        {
-            if (where != null)
-            {
-                var h = docController.GetHeightField().Data;
-                var w = docController.GetWidthField().Data;
-
-                w = double.IsNaN(w) ? 0 : w;
-                h = double.IsNaN(h) ? 0 : h;
-
-                var pos = (Point)where;
-                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
-            }
-            collectionView.ViewModel.AddDocument(docController, null);
-            //DBTest.DBDoc.AddChild(docController);
-        }
-
-        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers)
-        {
-            foreach (var documentController in docControllers)
-            {
-                AddDocument(documentController, null);
-                //DisplayDocument(collectionView, documentController, where);
-            }
-        }
-
         #region Grid or List Specific Variables I want to Remove
 
         public double CellSize
@@ -117,8 +91,7 @@ namespace Dash
         /// </summary>
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            SetGlobalHitTestVisiblityOnSelectedItems(true);
-            
+            SetGlobalHitTestVisiblityOnSelectedItems(true);       
             e.Data.Properties.Add("DocumentControllerList", e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList());
             e.Data.RequestedOperation = DateTime.Now.Subtract(_dragStart).TotalMilliseconds > 1000 ? DataPackageOperation.Move : DataPackageOperation.Copy;
         }
@@ -150,15 +123,20 @@ namespace Dash
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
             this.RemoveDragDropIndication(sender as SelectionElement);
 
+            // true if dragged from key value pane in interfacebuilder
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
+
+            // true if dragged from layoutbar in interfacebuilder
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
-            if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
+            if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
 
             //return if it's an operator dragged from compoundoperatoreditor listview 
             if (e.Data?.Properties[CompoundOperatorFieldController.OperationBarDragKey] != null) return;
 
+            // from now on we are handling this event!
             e.Handled = true;
 
+            // if we drag from radial menu
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
             {
@@ -168,7 +146,21 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
 
-            else if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            // if we drag from the file system
+            var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+            if (sourceIsFileSystem)
+            {
+                try
+                {
+                    await FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                }
+            }
+
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
                 var items = await e.DataView.GetStorageItemsAsync();
                 if (items.Count > 0)
@@ -234,7 +226,7 @@ namespace Dash
                     new Point();
 
                 var payloadLayoutDelegates = items.Select((p) => e.DataView.Properties.ContainsKey("View") || e.AcceptedOperation == DataPackageOperation.Move ? p.GetViewCopy(where): e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where));
-                DisplayDocuments(sender as ICollectionView, payloadLayoutDelegates);
+                AddDocuments(payloadLayoutDelegates.ToList(), null);
             }
             
             SetGlobalHitTestVisiblityOnSelectedItems(false);
