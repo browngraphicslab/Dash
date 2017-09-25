@@ -193,6 +193,20 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
+        public virtual void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder = false)
+        {
+            var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+            var label = new TextBlock { Text = kc.Name + ": " };
+            var refField = new ReferenceFieldModelController(id, kc);
+            var dBox = this is ImageFieldModelController
+                ? new ImageBox(refField).Document
+                : new TextingBox(refField).Document;
+            hstack.Children.Add(label);
+            var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
+            hstack.Children.Add(ele);
+            sp.Children.Add(hstack);
+        }
+
         public virtual void Dispose()
         {
         }

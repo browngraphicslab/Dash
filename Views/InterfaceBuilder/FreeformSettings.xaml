@@ -7,7 +7,8 @@
     mc:Ignorable="d"
     xmlns:local="using:Dash"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    Loaded="FreeformSettings_OnLoaded">
 
     <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
         <Grid.Background>

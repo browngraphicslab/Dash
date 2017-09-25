@@ -115,8 +115,6 @@ namespace Dash
                 }
             }
         }
-
-
         private WriteableBitmap FromBase64(string base64)
         {
             var bytes = Convert.FromBase64String(base64);
