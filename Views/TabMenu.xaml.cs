@@ -54,8 +54,6 @@ namespace Dash
             var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
             var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0,0), new Size(200,200)).Document;
             blankDocument.SetActiveLayout(layout, true, true);
-            //blankDocument.SetWidth(200);
-            //blankDocument.SetHeight(200);
 
             var colfields = new Dictionary<KeyController, FieldModelController>
             {
@@ -68,8 +66,6 @@ namespace Dash
                 new CollectionBox(
                     new ReferenceFieldModelController(colDoc.GetId(),
                         DocumentCollectionFieldModelController.CollectionKey), 0,0,200,200).Document, true, true);
-            //colDoc.SetWidth(200);
-            //colDoc.SetHeight(200);
 
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
             postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
@@ -89,8 +85,6 @@ namespace Dash
                 docAppend,
                 compound,
                 map,
-                
-                
             };
 
             xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
@@ -108,9 +102,12 @@ namespace Dash
 
         public static void ShowAt(Canvas canvas, Point position)
         {
-            if (Instance != null && !canvas.Children.Contains(Instance))
+            if (Instance != null)
             {
-                canvas.Children.Add(Instance);
+                if (!canvas.Children.Contains(Instance))
+                {
+                    canvas.Children.Add(Instance);
+                }
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();

@@ -811,6 +811,7 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
             if (InkFieldModelController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;

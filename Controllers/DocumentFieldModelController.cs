@@ -89,7 +89,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new DocumentFieldModelController(Data);
+            return new DocumentFieldModelController(Data.GetCopy());
         }
     }
 }

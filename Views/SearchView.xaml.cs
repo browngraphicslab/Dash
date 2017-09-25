@@ -30,7 +30,7 @@ namespace Dash
             //this.SetManipulation();
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
-
+            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
 
         }
 

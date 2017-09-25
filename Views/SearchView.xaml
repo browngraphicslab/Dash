@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
-        <Grid MaxWidth="300" MaxHeight="700">
+        <Grid MaxWidth="300" MaxHeight="700" MinWidth="100">
             <Grid.Background>
                 <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
             </Grid.Background>
@@ -25,7 +25,7 @@
                 <!--<Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged" Margin="0,-30,0,0"  IsHeaderItemsCarouselEnabled="False" ManipulationMode="None">
                 </Pivot>-->
                 <!--<ListView x:Name="xTitleList" HorizontalContentAlignment="Stretch" Margin="0,10,0,10" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged" ManipulationMode="None"></ListView>-->
-                <ContentPresenter x:Name="xContentPresenter"  HorizontalContentAlignment="Stretch" Margin="3,10,3,10" BorderBrush="Transparent" BorderThickness="0"></ContentPresenter>
+                <ContentPresenter x:Name="xContentPresenter"  HorizontalContentAlignment="Stretch" Margin="3,10,3,10" MinWidth="100" BorderBrush="Transparent" BorderThickness="0"></ContentPresenter>
             </Grid>
         </Grid>
     </userControl:Floating>

@@ -80,6 +80,7 @@ namespace Dash
         public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
 
 
+
         #region Event Handlers
 
         /// <summary>
@@ -126,7 +127,9 @@ namespace Dash
         {
             foreach (var documentController in documents)
             {
-                DocumentViewModels.Add(new DocumentViewModel(documentController, IsInInterfaceBuilder, c));
+                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                documentViewModel.IsDraggerVisible = this.IsSelected;
+                DocumentViewModels.Add(documentViewModel);
             }
         }
 

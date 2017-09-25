@@ -141,6 +141,7 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)

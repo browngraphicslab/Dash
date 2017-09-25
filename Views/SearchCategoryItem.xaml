@@ -13,7 +13,7 @@
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList"  ItemsSource="{x:Bind ListContent}" MinWidth="75">
+        <ListView x:Name="xList"  ItemsSource="{x:Bind ListContent}" MinWidth="100">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Padding" Value="2"/>
