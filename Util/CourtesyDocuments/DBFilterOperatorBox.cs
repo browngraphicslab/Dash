@@ -55,7 +55,11 @@ namespace Dash
             opDoc.DocumentFieldUpdated += (sender, args) =>
             {
                 var opFieldModelController = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                if (opFieldModelController.Outputs.ContainsKey(args.Reference.FieldKey))
+                bool allOutputsSet = true;
+                foreach (var o in opFieldModelController.Outputs)
+                    if (!args.Context.ContainsDataKey(o.Key))
+                        allOutputsSet = false;
+                if (allOutputsSet && opFieldModelController.Outputs.ContainsKey(args.Reference.FieldKey))
                     chart.OperatorOutputChanged(args.Context);
             };
 

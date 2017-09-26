@@ -25,8 +25,16 @@ namespace Dash
         public DBFilterChart()
         {
             this.InitializeComponent();
+            this.Loaded += DBFilterChart_Loaded;
             xParameter.Style = Application.Current.Resources["xPlainTextBox"] as Style;
         }
+
+        private void DBFilterChart_Loaded(object sender, RoutedEventArgs e)
+        {
+            // hack to force operator to execute once when loaded...
+            OpDoc.SetField(DBFilterOperatorFieldModelController.AutoFitKey, new NumberFieldModelController(2), true);
+        }
+
         DocumentController _opDoc;
         public DocumentController OpDoc
         {
@@ -49,7 +57,7 @@ namespace Dash
                     Key = DBFilterOperatorFieldModelController.FilterFieldKey,
                     Context = new Context(OpDoc)
                 });
-                xAutoFit.AddFieldBinding(CheckBox.IsCheckedProperty, new FieldBinding<TextFieldModelController>()
+                xAutoFit.AddFieldBinding(CheckBox.IsCheckedProperty, new FieldBinding<NumberFieldModelController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = OpDoc,
@@ -57,10 +65,19 @@ namespace Dash
                     Converter = new DoubleToBoolConverter(),
                     Context = new Context(OpDoc)
                 });
+                xAvg.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<NumberFieldModelController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = OpDoc,
+                    Key = DBFilterOperatorFieldModelController.SelfAvgResultKey,
+                    Converter = new DoubleToStringConverter(),
+                    Context = new Context(OpDoc)
+                });
             }
         }
         public void UpdateBucket(int changedBucket, double maxDomain)
         {
+            xAutoFit.IsChecked = false;
             var buckets = (_opDoc.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, new Context(_opDoc))).Data.Select((fm) => fm as NumberFieldModelController).ToList();
             (buckets[changedBucket] as NumberFieldModelController).Data = maxDomain;
             _opDoc.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(buckets), true);
@@ -85,10 +102,11 @@ namespace Dash
         }
         public void OperatorOutputChanged(Context context)
         {
-            FieldModelController barcnts, results, buckets;
+            FieldModelController barcnts, results, buckets, avg;
             if (context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.CountBarsKey), out barcnts) &&
                 context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.ResultsKey), out results) &&
-                context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.BucketsKey), out buckets))
+                context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.BucketsKey), out buckets) &&
+                context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), out avg))
             {
                 var xBars = xBarChart.Children.Select((c) => (c as DBFilterChartBar)).ToList();
 
@@ -105,6 +123,20 @@ namespace Dash
                 {
                     setupBars((buckets as ListFieldModelController<NumberFieldModelController>)?.Data);
                     xBars = xBarChart.Children.Select((c) => (c as DBFilterChartBar)).ToList();
+                }
+
+                {
+                    var savedBuckets = (_opDoc.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, new Context(_opDoc))).Data.Select((fm) => fm as NumberFieldModelController).ToList();
+                    var anyBucketChanged = false;
+                    for (int i = 0; i < (buckets as ListFieldModelController<NumberFieldModelController>)?.Data?.Count; i++)
+                    {
+                        var newBucket = ((buckets as ListFieldModelController<NumberFieldModelController>).Data[i] as NumberFieldModelController)?.Data ?? 0;
+                        if (newBucket != (savedBuckets[i] as NumberFieldModelController).Data)
+                            anyBucketChanged = true;
+                        (savedBuckets[i] as NumberFieldModelController).Data = newBucket;
+                    }
+                    if (anyBucketChanged)
+                        _opDoc.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(savedBuckets), true);
                 }
 
                 double barSum = 0;
