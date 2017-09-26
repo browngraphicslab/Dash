@@ -228,7 +228,6 @@ namespace Dash
 
         public DBTest()
         {
-            
             var Ump1Doc = PrototypeUmp.MakeDelegate();
             var Ump2Doc = PrototypeUmp.MakeDelegate();
             var Vol1Doc = PrototypeVol.MakeDelegate();
@@ -353,7 +352,7 @@ namespace Dash
             //    Documents.Add(CreateWebPage("http://www.msn.com"));
             //}
 
-            DBDoc.SetField(KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
+            DBDoc.DocumentFieldUpdated -= DBDoc_DocumentFieldUpdated;
             DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;
                 
         }
