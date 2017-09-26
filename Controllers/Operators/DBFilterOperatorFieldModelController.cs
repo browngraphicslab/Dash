@@ -103,7 +103,7 @@ namespace Dash.Controllers.Operators
                 var visited = new List<DocumentController>();
                 visited.Add(dmc);
                 var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
-                var field = refField?.GetDocumentController(null).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, null);
+                var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, new Context(dmc));
                 if (field != null)
                 {
                     if (field.Data < minValue) minValue = field.Data;
@@ -141,7 +141,7 @@ namespace Dash.Controllers.Operators
                     visited.Add(dmc);
 
                     var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
-                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, null);
+                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, new Context(dmc));
                     if (field != null)
                     {
                         sumOfFields += field.Data;

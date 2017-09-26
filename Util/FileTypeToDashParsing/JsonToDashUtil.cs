@@ -53,6 +53,8 @@ namespace Dash
 
             // wrap the field in an instance of the prototype
             var protoInstance = schema.Prototype.MakeDelegate();
+
+            DBTest.DBDoc.AddChild(protoInstance);
             protoInstance.SetField(key, field, true);
 
             SetDefaultsOnActiveLayout(schema, protoInstance);
@@ -107,6 +109,7 @@ namespace Dash
             SetDefaultFieldsOnPrototype(schema.Prototype, fields);
 
             var protoInstance = schema.Prototype.MakeDelegate();
+            DBTest.DBDoc.AddChild(protoInstance);
             SetDefaultsOnActiveLayout(schema, protoInstance);
             protoInstance.SetFields(fields, true);
             return protoInstance;
