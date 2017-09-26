@@ -17,6 +17,8 @@ namespace Dash
     public enum FileType
     {
         Ppt,
+        Web,
+        Image,
         Json,
         Csv,
         Pdf
@@ -174,7 +176,7 @@ namespace Dash
                 foreach (var file in files)
                 {
                     var fileType = GetSupportedFileType(file);
-                    var documentController = await ParseFileAsync(fileType, file, where);
+                    var documentController = await ParseFileAsync(fileType, file, where, e);
                     if (documentController != null)
                     {
                         documentController.GetPositionField().Data = where;
@@ -189,18 +191,22 @@ namespace Dash
         }
 
         // TODO comment this method - LM
-        private static async Task<DocumentController> ParseFileAsync(FileType fileType, IStorageFile file, Point where)
+        private static async Task<DocumentController> ParseFileAsync(FileType fileType, IStorageFile file, Point where, DragEventArgs e)
         {
             switch (fileType)
             {
                 case FileType.Ppt:
-                    return null;//await new PptToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
+                    return await new PptToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Json:
                     return await new JsonToDashUtil().ParseFileAsync(file);
                 case FileType.Csv:
                     return await new CsvToDashUtil().ParseFileAsync(file);
+                case FileType.Image:
+                    return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
+                case FileType.Web:
+                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
                 case FileType.Pdf:
-                    return null;//await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                    return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
             }
             throw new NotImplementedException("We need to implement the proper parser!");
         }
@@ -222,6 +228,16 @@ namespace Dash
                 return FileType.Csv;
             if (storagePath.EndsWith(".pptx"))
                 return FileType.Ppt;
+            if (storagePath.EndsWith(".pptx"))
+                return FileType.Ppt;
+            if (storageItem.FileType == ".url")
+                return FileType.Web;
+            if (storageItem.FileType == ".jpg" ||
+                storageItem.FileType == ".jpeg" ||
+                storageItem.FileType == ".png" ||
+                storageItem.FileType == ".png" ||
+                storageItem.FileType == ".gif")
+                return FileType.Image;
             throw new ArgumentException($"We do not support the file type for the passed in file: {storageItem.Path}");
         }
 

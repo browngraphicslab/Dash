@@ -118,6 +118,7 @@
     <Compile Include="Util\FileTypeToDashParsing\IFileParser.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
     <Compile Include="Views\DBFilterChart.xaml.cs">
       <DependentUpon>DBFilterChart.xaml</DependentUpon>
     </Compile>

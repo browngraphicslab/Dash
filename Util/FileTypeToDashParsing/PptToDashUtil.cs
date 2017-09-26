@@ -10,9 +10,14 @@ namespace Dash
     public class PptToDashUtil : IFileParser
     {
 
-        public Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath)
+        public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
         {
-            throw new NotImplementedException();
+            var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            StorageFile file = await localFolder.CreateFileAsync("filename.pptx", CreationCollisionOption.ReplaceExisting);
+            await sFile.CopyAndReplaceAsync(file);
+            await Windows.System.Launcher.LaunchFileAsync(file);
+
+            return null;
         }
     }
 }
