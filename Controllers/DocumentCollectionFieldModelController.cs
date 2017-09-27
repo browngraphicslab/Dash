@@ -183,7 +183,7 @@ namespace Dash
         {
             var rfmc = new ReferenceFieldModelController(id, kc);
             var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
-            var colView = new CollectionView(vm, CollectionView.CollectionViewType.Grid);
+            var colView = new CollectionView(vm, kc.Name == "CSVRecords" ? CollectionView.CollectionViewType.DB : CollectionView.CollectionViewType.Grid);
             sp.Children.Add(colView);
             colView.TryBindToParentDocumentSize();
         }

@@ -147,7 +147,7 @@ namespace Dash
 
             //var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
             var prototypeUmpAssignmentsLayout = new CollectionBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
-            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewKey, new TextFieldModelController("Text"), true);
+            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Text.ToString()), true);
 
 
             var prototypeLayout = new StackLayout(new[] { prototypeUmpLayout.Document, prototypeUmpAssignmentsLayout.Document });

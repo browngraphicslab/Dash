@@ -107,7 +107,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var cnote = new CollectionNote(where);
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
             cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
             var newDoc = cnote.Document;
             

@@ -9,6 +9,7 @@ using Windows.Storage;
 using CsvHelper;
 using Newtonsoft.Json;
 using Dash.Controllers.Operators;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -48,17 +49,11 @@ namespace Dash
             }
             var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
             {
-                ["result"] = records,
+                ["CSVRecords"] = records,
             };
 
             var json = JsonConvert.SerializeObject(resultDict);
-            var collectedDoc = new JsonToDashUtil().ParseJsonString(json, item.Path);
-            var resultsKey = collectedDoc.EnumFields(true).First((d) => d.Key.Name == "result").Key;
-
-
-            // would prefer to return a schema of the documents contained, instead of a chart of one attribute...
-            var FirstKey = (collectedDoc.GetField(resultsKey) as DocumentCollectionFieldModelController)?.Data?.First()?.EnumFields()?.First((f) => !f.Key.Name.StartsWith("_"));
-            return DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(collectedDoc.GetId(), resultsKey), FirstKey != null ? ((KeyValuePair<KeyController,FieldModelController>)FirstKey).Key.Name : "");
+            return  new JsonToDashUtil().ParseJsonString(json, item.Path);
         }
     }
 }

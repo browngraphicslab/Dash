@@ -25,7 +25,7 @@ namespace Dash
             //var where = sender is Covar storageFile = items[0] as StorageFile;
             if (storageFile.Path.EndsWith(".pdf"))
             {
-                var pdfDoc = new CollectionNote(new Point());
+                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page);
                 var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
                 var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as DocumentCollectionFieldModelController;
                 for (uint i = 0; i < pdf.PageCount; i++)
@@ -42,7 +42,7 @@ namespace Dash
                         var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
                             300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50);
 
-                        var pageDoc = new CollectionNote(new Point(), Path.GetFileName(storageFile.Path) + ": Page " + i, image.Document).Document;
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, image.Document).Document;
                         children?.AddDocument(pageDoc);
                     }
                 return pdfDoc.Document;

@@ -40,7 +40,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Page, Text
+            Freeform, List, Grid, Page, Text, DB
         }
 
         private CollectionViewType _viewType;
@@ -96,8 +96,11 @@ namespace Dash
                 case CollectionViewType.Page:
                     CurrentView = new CollectionPageView();
                     break;
+                case CollectionViewType.DB:
+                    CurrentView = new CollectionDBView();
+                    break;
                 case CollectionViewType.List:
-                    CurrentView = new CollectionListView();
+                    CurrentView = new CollectionDBView();// new CollectionListView();
                     break;
                 case CollectionViewType.Text:
                     CurrentView = new CollectionTextView();
@@ -164,6 +167,13 @@ namespace Dash
         {
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
+            xContentControl.Content = CurrentView;
+        }
+
+        private void SetDBView()
+        {
+            if (CurrentView is CollectionDBView) return;
+            CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
         }
 
@@ -270,6 +280,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
+            var setDB = new Action(SetDBView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
@@ -281,7 +292,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))

@@ -119,6 +119,12 @@
     <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
+    <Compile Include="Views\CollectionDBChartBar.xaml.cs">
+      <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBView.xaml.cs">
+      <DependentUpon>CollectionDBView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DBFilterChart.xaml.cs">
       <DependentUpon>DBFilterChart.xaml</DependentUpon>
     </Compile>
@@ -555,6 +561,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -97,11 +97,11 @@ namespace Dash.Controllers.Operators
             var buckets      =  !inputs.ContainsKey(BucketsKey)    ? null : (inputs[BucketsKey]  as ListFieldModelController<NumberFieldModelController>)?.Data;
 
             if (dbDocs != null)
-                filterDocuments(dbDocs, autofit ? autoFitBuckets(dbDocs, pattern.ToList(), buckets.Count, inputs) : buckets, pattern.ToList(), selectedBars, inputs, outputs);
+                filterDocuments(dbDocs, autofit ? autoFitBuckets(dbDocs, pattern.ToList(), buckets.Count) : buckets, pattern.ToList(), selectedBars, outputs);
         }
         
 
-        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars, Dictionary<KeyController, FieldModelController> inputs)
+        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
         {
             double minValue = double.MaxValue;
             double maxValue = double.MinValue;
@@ -130,7 +130,7 @@ namespace Dash.Controllers.Operators
             return barDomains.Select((b) => b as FieldModelController).ToList();
         }
 
-        public void filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public void filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, Dictionary<KeyController, FieldModelController> outputs)
         {
             bool keepAll = selectedBars.Count == 0;
 
