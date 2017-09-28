@@ -28,7 +28,8 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="xIcon" Text="□" VerticalAlignment="Stretch" FontSize="20" HorizontalAlignment="Stretch">
                 </TextBlock>
-                <TextBlock x:Name="xText" Text="{x:Bind DocController.DocumentModel.DocumentType.Type}"  Margin="5,0,0,0" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch"></TextBlock>
+                <TextBlock x:Name="xText" Text="{x:Bind DocController.DocumentModel.DocumentType.Type, Mode=TwoWay}"  Margin="5,0,0,0" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch" DoubleTapped="XText_OnDoubleTapped"></TextBlock>
+                <TextBox x:Name="xNameBox" Text="{x:Bind DocController.DocumentModel.DocumentType.Type, Mode=TwoWay}" Margin="5,0,0,0" Grid.Column="1" FontSize="12" Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch" BorderBrush="White" Visibility="Collapsed" LostFocus="XNameBox_OnLostFocus"></TextBox>
             </Grid>
         </Grid>
         <Grid x:Name="xListViewGrid" Grid.Row="1">

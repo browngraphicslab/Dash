@@ -23,9 +23,10 @@ namespace Dash
     {
         private List<DocumentController> ListItemSource { get; set; } =
             new List<DocumentController>();
+
         public DocumentController DocController;
         public HierarchicalViewItemList List;
-
+        public bool IsActive = true;
         public bool IsChild
         {
             get { return IsChild; }
@@ -90,9 +91,24 @@ namespace Dash
             HierarchicalMenu.Instance.SelectItem(this);
         }
 
-        public void SetGridColor(SolidColorBrush color)
+        public void Select()
         {
-            xGrid.Background = color;
+            xGrid.Background = new SolidColorBrush(Colors.White);
+        }
+
+        public void Deselect()
+        {
+            xGrid.Background = new SolidColorBrush(Colors.Transparent);
+        }
+
+        public void Deactivate()
+        {
+            xGrid.Background = new SolidColorBrush(Colors.Gainsboro) {Opacity = 0.2};
+            xGrid.IsHitTestVisible = false;
+            xText.Foreground = new SolidColorBrush(Colors.Gainsboro);
+            xIcon.Foreground = new SolidColorBrush(Colors.Gainsboro);
+            xCollapseExpandButton.Foreground = new SolidColorBrush(Colors.Gainsboro);
+            IsActive = false;
         }
 
         public void AddChild(HierarchicalViewItem item)
@@ -132,5 +148,17 @@ namespace Dash
             }
         }
 
+        private void XText_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            xText.Visibility = Visibility.Collapsed;
+            xNameBox.Visibility = Visibility.Visible;
+            xNameBox.Focus(FocusState.Programmatic);
+        }
+
+        private void XNameBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            xText.Visibility = Visibility.Visible;
+            xNameBox.Visibility = Visibility.Collapsed;
+        }
     }
 }

@@ -73,6 +73,7 @@ namespace Dash
             }
             return parents;
         }
+
         public void RemoveFromListSource(DocumentController controller)
         {
             var parents = this.FindAllPrototypes(controller);
@@ -109,6 +110,7 @@ namespace Dash
             {
                 var count = parents.Count() - 1;
                 var list = _itemsDictionary[topLevelParent].List.Items;
+                // there are issues if a prototype is removed but the delegates are not?
                 while (count > 1)
                 {
                     list = list[parents[count - 1]].List.Items;
@@ -150,16 +152,18 @@ namespace Dash
                     DocumentView.DocumentViews[_previouslySelected.DocController].OuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
                     DocumentView.DocumentViews[_previouslySelected.DocController].OuterGrid.BorderThickness = new Thickness(0);
                 }
-                _previouslySelected.SetGridColor(new SolidColorBrush(Colors.Transparent));
+                if (_previouslySelected.IsActive)
+                    _previouslySelected.Deselect();
             }
 
             _previouslySelected = item;
-            _previouslySelected.SetGridColor(new SolidColorBrush(Colors.White));
+            _previouslySelected.Select();
 
             if (DocumentView.DocumentViews.ContainsKey(item.DocController))
             {
-                DocumentView.DocumentViews[_previouslySelected.DocController].OuterGrid.BorderBrush = new SolidColorBrush(Colors.DarkMagenta);
+                DocumentView.DocumentViews[_previouslySelected.DocController].OuterGrid.BorderBrush = new SolidColorBrush(Colors.DarkBlue) {Opacity = 0.5};
                 DocumentView.DocumentViews[_previouslySelected.DocController].OuterGrid.BorderThickness = new Thickness(3);
+
             }
         }
 

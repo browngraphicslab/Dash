@@ -52,8 +52,18 @@ namespace Dash
 
         public void RemoveItem(DocumentController controller)
         {
-            ListItemSource.Remove(Items[controller]);
-            Items.Remove(controller);
+            //// issues with delete, what should happen to delegates when documentview of the prototype is removed from the workspace?
+            //if (Items[controller].List?.ListItemSource.Count != 0)
+            //{
+            //    foreach (var child in Items[controller].List?.ListItemSource)
+            //    {
+            //        ListItemSource.Add(child);
+            //        Items.Add(child.DocController, child);
+            //    }
+            //}
+            //ListItemSource.Remove(Items[controller]);
+            //Items.Remove(controller);
+            Items[controller].Deactivate();
         }
     }
 }
