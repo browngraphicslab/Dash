@@ -7,10 +7,11 @@ namespace Dash
     {
         public override Visibility ConvertDataToXaml(bool data, object parameter = null)
         {
-            if (parameter != null)
-            {
-                return (data || (bool)parameter) ? Visibility.Visible : Visibility.Collapsed;
-            }
+            //System.Diagnostics.Debug.WriteLine("parameter is " + parameter); 
+            //if (parameter != null)
+            //{
+            //    return (data || (bool)parameter) ? Visibility.Visible : Visibility.Collapsed;
+            //}
             return data ? Visibility.Visible : Visibility.Collapsed;
         }
 

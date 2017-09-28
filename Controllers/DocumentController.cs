@@ -16,18 +16,40 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        //public bool HasDelegatesOrPrototype { get { return HasDelegates || HasPrototype; } set { Debug.WriteLine("value is.... " + value); } }
+
+        public bool HasDelegatesOrPrototype { get; set; }
+
+        private bool _hasDelegates; 
         public bool HasDelegates {
             get {
+                //return _hasDelegates; 
                 var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
                 ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
                 : null;
 
-                if (currentDelegates == null) return false;
-                return currentDelegates.Data.Count() > 0;
+                if (currentDelegates == null) return _hasDelegates=  false;
+                return _hasDelegates = currentDelegates.Data.Count() > 0;
+            }
+            set
+            {
+                _hasDelegates = value;
+                HasDelegatesOrPrototype = value || HasPrototype;
+
             }
         }
-
-        public bool HasPrototype { get { return _fields.ContainsKey(KeyStore.PrototypeKey); } }
+        private bool _hasPrototypes;
+        public bool HasPrototype {
+            get {
+                //return _hasPrototypes;
+                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
+            }
+            set
+            {
+                _hasPrototypes = value;
+                HasDelegatesOrPrototype = value || HasDelegates; 
+            }
+        }
 
         public enum FieldUpdatedAction
         {
@@ -494,6 +516,7 @@ namespace Dash
                 shouldExecute = ShouldExecute(c, key);
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+                if (key == KeyStore.PrototypeKey) HasPrototype = true; 
             }
             if (shouldExecute)
             {
@@ -746,6 +769,7 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
+                HasDelegates = true; 
             }
             return currentDelegates;
         }

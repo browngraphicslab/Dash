@@ -102,9 +102,9 @@
 
         <!--Rectangles that indicate whether document is a delegate or a copy-->
         <Canvas x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" HorizontalAlignment="Left" Height="23"
-            Visibility="{Binding Path=DocumentController.HasPrototype, ConverterParameter={Binding Path=DocumentController.HasDelegates}, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" >
+            Visibility="{Binding Path=DocumentController.HasDelegatesOrPrototype, Converter={StaticResource BoolToVisibilityConverter}}" >
             <Canvas Canvas.Left="0" Canvas.Top="0">
-                <Rectangle x:Name="xDelegateDiamond" Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
+                <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
                 <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="1"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
@@ -120,7 +120,7 @@
                     </TransformGroup>
                 </Canvas.RenderTransform>
             </Canvas>
-            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="20" Canvas.Top="-14" IsHitTestVisible="{Binding IsSelected}"></TextBox>
+            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="20" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
         </Canvas>
     </Grid>
 </local:SelectionElement>

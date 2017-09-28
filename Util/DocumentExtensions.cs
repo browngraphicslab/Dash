@@ -137,9 +137,6 @@ namespace Dash
                         true);
             }
 
-            newDoc.SetField(KeyStore.PrototypeKey, new DocumentFieldModelController(doc), true); // KB TODO remove this later 
-            doc.GetDelegates().AddDocument(newDoc);
-
             return newDoc;
         }
 
