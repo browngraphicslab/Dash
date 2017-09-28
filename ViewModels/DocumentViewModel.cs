@@ -108,6 +108,7 @@ namespace Dash
                         LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
                     //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
+                    Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
                     posFieldModelController.Data = value.Translate;
                     // set scale center
                     var scaleCenterFieldModelController =

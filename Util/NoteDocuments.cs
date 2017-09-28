@@ -75,7 +75,7 @@ namespace Dash
             }
             public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
             public DocumentController DataDocument { get; set; }
-            public CollectionNote(Point where, string title = "", DocumentController collectedDocument = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "", DocumentController collectedDocument = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
 
@@ -88,6 +88,7 @@ namespace Dash
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
                 docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
                 docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(300), true);
+                docLayout.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(viewtype.ToString()), true);
 
                 var listOfCollectedDocs = collectedDocument != null ? new List<DocumentController>(new DocumentController[] { collectedDocument }) : new List<DocumentController>();
                 dataDocument.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(listOfCollectedDocs), true);

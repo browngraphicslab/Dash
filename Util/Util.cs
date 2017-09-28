@@ -140,7 +140,7 @@ namespace Dash
         {
             var scrollBar = xList.GetFirstDescendantOfType<ScrollBar>();
             scrollBar.ManipulationMode = ManipulationModes.All;
-            scrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
+            scrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
         }
 
         public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA, DocumentCollectionFieldModelController setB)

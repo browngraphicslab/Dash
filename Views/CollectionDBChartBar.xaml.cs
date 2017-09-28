@@ -18,16 +18,15 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class DBFilterChartBar : UserControl
+    public sealed partial class CollectionDBChartBar : UserControl
     {
-        public DBFilterChartBar()
+        public CollectionDBChartBar()
         {
             this.InitializeComponent();
         }
-
         public int BucketIndex { get; set; }
 
-        public DBFilterChart FilterChart { get; set; }
+        public CollectionDBView FilterChart { get; set; }
 
         double _maxDomain = 0;
         public double MaxDomain

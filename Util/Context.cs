@@ -98,6 +98,14 @@ namespace Dash
             _data[reference] = data;
         }
 
+        public bool ContainsDataKey(KeyController key)
+        {
+            foreach (var d in _data)
+                if (d.Key.FieldKey == key)
+                    return true;
+            return false;
+        }
+
         public bool TryDereferenceToRoot(FieldReference reference, out FieldModelController data)
         {
             if (_data.ContainsKey(reference))

@@ -140,22 +140,13 @@ namespace Dash
             itemsControl?.Items?.Remove(this);
         }
 
-        private void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        public void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            TransformGroup group = new TransformGroup();
-            
-            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            //TranslateTransform translate = new TranslateTransform
-            //{
-            //    X = p.X,
-            //    Y = p.Y
-            //};
-
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this); 
-            group.Children.Add(this.RenderTransform);
+            var group = new TransformGroup();          
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this); 
+            group.Children.Add(RenderTransform);
             group.Children.Add(translate);
-            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
-
+            RenderTransform = new MatrixTransform { Matrix = group.Value };
             e.Handled = true; 
         }
 
