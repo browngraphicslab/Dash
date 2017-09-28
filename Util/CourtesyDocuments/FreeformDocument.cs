@@ -91,6 +91,7 @@ namespace Dash
             };
             if (isInterfaceBuilderLayout)
             {
+                /*
                 var icon = new TextBlock()
                 {
                     Text = "⊡",
@@ -99,9 +100,12 @@ namespace Dash
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
+                
                 grid.Children.Insert(0, icon);
+                */
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
+                // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
             return grid;
@@ -113,6 +117,7 @@ namespace Dash
             grid.Children.Clear();
             if (isInterfaceBuilder)
             {
+                /*
                 var icon = new TextBlock()
                 {
                     Text = "⊡",
@@ -122,6 +127,7 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Add(icon);
+                */
             }
             AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder);
         }

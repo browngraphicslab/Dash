@@ -75,6 +75,15 @@ namespace Dash
             return KeyModel.Name;
         }
 
+        public bool IsUnrenderedKey()
+        {
+            return Equals(KeyStore.DelegatesKey) ||
+                   Equals(KeyStore.PrototypeKey) ||
+                   Equals(KeyStore.LayoutListKey) ||
+                   Equals(KeyStore.ActiveLayoutKey) ||
+                   Equals(KeyStore.IconTypeFieldKey);
+        }
+
         public virtual void Dispose()
         {
         }

@@ -81,13 +81,6 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            //var jsonDoc = JsonToDashUtil.RunTests();
-
-            //var sw = new Stopwatch();
-            //sw.Start();
-            //DisplayDocument(jsonDoc);
-            //sw.Stop();
-
             _radialMenu = new RadialMenuView(xCanvas);
 
             _radialMenu.Loaded += delegate
@@ -96,6 +89,8 @@ namespace Dash
             };
             Loaded += OnLoaded;
             //xCanvas.Children.Add(_radialMenu);
+
+
 
         }
 
@@ -199,7 +194,7 @@ namespace Dash
             var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
-            var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));
+            var responseAsDocument = new JsonToDashUtil().ParseJsonString(tweetsByUser, tweetsByUserURL.ToString(true));
             DisplayDocument(responseAsDocument);
 
         }

@@ -40,6 +40,8 @@ namespace Dash
         /// </summary>
         private ManipulationControls manipulator;
 
+        private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
+
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
         // the document view that is being dragged
@@ -83,7 +85,7 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
+            //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
@@ -94,7 +96,7 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
@@ -229,7 +231,8 @@ namespace Dash
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
 
-            //xMenuCanvas.Children.Add(_docMenu);
+            if (!useFixedMenu)
+                xMenuCanvas.Children.Add(_docMenu);
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
         }
@@ -470,7 +473,8 @@ namespace Dash
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
 
-            MainPage.Instance.HideDocumentMenu();
+            if (useFixedMenu)
+                MainPage.Instance.HideDocumentMenu();
 
         }
 
@@ -572,7 +576,8 @@ namespace Dash
             if (!isSelected)
             {
                 colorStoryboardOut.Begin();
-                MainPage.Instance.HideDocumentMenu();
+                if (useFixedMenu)
+                    MainPage.Instance.HideDocumentMenu();
             }
             else
             {
@@ -584,9 +589,12 @@ namespace Dash
                 if (_docMenu != null && MainPage.Instance != null)
                 {
                     colorStoryboard.Begin();
-                    MainPage.Instance.SetOptionsMenu(_docMenu);
-                    if (MainPage.Instance.MainDocView != this)
-                        MainPage.Instance.ShowDocumentMenu();
+                    if (useFixedMenu)
+                    {
+                        MainPage.Instance.SetOptionsMenu(_docMenu);
+                        if (MainPage.Instance.MainDocView != this)
+                            MainPage.Instance.ShowDocumentMenu();
+                    }
                 }
             }
         }

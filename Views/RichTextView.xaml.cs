@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using Dash.Controllers.Operators;
+using DashShared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -133,12 +134,17 @@ namespace Dash
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
         {
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
             if (theDoc == null && createIfNeeded)
             {
                 if (refText.StartsWith("http"))
                 {
                     theDoc = DBTest.CreateWebPage(refText);
+                }
+                else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
+                {
+                    theDoc = DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {

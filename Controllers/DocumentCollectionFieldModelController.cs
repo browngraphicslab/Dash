@@ -178,5 +178,14 @@ namespace Dash
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
         }
+
+        public override void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder=false)
+        {
+            var rfmc = new ReferenceFieldModelController(id, kc);
+            var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
+            var colView = new CollectionView(vm, kc.Name == "CSVRecords" ? CollectionView.CollectionViewType.Schema : CollectionView.CollectionViewType.Grid);
+            sp.Children.Add(colView);
+            colView.TryBindToParentDocumentSize();
+        }
     }
 }

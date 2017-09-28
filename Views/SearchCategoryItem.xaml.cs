@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -46,11 +47,7 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-
-        /// <summary>
-        /// Background color of the listview
-        /// </summary>
-        public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
+        
         
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
@@ -73,16 +70,11 @@ namespace Dash
                 action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
                 MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
+        }
 
-            xList.Loaded += (s, e) =>
-            {
-                xList.GetFirstDescendantOfType<ScrollViewer>().GetFirstDescendantOfType<ScrollBar>()
-                        .ManipulationDelta +=
-                    (ss, ee) =>
-                    {
-                        ee.Handled = true;
-                    };
-            };
+        private void XList_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xList);
         }
     }
 }

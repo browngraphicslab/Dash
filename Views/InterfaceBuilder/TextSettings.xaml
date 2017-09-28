@@ -10,9 +10,6 @@
     d:DesignWidth="300">
 
     <Grid Width="300" HorizontalAlignment="Center" MinHeight="300" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>

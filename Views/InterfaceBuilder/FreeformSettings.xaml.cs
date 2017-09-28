@@ -59,5 +59,12 @@ namespace Dash
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(layoutDocument,context));
         }
+
+        private void FreeformSettings_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ManipulationMode = ManipulationModes.All;
+            var window = this.GetFirstAncestorOfType<WindowTemplate>();
+            if (window != null) ManipulationDelta += window.HeaderOnManipulationDelta;
+        }
     }
 }

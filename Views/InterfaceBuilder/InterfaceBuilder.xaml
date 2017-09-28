@@ -67,7 +67,7 @@
 
                 </Grid>
 
-                <Rectangle Grid.Row="2" Fill="#99FFFFFF"></Rectangle>
+                <Rectangle Grid.Row="2" ></Rectangle>
                 <GridView x:Name="ButtonsView" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting" Visibility="Collapsed">
                     <StackPanel Orientation="Vertical" x:Name="GridButton" Padding="5,10,5,0" VerticalAlignment="Center">
                         <Button IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,0,0,-2.5">

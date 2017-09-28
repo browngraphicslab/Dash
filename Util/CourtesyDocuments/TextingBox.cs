@@ -33,7 +33,7 @@ namespace Dash
         public static string DefaultText = "Default Text";
         public static string DefaultFontWeight = "Normal"; // 100;
         public static double DefaultTextAlignment = (int)TextAlignment.Left;
-        public static double DefaultFontSize = 12;
+        public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
         public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null, Color? backgroundColor = null)
@@ -42,7 +42,7 @@ namespace Dash
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);
-            //SetFontSizeField(Document, DefaultFontSize, true, null);
+            SetFontSizeField(Document, DefaultFontSize, true, null);
             SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
             if (backgroundColor != null)
                 SetBackgroundColorField(Document, (Color)backgroundColor, true, null);

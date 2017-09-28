@@ -29,7 +29,7 @@ namespace Dash
 
         public static DocumentController CreateDBFilterDocumentController()
         {
-            return DBFilterOperatorFieldModelController.CreateFilter(DBTest.DBDoc, "");
+            return DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
         }
         public static DocumentController CreateFilterDocumentController()
         {

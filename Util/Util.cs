@@ -16,7 +16,10 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Composition;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using LightBuzz.SMTP;
 
@@ -116,6 +119,28 @@ namespace Dash
                 X = p.X * elemScale,
                 Y = p.Y * elemScale
             };
+        }
+
+        /// <summary>
+        /// Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too stubborn
+        /// </summary>
+        /// <param name="toBind"></param>
+        public static void ForceBindHeightToParentDocumentHeight(FrameworkElement toBind)
+        {
+            var parent = toBind.GetFirstAncestorOfType<DocumentView>();
+            if (parent == null) return;
+            parent.SizeChanged += (ss, ee) =>
+            {
+                toBind.Width = parent.ActualWidth;
+                toBind.Height = parent.ActualHeight;
+            };
+        }
+
+        public static void FixListViewBaseManipulationDeltaPropagation(ListViewBase xList)
+        {
+            var scrollBar = xList.GetFirstDescendantOfType<ScrollBar>();
+            scrollBar.ManipulationMode = ManipulationModes.All;
+            scrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
         }
 
         public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA, DocumentCollectionFieldModelController setB)
