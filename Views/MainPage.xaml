@@ -17,13 +17,13 @@
         <Button Tapped="TwitterTestButtonOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TWITTER TEST</Button>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas-->
-        <StackPanel Width="200" Orientation="Vertical" VerticalAlignment="Stretch" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
+        <StackPanel Width="200" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
-            <local:OperatorSearchView Height="400"></local:OperatorSearchView>
+            <!--local:OperatorSearchView Height="400"></-->
             <!--TextBlock TextAlignment="Center" Foreground="White">-drag-</>
             <TextBlock DragStarting="DocumentTest_OnDragStarting" CanDrag="True" Foreground="White">DOC TEST</TextBlock>
             <TextBlock DragStarting="CollectionTest_OnDragStarting" CanDrag="True" Text="COL TEST" Foreground="White"/>
