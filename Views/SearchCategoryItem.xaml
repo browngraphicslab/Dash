@@ -9,10 +9,10 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CornerRadius="10" Margin="0,10,0,10">
+    <Grid Margin="0,5,0,5">
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList" Loaded="XList_OnLoaded"  ItemsSource="{x:Bind ListContent}"/>
+        <ListView x:Name="xList"  ItemsSource="{x:Bind ListContent}" MinWidth="100" MaxHeight="350" Loaded="XList_OnLoaded"/>
     </Grid>
 </UserControl>

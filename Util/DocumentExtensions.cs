@@ -270,6 +270,7 @@ namespace Dash
             docs.Add(doc, copy);
 
             var fields = new Dictionary<KeyController, FieldModelController>();
+
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.ThisKey))

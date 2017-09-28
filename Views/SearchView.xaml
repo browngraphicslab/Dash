@@ -9,8 +9,22 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
-        <Grid CornerRadius="15" MaxWidth="300" MaxHeight="300">
+    <UserControl.Resources>
+        <Style x:Key="TouchStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="MinHeight" Value="35"/>
+        </Style>
+        <Style x:Key="MouseStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="MinHeight" Value="25"/>
+        </Style>
+    </UserControl.Resources>
+    <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True" x:Name="xFloating" x:FieldModifier="public">
+        <Grid MaxWidth="300" MaxHeight="700" MinWidth="100">
             <Grid.Background>
                 <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
             </Grid.Background>
@@ -19,11 +33,13 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
-                <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="15,20,15,10" PlaceholderText="Filter current category"></AutoSuggestBox>
+                <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="3" PlaceholderText="Search" ></AutoSuggestBox>
             </Grid>
             <Grid Grid.Row="1">
-                <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged">
-                </Pivot>
+                <!--<Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged" Margin="0,-30,0,0"  IsHeaderItemsCarouselEnabled="False" ManipulationMode="None">
+                </Pivot>-->
+                <!--<ListView x:Name="xTitleList" HorizontalContentAlignment="Stretch" Margin="0,10,0,10" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged" ManipulationMode="None"></ListView>-->
+                <ContentPresenter x:Name="xContentPresenter"  HorizontalContentAlignment="Stretch" Margin="3,10,3,10" MinWidth="100" BorderBrush="Transparent" BorderThickness="0"></ContentPresenter>
             </Grid>
         </Grid>
     </userControl:Floating>

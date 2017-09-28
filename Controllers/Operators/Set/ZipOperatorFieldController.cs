@@ -24,7 +24,8 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new ZipOperatorFieldController(OperatorFieldModel);
+            //return new ZipOperatorFieldController(OperatorFieldModel);
+            return new ZipOperatorFieldController();
         }
         public override object GetValue(Context context)
         {
