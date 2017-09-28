@@ -223,8 +223,15 @@ namespace Dash
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
             var lvb = ((UIElement)xContentControl.Content)?.GetFirstDescendantOfType<ListViewBase>();
-            if(lvb?.SelectedItems.Count > 0)
-                lvb.SelectedItems.Clear();
+            var sitemsCount = lvb?.SelectedItems.Count;
+            if (lvb?.SelectedItems.Count > 0)
+                try
+                {
+                    lvb.SelectedItems.Clear();
+                }
+                catch (Exception)
+                {
+                }
         }
 
         private void SelectAllItems()
