@@ -40,7 +40,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Text
+            Freeform, List, Grid, Page, Text, DB, Schema
         }
 
         private CollectionViewType _viewType;
@@ -53,7 +53,23 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
+        public static CollectionView GetParentCollectionView(DependencyObject sender)
+        {
+            var item = VisualTreeHelper.GetParent(sender);
+            var cv = item as CollectionView;
+            while (item != null && !(item is CollectionView))
+            {
+                item = VisualTreeHelper.GetParent(item);
+                if (item is CollectionView)
+                    cv = item as CollectionView;
+            }
+            return cv;
+        }
 
+        public void TryBindToParentDocumentSize()
+        {
+            Util.ForceBindHeightToParentDocumentHeight(this);
+        }
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -77,10 +93,17 @@ namespace Dash
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
                     break;
+                case CollectionViewType.Page:
                     CurrentView = new CollectionPageView();
+                    break;
+                case CollectionViewType.DB:
+                    CurrentView = new CollectionDBView();
+                    break;
+                case CollectionViewType.Schema:
+                    CurrentView = new CollectionDBSchemaView();
+                    break;
                 case CollectionViewType.List:
-                    CurrentView = new CollectionPageView();
-                   // CurrentView = new CollectionListView();
+                    CurrentView = new CollectionDBView();// new CollectionListView();
                     break;
                 case CollectionViewType.Text:
                     CurrentView = new CollectionTextView();
@@ -111,7 +134,7 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
@@ -125,7 +148,7 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
@@ -147,6 +170,19 @@ namespace Dash
         {
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
+            xContentControl.Content = CurrentView;
+        }
+
+        public void SetDBView()
+        {
+            if (CurrentView is CollectionDBView) return;
+            CurrentView = new CollectionDBView();
+            xContentControl.Content = CurrentView;
+        }
+        private void SetSchemaView()
+        {
+            if (CurrentView is CollectionDBSchemaView) return;
+            CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
         }
 
@@ -186,6 +222,16 @@ namespace Dash
         {
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
+            var lvb = ((UIElement)xContentControl.Content)?.GetFirstDescendantOfType<ListViewBase>();
+            var sitemsCount = lvb?.SelectedItems.Count;
+            if (lvb?.SelectedItems.Count > 0)
+                try
+                {
+                    lvb.SelectedItems.Clear();
+                }
+                catch (Exception)
+                {
+                }
         }
 
         private void SelectAllItems()
@@ -250,6 +296,8 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
+            var setSchema = new Action(SetSchemaView);
+            var setDB = new Action(SetDBView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
@@ -261,7 +309,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))

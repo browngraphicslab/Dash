@@ -130,6 +130,7 @@ namespace Dash
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();
                 
+                
             }
         }
     }

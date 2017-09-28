@@ -63,7 +63,6 @@ namespace Dash
         public void ActivateItem()
         {
             _searchList.ActivateItem(_searchList.SelectedItem);
-
         }
 
         public void MoveSelectedUp()
@@ -91,7 +90,10 @@ namespace Dash
             if (_searchList != null)
             {
                 _searchList.List.SelectedIndex = -1;
+                _searchList.SelectedItem = null;
             }
+            xSearch.Text = string.Empty;
+            UpdateList(string.Empty);
         }
 
         public void SetTextBoxFocus()
@@ -194,7 +196,7 @@ namespace Dash
             {
                 foreach (var name in docNames)
                 {
-                    if (name.ToLower().Contains(searchInput.ToLower()))
+                    if (name.ToLower().Contains(searchInput.ToLower()) || searchInput == string.Empty)
                     {
                         suggestions.Add(name);
                     }

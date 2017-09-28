@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI.Core;
@@ -161,9 +162,34 @@ namespace Dash {
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
             ClampScale(newScale, ref scaleAmount);
-
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, 0),
+            
+            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
                 point.Position, new Point(scaleAmount, scaleAmount)));
+        }
+
+        public void FitToParent()
+        {
+            var par = _element.Parent as ContentControl;
+            var ff = _element as CollectionFreeformView;
+
+            var rect = par.GetBoundingRect();
+            Rect r = Rect.Empty;
+            foreach (var i in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => ic as ContentPresenter))
+            {
+                if (i != null)
+                    r.Union((i.Content as DocumentViewModel).Content.GetBoundingRect(par));
+            }
+            if (r != Rect.Empty)
+            {
+                var trans    = new Point(-r.Left + (rect.Width - r.Width)/2, -r.Top);
+                var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
+                if (rect.Width / rect.Height > r.Width / r.Height)
+                    scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
+                else
+                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) /2);
+
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left, r.Top), scaleAmt));
+            }
         }
 
         /// <summary>

@@ -69,7 +69,7 @@ namespace Dash
                 var dcbPrototype = dcb.GetAllPrototypes().First();
                 bool skip = false;
                 for (int j = i+1; j < docSet.Count && !skip; j++)
-                    if (docSetList[j].GetAllPrototypes().First() == dcbPrototype)
+                    if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
                     {
                         skip = true;
                     }
@@ -96,6 +96,14 @@ namespace Dash
         public void AddData(FieldReference reference, FieldModelController data)
         {
             _data[reference] = data;
+        }
+
+        public bool ContainsDataKey(KeyController key)
+        {
+            foreach (var d in _data)
+                if (d.Key.FieldKey == key)
+                    return true;
+            return false;
         }
 
         public bool TryDereferenceToRoot(FieldReference reference, out FieldModelController data)

@@ -21,6 +21,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash;
+using static Dash.NoteDocuments;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -641,6 +643,28 @@ namespace Dash
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
             }
+            else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
+            {
+                var doc = _currReference.FieldReference.DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.Data;
+                var pos = e.GetCurrentPoint(this).Position;
+                var cnote = new CollectionNote(pos, _currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey ? CollectionView.CollectionViewType.DB : CollectionView.CollectionViewType.Freeform);
+                if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
+                {
+                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
+                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
+                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
+                    var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
+                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
+                    cnote.Document.GetPositionField().Data = pos;
+                }
+                else
+                {
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+                }
+                ViewModel.AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
+            }
             CancelDrag(e.Pointer);
         }
 
@@ -756,47 +780,6 @@ namespace Dash
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
-
-            var carrier = ItemsCarrier.Instance;
-
-            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
-                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
-                    return;
-
-            // if dropping back to the original collection, just reset the payload 
-            if (carrier.StartingCollection == this)
-                _payload = new Dictionary<DocumentView, DocumentController>();
-            else
-            {
-                if (carrier.Source != null)
-                {
-                    if (!carrier.Source.Equals(carrier.Destination))
-                    {
-                        // for blue drag/drop; must remove the payload from the original collection 
-                        if (carrier._source != null)
-                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
-                        else
-                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
-
-                        carrier.Payload.Clear();
-                        carrier.Source = null;
-                        carrier.SourceCollection = null;
-                        carrier.Destination = null;
-                    }
-                }
-
-                // delete connection lines logically and graphically 
-                var startingCol = carrier.StartingCollection;
-                if (startingCol != null)
-                {
-                    var linesToDelete = startingCol.GetLinesToDelete();
-                    foreach (var pair in linesToDelete)
-                    {
-                        startingCol.DeleteLine(pair.Key, pair.Value);
-                    }
-                    startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-                }
-            }
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -931,53 +914,30 @@ namespace Dash
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
 
-            if (ItemsCarrier.Instance.StartingCollection == null) return;
-            ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            foreach (var view in _payload.Keys.ToList())
-                _documentViews.Remove(view);
+            //if (ItemsCarrier.Instance.StartingCollection == null)
+            //    return;
+            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
+            //foreach (var view in _payload.Keys.ToList())
+            //    _documentViews.Remove(view);
 
-            _payload = new Dictionary<DocumentView, DocumentController>();
+            //_payload = new Dictionary<DocumentView, DocumentController>();
             //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
-            var carrier = ItemsCarrier.Instance;
-            if (carrier.StartingCollection == null) return;
-
-            // if dropping to a collection within the source collection 
-            if (carrier.StartingCollection != this)
-            {
-                carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);
-                return;
-            }
-
-            ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
-            foreach (var cont in ItemsCarrier.Instance.Payload)
-            {
-                var view = new DocumentView(new DocumentViewModel(cont));
-                _documentViews.Add(view);
-            }
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            var carrier = ItemsCarrier.Instance;
-
-            carrier.Destination = null;
-            carrier.StartingCollection = this;
-            var parent = (sender as DocumentView).ParentCollection?.ParentCollection;
-            if (parent == null) carrier.CurrBaseModel = this; // ViewModel; 
-            else carrier.CurrBaseModel = parent.CurrentView as ICollectionView;
-            carrier.Source = ViewModel;
-            carrier.Payload = _payload.Values.ToList();
+            
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion

@@ -22,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -95,7 +96,10 @@ namespace Dash
                 [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document)
             };
 
-            collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+            var newDoc = new DocumentController(fields, DocumentType.DefaultType);
+            collection.ViewModel.AddDocument(newDoc, null);
+
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
@@ -103,19 +107,12 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var fields = new Dictionary<KeyController, FieldModelController>()
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
-            };
-
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                        new ReferenceFieldModelController(documentController.GetId(),
-                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y, 400, 400)
-                    .Document, true, true);
-
-            collection.ViewModel.AddDocument(documentController, null);
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
+            cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+            var newDoc = cnote.Document;
+            
+            collection.ViewModel.AddDocument(newDoc, null);
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static async void ImportFields(ICollectionView collection, DragEventArgs e)
@@ -230,7 +227,7 @@ namespace Dash
                 docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            //DBTest.DBDoc.AddChild(docController);
+            DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)

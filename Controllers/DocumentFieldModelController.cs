@@ -87,6 +87,12 @@ namespace Dash
                 new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
         }
 
+        public override void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder=false)
+        {
+            var view = new DocumentView(new DocumentViewModel(Data, isInterfaceBuilder));
+            sp.Children.Add(view);
+        }
+
         public override FieldModelController Copy()
         {
             return new DocumentFieldModelController(Data.GetCopy());

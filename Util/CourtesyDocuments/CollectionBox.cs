@@ -15,7 +15,6 @@ namespace Dash
     /// </summary>
     public class CollectionBox : CourtesyDocument
     {
-        public static KeyController CollectionViewKey = new KeyController("FA7002C4-0EB2-44F7-8D25-ECA5C618D10C", "Collection View Key");
         public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
@@ -71,9 +70,8 @@ namespace Dash
             var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
             var typeString = (docController.GetField(CollectionViewTypeKey) as TextFieldModelController).Data;
-            CollectionView.CollectionViewType viewType =
-                (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
-            var view = new CollectionView(collectionViewModel, (docController.GetDereferencedField(CollectionViewKey,context) as TextFieldModelController)?.Data == "Text" ? CollectionView.CollectionViewType.Text : viewType);
+            CollectionView.CollectionViewType viewType =  (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
+            var view = new CollectionView(collectionViewModel,  viewType);
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
             {

@@ -75,9 +75,11 @@ namespace Dash
                 if (ViewModel != null)
                 {
                     xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                   // xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                     xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                     xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+                    xGridView.PointerPressed -= ViewModel.XGridView_PointerPressed;
+                    xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
                 }
 
                 ViewModel = vm;
@@ -86,6 +88,7 @@ namespace Dash
                 xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
+                xGridView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
             }
         }
 
@@ -94,9 +97,10 @@ namespace Dash
             if (ViewModel != null)
             {
                 xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-               // xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+                xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
                 xGridView.Loaded -= XGridView_OnLoaded;
                 //_scrollViewer.ViewChanging -= ScrollViewerOnViewChanging;
             }

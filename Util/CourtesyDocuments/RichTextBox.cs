@@ -16,7 +16,6 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
             Document = new DocumentController(fields, DocumentType);
-            SetLayoutForDocument(Document, Document, forceMask: true, addToLayoutList: true);
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -88,6 +89,7 @@ namespace Dash
 
         public void ActivateItem()
         {
+            if (xList.SelectedIndex == -1) return;
             var name = xList.SelectedItem as string;
             var func = _titleToFuncDictionary[name];
             if (func != null)
@@ -114,8 +116,9 @@ namespace Dash
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
         }
-        
-
-        
+        private void XList_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xList);
+        }
     }
 }
