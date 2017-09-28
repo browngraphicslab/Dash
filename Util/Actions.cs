@@ -57,35 +57,7 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void CopyAndAddDocument(DocumentController document)
-        {
-            var freeForm = TabMenu.AddsToThisCollection;
-
-            if (freeForm == null)
-            {
-                return;
-            }
-
-            var searchView = TabMenu.Instance.SearchView;
-            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-            Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point());
-
-            var docToAdd = document.GetCopy();
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(docToAdd)
-            {
-                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-            };
-
-            if (docToAdd != null)
-            {
-                freeForm.ViewModel.AddDocument(docToAdd, null);
-            }
-        }
-
-        public static void AddOperator(Func<DocumentController> documentCreationFunc)
+        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
         {
             var freeForm = TabMenu.AddsToThisCollection;
 

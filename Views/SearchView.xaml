@@ -9,7 +9,21 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
+    <UserControl.Resources>
+        <Style x:Key="TouchStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="MinHeight" Value="35"/>
+        </Style>
+        <Style x:Key="MouseStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="10"/>
+            <Setter Property="MinHeight" Value="25"/>
+        </Style>
+    </UserControl.Resources>
+    <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True" x:Name="xFloating" x:FieldModifier="public">
         <Grid MaxWidth="300" MaxHeight="700" MinWidth="100">
             <Grid.Background>
                 <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>

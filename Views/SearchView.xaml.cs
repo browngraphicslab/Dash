@@ -21,7 +21,6 @@ namespace Dash
 {
     public sealed partial class SearchView : UserControl
     {
-        private Dictionary<PivotItem, SearchCategoryItem> _items = new Dictionary<PivotItem, SearchCategoryItem>();
         private SearchCategoryItem _searchList;
         public SearchView(SearchCategoryItem categories)
         {
@@ -32,6 +31,16 @@ namespace Dash
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
             xSearch.Loaded += (sender, args) => SetTextBoxFocus();
 
+        }
+
+        public void ConfigureForTouch()
+        {
+            _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
+        }
+
+        public void ConfigureForMouse()
+        {
+            _searchList.List.ItemContainerStyle = this.Resources["MouseStyle"] as Style;
         }
 
         public void MoveSelectedDown()
@@ -178,20 +187,16 @@ namespace Dash
         /// <returns></returns>
         private ObservableCollection<object> GetMatches(string searchInput)
         {
-           
             var suggestions = new ObservableCollection<object>();
             //if (xTitleList.SelectedItem == null) return suggestions; 
-            var items = _searchList.ListContent;
-            if (items != null)
+            var docNames = _searchList.ListContent;
+            if (docNames != null)
             {
-                foreach (var item in items)
+                foreach (var name in docNames)
                 {
-                    // don't know what to filter yet (how to filter document, collection, fields... etc.)
-                    var type = item.GetType().FullName.ToLower();
-                    var input = searchInput.ToLower();
-                    if (type.Contains(input))
+                    if (name.ToLower().Contains(searchInput.ToLower()))
                     {
-                        suggestions.Add(item);
+                        suggestions.Add(name);
                     }
                 }
             }

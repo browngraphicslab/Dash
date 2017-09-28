@@ -25,7 +25,7 @@ namespace Dash
         /// <summary>
         /// All objects under this category
         /// </summary>
-        public ObservableCollection<DocumentController> ListContent { get; }
+        public ObservableCollection<string> ListContent { get; }
 
         /// <summary>
         /// Returns the list view used to display objects
@@ -56,6 +56,8 @@ namespace Dash
 
         public object SelectedItem;
 
+        private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
+
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
         /// </summary>
@@ -63,20 +65,20 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<DocumentController> content)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<Func<DocumentController>> content)
         {
             this.InitializeComponent();
-            Icon = icon;
-            Title = title;
-            ListContent = content;
-            xList.DisplayMemberPath = nameof(DocumentController.Title);
-            ListDisplayMemberPath = xList.DisplayMemberPath;
-
-            //_action = action;
-
+            //Icon = icon;
+            //Title = title;
+            _titleToFuncDictionary = new Dictionary<string, Func<DocumentController>>();
+            ListContent = new ObservableCollection<string>();
+            foreach (var func in content)
+            {
+                var name = func.Invoke().Title;
+                _titleToFuncDictionary[name] = func;
+                ListContent.Add(name);
+            }
             xList.Tapped += XList_Tapped;
-
-            
         }
 
         private void XList_Tapped(object sender, TappedRoutedEventArgs e)
@@ -86,10 +88,11 @@ namespace Dash
 
         public void ActivateItem()
         {
-            var doc = xList.SelectedItem as DocumentController;
-            if (doc != null)
+            var name = xList.SelectedItem as string;
+            var func = _titleToFuncDictionary[name];
+            if (func != null)
             {
-                Actions.CopyAndAddDocument(doc);
+                Actions.AddDocFromFunction(func);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
@@ -102,13 +105,13 @@ namespace Dash
                 ActivateItem();
                 return;
             }
-            var doc = selectedItem as DocumentController;
-            if (doc != null)
+            var name = selectedItem as string;
+            var func = _titleToFuncDictionary[name];
+            if (func != null)
             {
-                Actions.CopyAndAddDocument(doc);
+                Actions.AddDocFromFunction(func);
             }
 
-            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
         }
         

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -35,46 +36,26 @@ namespace Dash
 
         private void MakeView()
         {
-            var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor.Invoke();
-            var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor.Invoke();
-            var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor.Invoke();
-            var zip = OperationCreationHelper.Operators["Zip"].OperationDocumentConstructor.Invoke();
-            var uriToImage = OperationCreationHelper.Operators["UriToImage"].OperationDocumentConstructor.Invoke();
-            var map = OperationCreationHelper.Operators["Map"].OperationDocumentConstructor.Invoke();
-            var api = OperationCreationHelper.Operators["Api"].OperationDocumentConstructor.Invoke();
-            var concat = OperationCreationHelper.Operators["Concat"].OperationDocumentConstructor.Invoke();
-            var docAppend = OperationCreationHelper.Operators["Append"].OperationDocumentConstructor.Invoke();
-            var filter = OperationCreationHelper.Operators["Filter"].OperationDocumentConstructor.Invoke();
-            var compound = OperationCreationHelper.Operators["Compound"].OperationDocumentConstructor.Invoke();
+            var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor;
+            var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor;
+            var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor;
+            var zip = OperationCreationHelper.Operators["Zip"].OperationDocumentConstructor;
+            var uriToImage = OperationCreationHelper.Operators["UriToImage"].OperationDocumentConstructor;
+            var map = OperationCreationHelper.Operators["Map"].OperationDocumentConstructor;
+            var api = OperationCreationHelper.Operators["Api"].OperationDocumentConstructor;
+            var concat = OperationCreationHelper.Operators["Concat"].OperationDocumentConstructor;
+            var docAppend = OperationCreationHelper.Operators["Append"].OperationDocumentConstructor;
+            var filter = OperationCreationHelper.Operators["Filter"].OperationDocumentConstructor;
+            var compound = OperationCreationHelper.Operators["Compound"].OperationDocumentConstructor;
+            Func<DocumentController> createBlankDocument = BlankDoc;
+            Func<DocumentController> createBlankCollection = BlankCollection;
+            Func<DocumentController> createBlankPostitNote = BlankNote;
 
-            var docfields = new Dictionary<KeyController, FieldModelController>()
+            var all = new ObservableCollection<Func<DocumentController>>
             {
-                [KeyStore.TitleKey] = new TextFieldModelController("Document")
-            };
-            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
-            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0,0), new Size(200,200)).Document;
-            blankDocument.SetActiveLayout(layout, true, true);
-
-            var colfields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                    new DocumentCollectionFieldModelController(),
-                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
-            };
-            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
-            colDoc.SetActiveLayout(
-                new CollectionBox(
-                    new ReferenceFieldModelController(colDoc.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), 0,0,200,200).Document, true, true);
-
-            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
-
-            var all = new ObservableCollection<DocumentController>
-            {
-                blankDocument,
-                postitNote,
-                colDoc,
+                createBlankDocument,
+                createBlankPostitNote,
+                createBlankCollection,
                 divide,
                 union,
                 intersection,
@@ -90,6 +71,41 @@ namespace Dash
             xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
         }
 
+        public DocumentController BlankDoc()
+        {
+            var docfields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.TitleKey] = new TextFieldModelController("Document")
+            };
+            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
+            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
+            blankDocument.SetActiveLayout(layout, true, true);
+            return blankDocument;
+        }
+
+        public DocumentController BlankCollection()
+        {
+            var colfields = new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(),
+                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
+            };
+            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
+            colDoc.SetActiveLayout(
+                new CollectionBox(
+                    new ReferenceFieldModelController(colDoc.GetId(),
+                        DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
+            return colDoc;
+        }
+
+        public DocumentController BlankNote()
+        {
+            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
+            return postitNote;
+        }
+
         public void SetTextBoxFocus()
         {
             SearchView?.SetTextBoxFocus();
@@ -100,7 +116,7 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        public static void ShowAt(Canvas canvas, Point position)
+        public static void ShowAt(Canvas canvas, Point position, bool isTouch=false)
         {
             if (Instance != null)
             {
@@ -108,9 +124,12 @@ namespace Dash
                 {
                     canvas.Children.Add(Instance);
                 }
+                if (isTouch) Instance.SearchView.ConfigureForTouch();
+                else Instance.SearchView.ConfigureForMouse();
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();
+                
             }
         }
     }

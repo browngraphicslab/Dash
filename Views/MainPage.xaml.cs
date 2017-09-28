@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.System;
@@ -106,7 +107,6 @@ namespace Dash
                     .FirstOrDefault();
                 TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
                 TabMenu.ShowAt(xCanvas, pos);
-                //OperatorMenuFlyout.ShowAt(this);
                 TabMenu.Instance.SetTextBoxFocus();
             }
 
@@ -134,6 +134,18 @@ namespace Dash
                     TabMenu.Instance.SearchView.ActivateItem();
                 }
             }
+        }
+
+        private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType != PointerDeviceType.Touch) return;
+            var pointerPosition = e.GetPosition(this);
+            var pos = new Point(pointerPosition.X, pointerPosition.Y);
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                .FirstOrDefault();
+            TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+            TabMenu.ShowAt(xCanvas, pos, true);
+            TabMenu.Instance.SetTextBoxFocus();
         }
 
         private void OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -499,5 +511,7 @@ namespace Dash
             DisplayDocument(proto);
             DisplayDocument(del1);
         }
+
+       
     }
 }
