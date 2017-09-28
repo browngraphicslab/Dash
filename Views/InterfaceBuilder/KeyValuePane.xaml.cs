@@ -7,10 +7,13 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using System;
+using Windows.System;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers.Operators;
 using Dash.Converters;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -38,7 +41,7 @@ namespace Dash
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             DataContextChanged += KeyValuePane_DataContextChanged;
 
-            ToggleAddKVPane();
+            //ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
             xTypeComboBox.SelectedItem = TypeInfo.None;
         }
@@ -111,27 +114,31 @@ namespace Dash
 
         private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            Debug.Assert(xAddButton.Content != null, "xAddButton.Content != null");
-            var view = (Viewbox)xAddButton.Content;
-            var icon = ((SymbolIcon)view.Child).Symbol;
-            if (icon == Symbol.Accept)
+            //Debug.Assert(xAddButton.Content != null, "xAddButton.Content != null");
+            //var view = (Viewbox)xAddButton.Content;
+            //var icon = ((SymbolIcon)view.Child).Symbol;
+            //if (icon == Symbol.Accept)
+            //{
+            // only execute if all fields are specified and reset  
+            var type = (TypeInfo)xTypeComboBox.SelectedItem;
+            if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
             {
-                // only execute if all fields are specified and reset  
-                var type = (TypeInfo)xTypeComboBox.SelectedItem;
-                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
+
+                if (AddKeyValuePair())
                 {
-                    AddKeyValuePair();
                     xNewKeyField.Text = "";
                     xNewValueField.Text = "";
                     xTypeComboBox.SelectedIndex = 0;
+                    ToggleAddKVPane();
                 }
             }
-            ToggleAddKVPane();
+            //}
+            
         }
         /// <summary>
-        /// Adds a new row to the KeyValuePane, using user inputed values 
+        /// Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is successful in adding the pair.
         /// </summary>
-        private void AddKeyValuePair()
+        private bool AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
@@ -149,7 +156,7 @@ namespace Dash
                 if (double.TryParse(xNewValueField.Text, out number))
                     fmController = new NumberFieldModelController(number);
                 else
-                    return;
+                    return false;
             }
             else if (item == TypeInfo.Image)
             {
@@ -174,6 +181,7 @@ namespace Dash
             ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
             _documentControllerDataContext.SetField(key, fmController, true);
             //*/ 
+            return true;
         }
 
         /// <summary>
@@ -184,23 +192,33 @@ namespace Dash
             _addKVPaneOpen = !_addKVPaneOpen;
             if (_addKVPaneOpen)
             {
-                xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Accept) };
-                xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                FocusOn(xNewKeyField);
+                xNewFieldPanel.Visibility = Visibility.Collapsed;
+                xCreateFieldButton.Visibility = Visibility.Visible;
             }
             else
             {
-                xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Add) };
-                xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xTypeComboBox.IsEnabled = false;
-                xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xNewValueField.IsEnabled = false;
-                xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xImageGrid.BorderThickness = new Thickness(0);
+                xNewFieldPanel.Visibility = Visibility.Visible;
+                xCreateFieldButton.Visibility = Visibility.Collapsed;
             }
+            //if (_addKVPaneOpen)
+            //{
+            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Accept) };
+            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            //    FocusOn(xNewKeyField);
+            //}
+            //else
+            //{
+            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Add) };
+            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //    xTypeComboBox.IsEnabled = false;
+            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //    xNewValueField.IsEnabled = false;
+            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //    xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //    xImageGrid.BorderThickness = new Thickness(0);
+            //}
         }
         /// <summary>
         /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
@@ -228,7 +246,7 @@ namespace Dash
             {
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xImageGrid.BorderThickness = new Thickness(0);
-                xTypeComboBox.IsEnabled = false;
+                //xTypeComboBox.IsEnabled = false;
             }
         }
 
@@ -397,6 +415,33 @@ namespace Dash
             // not sure what this was fixing, but it breaks the doc test example
             //for (int i = 0; i < 3; i++)
             //  (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
+        }
+
+        private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
+        {
+            ToggleAddKVPane();
+        }
+
+        private void CreateFieldPaneClose(object sender, TappedRoutedEventArgs e)
+        {
+            ToggleAddKVPane();
+        }
+
+        private void XNewValueField_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                var type = (TypeInfo)xTypeComboBox.SelectedItem;
+                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
+                {
+
+                    AddKeyValuePair();
+                    xNewKeyField.Text = "";
+                    xNewValueField.Text = "";
+                    //xTypeComboBox.SelectedIndex = 0;
+                    FocusOn(xNewKeyField);
+                }
+            }
         }
     }
 }
