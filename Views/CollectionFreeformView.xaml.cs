@@ -21,6 +21,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash;
+using static Dash.NoteDocuments;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -640,6 +642,28 @@ namespace Dash
                 var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
+            }
+            else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
+            {
+                var doc = _currReference.FieldReference.DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.Data;
+                var pos = e.GetCurrentPoint(this).Position;
+                var cnote = new CollectionNote(pos, _currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey ? CollectionView.CollectionViewType.DB : CollectionView.CollectionViewType.Freeform);
+                if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
+                {
+                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
+                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
+                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
+                    var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
+                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
+                    cnote.Document.GetPositionField().Data = pos;
+                }
+                else
+                {
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+                }
+                ViewModel.AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
             }
             CancelDrag(e.Pointer);
         }

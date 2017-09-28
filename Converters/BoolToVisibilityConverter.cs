@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Windows.UI.Text;
 using Windows.UI.Xaml;
 
 namespace Dash
@@ -7,17 +7,39 @@ namespace Dash
     {
         public override Visibility ConvertDataToXaml(bool data, object parameter = null)
         {
-            //System.Diagnostics.Debug.WriteLine("parameter is " + parameter); 
-            //if (parameter != null)
-            //{
-            //    return (data || (bool)parameter) ? Visibility.Visible : Visibility.Collapsed;
-            //}
             return data ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public override bool ConvertXamlToData(Visibility xaml, object parameter = null)
         {
             return xaml == Visibility.Visible;
+        }
+    }
+    public class BoolToNumberConverter : SafeDataToXamlConverter<bool, double>
+    {
+        public override double ConvertDataToXaml(bool data, object parameter = null)
+        {
+            return data ? 1 : 0;
+        }
+
+        public override bool ConvertXamlToData(double xaml, object parameter = null)
+        {
+            return xaml != 0;
+        }
+    }
+
+    //bcz: temporary hack --- need to just convert bool to Bold for use anywhere, not just SchemaFields
+    public class BoolToBoldConverter : SafeDataToXamlConverter<CollectionDBSchemaView.SchemaField, FontWeight>
+    {
+        public override FontWeight ConvertDataToXaml(CollectionDBSchemaView.SchemaField data, object parameter = null)
+        {
+            return data.Selected ? FontWeights.ExtraBold : FontWeights.Normal;
+        }
+
+        public override CollectionDBSchemaView.SchemaField ConvertXamlToData(FontWeight xaml, object parameter = null)
+        {
+            throw new System.Exception();
+            //return xaml.Equals(FontWeights.ExtraBold);
         }
     }
 }

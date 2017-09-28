@@ -44,72 +44,29 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
             var opDoc = opfmc.FieldReference.GetDocumentController(null);
-            var stack = new Windows.UI.Xaml.Controls.StackPanel();
-            stack.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
-        
-            var searchBox = new TextBox();
-            searchBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
-            searchBox.Height = 50;
-            searchBox.Text = "";
-            searchBox.AcceptsReturn = true;
-            searchBox.VerticalAlignment = VerticalAlignment.Top;
-            searchBox.TextChanged += ((sender, e) =>
-            {
-                DBTest.ResetCycleDetection();
-                if (opDoc != null)
-                {
-                    opDoc.SetField(Controllers.Operators.DBFilterOperatorFieldModelController.FieldPatternKey,
-                        new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
-                }
-            });
 
-            var inputsBox = new TextBox();
-            inputsBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
-            inputsBox.Height = 35;
-            inputsBox.Width = 100;
-            inputsBox.Text = "";
-            inputsBox.AcceptsReturn = true;
-            inputsBox.VerticalAlignment = VerticalAlignment.Top;
-            var binding = new FieldBinding<DocumentCollectionFieldModelController>()
+            var stack = new StackPanel() { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top };
+            var opView = new OperatorView { DataContext = opfmc.FieldReference, OperatorContent = stack };
+            var chart = new Dash.DBFilterChart() { Width = 250, Height = 250, OpDoc = opDoc };
+            stack.Children.Add(chart);
+           
+
+            opDoc.DocumentFieldUpdated += (sender, args) =>
             {
-                Mode = BindingMode.TwoWay,
-                Document = opDoc,
-                Key = DBFilterOperatorFieldModelController.InputDocsKey,
-                Converter = new DocumentCollectionToStringConverter(true),
-                Context = new Context(opDoc)
+                var opFieldModelController = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                bool allOutputsSet = true;
+                foreach (var o in opFieldModelController.Outputs)
+                    if (!args.Context.ContainsDataKey(o.Key))
+                        allOutputsSet = false;
+                if (allOutputsSet && opFieldModelController.Outputs.ContainsKey(args.Reference.FieldKey))
+                    chart.OperatorOutputChanged(args.Context);
             };
-            inputsBox.AddFieldBinding(TextBox.TextProperty, binding);
-
-            var matchBox = new TextBox();
-            matchBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
-            matchBox.Height = 35;
-            matchBox.Width = 100;
-            matchBox.Text = "";
-            matchBox.AcceptsReturn = true;
-            matchBox.VerticalAlignment = VerticalAlignment.Top;
-            var outDoc = opDoc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(opDoc)).Data;
-            var binding2 = new FieldBinding<DocumentCollectionFieldModelController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = outDoc,
-                Key = DBFilterOperatorFieldModelController.ResultsKey,
-                Converter = new DocumentCollectionToStringConverter(true),
-                Context = new Context(outDoc)
-            }; 
-            matchBox.AddFieldBinding(TextBox.TextProperty, binding2);
-
-            stack.Children.Add(searchBox);
-            stack.Children.Add(matchBox);
-            stack.Children.Add(inputsBox);
-            stack.HorizontalAlignment = HorizontalAlignment.Stretch;
-            stack.VerticalAlignment = VerticalAlignment.Top;
-            opView.OperatorContent = stack;
 
             if (isInterfaceBuilderLayout)
                 return new SelectableContainer(opView, docController);
             return opView;
         }
+
     }
 }

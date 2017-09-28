@@ -83,7 +83,7 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
+            //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
@@ -94,7 +94,7 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;

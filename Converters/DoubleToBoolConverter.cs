@@ -16,8 +16,8 @@ namespace Dash
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if ((bool)value) return 1;
-            return 0;
+            if ((bool)value) return 1.0;
+            return 0.0;
         }
     }
 }
