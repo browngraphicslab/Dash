@@ -654,7 +654,8 @@ namespace Dash
                     var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
                         new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
                     cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
-                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null), true);
+                    var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
+                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
                     cnote.Document.GetPositionField().Data = pos;
                 }
                 else

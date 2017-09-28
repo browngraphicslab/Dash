@@ -42,27 +42,21 @@ namespace Dash
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
         {
-            ParentDocument = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this).ViewModel.DocumentController;
+            var dv = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
+            
+            ParentDocument = dv.ViewModel.DocumentController;
             UpdateChart(new Context(ParentDocument));
         }
-        private KeyController _inputKey;
+
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            _inputKey = ViewModel.CollectionKey;
-            (ViewModel as CollectionViewModel)._collectionKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateChart(new Context(ParentDocument));
         }
-
-      
-        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
-        {
-            if (!IsHitTestVisible) return;
-
-            return;
-        }
+        
 
         DocumentController _parentDocument;
         public DocumentController ParentDocument {
@@ -122,7 +116,7 @@ namespace Dash
                 args.Reference.FieldKey == DBFilterOperatorFieldModelController.FilterFieldKey ||
                 args.Reference.FieldKey == DBFilterOperatorFieldModelController.BucketsKey ||
                 args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey ||
-                args.Reference.FieldKey == _inputKey)
+                args.Reference.FieldKey == ViewModel.CollectionKey)
                 UpdateChart(new Context(ParentDocument));
         }
 
@@ -155,7 +149,7 @@ namespace Dash
 
         public void UpdateChart(Context context)
         {
-            var dbDocs  = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(_inputKey, context).Data;
+            var dbDocs  = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context).Data;
             var buckets = ParentDocument.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, context)?.Data;
             var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, context)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
             var autofit = ParentDocument.GetDereferencedField<NumberFieldModelController>(DBFilterOperatorFieldModelController.AutoFitKey, context).Data != 0;

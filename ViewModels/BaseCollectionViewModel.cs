@@ -34,6 +34,10 @@ namespace Dash
         private static SelectionElement _previousDragEntered;
 
         public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+        public KeyController OutputKey
+        {
+            get; set;
+        }
 
         protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {

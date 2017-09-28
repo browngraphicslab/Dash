@@ -40,7 +40,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Page, Text, DB
+            Freeform, List, Grid, Page, Text, DB, Schema
         }
 
         private CollectionViewType _viewType;
@@ -99,6 +99,9 @@ namespace Dash
                 case CollectionViewType.DB:
                     CurrentView = new CollectionDBView();
                     break;
+                case CollectionViewType.Schema:
+                    CurrentView = new CollectionDBSchemaView();
+                    break;
                 case CollectionViewType.List:
                     CurrentView = new CollectionDBView();// new CollectionListView();
                     break;
@@ -131,7 +134,7 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
@@ -145,7 +148,7 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
@@ -170,10 +173,16 @@ namespace Dash
             xContentControl.Content = CurrentView;
         }
 
-        private void SetDBView()
+        public void SetDBView()
         {
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
+            xContentControl.Content = CurrentView;
+        }
+        private void SetSchemaView()
+        {
+            if (CurrentView is CollectionDBSchemaView) return;
+            CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
         }
 
@@ -280,6 +289,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
+            var setSchema = new Action(SetSchemaView);
             var setDB = new Action(SetDBView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
@@ -292,7 +302,7 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
