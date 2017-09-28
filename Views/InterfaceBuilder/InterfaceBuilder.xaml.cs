@@ -119,6 +119,13 @@ namespace Dash
             e.AcceptedOperation = DataPackageOperation.Move;
         }
 
+        private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
+        {
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
+                .FirstOrDefault(AssertIsCompositeLayout);
+            return elem as SelectableContainer;
+        }
+
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
             var layoutContainer = GetFirstCompositeLayoutContainer(e.GetPosition(MainPage.Instance));
@@ -223,12 +230,6 @@ namespace Dash
             return layoutDocument;
         }
 
-        private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
-        {
-            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
-                .FirstOrDefault(AssertIsCompositeLayout);
-            return elem as SelectableContainer;
-        }
 
         private bool AssertIsCompositeLayout(object obj)
         {
@@ -237,7 +238,7 @@ namespace Dash
                 return false;
             }
             var cont = (SelectableContainer)obj;
-            return this.IsCompositeLayout(cont.LayoutDocument);
+            return IsCompositeLayout(cont.LayoutDocument);
         }
 
         private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)

@@ -9,6 +9,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
+    <userControl:Floating IsBoundByParent="false" IsBoundByScreen="false">
         <Grid CornerRadius="0" MaxWidth="200" Padding="0" VerticalAlignment="Stretch" Background="{StaticResource WindowsBlue}" Opacity="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -26,4 +27,5 @@
                 </Pivot>
             </Grid>
         </Grid>
+        </userControl:Floating>
 </UserControl>

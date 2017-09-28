@@ -63,7 +63,6 @@ namespace Dash
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
-
             MinHeight = 25;
 
             Loaded += This_Loaded;

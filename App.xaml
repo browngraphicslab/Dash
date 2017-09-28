@@ -56,12 +56,12 @@
         <!-- general colors -->
         <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
         <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
-        <SolidColorBrush x:Key="DragHighlight" Color="#FAffffff"/>
         <SolidColorBrush x:Key="DarkWindowsBlue" Color="#cc103a6a"/>
         <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentBackgroundSelectedColor}" />
         <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
         <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
+        <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
 
 

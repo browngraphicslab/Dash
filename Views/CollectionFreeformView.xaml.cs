@@ -708,53 +708,8 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("drop event");
+            Debug.WriteLine("drop event from collection");
             ViewModel.CollectionViewOnDrop(sender, e);
-/*<<<<<<< HEAD
-
-            var carrier = ItemsCarrier.Instance;
-
-            if (carrier.Destination != null && carrier.SourceCollection?.ParentCollection != null)    // cancel collection dropping to its container collection 
-                if (carrier.SourceCollection.ParentCollection.ViewModel.Equals(carrier.Destination))
-                    return;
-
-            // if dropping back to the original collection, just reset the payload 
-            if (carrier.StartingCollection == this)
-                _payload = new Dictionary<DocumentView, DocumentController>();
-            else
-            {
-                if (carrier.Source != null)
-                {
-                    if (!carrier.Source.Equals(carrier.Destination))
-                    {
-                        // for blue drag/drop; must remove the payload from the original collection 
-                        if (carrier._source != null)
-                            carrier.Source.RemoveDocuments(carrier.Payload);    // works for documents 
-                        else
-                            carrier.SourceCollection.ParentCollection?.ViewModel.RemoveDocuments(carrier.Payload); //for collections 
-
-                        carrier.Payload.Clear();
-                        carrier.Source = null;
-                        carrier.SourceCollection = null;
-                        carrier.Destination = null;
-                    }
-                }
-                
-                // delete connection lines logically and graphically 
-                var startingCol = carrier.StartingCollection;
-                if (startingCol != null)
-                {
-                    var linesToDelete = startingCol.GetLinesToDelete();
-                    foreach (var pair in linesToDelete)
-                    {
-                        startingCol.DeleteLine(pair.Key, pair.Value);
-                    }
-                    startingCol._payload = new Dictionary<DocumentView, DocumentController>();
-                }
-            }
-
-=======
->>>>>>> d99760a2997ecb129255609a57043b0e754b6a67*/
         }
 
         public void SetDropIndicationFill(Brush fill)

@@ -22,7 +22,7 @@ namespace Dash
             var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
             Document.SetFields(fields, true); //TODO add fields to constructor parameters     
 
-            //Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
         }
 
         public FreeFormDocument() : this(new List<DocumentController>()) { }
@@ -91,7 +91,7 @@ namespace Dash
             };
             if (isInterfaceBuilderLayout)
             {
-                /*
+                
                 var icon = new TextBlock()
                 {
                     Text = "⊡",
@@ -102,7 +102,7 @@ namespace Dash
                 };
                 
                 grid.Children.Insert(0, icon);
-                */
+                
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
                 // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
@@ -117,7 +117,7 @@ namespace Dash
             grid.Children.Clear();
             if (isInterfaceBuilder)
             {
-                /*
+                
                 var icon = new TextBlock()
                 {
                     Text = "⊡",
@@ -127,7 +127,7 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Add(icon);
-                */
+                
             }
             AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder);
         }

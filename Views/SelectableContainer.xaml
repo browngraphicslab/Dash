@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsHitTestVisible="{x:Bind IsParentSelected, Mode=OneWay}" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
+    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" >
+        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsHitTestVisible="{x:Bind IsParentSelected, Mode=OneWay}" Background="Transparent" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" UseLayoutRounding="True">
@@ -26,16 +26,16 @@
 
             <!--measurement textboxes-->
             <Border x:Name="xTopWidthTextBoxBorder" Background="{StaticResource SelectedGrey}" CornerRadius="3">
-                <TextBlock x:Name="xTopWidthTextBox" Padding="10,5"></TextBlock>
+                <TextBlock x:Name="xTopWidthTextBox" Padding="0"></TextBlock>
             </Border>
             <Border x:Name="xLeftHeightTextBoxBorder" Background="{StaticResource SelectedGrey}"  CornerRadius="3">
-                <TextBlock x:Name="xLeftHeightTextBox" Padding="10,5"></TextBlock>
+                <TextBlock x:Name="xLeftHeightTextBox" Padding="0"></TextBlock>
             </Border>
             <Border x:Name="xBottomWidthTextBoxBorder" Background="{StaticResource SelectedGrey}" CornerRadius="3">
-                <TextBlock x:Name="xBottomWidthTextBox" Padding="10,5"></TextBlock>
+                <TextBlock x:Name="xBottomWidthTextBox" Padding="0"></TextBlock>
             </Border>
             <Border x:Name="xRightHeightTextBoxBorder" Background="{StaticResource SelectedGrey}"  CornerRadius="3">
-                <TextBlock x:Name="xRightHeightTextBox" Padding="10,5"></TextBlock>
+                <TextBlock x:Name="xRightHeightTextBox" Padding="0"></TextBlock>
             </Border>
             <Border x:Name="xKeyNameTextBoxBorder" Background="{StaticResource WindowsBlue}" CornerRadius="5,5,0,0" Canvas.Left="0" Canvas.Top="-26">
                 <TextBlock x:Name="xKeyNameTextBox" Foreground="White" Padding="10, 5" Text="Sample"></TextBlock>
