@@ -109,6 +109,11 @@
             <Setter Property="Margin" Value="0"></Setter>
             <Setter Property="BorderThickness" Value="0"></Setter>
         </Style>
+
+        <Style TargetType="PivotHeaderItem">
+            <Setter Property="Margin" Value="0,0,1,1"></Setter>
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
         
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">

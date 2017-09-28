@@ -9,12 +9,10 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CornerRadius="10" Margin="-12,0" Padding="0">
-        <Grid.Background>
-            <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
-        </Grid.Background>
+    <Grid CornerRadius="10" Margin="-12,10,-12,0" Padding="0">
         <ListView x:Name="xList" Loaded="XList_OnLoaded"  ItemsSource="{x:Bind ListContent}">
             <ListView.ItemContainerStyle>
+                <!-- TODO: abstract this bs out-->
                 <Style TargetType="ListViewItem">
                     <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
                     <Setter Property="FontSize" Value="11"></Setter>

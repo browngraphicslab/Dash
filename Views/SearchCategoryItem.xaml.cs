@@ -47,11 +47,7 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-
-        /// <summary>
-        /// Background color of the listview
-        /// </summary>
-        public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
+        
         
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview

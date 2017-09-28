@@ -97,6 +97,8 @@ namespace Dash
             Loaded += OnLoaded;
             //xCanvas.Children.Add(_radialMenu);
 
+
+
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
