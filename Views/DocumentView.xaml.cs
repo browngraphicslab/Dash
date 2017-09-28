@@ -38,6 +38,8 @@ namespace Dash
         public DocumentViewModel ViewModel { get; set; }
         // the document view that is being dragged
         public static DocumentView DragDocumentView;
+        public static Dictionary<DocumentController, DocumentView> DocumentViews = new Dictionary<DocumentController, DocumentView>();
+
 
         public bool ProportionalScaling { get; set; }
 
@@ -97,6 +99,9 @@ namespace Dash
             {
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
+
+                DocumentViews.Add(ViewModel.DocumentController,this);
+                HierarchicalMenu.Instance.SetDocViewIcon(ViewModel.DocumentController);
             }
         }
 
@@ -354,6 +359,8 @@ namespace Dash
         public void DeleteDocument()
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
+            DocumentViews.Remove(ViewModel.DocumentController);
+            HierarchicalMenu.Instance.RemoveFromListSource(ViewModel.DocumentController);
             FadeOut.Begin();
         }
 

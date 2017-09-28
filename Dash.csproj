@@ -106,8 +106,14 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
-    <Compile Include="HierarchicalMenu.xaml.cs">
+    <Compile Include="Views\HierarchicalView\HierarchicalMenu.xaml.cs">
       <DependentUpon>HierarchicalMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HierarchicalView\HierarchicalViewItem.xaml.cs">
+      <DependentUpon>HierarchicalViewItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HierarchicalView\HierarchicalViewItemList.xaml.cs">
+      <DependentUpon>HierarchicalViewItemList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="FreeformInkControl.cs" />
@@ -526,7 +532,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="HierarchicalMenu.xaml">
+    <Page Include="Views\HierarchicalView\HierarchicalMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HierarchicalView\HierarchicalViewItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\HierarchicalView\HierarchicalViewItemList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
