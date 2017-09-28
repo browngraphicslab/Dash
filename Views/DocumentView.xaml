@@ -115,12 +115,12 @@
                 <Canvas.RenderTransform>
                     <TransformGroup>
                         <RotateTransform Angle="45"></RotateTransform>
-                        <TranslateTransform X="14" Y="-11"></TranslateTransform>
+                        <TranslateTransform X="18" Y="-11"></TranslateTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"></ScaleTransform>
                     </TransformGroup>
                 </Canvas.RenderTransform>
             </Canvas>
-            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="20" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
+            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
         </Canvas>
     </Grid>
 </local:SelectionElement>

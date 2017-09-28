@@ -16,19 +16,16 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
-        //public bool HasDelegatesOrPrototype { get { return HasDelegates || HasPrototype; } set { Debug.WriteLine("value is.... " + value); } }
-
-        public bool HasDelegatesOrPrototype { get; set; }
+        public bool HasDelegatesOrPrototype { get; private set; }
 
         private bool _hasDelegates; 
         public bool HasDelegates {
             get {
-                //return _hasDelegates; 
                 var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
                 ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
                 : null;
 
-                if (currentDelegates == null) return _hasDelegates=  false;
+                if (currentDelegates == null) return _hasDelegates =  false;
                 return _hasDelegates = currentDelegates.Data.Count() > 0;
             }
             set
@@ -41,7 +38,6 @@ namespace Dash
         private bool _hasPrototypes;
         public bool HasPrototype {
             get {
-                //return _hasPrototypes;
                 return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
             }
             set
