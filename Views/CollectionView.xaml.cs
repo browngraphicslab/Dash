@@ -275,11 +275,11 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    return 2; 
+                    return 5; 
                 case CollectionViewType.Grid:
                     return 0; 
                 case CollectionViewType.List:
-                    return 1; 
+                    return 2; 
                 default: return -1; 
             }
         }
@@ -312,7 +312,7 @@ namespace Dash
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
-                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
+                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
             };
 
 
