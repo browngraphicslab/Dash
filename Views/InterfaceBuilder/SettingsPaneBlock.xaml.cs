@@ -55,7 +55,7 @@ namespace Dash
             xContentGrid.Visibility = xContentGrid.Visibility == Visibility.Collapsed
                 ? Visibility.Visible
                 : Visibility.Collapsed;
-            xCollapseExpandButton.Content = xCollapseExpandButton.Content.Equals("5") ? "6" : "5";
+            xCollapseExpandButton.Content = xCollapseExpandButton.Content.Equals("˅") ? "˃" : "˅";
         }
     }
 }

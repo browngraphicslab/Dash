@@ -7,7 +7,28 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <Grid Width="230" Padding="0">
+    <Grid Background="Transparent" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="xGrid" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Width="25">
+                <Button x:Name="xCollapseExpandButton" Content="˅" Padding="0" Margin="10,0,0,0" Height="Auto" Width="Auto" Foreground="DimGray" Background="Transparent"/>
+            </Grid>
+            <Grid Grid.Column="1"  HorizontalAlignment="Stretch" Height="40" Tapped="XTitle_OnTapped" Background="Transparent" Padding="4" Margin="0,0,20,0">
+                <TextBlock x:Name="xTitle" Text="{x:Bind Title}"  Margin="5,0,0,0" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch"></TextBlock>
+            </Grid>
+        </Grid>
+        <Grid x:Name="xContentGrid" Grid.Row="1">
+            <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
+        </Grid>
+    </Grid>
+    <!--<Grid Width="230" Padding="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="2.5*"/>
@@ -29,5 +50,5 @@
         <Grid x:Name="xContentGrid" Grid.Row="1" Background="Transparent">
             <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
         </Grid>
-    </Grid>
+    </Grid>-->
 </UserControl>
