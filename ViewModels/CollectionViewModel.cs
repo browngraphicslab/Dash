@@ -75,8 +75,10 @@ namespace Dash
             CellSize = 250; // TODO figure out where this should be set
         }
 
-        private KeyController _collectionKey = null;
+        public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
         public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
+    
+
 
 
         #region Event Handlers
@@ -125,7 +127,9 @@ namespace Dash
         {
             foreach (var documentController in documents)
             {
-                DocumentViewModels.Add(new DocumentViewModel(documentController, IsInInterfaceBuilder, c));
+                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                documentViewModel.IsDraggerVisible = this.IsSelected;
+                DocumentViewModels.Add(documentViewModel);
             }
         }
 

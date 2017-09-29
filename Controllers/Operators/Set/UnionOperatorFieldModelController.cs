@@ -56,7 +56,8 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new UnionOperatorFieldModelController(OperatorFieldModel);
+            //return new UnionOperatorFieldModelController(OperatorFieldModel);
+            return new UnionOperatorFieldModelController();
         }
         public override object GetValue(Context context)
         {

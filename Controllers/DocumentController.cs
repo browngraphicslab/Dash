@@ -54,6 +54,17 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public string Title { get
+            {
+                if (GetField(KeyStore.TitleKey) is TextFieldModelController)
+                {
+                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                    if (textFieldModelController != null)
+                        return textFieldModelController.Data;
+                }
+                return DocumentType.Type;
+            } }
+
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             //++totalCount;

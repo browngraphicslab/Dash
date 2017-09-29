@@ -58,16 +58,16 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddOperator(Func<DocumentController> documentCreationFunc)
+        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection;
+            var freeForm = TabMenu.AddsToThisCollection;
 
             if (freeForm == null)
             {
                 return;
             }
             
-            var searchView = OperatorSearchView.Instance.SearchView;
+            var searchView = TabMenu.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
@@ -82,7 +82,7 @@ namespace Dash
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
+                freeForm.ViewModel.AddDocument(opController, null);
             }
         }
 
@@ -107,7 +107,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var cnote = new CollectionNote(where);
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
             cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
             var newDoc = cnote.Document;
             

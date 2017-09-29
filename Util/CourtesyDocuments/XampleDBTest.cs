@@ -147,7 +147,7 @@ namespace Dash
 
             //var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
             var prototypeUmpAssignmentsLayout = new CollectionBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
-            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewKey, new TextFieldModelController("Text"), true);
+            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Text.ToString()), true);
 
 
             var prototypeLayout = new StackLayout(new[] { prototypeUmpLayout.Document, prototypeUmpAssignmentsLayout.Document });
@@ -210,7 +210,7 @@ namespace Dash
         }
         public List<DocumentController> Documents = new List<DocumentController>();
 
-        public static DocumentController CreateWebPage(string target)
+        public static DocumentController CreateWebPage(string target, Point ?where = null)
         {
             var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
             WebDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
@@ -221,14 +221,13 @@ namespace Dash
             var webLayout = new WebBox(new ReferenceFieldModelController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
             webLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
             webLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
-            webLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            webLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where == null ? new Point() : (Point)where), true);
             WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
             return WebDoc;
         }
 
         public DBTest()
         {
-            
             var Ump1Doc = PrototypeUmp.MakeDelegate();
             var Ump2Doc = PrototypeUmp.MakeDelegate();
             var Vol1Doc = PrototypeVol.MakeDelegate();
@@ -353,7 +352,7 @@ namespace Dash
             //    Documents.Add(CreateWebPage("http://www.msn.com"));
             //}
 
-            DBDoc.SetField(KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
+            DBDoc.DocumentFieldUpdated -= DBDoc_DocumentFieldUpdated;
             DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;
                 
         }

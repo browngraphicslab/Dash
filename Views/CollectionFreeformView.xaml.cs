@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash;
 using static Dash.NoteDocuments;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -644,17 +645,25 @@ namespace Dash
             }
             else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
             {
-                //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
+                var doc = _currReference.FieldReference.DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.Data;
                 var pos = e.GetCurrentPoint(this).Position;
-                var cnote = new CollectionNote(pos);
-                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
-                var newDoc = cnote.Document;
-
-                ViewModel.AddDocument(newDoc, null);
-                DBTest.DBDoc.AddChild(newDoc);
-
-
-
+                var cnote = new CollectionNote(pos, _currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey ? CollectionView.CollectionViewType.DB : CollectionView.CollectionViewType.Freeform);
+                if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
+                {
+                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
+                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
+                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
+                    var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
+                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
+                    cnote.Document.GetPositionField().Data = pos;
+                }
+                else
+                {
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+                }
+                ViewModel.AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
             }
             CancelDrag(e.Pointer);
         }
@@ -691,25 +700,25 @@ namespace Dash
         //private void MenuItem_Click(object sender, RoutedEventArgs e)
         //{
         //    var xCanvas = MainPage.Instance.xCanvas;
-        //    if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-        //        xCanvas.Children.Add(OperatorSearchView.Instance);
+        //    if (!xCanvas.Children.Contains(TabMenu.Instance))
+        //        xCanvas.Children.Add(TabMenu.Instance);
         //    // set the operator menu to the current location of the flyout
         //    var menu = sender as MenuFlyoutItem;
         //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
         //    var pointOnCanvas = transform.TransformPoint(new Point());
         //    // reset the render transform on the operator search view
-        //    OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
-        //    var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+        //    TabMenu.Instance.RenderTransform = new TranslateTransform();
+        //    var floatBorder = TabMenu.Instance.SearchView.GetFirstDescendantOfType<Border>();
         //    if (floatBorder != null)
         //    {
         //        Canvas.SetLeft(floatBorder, 0);
         //        Canvas.SetTop(floatBorder, 0);
         //    }
-        //    Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
-        //    Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
-        //    OperatorSearchView.AddsToThisCollection = this;
+        //    Canvas.SetLeft(TabMenu.Instance, pointOnCanvas.X);
+        //    Canvas.SetTop(TabMenu.Instance, pointOnCanvas.Y);
+        //    TabMenu.AddsToThisCollection = this;
 
-        //    OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
+        //    TabMenu.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(TabMenu.Instance);
 
         //    DisposeFlyout();
         //}
@@ -785,6 +794,7 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
             if (InkFieldModelController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
