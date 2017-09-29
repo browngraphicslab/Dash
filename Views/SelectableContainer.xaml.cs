@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -126,6 +127,7 @@ namespace Dash
             Loaded += SelectableContainer_Loaded;
             Unloaded += SelectableContainer_Unloaded;
             Tapped += CompositeLayoutContainer_Tapped;
+            PointerReleased += SelectableContainer_PointerReleased;
             DoubleTapped += CompositeLayoutContainer_DoubleTapped;
 
             var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
@@ -133,6 +135,9 @@ namespace Dash
             xKeyNameTextBox.Text = keyName;
         }
 
+        private void SelectableContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+        }
 
         private void SelectableContainer_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -176,20 +181,50 @@ namespace Dash
             //ContentElement.IsHitTestVisible = IsSelected;
         }
 
+        private bool single_tapped = true;
+
         #region Selection
         private void CompositeLayoutContainer_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var hitElementList = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(this), this).ToList();
+            single_tapped = false;
+            var allChildren = GetAllChildren();
+            var map = new Dictionary<SelectableContainer, bool>();
+            foreach (var child in allChildren)
+            {
+                map[child] = child.IsHitTestVisible;
+                child.IsHitTestVisible = true;
+            }
+            var hitElementList = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(null), null, true).Where(el => el is SelectableContainer).ToList();
+            foreach (var child in allChildren)
+            {
+                child.IsHitTestVisible = map[child];
+            }
             if (hitElementList.Count > 0)
             {
-                var containerToBeSelected = hitElementList.Last();
-
+                GetRoot().SetSelectedContainer(null);
+                SelectableContainer containerToBeSelected = hitElementList.First() as SelectableContainer;
+                containerToBeSelected?.SelectMyself();
             }
 
             e.Handled = true;
         }
 
-        private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
+
+
+        private async void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            single_tapped = true;
+            await Task.Delay(200);
+            if (!single_tapped)
+            {
+                return;
+            }
+            SelectMyself();
+
+        }
+
+        private void SelectMyself()
         {
             if (!IsLowestSelected)
             {
@@ -199,12 +234,11 @@ namespace Dash
                 IsLowestSelected = true;
                 if (IsRoot())
                 {
-                   // FireSelectionChanged(this);
+                    // FireSelectionChanged(this);
                 }
                 FireSelectionChanged(this);
 
             }
-           // e.Handled = true;
         }
 
         private void FireSelectionChanged(SelectableContainer selectedContainer)
