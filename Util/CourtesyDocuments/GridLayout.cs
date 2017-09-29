@@ -120,19 +120,9 @@ namespace Dash
             {
                 var element = documentController.MakeViewUI(context, isInterfaceBuilder);
                 grid.Children.Add(element);
-                if (isInterfaceBuilder)
-                {
-                    var rowController = documentController.GetField(GridRowKey) as NumberFieldModelController;
-                    var colController = documentController.GetField(GridColumnKey) as NumberFieldModelController;
-                    var row = rowController == null ? 0 : rowController.Data;
-                    var column = colController == null ? 0 : colController.Data;
-
-                    element.SetValue(Grid.RowProperty, row); 
-                    element.SetValue(Grid.ColumnProperty, column); 
-                }
             }
             if (isInterfaceBuilder)
-            {                                                                                                   //TODO KB 
+            {                                                                                                   
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
                 return container;

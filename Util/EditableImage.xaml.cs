@@ -102,7 +102,12 @@ namespace Dash
                 xClipRectangle.Visibility = visibility;
                 xEditStackPanel.Visibility = visibility;
 
-                if (value) ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
+                if (value)
+                {
+                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
+                    Canvas.SetLeft(xEditStackPanel, xClipRectangle.Width/2 - 165/2);
+                    Canvas.SetTop(xEditStackPanel, xClipRectangle.Height + 10);
+                }
             }
         }
 
