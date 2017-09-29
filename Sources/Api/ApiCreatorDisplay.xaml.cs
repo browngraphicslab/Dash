@@ -76,7 +76,7 @@ namespace Dash
         private void createAPINodeTemplate(object sender, RoutedEventArgs e)
         {
             var method = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 {ApiOperatorController.MethodKey, new TextFieldModelController(method) },
                 {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) }
@@ -99,7 +99,7 @@ namespace Dash
                 fields[ApiOperatorController.AuthSecretKey] = new TextFieldModelController(xAuthControl.Secret);
             }
 
-            void BuildParams(Dictionary<KeyControllerBase, string> keys, Dictionary<KeyControllerBase, string> values, Dictionary<KeyControllerBase, FieldControllerBase> fieldDict)
+            void BuildParams(Dictionary<KeyController, string> keys, Dictionary<KeyController, string> values, Dictionary<KeyController, FieldControllerBase> fieldDict)
             {
                 foreach (var key in keys)
                 {

@@ -8,14 +8,14 @@ namespace Dash
     public class AnnotatedImage : CourtesyDocument
     {
         public static DocumentType ImageDocType = new DocumentType("41E1280D-1BA9-4C3F-AE72-4080677E199E", "Image Doc");
-        public static KeyControllerBase Image1FieldKey = new KeyControllerBase("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
-        public static KeyControllerBase TextFieldKey = new KeyControllerBase("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+        public static KeyController Image1FieldKey = new KeyController("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
+        public static KeyController TextFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
         static DocumentController _prototypeDoc = CreatePrototypeDoc();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
         static DocumentController CreatePrototypeDoc()
         {
-            return new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>(), ImageDocType);
+            return new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), ImageDocType);
         }
 
         /// <summary>

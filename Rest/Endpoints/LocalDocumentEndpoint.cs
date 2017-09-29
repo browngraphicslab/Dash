@@ -17,220 +17,90 @@ using Newtonsoft.Json;
 
 namespace Dash
 {
-    public class LocalDocumentEndpoint : IDocumentEndpoint
+    public class LocalDocumentEndpoint : LocalModelEndpoint<DocumentModel>
     {
-        /// <summary>
-        /// private dictionary here to save your objects in memory.  Should be synced with the local dash files
-        /// </summary>
-        private Dictionary<string, string> _modelDictionary;
+        private IModelEndpoint<KeyModel> _keys = App.Instance.Container.GetRequiredService<IModelEndpoint<KeyModel>>();
 
-        /// <summary>
-        /// private timer that simple calls a callback every time interval and forces this class to save the current objects
-        /// </summary>
-        private Timer _saveTimer;
-        private IKeyEndpoint _keys => App.Instance.Container.GetRequiredService<IKeyEndpoint>();
-
-        private IFieldEndpoint _fields => App.Instance.Container.GetRequiredService<IFieldEndpoint>();
-
-        public LocalDocumentEndpoint()
-        {
-            _saveTimer = new Timer(SaveTimerCallback, null, new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond),  new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
-            try
-            {
-                var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerDocumentFilepath);
-                _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
-                _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
-            }
-            catch (Exception e)
-            {
-                _modelDictionary = new Dictionary<string, string>();
-            }
-            App.Instance.Suspending += AppSuspending;
-        }
-
-        /// <summary>
-        /// Event handler called every tme interval that saves the current version of your objects
-        /// </summary>
-        /// <param name="state"></param>
-        private async void SaveTimerCallback(object state)
-        {
-            var file =
-                await DashConstants.LocalStorageFolder.CreateFileAsync(DashConstants.LocalServerDocumentFilepath,CreationCollisionOption.OpenIfExists);
-            using (var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
-            {
-                using (var outgoingStream = stream.GetOutputStreamAt(0))
-                {
-                    using (var dw = new DataWriter(outgoingStream))
-                    {
-                        dw.WriteString(JsonConvert.SerializeObject(_modelDictionary));
-                        await dw.StoreAsync();
-                        await dw.FlushAsync();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Private event handler called whenever the appo is suspending or closing, just saves a final time
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AppSuspending(object sender, SuspendingEventArgs e)
-        {
-            SaveTimerCallback(null);
-        }
-
-
-        public async Task AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
-        {
-            _modelDictionary[newDocument.Id] = JsonConvert.SerializeObject(newDocument);
-            success(newDocument);
-        }
-
-        public void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success, Action<Exception> error)
-        {
-            _modelDictionary[documentToUpdate.Id] = JsonConvert.SerializeObject(documentToUpdate);
-            success(documentToUpdate);
-        }
-
-        public async Task GetDocument(string id, Func<DocumentModel, Task> success, Action<Exception> error)
+        private IModelEndpoint<FieldModel> _fields = App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>();
+        public override async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             try
             {
                 var doc = _modelDictionary[id];
-                await success(JsonConvert.DeserializeObject<DocumentModel>(doc));
-            }
-            catch (Exception e)
-            {
-                error(e);
-            }
-        }
-
-        public async Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error)
-        {
-            try
-            {
-                var list = new List<DocumentModel>();
-                foreach (var id in ids)
+                var args = new RestRequestReturnArgs()
                 {
-                    var text = _modelDictionary[id];
-                    var doc = JsonConvert.DeserializeObject<DocumentModel>(text);
-                    list.Add(doc);
+                    ReturnedObjects = new List<EntityBase>(await TrackDownReferences(doc.CreateObject<DocumentModel>()))
+                };
+                await success(args);
+            }
+            catch (Exception e)
+            {
+                error(e);
+            }
+        }
+
+        private async Task<IEnumerable<EntityBase>> TrackDownReferences(DocumentModel model)
+        {
+            List<EntityBase> list = new List<EntityBase>(){model};
+
+            Func<RestRequestReturnArgs, Task> func = async (arg) =>
+            {
+                var objs = arg.ReturnedObjects.ToList();
+
+                var refFields = objs.OfType<ReferenceFieldModel>().ToArray();
+                var docFields = objs.OfType<DocumentFieldModel>().ToArray();
+
+                foreach (var field in refFields)
+                {
+                    objs.Add(field.Reference)
                 }
-                Debug.WriteLine("GET DOCS CALLED");
-                await ToDtoAsync(list, success);
-                Debug.WriteLine("GET DOCS RETURNED");
-            }
-            catch (Exception e)
-            {
-                error(e);
-            }
-        }
 
-        //why is this delete paramterized with a document model? dont ask me
-        public void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
-        {
-            try
-            {
-                _modelDictionary.Remove(document.Id);
-                success();
-            }
-            catch (Exception e)
-            {
-                error(e);
-            }
-        }
+                list.AddRange();
+            };
 
-        public void DeleteAllDocuments(Action success, Action<Exception> error)
-        {
-            _modelDictionary = new Dictionary<string, string>();
-            success();
-        }
-
-        public async Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModel>, Task> success, Action<Exception> error)
-        {
-            try
-            {
-                var actualModels = _modelDictionary.Select(v => JsonConvert.DeserializeObject<DocumentModel>(v.Value));
-                var array = actualModels.Where(i => i.DocumentType.Equals( documentType)).ToArray();
-                Debug.WriteLine("GET DOCS BY TYPE CALLED");
-
-                await ToDtoAsync(array,success);
-                Debug.WriteLine("GET DOCS BY TYPE RETURNED");
-            }
-            catch (Exception e)
-            {
-                error(e);
-            }
-        }
-
-        private async Task<IEnumerable<DocumentModel>> CreateModels(IEnumerable<DocumentModel> models, Dictionary<string, FieldModel> fields, Dictionary<string, KeyModel> keys, Func<IEnumerable<DocumentModel>,Task> success )
-        {
-            var list = new List<DocumentModel>();
-            foreach (var model in models)
-            {
-                //var fieldObjs = model.Fields.Values.Select(fieldId => fields[fieldId]).ToArray();
-                //var keyObjs = model.Fields.Keys.Select(keyId => keys[keyId]).ToArray();
-                list.Add(model);
-            }
-            await success?.Invoke(list);
+            await _keys.GetDocuments(model.Fields.Keys, func, null);
+            await _fields.GetDocuments(model.Fields.Values, func, null);
+           
             return list;
         }
 
-        private async Task ToDtoAsync(IEnumerable<DocumentModel> models, Func<IEnumerable<DocumentModel>, Task> success)
+        public override async Task GetDocumentsByQuery(IQuery<DocumentModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
-            if (!(models.Any()))
+            try
             {
-                await success(new List<DocumentModel>());
-                return;
+                var entities = _modelDictionary.Values.Select(i => i.CreateObject<DocumentModel>()).Where(query.Func);
+
+                var list = new List<IEnumerable<EntityBase>>();
+                foreach (var doc in entities)
+                {
+                    list.Add(await TrackDownReferences(doc));
+                }
+
+                await success(new RestRequestReturnArgs(list.SelectMany(k => k)));
             }
-            var returnedFields = 0;
-            var returnedKeys = 0;
-
-            var fieldIds = models.SelectMany(m => m.Fields.Values).Distinct();
-            var keyIds = models.SelectMany(m => m.Fields.Keys).Distinct();
-
-            var neededFields = fieldIds.Count();
-            var neededKeys = fieldIds.Count();
-
-            var fieldIdsToFields = new Dictionary<string, FieldModel>();
-            var keyIdsToKeys = new Dictionary<string, KeyModel>();
-
-
-            async Task fieldPoll (FieldModel field) 
+            catch (Exception e)
             {
-                returnedFields++;
-                fieldIdsToFields[field.Id] = field;
-            };
-
-            async Task keyPoll (KeyModel key) 
-            {
-                returnedKeys++;
-                keyIdsToKeys[key.Id] = key;
-            };
-
-            foreach (var fieldId in fieldIds)
-            {
-                await _fields.GetField(fieldId, fieldPoll, (args) => { Debug.WriteLine("Shit"); });
+                error(e);
             }
-
-            foreach (var keyId in keyIds)
-            {
-                await _keys.GetKey(keyId, keyPoll, (args) => { Debug.WriteLine("Shit with keys"); });
-            }
-
-
-            if (returnedFields == neededFields && returnedKeys == neededKeys)
-            {
-                await CreateModels(models, fieldIdsToFields, keyIdsToKeys, success);
-            }
-            else
-            {
-                Debug.WriteLine("fuck");
-            }
-
-            Debug.WriteLine("WAITING");
         }
 
+        public override async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        {
+            try
+            {
+                var list = new List<EntityBase>();
+                foreach (var id in ids)
+                {
+                    var text = _modelDictionary[id];
+                    var doc = text.CreateObject<DocumentModel>();
+                    list.AddRange(await TrackDownReferences(doc));
+                }
+                await success(new RestRequestReturnArgs(list));
+            }
+            catch (Exception e)
+            {
+                error(e);
+            }
+        }
     }
 }

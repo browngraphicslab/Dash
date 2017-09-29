@@ -14,12 +14,7 @@ namespace Dash
     {
         public static DocumentController CreateFromModel(DocumentModel model)
         {
-            DocumentController controller;
-            switch (model.DocumentType.Type)
-            {
-                
-            }
-            return null;
+            return new DocumentController(model);
         }
     }
 }

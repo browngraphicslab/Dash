@@ -1,52 +1,46 @@
-﻿using System.Runtime.InteropServices.WindowsRuntime;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    public abstract class KeyController<T> : KeyControllerBase where T: KeyModel
+    //Abstract class from "KeyController<T>" should inherit.
+    public class KeyController : IController<KeyModel>
     {
-        private readonly int _hash;
 
-        public KeyController(KeyModel keyModel) : base(keyModel)
+        public string Name
         {
-            _hash = Model.GetHashCode();
+            get => Model.Name;
+            set
+            {
+                Model.Name = value;
+                RESTClient.Instance.Keys.UpdateKey(Model, model =>
+                {
+                    // Yay!
+                }, exception =>
+                {
+                    // Hayyyyy!
+                });
+            }
+        }
+        public KeyController(string guid) : this(new KeyModel(guid))
+        {
         }
 
-        /// <summary>
-        /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
-        /// </summary>
-        public string GetId()
+        public KeyController(string guid, string name) : this(new KeyModel(guid, name))
         {
-            return Model.Id;
         }
 
-        /// <summary>
-        /// Gets the name of the key.
-        /// </summary>
-        /// <returns></returns>
-        public string GetName()
+        public KeyController() : this(new KeyModel())
         {
-            return Model.Name;
         }
 
-        public override bool Equals(object obj)
+        public KeyController(KeyModel model) : base(model)
         {
-            var k = obj as KeyController<T>;
-            return k != null && k.Id.Equals(GetId());
-        }
 
-        public override int GetHashCode()
-        {
-            return GetId().GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return Model.Name;
-        }
-
-        public virtual void Dispose()
-        {
         }
     }
 }

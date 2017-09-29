@@ -87,7 +87,7 @@ namespace Dash
             {
                 var key = schema.GetKey(jtoken);
                 var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
-                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyControllerBase, FieldControllerBase>{[key]=field});
+                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyController, FieldControllerBase>{[key]=field});
 
                 // wrap the field in an instance of the prototype
                 var protoInstance = schema.Prototype.MakeDelegate();
@@ -132,7 +132,7 @@ namespace Dash
             var jObject = jtoken as JObject;
 
             // parse each of the fields on the object into a field model controller
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            var fields = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var jProperty in jObject)
             {
                 var key = schema.GetKey(jProperty.Value);
@@ -247,7 +247,7 @@ namespace Dash
             return new TextFieldModelController(text);
         }
 
-        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyControllerBase, FieldControllerBase> fields)
+        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldControllerBase> fields)
         {
             foreach (var field in fields)
             {
@@ -271,7 +271,7 @@ namespace Dash
         public DocumentSchema(string basePath)
         {
             BasePath = basePath;
-            Prototype = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>(), 
+            Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), 
                 new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -279,10 +279,10 @@ namespace Dash
 
         public DocumentController Prototype { get; set; }
 
-        public KeyControllerBase GetKey(JToken jToken)
+        public KeyController GetKey(JToken jToken)
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
-            return new KeyControllerBase(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
+            return new KeyController(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

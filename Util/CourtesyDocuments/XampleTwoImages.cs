@@ -9,18 +9,18 @@ namespace Dash
     public class TwoImages : CourtesyDocument
     {
         public static DocumentType TwoImagesType = new DocumentType("FC8EF5EB-1A0B-433C-85B6-6929B974A4B7", "Two Images");
-        public static KeyControllerBase Image1FieldKey = new KeyControllerBase("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
-        public static KeyControllerBase Image2FieldKey = new KeyControllerBase("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
-        public static KeyControllerBase AnnotatedFieldKey = new KeyControllerBase("F370A8F6-22D9-4442-A528-A7FEEC29E306", "AnnotatedImage");
-        public static KeyControllerBase TextFieldKey = new KeyControllerBase("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
-        public static KeyControllerBase RichTextKey = new KeyControllerBase("1C46E96E-F3CB-4DEE-8799-AD71DB1FB4D1", "RichTextField");
+        public static KeyController Image1FieldKey = new KeyController("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
+        public static KeyController Image2FieldKey = new KeyController("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
+        public static KeyController AnnotatedFieldKey = new KeyController("F370A8F6-22D9-4442-A528-A7FEEC29E306", "AnnotatedImage");
+        public static KeyController TextFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+        public static KeyController RichTextKey = new KeyController("1C46E96E-F3CB-4DEE-8799-AD71DB1FB4D1", "RichTextField");
         static DocumentController _prototypeTwoImages = CreatePrototype2Images();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
         static DocumentController CreatePrototype2Images()
         {
             // bcz: default values for data fields can be added, but should not be needed
-            Dictionary<KeyControllerBase, FieldControllerBase> fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
             fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
             fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
@@ -62,7 +62,7 @@ namespace Dash
 
             var docLayout = _prototypeLayout.MakeDelegate();
             docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-            docLayout.SetField(new KeyControllerBase("opacity", "opacity"), new NumberFieldModelController(0.8), true);
+            docLayout.SetField(new KeyController("opacity", "opacity"), new NumberFieldModelController(0.8), true);
             SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
 
         }

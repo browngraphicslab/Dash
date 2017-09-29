@@ -418,7 +418,7 @@ namespace Dash
                     var eqPos = tag.IndexOfAny(new[] { '=' });
                     var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
                     var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new KeyControllerBase(word, word);
+                    var key = new KeyController(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {

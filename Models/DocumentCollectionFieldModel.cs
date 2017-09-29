@@ -10,7 +10,7 @@ namespace Dash
     /// <summary>
     /// A field model which encapsulates a list of Documents
     /// </summary>
-    [FieldModelType(FieldTypeEnum.DocumentCollection)]
+    [FieldModelTypeAttribute(TypeInfo.Collection)]
     public class DocumentCollectionFieldModel : FieldModel
     {
         /// <summary>
@@ -18,6 +18,10 @@ namespace Dash
         /// </summary>
         public List<string> Data;
 
+        public DocumentCollectionFieldModel() : this(new List<string>())
+        {
+            
+        }
 
         public DocumentCollectionFieldModel(IEnumerable<string> documentIds, string id = null) : base(id)
         {

@@ -72,7 +72,7 @@ namespace Dash
         private DocumentController CreateNewWorkspace()
         {
             // create the collection document model using a request
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
@@ -110,7 +110,7 @@ namespace Dash
                 }
                 else
                 {
-                    var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+                    var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
                         [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
                     };
@@ -139,7 +139,7 @@ namespace Dash
 
             }
 
-            DocumentControllerFactory.CreateFromModel(new DocumentModel(new ConcurrentDictionary<KeyModel, FieldModel>(), DocumentType.DefaultType));
+            //DocumentControllerFactory.CreateFromModel(new DocumentModel(new ConcurrentDictionary<KeyModel, FieldModel>(), DocumentType.DefaultType));
 
             RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.HomePageType, Success, exception => throw exception);
         }

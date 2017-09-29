@@ -10,10 +10,10 @@ namespace Dash
 {
     public class MapOperatorController : OperatorFieldModelController
     {
-        public static KeyControllerBase InputKey = new KeyControllerBase("D7F1CA4D-820F-419E-979A-6A1538E20A5E", "Input Collection");
-        public static KeyControllerBase OperatorKey = new KeyControllerBase("3A2C13C5-33F4-4845-9854-6CEE0E2D9438", "Operator");
+        public static KeyController InputKey = new KeyController("D7F1CA4D-820F-419E-979A-6A1538E20A5E", "Input Collection");
+        public static KeyController OperatorKey = new KeyController("3A2C13C5-33F4-4845-9854-6CEE0E2D9438", "Operator");
 
-        public static KeyControllerBase OutputKey = new KeyControllerBase("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
+        public static KeyController OutputKey = new KeyController("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
 
         public MapOperatorController() : base(new OperatorFieldModel("map")) { }
 
@@ -21,13 +21,13 @@ namespace Dash
         {
         }
 
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [InputKey] = new IOInfo(TypeInfo.List, true),
             [OperatorKey] = new IOInfo(TypeInfo.Operator, true)
         };
 
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [OutputKey] = TypeInfo.List
         };
@@ -45,7 +45,7 @@ namespace Dash
             return false;
         }
 
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var input = (BaseListFieldModelController) inputs[InputKey];
             var op = (OperatorFieldModelController)inputs[OperatorKey];
@@ -54,8 +54,8 @@ namespace Dash
                 return;
             }
             List<FieldControllerBase> outputList = new List<FieldControllerBase>(input.Data.Count);
-            Dictionary<KeyControllerBase, FieldControllerBase> inDict = new Dictionary<KeyControllerBase, FieldControllerBase>();
-            Dictionary<KeyControllerBase, FieldControllerBase> outDict = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> inDict = new Dictionary<KeyController, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> outDict = new Dictionary<KeyController, FieldControllerBase>();
             var inKey = op.Inputs.First().Key;
             var outKey = op.Outputs.First().Key;
             foreach (var fieldModelController in input.Data)

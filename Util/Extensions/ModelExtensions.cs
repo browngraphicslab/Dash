@@ -21,7 +21,7 @@ namespace Dash
             return FieldControllerFactory.CreateFromModel(model);
         }
 
-        public static KeyControllerBase NewController(this KeyModel model)
+        public static KeyController NewController(this KeyModel model)
         {
             return KeyControllerFactory.CreateFromModel(model);
         }

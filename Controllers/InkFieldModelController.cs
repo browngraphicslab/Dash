@@ -45,7 +45,7 @@ namespace Dash
             SetState(data, null);
         }
 
-        private InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel)
+        public InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel)
         {
             InkData = inkFieldModel.Data;
             _undoStack.Push(inkFieldModel.Data);

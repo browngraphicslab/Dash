@@ -13,7 +13,7 @@ namespace Dash
     
     public sealed partial class ApiCreatorPropertyGenerator : UserControl {
 
-        public KeyControllerBase parameterCollectionKey;
+        public KeyController parameterCollectionKey;
         public ApiSourceDisplay SourceDisplay;
 
         public delegate void OnParametersChangedEventHandler(ApiCreatorPropertyGenerator generator, ApiCreatorProperty property);
@@ -27,7 +27,7 @@ namespace Dash
             xListView.Visibility = Visibility.Collapsed;
         }
 
-        public ApiCreatorPropertyGenerator(KeyControllerBase key) {
+        public ApiCreatorPropertyGenerator(KeyController key) {
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
             Document = null;
@@ -44,8 +44,8 @@ namespace Dash
             protected set { _operatorController = value; }
         }
 
-        public Dictionary<KeyControllerBase, string> Keys = new Dictionary<KeyControllerBase, string>();
-        public Dictionary<KeyControllerBase, string> Values = new Dictionary<KeyControllerBase, string>();
+        public Dictionary<KeyController, string> Keys = new Dictionary<KeyController, string>();
+        public Dictionary<KeyController, string> Values = new Dictionary<KeyController, string>();
 
         // == DEPENDENCY MEMBERS ==
         public String TitleTag { get; set; }
@@ -131,12 +131,12 @@ namespace Dash
             XTitleBlock.Text = TitleTag;
         }
 
-        private void ApiCreatorProperty_OnKeyChanged(KeyControllerBase key, string newValue)
+        private void ApiCreatorProperty_OnKeyChanged(KeyController key, string newValue)
         {
             Keys[key] = newValue;
         }
 
-        private void ApiCreatorProperty_OnValueChanged(KeyControllerBase key, string newValue)
+        private void ApiCreatorProperty_OnValueChanged(KeyController key, string newValue)
         {
             Values[key] = newValue;
         }

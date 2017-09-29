@@ -24,18 +24,18 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; }
+        public abstract ObservableDictionary<KeyController, IOInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; }
+        public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />

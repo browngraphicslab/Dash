@@ -76,8 +76,8 @@ namespace Dash
             CellSize = 250; // TODO figure out where this should be set
         }
 
-        private KeyControllerBase _collectionKey = null;
-        public override KeyControllerBase CollectionKey => _collectionKey ?? base.CollectionKey;
+        private KeyController _collectionKey = null;
+        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
 
 
         #region Event Handlers

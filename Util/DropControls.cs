@@ -31,7 +31,7 @@ namespace Dash
 
         private void dropTargetOnDrop(object sender, Windows.UI.Xaml.DragEventArgs e)
         {
-            var kvp = (KeyValuePair<KeyControllerBase, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+            var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
             var docController = kvp.Value;
             var key = kvp.Key;
             var context = new Context(docController);

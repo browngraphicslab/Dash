@@ -14,21 +14,21 @@ namespace Dash
         {
         }
 
-        public static readonly KeyControllerBase URIKey = new KeyControllerBase("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
+        public static readonly KeyController URIKey = new KeyController("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
 
-        public static readonly KeyControllerBase ImageKey = new KeyControllerBase("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
+        public static readonly KeyController ImageKey = new KeyController("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [URIKey] = new IOInfo(TypeInfo.Text, true)
         };
 
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             //throw new NotImplementedException();
 

@@ -53,11 +53,11 @@ namespace Dash
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
-        private readonly Dictionary<KeyControllerBase, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyControllerBase, OnDocumentFieldUpdatedHandler>();
+        private readonly Dictionary<KeyController, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
-        public void AddFieldUpdatedListener(KeyControllerBase key, OnDocumentFieldUpdatedHandler handler)
+        public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             //++totalCount;
             //if (++addCount % 100 == 0)
@@ -74,7 +74,7 @@ namespace Dash
             }
         }
 
-        public void RemoveFieldUpdatedListener(KeyControllerBase key, OnDocumentFieldUpdatedHandler handler)
+        public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             //--totalCount;
             //if (++removeCount % 100 == 0)
@@ -92,7 +92,7 @@ namespace Dash
         ///     A wrapper for <see cref="Model.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        private Dictionary<KeyControllerBase, FieldControllerBase> _fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+        private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController(DocumentModel model) : base(model)
         {
@@ -101,14 +101,14 @@ namespace Dash
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
             var fields = model.Fields.Select(kvp => 
-            new KeyValuePair<KeyControllerBase, FieldControllerBase>(
-                ContentController<KeyModel>.GetController<KeyControllerBase>(kvp.Key), 
+            new KeyValuePair<KeyController, FieldControllerBase>(
+                ContentController<KeyModel>.GetController<KeyController>(kvp.Key), 
                 ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value)));
 
             SetFields(fields, true);
         }
 
-        public DocumentController(IDictionary<KeyControllerBase, FieldControllerBase> fields, DocumentType type,
+        public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model), type, id))
         {
             LayoutName = Model.DocumentType.Type;
@@ -230,7 +230,7 @@ namespace Dash
                             bool foundValue = false;
                             foreach (var kf in primaryKeys.Data)
                             {
-                                var key = new KeyControllerBase((kf as TextFieldModelController).Data);
+                                var key = new KeyController((kf as TextFieldModelController).Data);
                                 var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
                                 if (derefValue != null)
                                 {
@@ -302,7 +302,7 @@ namespace Dash
         /// <summary>
         /// parses text input into a field controller
         /// </summary>
-        public bool ParseDocField(KeyControllerBase key, string textInput, FieldControllerBase curField = null)
+        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
         {
             textInput = textInput.Trim(' ');
             if (textInput.StartsWith("="))
@@ -390,13 +390,13 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Returns the first level of inheritance which references the passed in <see cref="KeyController" /> or
+        ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
         ///     returns null if no level of inheritance has a <see cref="FieldModelController" /> associated with the passed in
-        ///     <see cref="KeyController" />
+        ///     <see cref="KeyControllerGeneric{T}" />
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public DocumentController GetPrototypeWithFieldKey(KeyControllerBase key)
+        public DocumentController GetPrototypeWithFieldKey(KeyController key)
         {
             if (key == null)
                 return null;
@@ -449,7 +449,7 @@ namespace Dash
             return result;
         }
 
-        private bool SetFieldHelper(KeyControllerBase key, FieldControllerBase field, bool forceMask)
+        private bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
@@ -470,7 +470,7 @@ namespace Dash
             return false;
         }
 
-        private void SetupNewFieldListeners(KeyControllerBase key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
+        private void SetupNewFieldListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
         {
             var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
@@ -499,8 +499,8 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyController" /> at the first
-        ///     prototype in the hierarchy that contains it. If the <see cref="KeyController" /> is not used at any level then it is
+        ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
+        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
         ///     created in this <see cref="DocumentController" />.
         ///     <para>
         ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
@@ -510,7 +510,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyControllerBase key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true) 
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true) 
         {
             // check field type compatibility
             //if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;                                      
@@ -533,7 +533,7 @@ namespace Dash
             return shouldExecute;
         }
 
-        private bool IsTypeCompatible(KeyControllerBase key, FieldControllerBase field)
+        private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
                 return false;
@@ -550,7 +550,7 @@ namespace Dash
         /// </summary>
         /// <param name="key">key that field is mapped to</param>
         /// <param name="field">reference field model that references the field to connect</param>
-        private bool IsOperatorTypeCompatible(KeyControllerBase key, FieldControllerBase field)
+        private bool IsOperatorTypeCompatible(KeyController key, FieldControllerBase field)
         {
             var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
             if (opCont == null) return true;
@@ -562,7 +562,7 @@ namespace Dash
 
 
         /// <summary>
-        ///     returns the <see cref="FieldModelController" /> for the specified <see cref="KeyController" /> by looking first in this
+        ///     returns the <see cref="FieldModelController" /> for the specified <see cref="KeyControllerGeneric{T}" /> by looking first in this
         ///     <see cref="DocumentController" />
         ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
         ///     key is not found then it returns null.
@@ -571,7 +571,7 @@ namespace Dash
         /// <param name="context"></param>
         /// <param name="ignorePrototype"></param>
         /// <returns></returns>
-        public FieldControllerBase GetField(KeyControllerBase key, bool ignorePrototype = false)
+        public FieldControllerBase GetField(KeyController key, bool ignorePrototype = false)
         {
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
@@ -590,11 +590,11 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="forceMask"></param>
-        public bool SetFields(IEnumerable<KeyValuePair<KeyControllerBase, FieldControllerBase>> fields, bool forceMask)
+        public bool SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
         {
             Context c = new Context(this);
             bool shouldExecute = false;
-            foreach (var field in fields)
+            foreach (var field in fields.ToArray())
             {
                 if (SetFieldHelper(field.Key, field.Value, forceMask))
                 {
@@ -691,19 +691,19 @@ namespace Dash
             return currentDelegates;
         }
 
-        public FieldControllerBase GetDereferencedField(KeyControllerBase key, Context context)
+        public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
         }
 
-        public T GetDereferencedField<T>(KeyControllerBase key, Context context) where T : FieldControllerBase
+        public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
         {
             return GetDereferencedField(key, context) as T;
         }
 
 
-        public bool ShouldExecute(Context context, KeyControllerBase updatedKey)
+        public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
@@ -731,8 +731,8 @@ namespace Dash
             {
                 return context;
             }
-            var inputs = new Dictionary<KeyControllerBase, FieldControllerBase>(opField.Inputs.Count);
-            var outputs = new Dictionary<KeyControllerBase, FieldControllerBase>(opField.Outputs.Count);
+            var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
+            var outputs = new Dictionary<KeyController, FieldControllerBase>(opField.Outputs.Count);
             foreach (var opFieldInput in opField.Inputs)
             {
                 var field = GetField(opFieldInput.Key);
@@ -763,9 +763,9 @@ namespace Dash
             return context;
         }
 
-        public IEnumerable<KeyValuePair<KeyControllerBase, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<KeyControllerBase, FieldControllerBase> fieldModelController in _fields)
+            foreach (KeyValuePair<KeyController, FieldControllerBase> fieldModelController in _fields)
             {
                 yield return fieldModelController;
             }
@@ -806,8 +806,8 @@ namespace Dash
             var isInterfaceBuilder = false; // TODO make this a parameter
 
 
-            Action<KeyValuePair<KeyControllerBase, FieldControllerBase>> a =
-                delegate(KeyValuePair<KeyControllerBase, FieldControllerBase> f)
+            Action<KeyValuePair<KeyController, FieldControllerBase>> a =
+                delegate(KeyValuePair<KeyController, FieldControllerBase> f)
                 {
                     if (f.Key.Equals(KeyStore.DelegatesKey) ||
                         f.Key.Equals(KeyStore.PrototypeKey) ||

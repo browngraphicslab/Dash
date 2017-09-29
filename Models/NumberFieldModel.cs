@@ -4,7 +4,7 @@ using DashShared.Models;
 
 namespace Dash
 {
-    [FieldModelType(FieldTypeEnum.Number)]
+    [FieldModelTypeAttribute(TypeInfo.Number)]
     public class NumberFieldModel : FieldModel
     {
 

@@ -16,27 +16,27 @@ namespace Dash
     {
         public static readonly DocumentType DocumentType = ApiOperatorController.ApiType;
 
-        public static readonly KeyControllerBase BaseUrlKey = new KeyControllerBase("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
-        public static readonly KeyControllerBase HttpMethodKey = new KeyControllerBase("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
-        public static readonly KeyControllerBase HeadersKey = new KeyControllerBase("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
-        public static readonly KeyControllerBase ParametersKey = new KeyControllerBase("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
+        public static readonly KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
+        public static readonly KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
+        public static readonly KeyController HeadersKey = new KeyController("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
+        public static readonly KeyController ParametersKey = new KeyController("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
 
-        public static readonly KeyControllerBase AuthHttpMethodKey = new KeyControllerBase("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
-        public static readonly KeyControllerBase AuthBaseUrlKey = new KeyControllerBase("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
-        public static readonly KeyControllerBase AuthKey = new KeyControllerBase("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
-        public static readonly KeyControllerBase AuthSecretKey = new KeyControllerBase("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
-        public static readonly KeyControllerBase AuthHeadersKey = new KeyControllerBase("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
-        public static readonly KeyControllerBase AuthParametersKey = new KeyControllerBase("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
+        public static readonly KeyController AuthHttpMethodKey = new KeyController("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+        public static readonly KeyController AuthBaseUrlKey = new KeyController("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+        public static readonly KeyController AuthKey = new KeyController("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
+        public static readonly KeyController AuthSecretKey = new KeyController("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+        public static readonly KeyController AuthHeadersKey = new KeyController("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+        public static readonly KeyController AuthParametersKey = new KeyController("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
 
-        public static readonly KeyControllerBase KeyTextKey = new KeyControllerBase("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
-        public static readonly KeyControllerBase ValueTextKey = new KeyControllerBase("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
-        public static readonly KeyControllerBase RequiredKey = new KeyControllerBase("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
-        public static readonly KeyControllerBase DisplayKey = new KeyControllerBase("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
+        public static readonly KeyController KeyTextKey = new KeyController("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
+        public static readonly KeyController ValueTextKey = new KeyController("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
+        public static readonly KeyController RequiredKey = new KeyController("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
+        public static readonly KeyController DisplayKey = new KeyController("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
 
 
         public ApiDocumentModel()
         {
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [BaseUrlKey] = new TextFieldModelController(""),
                 [HttpMethodKey] = new NumberFieldModelController(0),
@@ -71,7 +71,7 @@ namespace Dash
         /// <returns>The newly generated document representing the newly added parameter.</returns>
         public static DocumentController addParameter(DocumentController docController, TextBox key,
             TextBox value, CheckBox display,
-            CheckBox required, KeyControllerBase parameterCollectionKey, ApiSourceDisplay sourceDisplay)
+            CheckBox required, KeyController parameterCollectionKey, ApiSourceDisplay sourceDisplay)
         {
             Debug.Assert(docController.DocumentType == DocumentType);
             Debug.Assert(parameterCollectionKey == AuthParametersKey ||
@@ -86,7 +86,7 @@ namespace Dash
             double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
 
             // generate new doc with information to add
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [ValueTextKey] = new TextFieldModelController(key.Text),
                 [DisplayKey] = new NumberFieldModelController(displayDouble),
@@ -163,7 +163,7 @@ namespace Dash
         /// </summary>
         public static void removeParameter(DocumentController docController,
             DocumentController docModelToRemove,
-            KeyControllerBase parameterCollectionKey, ApiSourceDisplay sourceDisplay)
+            KeyController parameterCollectionKey, ApiSourceDisplay sourceDisplay)
         {
             Debug.Assert(docController.DocumentType == DocumentType);
             Debug.Assert(parameterCollectionKey == AuthParametersKey ||

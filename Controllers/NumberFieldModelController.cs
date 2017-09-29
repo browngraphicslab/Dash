@@ -15,7 +15,7 @@ namespace Dash
         {
         }
 
-        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
+        public NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
             
         }

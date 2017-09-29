@@ -81,7 +81,7 @@ namespace Dash
             else SetListItemSourceToCurrentDataContext();
         }
 
-        void UpdateListItemSourceElement(KeyControllerBase fieldKey, FieldControllerBase fieldValue)
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
             for (int i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key == fieldKey)
@@ -105,7 +105,7 @@ namespace Dash
             {
                 var container = item as KeyFieldContainer;
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<KeyControllerBase, DocumentController>(container.Key, _documentControllerDataContext));
+                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
             }
         }
 
@@ -134,7 +134,7 @@ namespace Dash
         private void AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            KeyControllerBase key = new KeyControllerBase(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldControllerBase fmController = new TextFieldModelController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
@@ -164,7 +164,7 @@ namespace Dash
             }
             else if (item == TypeInfo.Document)
             {
-                var fields = new Dictionary<KeyControllerBase, FieldControllerBase>()
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
                 };
@@ -207,12 +207,12 @@ namespace Dash
         /// </summary>
         public class KeyFieldContainer
         {
-            public KeyControllerBase Key { get; }
+            public KeyController Key { get; }
             public BoundFieldModelController Controller { get; set; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
 
-            public KeyFieldContainer(KeyControllerBase key, BoundFieldModelController controller)
+            public KeyFieldContainer(KeyController key, BoundFieldModelController controller)
             {
                 Key = key;
                 Controller = controller;

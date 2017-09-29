@@ -182,7 +182,7 @@ namespace Dash
                 _freeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
                 docControllers.Add(doc);
             }
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>()
+            var fields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docControllers),
             };
@@ -248,7 +248,7 @@ namespace Dash
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
             var position = Util.PointTransformFromVisual(topLeft, _freeformInkControl.SelectionCanvas, _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            var fields = new Dictionary<KeyController, FieldControllerBase>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             List<DocumentController> textFields = new List<DocumentController>();
             List<Rect> keysToRemove = new List<Rect>();
@@ -308,15 +308,15 @@ namespace Dash
             return str;
         }
 
-        private KeyControllerBase TryGetKey(string text)
+        private KeyController TryGetKey(string text)
         {
             if (text.Contains(':'))
             {
                 var splitstring = text.Split(':');
                 var key = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                return new KeyControllerBase(Guid.NewGuid().ToString(), key);
+                return new KeyController(Guid.NewGuid().ToString(), key);
             }
-            return new KeyControllerBase(Guid.NewGuid().ToString(), text);
+            return new KeyController(Guid.NewGuid().ToString(), text);
         }
 
         private bool RectContainsRect(Rect outer, Rect inner)

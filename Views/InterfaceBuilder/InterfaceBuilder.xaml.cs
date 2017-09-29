@@ -131,7 +131,7 @@ namespace Dash
             if (isDraggedFromKeyValuePane)
             {
                 // get data variables from the DragArgs
-                var kvp = (KeyValuePair<KeyControllerBase, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+                var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
                 var dataDocController = kvp.Value;
                 var dataKey = kvp.Key;
                 var context = new Context(dataDocController);
@@ -189,7 +189,7 @@ namespace Dash
         }
 
         private static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
-            DocumentController docController, KeyControllerBase key, Context context)
+            DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)

@@ -58,6 +58,7 @@
     <Compile Include="Push\InvocationDescriptor.cs" />
     <Compile Include="Push\Message.cs" />
     <Compile Include="Push\PushMessage.cs" />
+    <Compile Include="Util\RestRequestReturnArgs.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\Util.cs" />

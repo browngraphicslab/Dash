@@ -23,9 +23,9 @@ namespace Dash
     /// </summary>
     public class TextingBox : CourtesyDocument
     {
-        public static KeyControllerBase FontWeightKey = new KeyControllerBase("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
-        public static KeyControllerBase FontSizeKey = new KeyControllerBase("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
-        public static KeyControllerBase TextAlignmentKey = new KeyControllerBase("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
+        public static KeyController FontWeightKey = new KeyController("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
+        public static KeyController FontSizeKey = new KeyController("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
+        public static KeyController TextAlignmentKey = new KeyController("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
         public static DocumentType DocumentType =
             new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 

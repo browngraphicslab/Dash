@@ -14,9 +14,9 @@ namespace Dash
         public static DocumentType NumbersType =
             new DocumentType("2E92492D-67FA-46DB-9140-33BBEB90B192", "XampleText");
 
-        public static KeyControllerBase Text1FieldKey = new KeyControllerBase("AB81901C-0001-4653-A2FC-749B398CD26C", "Text1");
-        public static KeyControllerBase Text2FieldKey = new KeyControllerBase("E14AE421-3534-4588-B69B-C4ED3E234E0F", "Text2");
-        public static KeyControllerBase Text3FieldKey = new KeyControllerBase("0B9AEBB0-42B9-4E54-BE0D-71CDEA2BCB32", "Text3");
+        public static KeyController Text1FieldKey = new KeyController("AB81901C-0001-4653-A2FC-749B398CD26C", "Text1");
+        public static KeyController Text2FieldKey = new KeyController("E14AE421-3534-4588-B69B-C4ED3E234E0F", "Text2");
+        public static KeyController Text3FieldKey = new KeyController("0B9AEBB0-42B9-4E54-BE0D-71CDEA2BCB32", "Text3");
 
 
         public XampleText()

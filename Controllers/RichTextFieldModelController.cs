@@ -18,7 +18,7 @@ namespace Dash
         public RichTextFieldModelController(): base(new RichTextFieldModel()) { }
         public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data)) { }
 
-        private RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel)
+        public RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel)
         {
 
         }

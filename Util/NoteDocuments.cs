@@ -50,14 +50,14 @@ namespace Dash
         
         public class RichTextNote : NoteDocument
         {
-            public static KeyControllerBase TitleKey = new KeyControllerBase("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
-            public static KeyControllerBase RTFieldKey = new KeyControllerBase("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
+            public static KeyController TitleKey = new KeyController("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
+            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
 
 
             public override DocumentController CreatePrototype()
             {
 
-                var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+                var fields = new Dictionary<KeyController, FieldControllerBase>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Prototype Content")));
                 fields.Add(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
@@ -99,12 +99,12 @@ namespace Dash
 
         public class ImageNote : NoteDocument
         {
-            public static KeyControllerBase TitleKey = new KeyControllerBase("290976B3-5FFA-4899-97B8-7DBFFF7C2E4A", "Title");
-            public static KeyControllerBase IamgeFieldKey = new KeyControllerBase("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
+            public static KeyController TitleKey = new KeyController("290976B3-5FFA-4899-97B8-7DBFFF7C2E4A", "Title");
+            public static KeyController IamgeFieldKey = new KeyController("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
 
             public override DocumentController CreatePrototype()
             {
-                var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+                var fields = new Dictionary<KeyController, FieldControllerBase>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
                 return new DocumentController(fields, Type, _prototypeID);
@@ -140,12 +140,12 @@ namespace Dash
 
         public class PostitNote : NoteDocument
         {
-            public static KeyControllerBase NotesFieldKey = new KeyControllerBase("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            public static KeyController NotesFieldKey = new KeyController("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
             public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Post it Note");
 
             public override DocumentController CreatePrototype()
             {
-                var fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+                var fields = new Dictionary<KeyController, FieldControllerBase>();
                 fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
                 return new DocumentController(fields, Type, _prototypeID);
             }

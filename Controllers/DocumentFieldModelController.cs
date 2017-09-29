@@ -26,6 +26,11 @@ namespace Dash
             Data = document;
         }
 
+        public DocumentFieldModelController(DocumentFieldModel model) : base(model)
+        {
+            Data = ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
+        }
+
         public static async Task<DocumentFieldModelController> CreateFromServer(DocumentFieldModel documentFieldModel)
         {
             var localController = ContentController<FieldModel>.GetController<DocumentFieldModelController>(documentFieldModel.Id);
@@ -108,7 +113,7 @@ namespace Dash
             {
                 var oldData = _data;
 
-                if (_data.Equals(value))
+                if (_data == null || _data.Equals(value))
                 {
                     _data = value;
                     if (oldData != null)

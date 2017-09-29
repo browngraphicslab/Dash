@@ -148,7 +148,7 @@ namespace Dash
         {
             var model = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), doc.DocumentType);
             var copy = doc.GetPrototype()?.MakeDelegate() ?? new DocumentController(model);
-            var fields = new ObservableDictionary<KeyControllerBase, FieldControllerBase>();
+            var fields = new ObservableDictionary<KeyController, FieldControllerBase>();
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.WidthFieldKey) ||

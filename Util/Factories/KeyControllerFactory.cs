@@ -12,9 +12,9 @@ namespace Dash
 {
     public class KeyControllerFactory : BaseControllerFactory
     {
-        public static KeyControllerBase CreateFromModel(KeyModel model)
+        public static KeyController CreateFromModel(KeyModel model)
         {
-            return null;
+            return new KeyController(model);
         }
     }
 }

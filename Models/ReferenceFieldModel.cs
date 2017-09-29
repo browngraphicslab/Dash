@@ -3,7 +3,7 @@ using DashShared.Models;
 
 namespace Dash
 {
-    [FieldModelType(FieldTypeEnum.Reference)]
+    [FieldModelTypeAttribute(TypeInfo.Reference)]
     public class ReferenceFieldModel : FieldModel
     {
         public FieldReference Reference;

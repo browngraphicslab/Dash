@@ -59,25 +59,25 @@ namespace Dash.Controllers.Operators
         }
 
         //Output keys
-        public static readonly KeyControllerBase ResultsKey      = new KeyControllerBase("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
-        public static readonly KeyControllerBase InputDocsKey    = new KeyControllerBase("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
-        public static readonly KeyControllerBase FieldPatternKey = new KeyControllerBase("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
-        public static readonly KeyControllerBase ReturnDocKey    = new KeyControllerBase("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
-        public static readonly KeyControllerBase SearchForDocKey = new KeyControllerBase("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
+        public static readonly KeyController ResultsKey      = new KeyController("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
+        public static readonly KeyController InputDocsKey    = new KeyController("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
+        public static readonly KeyController FieldPatternKey = new KeyController("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
+        public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
+        public static readonly KeyController SearchForDocKey = new KeyController("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
 
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [FieldPatternKey] = new IOInfo(TypeInfo.Text, true),
             [ReturnDocKey]    = new IOInfo(TypeInfo.Text, true),
             [SearchForDocKey] = new IOInfo(TypeInfo.Document, true),
             [InputDocsKey]    = new IOInfo(TypeInfo.Collection, true)
         };
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [ResultsKey] = TypeInfo.Collection
         };
         
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data.Trim(' ','\r');
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));

@@ -9,7 +9,7 @@ using DashShared.Models;
 
 namespace Dash
 {
-    [FieldModelType(FieldTypeEnum.Rect)]
+    [FieldModelTypeAttribute(TypeInfo.Rectangle)]
     public class RectFieldModel : FieldModel
     {
 

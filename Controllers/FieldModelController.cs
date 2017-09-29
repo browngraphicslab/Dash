@@ -25,18 +25,10 @@ namespace Dash
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
 
 
-        protected FieldModelController(FieldModel fieldModel) : base(fieldModel)
+        protected FieldModelController(T fieldModel) : base(fieldModel)
         {
             // Initialize Local Variables
         }
-
-        /// <summary>
-        ///     The fieldModel associated with this <see cref="FieldModelController" />, You should only set values on the
-        ///     controller, never directly
-        ///     on the fieldModel!
-        /// </summary>
-        public FieldModel Model { get; set; }
-
 
         /// <summary>
         ///     Returns the <see cref="EntityBase.Id" /> for the entity which the controller encapsulates

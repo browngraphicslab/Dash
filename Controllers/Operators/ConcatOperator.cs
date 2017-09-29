@@ -9,10 +9,10 @@ namespace Dash
 {
     public class ConcatOperator : OperatorFieldModelController
     {
-        public static readonly KeyControllerBase AKey = new KeyControllerBase("5B15A261-18BF-479C-8F11-BF167A11B5DC", "A");
-        public static readonly KeyControllerBase BKey = new KeyControllerBase("460427C6-B81C-44F8-AF96-60058BAB4F01", "B");
+        public static readonly KeyController AKey = new KeyController("5B15A261-18BF-479C-8F11-BF167A11B5DC", "A");
+        public static readonly KeyController BKey = new KeyController("460427C6-B81C-44F8-AF96-60058BAB4F01", "B");
 
-        public static readonly KeyControllerBase OutputKey = new KeyControllerBase("nguid", "Output");
+        public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
 
         public ConcatOperator() : base(new OperatorFieldModel("concat")) { }
 
@@ -33,18 +33,18 @@ namespace Dash
         {
             return false;
         }
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [AKey] = new IOInfo(TypeInfo.Text, true),
             [BKey] = new IOInfo(TypeInfo.Text, true)
         };
 
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var a = (inputs[AKey] as TextFieldModelController).Data;
             var b = (inputs[BKey] as TextFieldModelController).Data;

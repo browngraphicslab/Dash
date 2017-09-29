@@ -76,8 +76,8 @@ namespace Dash
         {
             try
             {
-                _modelDictionary[newKey.Id] = JsonConvert.SerializeObject(newKey);
-                success(JsonConvert.DeserializeObject<KeyModel>(_modelDictionary[newKey.Id]));
+                _modelDictionary[newKey.Id] = newKey.Serialize();
+                success(_modelDictionary[newKey.Id].CreateObject<KeyModel>());
             }
             catch (Exception e)
             {
@@ -94,7 +94,7 @@ namespace Dash
         {
             try
             {
-                await success(JsonConvert.DeserializeObject<KeyModel>(_modelDictionary[id]));
+                await success(_modelDictionary[id].CreateObject<KeyModel>());
             }
             catch (Exception e)
             {

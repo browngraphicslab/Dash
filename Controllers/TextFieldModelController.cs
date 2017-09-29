@@ -12,7 +12,7 @@ namespace Dash
         {
         }
 
-        private TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel)
+        public TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel)
         {
         }
 

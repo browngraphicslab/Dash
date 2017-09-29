@@ -8,12 +8,12 @@ namespace Dash
     /// </summary>
     public static class OperatorDocumentModel
     {
-        public static KeyControllerBase OperatorKey = new KeyControllerBase("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
+        public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
         public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
         {
-            Dictionary<KeyControllerBase, FieldControllerBase> fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = opController;
             
             var doc = new DocumentController(fields, OperatorType);
@@ -28,7 +28,7 @@ namespace Dash
 
         public static DocumentController CreateFilterDocumentController()
         {
-            Dictionary<KeyControllerBase, FieldControllerBase> fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new FilterOperatorFieldModelController();
             var doc = new DocumentController(fields, FilterOperatorFieldModelController.FilterType);
 
@@ -39,7 +39,7 @@ namespace Dash
         }
         public static DocumentController CreateMapDocumentController()
         {
-            Dictionary<KeyControllerBase, FieldControllerBase> fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new CollectionMapOperator();
             var doc = new DocumentController(fields, CollectionMapOperator.MapType);
 
@@ -51,7 +51,7 @@ namespace Dash
 
         public static DocumentController CreateApiDocumentController()
         {
-            Dictionary<KeyControllerBase, FieldControllerBase> fields = new Dictionary<KeyControllerBase, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new ApiOperatorController();
             var doc = new DocumentController(fields, ApiOperatorController.ApiType);
 
@@ -63,7 +63,7 @@ namespace Dash
 
         public static DocumentController CreateCompoundController()
         {
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };

@@ -14,7 +14,7 @@ namespace Dash
         public static DocumentType XampleFieldsType =
             new DocumentType("7A4EE83B-785F-4DEE-BCBE-3AE8187C69E6", "Xample 50 Fields");
 
-        public static readonly KeyControllerBase IdKey = new KeyControllerBase("2A2824BE-30FE-49EA-BF16-F0FCDA7C85D4", "Id");
+        public static readonly KeyController IdKey = new KeyController("2A2824BE-30FE-49EA-BF16-F0FCDA7C85D4", "Id");
 
         private static Random r = new Random();
 
@@ -31,7 +31,7 @@ namespace Dash
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid("Text " + i), "Text " + i);
+                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Text " + i), "Text " + i);
                     fields[key] = new TextFieldModelController("This is example text " + i);
                 }
             }
@@ -39,7 +39,7 @@ namespace Dash
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyControllerBase key = new KeyControllerBase(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
+                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
                     fields[key] = new NumberFieldModelController(r.NextDouble() * 100);
                 }
             }

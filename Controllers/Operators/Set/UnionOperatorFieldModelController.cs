@@ -8,19 +8,19 @@ namespace Dash
     public class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
-        public static readonly KeyControllerBase AKey = new KeyControllerBase("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
-        public static readonly KeyControllerBase BKey = new KeyControllerBase("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
+        public static readonly KeyController AKey = new KeyController("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
+        public static readonly KeyController BKey = new KeyController("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
 
         //Output keys
-        public static readonly KeyControllerBase UnionKey = new KeyControllerBase("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
+        public static readonly KeyController UnionKey = new KeyController("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [AKey] = new IOInfo(TypeInfo.Collection, true),
             [BKey] = new IOInfo(TypeInfo.Collection, true)
         };
 
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [UnionKey] = TypeInfo.Collection
         };
@@ -34,7 +34,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
             DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController)inputs[BKey];

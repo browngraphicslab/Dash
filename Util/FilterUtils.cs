@@ -85,14 +85,14 @@ namespace Dash.StaticClasses
             return containsKeyDocuments;
         }
 
-        public static IEnumerable<KeyControllerBase> GetKeys(DocumentController doc)
+        public static IEnumerable<KeyController> GetKeys(DocumentController doc)
         {
 
             foreach (var item in doc.EnumFields())
                 yield return item.Key;
         }
 
-        public static IEnumerable<KeyControllerBase> GetKeys(List<DocumentController> docs)
+        public static IEnumerable<KeyController> GetKeys(List<DocumentController> docs)
         {
             foreach (var doc in docs)
             {
@@ -149,7 +149,7 @@ namespace Dash.StaticClasses
             // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
             foreach (var document in CheckContainsKey(collection, keyName))
             {
-                var key = new KeyControllerBase();
+                var key = new KeyController();
                 foreach (var docKey in GetKeys(document))
                 {
                     if (docKey.Name.Equals(keyName))
@@ -195,7 +195,7 @@ namespace Dash.StaticClasses
             // loop through documents that have the specified field
             foreach (var document in CheckContainsKey(collection, keyName))
             {
-                var key = new KeyControllerBase();
+                var key = new KeyController();
                 foreach (var docKey in GetKeys(document))
                 {
                     if (docKey.Name == keyName)

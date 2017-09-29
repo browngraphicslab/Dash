@@ -9,9 +9,9 @@ namespace Dash
 {
     public abstract class FieldReference
     {
-        public KeyControllerBase FieldKey { get; set; }
+        public KeyController FieldKey { get; set; }
 
-        protected FieldReference(KeyControllerBase fieldKey)
+        protected FieldReference(KeyController fieldKey)
         {
             FieldKey = fieldKey;
         }

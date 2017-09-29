@@ -20,7 +20,7 @@ namespace DashShared
         /// <returns></returns>
         public static T CreateObject<T>(this string s) where T : ISerializable
         {
-            var obj = JsonConvert.DeserializeObject<ISerializable>(s, _settings);
+           var obj = JsonConvert.DeserializeObject<ISerializable>(s, _settings);
             Debug.Assert(obj is T);
             return (T)obj;
         }

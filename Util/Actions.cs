@@ -144,7 +144,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>()
+            var fields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
             };
@@ -157,7 +157,7 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>()
+            var fields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
             };
@@ -183,7 +183,7 @@ namespace Dash
             {
                 numbers.Add(new Numbers().Document);
             }
-            var fields = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
@@ -202,7 +202,7 @@ namespace Dash
             //Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
-            var fields2 = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields2 = new Dictionary<KeyController, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
@@ -242,7 +242,7 @@ namespace Dash
 
             //Make second collection
             var numbers2 = new Numbers().Document;
-            var fields2 = new Dictionary<KeyControllerBase, FieldControllerBase>
+            var fields2 = new Dictionary<KeyController, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]

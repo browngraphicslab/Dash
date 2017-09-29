@@ -5,13 +5,18 @@ using DashShared.Models;
 
 namespace Dash
 {
-    [FieldModelType(FieldTypeEnum.Point)]
+    [FieldModelTypeAttribute(TypeInfo.Point)]
     public class PointFieldModel : FieldModel
     { 
 
         public PointFieldModel(Point data, string id = null) : base(id)
         {
             Data = data;
+        }
+
+        public PointFieldModel():this(0,0)
+        {
+            
         }
 
         public PointFieldModel(double x, double y) : this(new Point(x, y))

@@ -13,7 +13,7 @@ namespace Dash
     {
         public abstract List<FieldControllerBase> Data { get; set; }
 
-        protected BaseListFieldModelController(FieldModel fieldModel) : base(fieldModel)
+        protected BaseListFieldModelController(ListFieldModel fieldModel) : base(fieldModel)
         {
         }
 
@@ -23,7 +23,7 @@ namespace Dash
 
         public abstract void Add(FieldControllerBase fmc);
         public abstract void AddRange(IList<FieldControllerBase> fmcs);
-        /*
+        
         public override bool CheckType(FieldControllerBase fmc)
         {
             bool isList = base.CheckType(fmc);
@@ -41,6 +41,6 @@ namespace Dash
             {
                 return false;
             }
-        }*/
+        }
     }
 }

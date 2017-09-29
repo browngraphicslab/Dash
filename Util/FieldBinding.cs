@@ -24,7 +24,7 @@ namespace Dash
     {
         public BindingMode Mode;
         public DocumentController Document;
-        public KeyControllerBase Key;
+        public KeyController Key;
         public GetConverter<T> GetConverter;
         public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
         public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;

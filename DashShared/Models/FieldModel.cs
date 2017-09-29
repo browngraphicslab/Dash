@@ -6,29 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DashShared.Models
-{
-    public enum FieldTypeEnum
-    {
-        Point,
-        DocumentCollection,
-        Operator,
-        List,
-        Document,
-        Ink,
-        Number,
-        Reference,
-        Rect,
-        Text,
-        RichText
-    }
+{ 
 
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class FieldModelType : Attribute
+    public class FieldModelTypeAttribute : Attribute
     {
-        private FieldTypeEnum _name;
+        private TypeInfo _name;
         public double version;
 
-        public FieldModelType(FieldTypeEnum name)
+        public FieldModelTypeAttribute(TypeInfo name)
         {
             this._name = name;
 
@@ -36,7 +22,7 @@ namespace DashShared.Models
             version = 1.0;
         }
 
-        public FieldTypeEnum GetType()
+        public TypeInfo GetType()
         {
             return _name;
         }

@@ -54,17 +54,17 @@ namespace Dash {
 
         private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var k = (KeyControllerBase) ((DictionaryEntry) DataContext).Key;
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
             KeyChanged?.Invoke(k, xKey.Text);
         }
 
         private void XValue_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var k = (KeyControllerBase) ((DictionaryEntry) DataContext).Key;
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
             ValueChanged?.Invoke(k, xValue.Text);
         }
 
-        public delegate void ValueChangedHandler(KeyControllerBase key, string newValue);
+        public delegate void ValueChangedHandler(KeyController key, string newValue);
         public event ValueChangedHandler KeyChanged;
         public event ValueChangedHandler ValueChanged;
     }

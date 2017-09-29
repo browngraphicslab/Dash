@@ -311,7 +311,7 @@ namespace Dash
                 docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
             }
 
-            var doc = new DocumentController(new Dictionary<KeyControllerBase, FieldControllerBase>
+            var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);

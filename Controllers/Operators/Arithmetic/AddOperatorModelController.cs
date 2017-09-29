@@ -14,23 +14,23 @@ namespace Dash
         }
 
         //Input keys
-        public static readonly KeyControllerBase AKey = new KeyControllerBase("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
-        public static readonly KeyControllerBase BKey = new KeyControllerBase("F9B2192D-3DFD-41B8-9A37-56D818153B59", "B");
+        public static readonly KeyController AKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
+        public static readonly KeyController BKey = new KeyController("F9B2192D-3DFD-41B8-9A37-56D818153B59", "B");
 
         //Output keys
-        public static readonly KeyControllerBase SumKey = new KeyControllerBase("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
+        public static readonly KeyController SumKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
 
-        public override ObservableDictionary<KeyControllerBase, IOInfo> Inputs { get; } = new ObservableDictionary<KeyControllerBase, IOInfo>
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [AKey] = new IOInfo(TypeInfo.Number, true),
             [BKey] = new IOInfo(TypeInfo.Number, true)
         };
-        public override ObservableDictionary<KeyControllerBase, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyControllerBase, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [SumKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyControllerBase, FieldControllerBase> inputs, Dictionary<KeyControllerBase, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             double sum = 0;
             foreach (var value in inputs.Values)
