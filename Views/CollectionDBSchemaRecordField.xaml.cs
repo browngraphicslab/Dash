@@ -27,29 +27,33 @@ namespace Dash.Views
         }
 
         private void CollectionDBSchemaRecordField_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        { 
+        {
         }
     }
     public class CollectionDBSchemaRecordFieldViewModel: DependencyObject, INotifyPropertyChanged
     {
-        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
-            "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
             "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
+        public static readonly DependencyProperty ControllerProperty = DependencyProperty.Register(
+            "Controller", typeof(BoundFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(BoundFieldModelController)));
 
-        public CollectionDBSchemaRecordFieldViewModel(double w, string content) { Width = w; Content = content; }
+        public CollectionDBSchemaRecordFieldViewModel(double w, DocumentController document, KeyController fieldKey)
+        {
+            Width = w;
+            Controller = new BoundFieldModelController(document.GetField(fieldKey), document);
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public BoundFieldModelController Controller
+        {
+            get { return (BoundFieldModelController)GetValue(ControllerProperty); }
+            set { SetValue(ControllerProperty, value); }
+        }
         public double Width
         {
             get { return (double) GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
-        }
-        public string Content 
-        {
-            get { return GetValue(ContentProperty)?.ToString(); }
-            set { SetValue(ContentProperty, value); }
         }
     }
 

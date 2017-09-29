@@ -170,7 +170,7 @@ namespace Dash
                 {
                     Records.Add(new CollectionDBSchemaRecordViewModel());
                     foreach (var f in SchemaFields)
-                        Records.Last().RecordFields.Add(new CollectionDBSchemaRecordFieldViewModel(76, d.GetField(f.Key)?.GetValue(new Context(d))?.ToString()));
+                        Records.Last().RecordFields.Add(new CollectionDBSchemaRecordFieldViewModel(76, d, f.Key)); 
                 }
                 xRecordsView.HorizontalAlignment = HorizontalAlignment.Stretch;
                 xRecordsView.VerticalAlignment = VerticalAlignment.Stretch;

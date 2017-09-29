@@ -24,9 +24,15 @@ namespace Dash.Views
         {
             this.InitializeComponent();
         }
+
+        private void CollectionDBSchemaRecordField_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+        }
     }
 
     public class CollectionDBSchemaRecordViewModel {
+        public DocumentController Document;
         public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; set; } = new ObservableCollection<CollectionDBSchemaRecordFieldViewModel>();
     }
 }

@@ -9,6 +9,6 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-
-    <TextBlock x:Name="xText" FontSize="12" Foreground="Black" Text="{Binding Content}" Width="{Binding Width}"/>
+    <Border Grid.Column="1" HorizontalAlignment="Stretch" Child="{Binding Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+    <!--TextBlock x:Name="xText" FontSize="12" Foreground="Black" Text="{Binding Content}" Width="{Binding Width}"/-->
 </UserControl>
