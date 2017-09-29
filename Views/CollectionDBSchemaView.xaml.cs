@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Views;
 using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -25,21 +26,22 @@ namespace Dash
     {
         public class SchemaField
         {
-            public string Name;
+            public KeyController Key;
             public bool Selected = true;
             public override string ToString()
             {
-                return Name;
+                return Key.Name;
             }
 
         }
         bool SchemaFieldContains(string field)
         {
             foreach (var s in SchemaFields)
-                if (s.Name == field)
+                if (s.Key.Name == field)
                     return true;
             return false;
         }
+        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } = new ObservableCollection<CollectionDBSchemaRecordViewModel>();
         public ObservableCollection<SchemaField> SchemaFields { get; set; } = new ObservableCollection<SchemaField>();
         public BaseCollectionViewModel ViewModel { get; private set; }
         public CollectionDBSchemaView()
@@ -49,6 +51,7 @@ namespace Dash
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
             xGridView.ItemsSource = SchemaFields;
+            xRecordsView.ItemsSource = Records;
         }
 
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
@@ -130,7 +133,7 @@ namespace Dash
             for (int i = 0; i < SchemaFields.Count; i++)
             {
                 var s = SchemaFields[i];
-                if (s.Name == tbock.Text)
+                if (s.Key.Name == tbock.Text)
                 {
                     s.Selected = !s.Selected;
                     SchemaFields.RemoveAt(i);
@@ -158,9 +161,19 @@ namespace Dash
                 {
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaFieldContains(f.Key.Name))
-                            SchemaFields.Add(new SchemaField() { Name = f.Key.Name, Selected = false } );
+                            SchemaFields.Add(new SchemaField() { Key = f.Key, Selected = false } );
                 }
-                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaFields[(int)(b as NumberFieldModelController).Data].Name).ToList());
+                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaFields[(int)(b as NumberFieldModelController).Data].Key.Name).ToList());
+
+                Records.Clear();
+                foreach (var d in dbDocs)
+                {
+                    Records.Add(new CollectionDBSchemaRecordViewModel());
+                    foreach (var f in SchemaFields)
+                        Records.Last().RecordFields.Add(new CollectionDBSchemaRecordFieldViewModel(76, d.GetField(f.Key)?.GetValue(new Context(d))?.ToString()));
+                }
+                xRecordsView.HorizontalAlignment = HorizontalAlignment.Stretch;
+                xRecordsView.VerticalAlignment = VerticalAlignment.Stretch;
             }
         }
 
