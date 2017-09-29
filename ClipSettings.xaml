@@ -30,7 +30,30 @@
                                  VerticalAlignment="Top" 
                                  Margin="0,0,0,10" 
                                  FontSize="12" 
-                                 TextChanged="XClipXTextBox_OnTextChanged"/>
+                                 TextChanged="XClipXTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                            <Border x:Name="xHorizontalDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                            <Border x:Name="xHorizontalIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="0" Margin="5,5,0,0">
                         <TextBox x:Name="xClipYTextBox" 
@@ -42,7 +65,30 @@
                                  VerticalAlignment="Top"  
                                  Margin="0,0,0,10" 
                                  FontSize="12"
-                                 TextChanged="XClipYTextBox_OnTextChanged"/>
+                                 TextChanged="XClipYTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                            <Border x:Name="xVerticalDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                            <Border x:Name="xVerticalIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="0" Grid.Row="1" Margin="0,5,5,0">
                         <TextBox x:Name="xClipWidthTextBox" 
@@ -54,7 +100,30 @@
                                  VerticalAlignment="Top" 
                                  Margin="0,0,0,10" 
                                  FontSize="12"
-                                 TextChanged="XClipWidthTextBox_OnTextChanged"/>
+                                 TextChanged="XClipWidthTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                            <Border x:Name="xWidthDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                            <Border x:Name="xWidthIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
                         <TextBox x:Name="xClipHeightTextBox"
@@ -66,7 +135,30 @@
                                  VerticalAlignment="Top"  
                                  Margin="0,0,0,10" 
                                  FontSize="12"
-                                 TextChanged="XClipHeightTextBox_OnTextChanged"/>
+                                 TextChanged="XClipHeightTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                            <Border x:Name="xHeightDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                            <Border x:Name="xHeightIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Grid>
             </local:SettingsPaneBlock.MainContent>
