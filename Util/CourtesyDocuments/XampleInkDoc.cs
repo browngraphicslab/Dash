@@ -13,7 +13,7 @@ namespace Dash
     public class InkDoc : CourtesyDocument
     {
         public static DocumentType InkDocType = new DocumentType("39358710-EA2C-4943-8476-B0AD91FD1379", "Ink");
-        public static KeyController InkFieldKey = new KeyController("B71E2449-9A55-45F2-AF5F-C5B302328FEA", "InkField");
+        public static KeyController InkFieldKey = new KeyController("B71E2449-9A55-45F2-AF5F-C5B302328FEA", "_InkField");
         static DocumentController _prototypeTwoImages = CreatePrototypeInk();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
