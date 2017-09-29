@@ -8,7 +8,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
-    <Border Grid.Column="1" HorizontalAlignment="Stretch" Width="{Binding Width}" Child="{Binding Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+    d:DesignWidth="400"
+    Width="{Binding Width}"
+    Content="{Binding DataReference, Converter={StaticResource ReferenceFieldModelControllerToFrameworkElementConverter}, Mode=OneWay}">
     <!--TextBlock x:Name="xText" FontSize="12" Foreground="Black" Text="{Binding Content}" Width="{Binding Width}"/-->
 </UserControl>

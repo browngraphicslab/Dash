@@ -12,30 +12,26 @@
     Tapped="OnTapped"
     d:DesignWidth="400">
 
-    <Grid VerticalAlignment="Stretch">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <GridView x:Name="xGridView" Grid.Row="0"
-                  VirtualizingStackPanel.VirtualizationMode="Standard"
                   CanDragItems="{Binding CanDragItems}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
-                  Style="{StaticResource xCollectionGridViewStyle}"
-                  ShowsScrollingPlaceholders="False">
+                  Style="{StaticResource xCollectionGridViewStyle}">
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="#20000000" BorderThickness="1" CornerRadius="5" Background="Gray">
-                        <TextBlock FontSize="12" Foreground="Black" Text="{Binding}" FontWeight="{Binding Converter={StaticResource BoolToBoldConverter}}" Width="70" Height="25" Tapped="TextBlock_Tapped" />
+                        <TextBlock FontSize="12" Foreground="Black" Text="{Binding}" FontWeight="{Binding Converter={StaticResource BoolToBoldConverter},Mode=OneWay}" Width="70" Height="25" Tapped="TextBlock_Tapped" />
                     </Border>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
         <ListView x:Name="xRecordsView"
                   VirtualizingStackPanel.VirtualizationMode="Standard"
-                  Grid.Row="1"
-                  HorizontalAlignment="Stretch"
-                  ShowsScrollingPlaceholders="False">
+                  Grid.Row="1" Height="400">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -47,9 +43,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="#20000000" BorderThickness="0.5">
-                        <localView:CollectionDBSchemaRecord HorizontalAlignment="Stretch" Height="25"/>
-                    </Border>
+                    <localView:CollectionDBSchemaRecord Height="25"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

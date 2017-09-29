@@ -23,38 +23,42 @@ namespace Dash.Views
         public CollectionDBSchemaRecordField()
         {
             this.InitializeComponent();
-            this.DataContextChanged += CollectionDBSchemaRecordField_DataContextChanged;
-        }
-
-        private void CollectionDBSchemaRecordField_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
         }
     }
-    public class CollectionDBSchemaRecordFieldViewModel: DependencyObject, INotifyPropertyChanged
+    public class CollectionDBSchemaRecordFieldViewModel: DependencyObject
     {
+        //public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
+        //    "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
             "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
-        public static readonly DependencyProperty ControllerProperty = DependencyProperty.Register(
-            "Controller", typeof(BoundFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(BoundFieldModelController)));
+        public static readonly DependencyProperty DataReferenceProperty = DependencyProperty.Register(
+            "DataReference", typeof(ReferenceFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(ReferenceFieldModelController)));
 
+        public DocumentController _document;
+        public KeyController      _fieldKey;
         public CollectionDBSchemaRecordFieldViewModel(double w, DocumentController document, KeyController fieldKey)
         {
-            Width = w;
-            Controller = new BoundFieldModelController(document.GetField(fieldKey), document);
+            Width     = w;
+            _document = document;
+            _fieldKey = fieldKey;
+             DataReference = new ReferenceFieldModelController(_document.GetId(), fieldKey);
+            // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).GetValue(null).ToString();
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public BoundFieldModelController Controller
+        public ReferenceFieldModelController DataReference
         {
-            get { return (BoundFieldModelController)GetValue(ControllerProperty); }
-            set { SetValue(ControllerProperty, value); }
+            get { return (ReferenceFieldModelController) GetValue(DataReferenceProperty); }
+            set { SetValue(DataReferenceProperty, value); }
         }
         public double Width
         {
-            get { return (double) GetValue(WidthProperty); }
+            get { return 70; } //  (double) GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
         }
+        //public string Content
+        //{
+        //    get { return GetValue(ContentProperty)?.ToString(); }
+        //    set { SetValue(ContentProperty, value); }
+        //}
     }
 
 }
