@@ -22,12 +22,11 @@
                     <TextBlock x:Name="xTitleTextBlock" Text="{x:Bind Title}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,5,0,5" FontSize="12"></TextBlock>
                 </Grid>
                 <Grid Grid.Column="1">
-                    <Button x:Name="xCollapse" FontFamily="Marlett" Content="5" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent" Visibility="Collapsed"/>
-                    <Button x:Name="xExpand" FontFamily="Marlett" Content="6" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent"/>
+                    <Button x:Name="xCollapseExpandButton" FontFamily="Marlett" Content="6" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent"/>
                 </Grid>
             </Grid>
         </Grid>
-        <Grid x:Name="xContentGrid" Grid.Row="1" Background="Transparent" Visibility="Collapsed">
+        <Grid x:Name="xContentGrid" Grid.Row="1" Background="Transparent">
             <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
         </Grid>
     </Grid>
