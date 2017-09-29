@@ -57,6 +57,7 @@ namespace Dash
 
             }
             _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
 
         }
 
@@ -77,12 +78,15 @@ namespace Dash
                 _searchList.List.SelectedIndex = _searchList.List.SelectedIndex - 1;
             }
             _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
         }
 
         private void MakeCategories(SearchCategoryItem categories)
         {
             _searchList = categories;
-            xContentPresenter.Content = categories;
+            ListGrid.Children.Add(categories);
+            categories.Margin=new Thickness(0);
+            OuterGrid.Width = categories.List.Width;
         }
 
         public void SetNoSelection()

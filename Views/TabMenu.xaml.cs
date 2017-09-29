@@ -32,6 +32,12 @@ namespace Dash
         {
             this.InitializeComponent();
             this.MakeView();
+            this.LostFocus += OnLostFocus;
+        }
+
+        private void OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            MainPage.Instance.xCanvas.Children.Remove(this);
         }
 
         private void MakeView()
@@ -129,8 +135,6 @@ namespace Dash
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();
-                
-                
             }
         }
     }
