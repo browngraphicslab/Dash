@@ -11,7 +11,7 @@
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
-        <Rectangle x:Name="xLeftRect" x:FieldModifier="public" IsHitTestVisible="false"  Height="2000" VerticalAlignment="Center" HorizontalAlignment="Left"  Width="50" Fill="Transparent"  ManipulationMode="TranslateX" ManipulationDelta="UIElement_OnManipulationDelta"></Rectangle>
+        <Rectangle x:Name="xLeftRect" x:FieldModifier="public" IsHitTestVisible="false"  Height="500" VerticalAlignment="Bottom" HorizontalAlignment="Left"  Width="50" Fill="Transparent"  ManipulationMode="TranslateX" ManipulationDelta="UIElement_OnManipulationDelta"></Rectangle>
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Right" Background="{StaticResource WindowsBlue}">
             <Button Tapped="TwitterTestButtonOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TEST ENV</Button>
