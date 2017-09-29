@@ -84,8 +84,25 @@ namespace Dash
 
             //KeyUp += OnKeyUp;
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+        }
 
-           
+        private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                if (e.VirtualKey == VirtualKey.Down)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                }
+
+                if (e.VirtualKey == VirtualKey.Up)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                }
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -110,18 +127,6 @@ namespace Dash
                     xCanvas.Children.Remove(TabMenu.Instance);
                 }
 
-                if (e.VirtualKey == VirtualKey.Down)
-                {
-
-                    TabMenu.Instance.SearchView.MoveSelectedDown();
-                }
-
-                if (e.VirtualKey == VirtualKey.Up)
-                {
-
-                    TabMenu.Instance.SearchView.MoveSelectedUp();
-                }
-
                 if (e.VirtualKey == VirtualKey.Enter)
                 {
                     TabMenu.Instance.SearchView.ActivateItem();
@@ -133,12 +138,13 @@ namespace Dash
         {
             if (e.PointerDeviceType != PointerDeviceType.Touch) return;
             var pointerPosition = e.GetPosition(this);
-            var pos = new Point(pointerPosition.X, pointerPosition.Y);
+            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
             TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
             TabMenu.ShowAt(xCanvas, pos, true);
             TabMenu.Instance.SetTextBoxFocus();
+            e.Handled = true;
         }
 
         private void OnKeyUp(object sender, KeyRoutedEventArgs e)
