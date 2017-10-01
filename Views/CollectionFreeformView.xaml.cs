@@ -368,7 +368,7 @@ namespace Dash
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
 
-        
+
 
         public void CancelDrag(Pointer p)
         {
@@ -807,15 +807,51 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        private bool _singletapped;
+        private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+            _singletapped = true;
+            await Task.Delay(200);
+            if (_singletapped)
+            {
+                if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
+                e.Handled = true;
+                if (ViewModel.IsInterfaceBuilder)
+                    return;
+
+                OnSelected();
+            }
+        }
+
+        private void SelectionElement_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _singletapped = false;
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
+            InvokeDoubleTap(this, e);
+        }
+        private void InvokeDoubleTap(CollectionFreeformView view, DoubleTappedRoutedEventArgs e)
+        {
+            var freeforms = view.GetDescendantsOfType<CollectionFreeformView>();
+            foreach (var ff in freeforms)
+            {
+                if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
+                {
+                    InvokeDoubleTap(ff, e);
+                    return;
+                }
+            }
 
-            OnSelected();
+            // if no child is found... select the current thing i guess 
+            foreach (DocumentViewModel dvm in view.ViewModel.DocumentViewModels)
+            {
+                Rect rect = new Rect { X = dvm.GroupTransform.Translate.X, Y = dvm.GroupTransform.Translate.Y, Height = dvm.Height, Width = dvm.Width };
+                if (rect.Contains(e.GetPosition(view.xOuterGrid)))
+                {
+                    dvm.Width = 600;            // change this!!!!!! 
+                    return;
+                }
+            }
         }
 
         #endregion
@@ -937,7 +973,7 @@ namespace Dash
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-            
+
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion
@@ -964,9 +1000,8 @@ namespace Dash
 
         private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if(e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
-            Debug.WriteLine("Pointer entered: " + sender.GetType());
+            if (e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
+                Debug.WriteLine("Pointer entered: " + sender.GetType());
         }
-
     }
 }

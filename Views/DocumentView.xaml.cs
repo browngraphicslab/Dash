@@ -111,7 +111,7 @@ namespace Dash
                 //if (Parent == null)
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
-              }
+            }
         }
 
 
@@ -142,7 +142,7 @@ namespace Dash
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-                copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
@@ -204,7 +204,7 @@ namespace Dash
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
         }
-        
+
         private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move)
@@ -449,7 +449,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed ;  // TODO theoretically the binding should take care of this..
+            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()
@@ -519,13 +519,14 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            await System.Threading.Tasks.Task.Delay(200);
             e.Handled = true;
             if (ViewModel == null)
                 return;
             if (ViewModel.IsInInterfaceBuilder)
-                return; 
+                return;
 
             OnSelected();
         }

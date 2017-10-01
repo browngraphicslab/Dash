@@ -14,6 +14,7 @@
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped"
+    DoubleTapped="SelectionElement_DoubleTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
