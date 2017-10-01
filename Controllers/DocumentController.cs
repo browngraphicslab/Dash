@@ -894,7 +894,7 @@ namespace Dash
             return lv;
         }
 
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
         {
             context = new Context(context);
             context.AddDocumentContext(this);
@@ -906,11 +906,11 @@ namespace Dash
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context, isInterfaceBuilder, true);
+                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder, true); //
             }
             if (DocumentType == ImageBox.DocumentType)
             {
-                return ImageBox.MakeView(this, context, isInterfaceBuilder);
+                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == DocumentBox.DocumentType)
             {
@@ -938,7 +938,7 @@ namespace Dash
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
-                return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == InkBox.DocumentType)
             {
@@ -997,7 +997,7 @@ namespace Dash
                 }
                 Debug.Assert(doc != null);
 
-                return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
+                return doc.Data.MakeViewUI(context, isInterfaceBuilder, out keysToFrameworkElementsOut, keysToFrameworkElementsOut, this);
             }
             if (isInterfaceBuilder)
             {
