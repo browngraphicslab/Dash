@@ -187,9 +187,6 @@ namespace Dash
             var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDocument = new CollectionBox(new ReferenceFieldModelController(collectionDocument.GetId(),  
                 DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
-            //collectionDocument.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDocument), true);
-            //collectionDocument.SetField(KeyStore.LayoutListKey,
-            //    new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDocument }), true);
             collectionDocument.SetActiveLayout(layoutDocument, true, true); 
 
             // Make second collection
@@ -204,10 +201,6 @@ namespace Dash
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
-            //var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            //col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
-            //col2.SetField(KeyStore.LayoutListKey,
-            //    new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
             col2.SetActiveLayout(layoutDoc2, true, true); 
 
             //Display collections
