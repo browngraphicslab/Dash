@@ -85,6 +85,17 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public string Title { get
+            {
+                if (GetField(KeyStore.TitleKey) is TextFieldModelController)
+                {
+                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                    if (textFieldModelController != null)
+                        return textFieldModelController.Data;
+                }
+                return DocumentType.Type;
+            } }
+
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             //++totalCount;
@@ -787,18 +798,8 @@ namespace Dash
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
-            if (opField == null)
-            {
-                return false;
-            }
-            if (opField.Inputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
-            if (opField.Outputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
+            if (opField != null)
+                return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
             return false;
         }
 
@@ -875,7 +876,7 @@ namespace Dash
                 if (f.Key.IsUnrenderedKey()) return;
                 f.Value.MakeAllViewUI(f.Key, context, sp, GetId(), isInterfaceBuilder);
             }
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            #pragma warning disable CS4014 
             MainView.CoreWindow.Dispatcher.RunAsync(
                 CoreDispatcherPriority.Low,
                 async () =>
@@ -886,34 +887,27 @@ namespace Dash
                         await Task.Delay(5);
                     }
                 });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            #pragma warning restore CS4014
             return sp;
         }
 
-        private static FrameworkElement MakeAllViewUIForManyFields(List<KeyValuePair<KeyController, FieldModelController>> fields)
+        private static FrameworkElement MakeAllViewUIForManyFields(
+            List<KeyValuePair<KeyController, FieldModelController>> fields)
         {
-            var lv = new ListView {SelectionMode = ListViewSelectionMode.None};
-            var source = new List<FrameworkElement>();
-            for (var i = 0; i < 15; i++)
+            var sp = new StackPanel();
+            for (var i = 0; i < 16; i++)
             {
                 var block = new TextBlock
                 {
-                    Text = "Field " + (i + 1) + ": " + fields[i].Key,
+                    Text = i == 15
+                        ? "+ " + (fields.Count - 15) + " more" 
+                        : "Field " + (i + 1) + ": " + fields[i].Key,
                     VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
+                    HorizontalAlignment = HorizontalAlignment.Left
                 };
-                source.Add(block);
-            }
-            var nextBlock = new TextBlock
-            {
-                Text = "+ " + (fields.Count - 15) + " more",
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            source.Add(nextBlock);
-            lv.ItemsSource = source;
-            lv.Loaded += (s, e) => Util.FixListViewBaseManipulationDeltaPropagation(lv);
-            return lv;
+                sp.Children.Add(block);
+            }     
+            return sp;
         }
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)

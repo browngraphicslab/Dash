@@ -700,25 +700,25 @@ namespace Dash
         //private void MenuItem_Click(object sender, RoutedEventArgs e)
         //{
         //    var xCanvas = MainPage.Instance.xCanvas;
-        //    if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-        //        xCanvas.Children.Add(OperatorSearchView.Instance);
+        //    if (!xCanvas.Children.Contains(TabMenu.Instance))
+        //        xCanvas.Children.Add(TabMenu.Instance);
         //    // set the operator menu to the current location of the flyout
         //    var menu = sender as MenuFlyoutItem;
         //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
         //    var pointOnCanvas = transform.TransformPoint(new Point());
         //    // reset the render transform on the operator search view
-        //    OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
-        //    var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+        //    TabMenu.Instance.RenderTransform = new TranslateTransform();
+        //    var floatBorder = TabMenu.Instance.SearchView.GetFirstDescendantOfType<Border>();
         //    if (floatBorder != null)
         //    {
         //        Canvas.SetLeft(floatBorder, 0);
         //        Canvas.SetTop(floatBorder, 0);
         //    }
-        //    Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
-        //    Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
-        //    OperatorSearchView.AddsToThisCollection = this;
+        //    Canvas.SetLeft(TabMenu.Instance, pointOnCanvas.X);
+        //    Canvas.SetTop(TabMenu.Instance, pointOnCanvas.Y);
+        //    TabMenu.AddsToThisCollection = this;
 
-        //    OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
+        //    TabMenu.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(TabMenu.Instance);
 
         //    DisposeFlyout();
         //}
@@ -794,6 +794,7 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
             if (InkFieldModelController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;

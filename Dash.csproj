@@ -29,6 +29,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -122,6 +123,12 @@
     <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
     <Compile Include="Views\CollectionDBChartBar.xaml.cs">
       <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecord.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecord.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecordField.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecordField.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CollectionDBSchemaView.xaml.cs">
       <DependentUpon>CollectionDBSchemaView.xaml</DependentUpon>
@@ -273,8 +280,8 @@
     <Compile Include="Views\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OperatorSearchView.xaml.cs">
-      <DependentUpon>OperatorSearchView.xaml</DependentUpon>
+    <Compile Include="Views\TabMenu.xaml.cs">
+      <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
@@ -572,6 +579,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CollectionDBSchemaRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaRecordField.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\CollectionDBSchemaView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -708,7 +723,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\OperatorSearchView.xaml">
+    <Page Include="Views\TabMenu.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

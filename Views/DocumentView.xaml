@@ -87,7 +87,8 @@
                     Margin="0,0,-20,-20"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    ManipulationMode="TranslateX, TranslateY">
+                    ManipulationMode="TranslateX, TranslateY"
+                    Visibility="{Binding IsDraggerVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                     </ControlTemplate>

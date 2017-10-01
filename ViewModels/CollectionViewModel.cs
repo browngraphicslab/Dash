@@ -80,6 +80,7 @@ namespace Dash
     
 
 
+
         #region Event Handlers
 
         /// <summary>
@@ -126,7 +127,9 @@ namespace Dash
         {
             foreach (var documentController in documents)
             {
-                DocumentViewModels.Add(new DocumentViewModel(documentController, IsInInterfaceBuilder, c));
+                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                documentViewModel.IsDraggerVisible = this.IsSelected;
+                DocumentViewModels.Add(documentViewModel);
             }
         }
 

@@ -70,6 +70,7 @@ namespace Dash
         {
             Util.ForceBindHeightToParentDocumentHeight(this);
         }
+
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)

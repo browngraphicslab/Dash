@@ -51,6 +51,14 @@ namespace Dash
             private set { SetProperty(ref _isInterfaceBuilder, value); }
         }
 
+        public void UpdateDocumentsOnSelection(bool isSelected)
+        {
+            foreach (var doc in DocumentViewModels)
+            {
+                doc.IsDraggerVisible = isSelected;
+            }
+        }
+
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 

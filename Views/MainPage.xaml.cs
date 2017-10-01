@@ -10,8 +10,10 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -41,6 +43,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
+        private Flyout OperatorMenuFlyout;
 
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
@@ -78,9 +81,97 @@ namespace Dash
                 _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
             };
             Loaded += OnLoaded;
-            //xCanvas.Children.Add(_radialMenu);
+
+            //KeyUp += OnKeyUp;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+        }
+
+        private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                if (e.VirtualKey == VirtualKey.Down)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                }
+
+                if (e.VirtualKey == VirtualKey.Up)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                }
+            }
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
+        {
+            if (e.VirtualKey == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x, y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                TabMenu.ShowAt(xCanvas, pos);
+                TabMenu.Instance.SetTextBoxFocus();
+            }
+
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                if (e.VirtualKey == VirtualKey.Escape)
+                {
+                    xCanvas.Children.Remove(TabMenu.Instance);
+                }
+
+                if (e.VirtualKey == VirtualKey.Enter)
+                {
+                    TabMenu.Instance.SearchView.ActivateItem();
+                }
+            }
+        }
+
+        private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType != PointerDeviceType.Touch) return;
+            var pointerPosition = e.GetPosition(this);
+            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                .FirstOrDefault();
+            TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+            TabMenu.ShowAt(xCanvas, pos, true);
+            TabMenu.Instance.SetTextBoxFocus();
+            e.Handled = true;
+        }
+
+        private void OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x,y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+                xCanvas.Children.Add(TabMenu.Instance);
+                Canvas.SetLeft(TabMenu.Instance, pos.X);
+                Canvas.SetTop(TabMenu.Instance, pos.Y);
+                TabMenu.Instance.SetTextBoxFocus();
+            }
+
+            if (e.Key == VirtualKey.Escape)
+            {
+                xCanvas.Children.Remove(TabMenu.Instance);
+            }
 
         }
+
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -90,6 +181,12 @@ namespace Dash
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
             GlobalInkSettings.Opacity = 1;
+
+            OperatorMenuFlyout = new Flyout
+            {
+                Content = TabMenu.Instance,
+                
+            };
         }
 
         public CollectionView GetMainCollectionView()
@@ -99,12 +196,12 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-            xCanvas.Children.Add(OperatorSearchView.Instance);
+            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
+            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+            xCanvas.Children.Add(TabMenu.Instance);
             Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            Canvas.SetLeft(TabMenu.Instance, absPos.X);
+            Canvas.SetTop(TabMenu.Instance, absPos.Y);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -413,5 +510,7 @@ namespace Dash
             DisplayDocument(proto);
             DisplayDocument(del1);
         }
+
+       
     }
 }

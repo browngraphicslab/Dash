@@ -44,6 +44,12 @@ namespace Dash
             }
         }
 
+        public bool IsDraggerVisible
+        {
+            get { return _isDraggerVisible; }
+            set { SetProperty(ref _isDraggerVisible, value); }
+        }
+
         public bool MenuOpen
         {
             get { return _menuOpen; }
@@ -170,6 +176,7 @@ namespace Dash
 
 
         string _displayName = "<doc>";
+        private bool _isDraggerVisible = true;
 
         public string DisplayName
         {
@@ -443,6 +450,11 @@ namespace Dash
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
                 // different sources based on whether it's a collection or a document 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
+        }
+
+        public void OnCollectionSelectedChanged(bool isCollectionSelected)
+        {
+               
         }
 
         public void Dispose()
