@@ -108,8 +108,10 @@
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
+    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="Models\PointerReferenceFieldModel.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
     <Compile Include="Rest\Endpoints\IDocumentEndpoint.cs" />

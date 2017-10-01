@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DashShared;
 
 namespace Dash
 {
-    public class DocumentReferenceFieldModel : ReferenceFieldModel
+    public class PointerReferenceFieldModel : ReferenceFieldModel
     {
-        public string DocumentId { get; set; }
+        public string ReferenceFieldModelId { get; set; }
 
-        public DocumentReferenceFieldModel(string docId, string keyId, string id = null) : base(keyId, id)
+        public PointerReferenceFieldModel(string referenceFieldModelId, string keyId, string id = null) : base(keyId, id)
         {
-            DocumentId = docId;
+            ReferenceFieldModelId = referenceFieldModelId;
         }
 
         public override bool Equals(object obj)
@@ -24,12 +23,12 @@ namespace Dash
                 return false;
             }
 
-            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(DocumentId);
+            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(ReferenceFieldModelId);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ DocumentId.GetHashCode();
+            return base.GetHashCode() ^ ReferenceFieldModelId.GetHashCode();
         }
     }
 }

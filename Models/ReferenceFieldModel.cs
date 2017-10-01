@@ -4,13 +4,13 @@ using DashShared.Models;
 namespace Dash
 {
     [FieldModelTypeAttribute(TypeInfo.Reference)]
-    public class ReferenceFieldModel : FieldModel
+    public abstract class ReferenceFieldModel : FieldModel
     {
-        public FieldReference Reference;
+        public string KeyId { get; set; }
 
-        public ReferenceFieldModel(FieldReference reference, string id = null) : base(id)
+        public ReferenceFieldModel(string keyId, string id = null) : base(id)
         {
-            Reference = reference;
+            KeyId = keyId;
         }
 
         public override bool Equals(object obj)
@@ -21,12 +21,12 @@ namespace Dash
                 return false;
             }
 
-            return refFieldModel.Reference.Equals(Reference);
+            return KeyId == refFieldModel.KeyId;
         }
 
         public override int GetHashCode()
         {
-            return Reference.GetHashCode();
+            return KeyId.GetHashCode();
         }
     }
 }
