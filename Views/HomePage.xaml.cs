@@ -21,6 +21,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using Flurl;
@@ -80,7 +81,7 @@ namespace Dash
             var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DashConstants.TypeStore.MainDocumentType, "main-document-" + Guid.NewGuid());
             var newDocument = new DocumentController(model);
             var collectionDocumentController =
-                new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                new CollectionBox(new DocumentReferenceFieldController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             return newDocument;
@@ -119,7 +120,7 @@ namespace Dash
 
                     _homePageDocument = new DocumentController(model);
                     var collectionDocumentController =
-                        new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                        new CollectionBox(new DocumentReferenceFieldController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
 
                     _homePageDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
                 }

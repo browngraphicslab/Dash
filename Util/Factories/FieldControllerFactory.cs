@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using Flurl.Util;
@@ -51,8 +52,11 @@ namespace Dash
                 case TypeInfo.Number:
                     controller = new NumberFieldModelController(model as NumberFieldModel);
                     break;
-                case TypeInfo.Reference:
-                    controller = new ReferenceFieldModelController(model as ReferenceFieldModel);
+                case TypeInfo.DocumentReference:
+                    controller = new DocumentReferenceFieldController(model as DocumentReferenceFieldModel);
+                    break;
+                case TypeInfo.PointerReference:
+                    controller = new PointerReferenceFieldController(model as PointerReferenceFieldModel);
                     break;
                 case TypeInfo.Rectangle:
                     controller = new RectFieldModelController(model as RectFieldModel);
@@ -97,7 +101,7 @@ namespace Dash
             return controller;
         }
 
-        public static FieldModelController<T> CreateTypedFromModel<T>(T model) where T:FieldModel
+        public static FieldModelController<T> CreateTypedFromModel<T>(T model) where T : FieldModel
         {
             return CreateFromModel(model) as FieldModelController<T>;
         }

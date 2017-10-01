@@ -29,10 +29,10 @@ namespace Dash.Controllers.Operators
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             searchOp.SetField(SearchForDocKey, new DocumentFieldModelController(searchForDoc), true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new DocumentReferenceFieldController(dbDoc.GetId(), KeyStore.DataKey), true);
 
 
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new DocumentReferenceFieldController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }
@@ -47,9 +47,9 @@ namespace Dash.Controllers.Operators
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
             else
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new DocumentReferenceFieldController(dbDoc.GetId(), KeyStore.DataKey), true);
 
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new DocumentReferenceFieldController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }
@@ -136,7 +136,7 @@ namespace Dash.Controllers.Operators
                 if (field.Key != KeyStore.ThisKey) {
                     foreach (var docRef in field.Value.GetReferences())
                         if (docRef.GetId() == targetDocument.GetId())
-                            return new ReferenceFieldModelController(dmc.GetId(), field.Key);
+                            return new DocumentReferenceFieldController(dmc.GetId(), field.Key);
                 }
             return null;
         }

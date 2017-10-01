@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -32,17 +33,17 @@ namespace Dash
 
             Document = new DocumentController(fields, NumbersType);
 
-            var tBox1 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number1FieldKey), 0,
+            var tBox1 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number1FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number2FieldKey), 0,
+            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number2FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox3 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
+            var tBox3 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox4 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number4FieldKey), 0,
+            var tBox4 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number4FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox5 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number5FieldKey), 0,
+            var tBox5 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number5FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox6 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
+            var tBox6 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
 
             var gridPanel = new GridLayout().Document;

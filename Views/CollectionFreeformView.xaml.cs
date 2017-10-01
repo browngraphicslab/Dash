@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -386,7 +387,7 @@ namespace Dash
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
-                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, outputReference.FieldReference.GetReferenceController(), true);
 
                 if (!canLink)
                 {
@@ -604,9 +605,9 @@ namespace Dash
                 var pos = e.GetCurrentPoint(this).Position;
                 var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
+                    [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
                 }, DocumentType.DefaultType);
-                var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                var layout = new DocumentBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
             }

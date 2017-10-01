@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using Dash;
+using Dash.Controllers;
 using DashShared;
 using Dash.Controllers.Operators;
 
@@ -73,9 +74,9 @@ namespace Dash
             fields.Add(UmpNameKey, new TextFieldModelController("Prototype Umpire"));
             var dc = new DocumentController(fields, UmpType);
             dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
-            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(dc.GetId(), KeyStore.ThisKey),
+            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceFieldController(dc.GetId(), KeyStore.ThisKey),
                                                                               DBDoc, "AssignedPerson", "AssignedGame");
-            dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+            dc.SetField(UmpAssignmentsKey, new DocumentReferenceFieldController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
             dc.SetField(UmpNameLabelKey, new TextFieldModelController("Umpire : "), true);
             dc.SetField(AgeLabelKey, new TextFieldModelController("Age : "), true);
             dc.SetField(UmpPictureKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
@@ -132,15 +133,15 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeUmpNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 60, double.NaN, FontWeights.Bold);
-            var prototypeUmpNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameKey), 0, 0, 75, double.NaN);
-            var prototypeUmpAgeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
-            var prototypeUmpImageLayout = new ImageBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpPictureKey), 0, 0, 50, 50);
+            var prototypeUmpNameLabelLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 60, double.NaN, FontWeights.Bold);
+            var prototypeUmpNameLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeUmp.GetId(), UmpNameKey), 0, 0, 75, double.NaN);
+            var prototypeUmpAgeLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeUmp.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
+            var prototypeUmpImageLayout = new ImageBox(new DocumentReferenceFieldController(PrototypeUmp.GetId(), UmpPictureKey), 0, 0, 50, 50);
             var prototypeUmpLayout = new StackLayout(new[] { prototypeUmpNameLabelLayout.Document, prototypeUmpNameLayout.Document, prototypeUmpAgeLayout.Document, prototypeUmpImageLayout.Document }, true);
             prototypeUmpLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
 
             //var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
-            var prototypeUmpAssignmentsLayout = new CollectionBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
+            var prototypeUmpAssignmentsLayout = new CollectionBox(new DocumentReferenceFieldController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
             prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewKey, new TextFieldModelController("Text"), true);
             var prototypeLayout = new StackLayout(new[] { prototypeUmpLayout.Document, prototypeUmpAssignmentsLayout.Document });
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
@@ -152,9 +153,9 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeVolNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
-            var prototypeVolNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameKey), 0, 0, 100, double.NaN);
-            var prototypeVolAgeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
+            var prototypeVolNameLabelLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeVol.GetId(), VolNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeVolNameLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeVol.GetId(), VolNameKey), 0, 0, 100, double.NaN);
+            var prototypeVolAgeLayout = new TextingBox(new DocumentReferenceFieldController(PrototypeVol.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
             var prototypeLayout = new StackLayout(new[] { prototypeVolNameLabelLayout.Document, prototypeVolNameLayout.Document, prototypeVolAgeLayout.Document }, true);
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
@@ -163,7 +164,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeGameLayout()
         {
-            var prototypeLayout = new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey));
+            var prototypeLayout = new KeyValueDocumentBox(new DocumentReferenceFieldController(PrototypeGame.GetId(), KeyStore.ThisKey));
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
 
@@ -171,7 +172,7 @@ namespace Dash
         }
         static DocumentController CreatePrototypeAssignmentLayout()
         {
-            var prototypeLayout = new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey));
+            var prototypeLayout = new KeyValueDocumentBox(new DocumentReferenceFieldController(PrototypeAssign.GetId(), KeyStore.ThisKey));
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
 
@@ -182,7 +183,7 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeLayout = new WebBox(new ReferenceFieldModelController(PrototypeWeb.GetId(), WebUrlKey), 0, 0, 200, 50);
+            var prototypeLayout = new WebBox(new DocumentReferenceFieldController(PrototypeWeb.GetId(), WebUrlKey), 0, 0, 200, 50);
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
 
@@ -205,7 +206,7 @@ namespace Dash
             WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                 new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
 
-            var webLayout = new WebBox(new ReferenceFieldModelController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
+            var webLayout = new WebBox(new DocumentReferenceFieldController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
             webLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
             webLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
             webLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
@@ -345,7 +346,7 @@ namespace Dash
             //    Documents.Add(CreateWebPage("http://www.msn.com"));
             //}
 
-            DBDoc.SetField(KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
+            DBDoc.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
             DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;
                 
         }

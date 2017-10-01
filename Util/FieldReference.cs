@@ -98,5 +98,7 @@ namespace Dash
         {
             return FieldKey.GetHashCode();
         }
+
+        public abstract ReferenceFieldModelController GetReferenceController();
     }
 }

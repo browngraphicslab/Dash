@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -165,7 +166,7 @@ namespace Dash
             var documentController = new DocumentController(fields, DocumentType.DefaultType);
             documentController.SetActiveLayout(
                 new CollectionBox(
-                        new ReferenceFieldModelController(documentController.GetId(),
+                        new DocumentReferenceFieldController(documentController.GetId(),
                             DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
                     .Document, true, true);
 
@@ -192,7 +193,7 @@ namespace Dash
             };
             var col = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                new CollectionBox(new DocumentReferenceFieldController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
@@ -210,7 +211,7 @@ namespace Dash
             };
             var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
-                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                new CollectionBox(new DocumentReferenceFieldController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
             col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
@@ -250,7 +251,7 @@ namespace Dash
             };
             var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
-                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                new CollectionBox(new DocumentReferenceFieldController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
             col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);

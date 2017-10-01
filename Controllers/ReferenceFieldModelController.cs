@@ -10,35 +10,16 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class ReferenceFieldModelController : FieldModelController<ReferenceFieldModel>
+    public abstract class ReferenceFieldModelController : FieldModelController<ReferenceFieldModel>
     {
-        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
+        public ReferenceFieldModelController(ReferenceFieldModel model, KeyController fieldKey) : base(model)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-            var docController = reference.GetDocumentController(null);
+            FieldKey = fieldKey;
+            var docController = GetDocumentController(null);
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-        }
-
-        public ReferenceFieldModelController(string documentId, KeyController fieldKey) : this(
-            new DocumentFieldReference(documentId, fieldKey))
-        { }
-
-        public ReferenceFieldModelController(FieldReference documentReference, KeyController fieldKey) : this(
-            new DocumentPointerFieldReference(documentReference, fieldKey))
-        {
-        }
-
-        public ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel)
-        {
-
-        }
-
-        public static ReferenceFieldModelController CreateFromServer(ReferenceFieldModel referenceFieldModel)
-        {
-            return ContentController<FieldModel>.GetController<ReferenceFieldModelController>(referenceFieldModel.Id) ??
-                    new ReferenceFieldModelController(referenceFieldModel);
         }
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -48,33 +29,13 @@ namespace Dash
 
         public override void Dispose()
         {
-            var docController = FieldReference.GetDocumentController(null);
+            var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public FieldReference FieldReference
-        {
-            get { return ReferenceFieldModel.Reference; }
-            set
-            {
-                ReferenceFieldModel.Reference = value;
-                // Update the server
-                RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                {
+        public KeyController FieldKey { get; set; }
 
-                }, exception =>
-                {
-
-                });
-            }
-        }
-
-        public KeyController FieldKey => FieldReference.FieldKey;
-
-        public DocumentController GetDocumentController(Context context)
-        {
-            return FieldReference.GetDocumentController(context);
-        }
+        public abstract DocumentController GetDocumentController(Context context);
 
         public override IEnumerable<DocumentController> GetReferences()
         {
@@ -83,18 +44,17 @@ namespace Dash
 
         public override FieldControllerBase Dereference(Context context)
         {
-            return FieldReference.Dereference(context);
+            return context.Dereference(this);
         }
 
         public override FieldControllerBase DereferenceToRoot(Context context)
         {
-            return FieldReference.DereferenceToRoot(context);
+            return context.DereferenceToRoot(this);
         }
 
-        public string GetDocumentId(Context context)
-        {
-            return FieldReference.GetDocumentId(context);
-        }
+        public abstract FieldReference GetFieldReference();
+
+        public abstract string GetDocumentId(Context context);
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
@@ -127,14 +87,10 @@ namespace Dash
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
-
-        public override FieldModelController<ReferenceFieldModel> Copy()
-        {
-            return new ReferenceFieldModelController(FieldReference);
-        }
+        
         public override object GetValue(Context context)
         {
-            var refDoc = FieldReference.GetDocumentController(context);
+            var refDoc = GetDocumentController(context);
             var opField = refDoc.GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField != null)
             {

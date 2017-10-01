@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -19,7 +20,7 @@ namespace Dash
             var doc = new DocumentController(fields, OperatorType);
             ContentController<DocumentModel>.GetController(doc.GetId());
 
-            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             doc.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
 
@@ -32,7 +33,7 @@ namespace Dash
             fields[OperatorKey] = new FilterOperatorFieldModelController();
             var doc = new DocumentController(fields, FilterOperatorFieldModelController.FilterType);
 
-            var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new FilterOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -43,7 +44,7 @@ namespace Dash
             fields[OperatorKey] = new CollectionMapOperator();
             var doc = new DocumentController(fields, CollectionMapOperator.MapType);
 
-            var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new CollectionMapOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -55,7 +56,7 @@ namespace Dash
             fields[OperatorKey] = new ApiOperatorController();
             var doc = new DocumentController(fields, ApiOperatorController.ApiType);
 
-            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new ApiOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -69,7 +70,7 @@ namespace Dash
             };
             var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
-            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             OperationCreationHelper.AddOperator(doc.GetId(), () => doc.GetCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);

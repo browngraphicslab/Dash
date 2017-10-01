@@ -15,6 +15,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -194,32 +195,32 @@ namespace Dash
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentFieldModelController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is InkFieldModelController)
             {
-                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new InkBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }

@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using Flurl;
@@ -316,7 +317,7 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);
 
-            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            var colBox = new CollectionBox(new DocumentReferenceFieldController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
             DisplayDocument(doc);
         }
