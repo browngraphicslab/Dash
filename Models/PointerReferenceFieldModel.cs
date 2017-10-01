@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelType(TypeInfo.PointerReference)]
     public class PointerReferenceFieldModel : ReferenceFieldModel
     {
         public string ReferenceFieldModelId { get; set; }

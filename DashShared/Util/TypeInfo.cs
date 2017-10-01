@@ -16,13 +16,15 @@ namespace DashShared
         Image = 0x4,
         Collection = 0x8,
         Document = 0x10,
-        Reference = 0x20,
+        PointerReference = 0x20,
+        DocumentReference = 0x1000,
         Operator = 0x40,
         Point = 0x80,
         List = 0x100,
         Ink = 0x200,
         RichTextField = 0x400,
         Rectangle = 0x800,
+        Reference = PointerReference | DocumentReference,
         Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink | RichTextField | Rectangle
     }
 

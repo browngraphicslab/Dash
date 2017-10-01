@@ -43,25 +43,32 @@ namespace Dash
         {
             List<EntityBase> list = new List<EntityBase>(){model};
 
-            Func<RestRequestReturnArgs, Task> func = async (arg) =>
+            void error(Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+
+            // Declare a local function.
+            async Task func(RestRequestReturnArgs arg)
             {
                 var objs = arg.ReturnedObjects.ToList();
 
-                var refFields = objs.OfType<ReferenceFieldModel>().ToArray();
-                var docFields = objs.OfType<DocumentFieldModel>().ToArray();
+                var pointerFields = objs.OfType<PointerReferenceFieldModel>().ToArray();
+                var documentFields = objs.OfType<DocumentReferenceFieldModel>().ToArray();
 
-                foreach (var field in refFields)
-                {
-                    objs.Add(field.Reference)
-                }
+                await _fields.GetDocuments(pointerFields.Select(f => f.ReferenceFieldModelId), func, error);
+                await _keys.GetDocuments(pointerFields.Select(f => f.KeyId), func, error);
 
-                list.AddRange();
-            };
+                await GetDocuments(documentFields.Select(f => f.DocumentId), func, error);
+                await _keys.GetDocuments(documentFields.Select(f => f.KeyId), func, error);
 
-            await _keys.GetDocuments(model.Fields.Keys, func, null);
-            await _fields.GetDocuments(model.Fields.Values, func, null);
+                list.AddRange(objs);
+            }
+
+            await _keys.GetDocuments(model.Fields.Keys, func, error);
+            await _fields.GetDocuments(model.Fields.Values, func, error);
            
-            return list;
+            return list.Distinct();
         }
 
         public override async Task GetDocumentsByQuery(IQuery<DocumentModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)

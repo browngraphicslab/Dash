@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelType(TypeInfo.DocumentReference)]
     public class DocumentReferenceFieldModel : ReferenceFieldModel
     {
         public string DocumentId { get; set; }
