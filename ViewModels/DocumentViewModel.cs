@@ -169,10 +169,13 @@ namespace Dash
                 if (_content == null)
                 {
                     _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
+                    //TODO: get mapping of key --> framework element
                 }
                 return _content;
             }
         }
+
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
 
 
         string _displayName = "<doc>";

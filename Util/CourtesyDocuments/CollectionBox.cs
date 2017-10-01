@@ -52,11 +52,11 @@ namespace Dash
         public override FrameworkElement makeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, null, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, null, isInterfaceBuilderLayout);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetField(KeyStore.DataKey);
 
@@ -72,6 +72,11 @@ namespace Dash
             var typeString = (docController.GetField(CollectionViewTypeKey) as TextFieldModelController).Data;
             CollectionView.CollectionViewType viewType =  (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
             var view = new CollectionView(collectionViewModel,  viewType);
+
+            //add to key to framework element dictionary
+            var reference = data as ReferenceFieldModelController;
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = view;
+
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
             {

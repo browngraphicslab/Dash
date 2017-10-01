@@ -31,10 +31,10 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetField(KeyStore.DataKey);
@@ -42,6 +42,11 @@ namespace Dash
             OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
             var filterView = new FilterView();
             opView.OperatorContent = filterView;
+
+            //add to key to framework element dictionary
+            var reference = data as ReferenceFieldModelController;
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = opView;
+
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
             return opView;
         }

@@ -914,27 +914,27 @@ namespace Dash
             }
             if (DocumentType == DocumentBox.DocumentType)
             {
-                return DocumentBox.MakeView(this, context, isInterfaceBuilder);
+                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == KeyValueDocumentBox.DocumentType)
             {
-                return KeyValueDocumentBox.MakeView(this, context, isInterfaceBuilder);
+                return KeyValueDocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == StackLayout.DocumentType)
             {
-                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //skipped
             }
             if (DocumentType == WebBox.DocumentType)
             {
-                return WebBox.MakeView(this, context, isInterfaceBuilder);
+                return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
-                return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == OperatorBox.DocumentType)
             {
-                return OperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return OperatorBox.MakeView(this, context, isInterfaceBuilder); //TODO: skipped the operators for now
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
@@ -942,27 +942,27 @@ namespace Dash
             }
             if (DocumentType == InkBox.DocumentType)
             {
-                return InkBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //unsure about this one
             }
-            if (DocumentType == GridViewLayout.DocumentType)
+            if (DocumentType == GridViewLayout.DocumentType) //
             {
-                return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == ListViewLayout.DocumentType)
             {
-                return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == RichTextBox.DocumentType)
             {
-                return RichTextBox.MakeView(this, context, isInterfaceBuilder);
+                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == GridLayout.GridPanelDocumentType)
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {
-                return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == CollectionMapOperatorBox.DocumentType)
             {
@@ -978,7 +978,7 @@ namespace Dash
             }
             if (DocumentType == ApiOperatorBox.DocumentType)
             {
-                return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
             }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
@@ -997,7 +997,7 @@ namespace Dash
                 }
                 Debug.Assert(doc != null);
 
-                return doc.Data.MakeViewUI(context, isInterfaceBuilder, out keysToFrameworkElementsOut, keysToFrameworkElementsOut, this);
+                return doc.Data.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
             }
             if (isInterfaceBuilder)
             {

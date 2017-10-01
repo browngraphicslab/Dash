@@ -71,8 +71,8 @@ namespace Dash
             //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
             //var docView = new KeyValuePane();
             //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
-                //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
-            
+            //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+
             var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
 
             var border = new Border();
@@ -80,15 +80,19 @@ namespace Dash
 
             SetupDocumentBinding(docView, docController, context);
 
+            //Add to key to framework element dictionary
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = border; 
+
             // bind the text height
             //var docheightController = GetHeightField(docController, context);
             //if (docheightController != null)
-                //BindHeight(docView, docheightController);
+            //BindHeight(docView, docheightController);
 
             // bind the text width
             //var docwidthController = GetWidthField(docController, context);
             //if (docwidthController != null)
-                //BindWidth(docView, docwidthController);
+            //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

@@ -50,7 +50,7 @@ namespace Dash
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
 
             var grid = new Grid();
@@ -72,7 +72,7 @@ namespace Dash
                 if (collFieldArgs.CollectionAction == DocumentCollectionFieldModelController
                         .CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add)
                 {
-                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, isInterfaceBuilderLayout);
+                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
                 else
                 {
@@ -107,7 +107,7 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, bool isInterfaceBuilder)
+        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
             grid.Children.Clear();
@@ -123,15 +123,15 @@ namespace Dash
                 };
                 grid.Children.Add(icon);
             }
-            AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder);
+            AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder, keysToFrameworkElementsIn);
         }
 
         private static int i = 0;
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder)
+        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             foreach (var layoutDocument in docs)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
+                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
 
