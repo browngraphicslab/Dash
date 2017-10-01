@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -8,6 +10,7 @@ namespace Dash
     /// </summary>
     public abstract class IController<T> : IControllerBase where T:EntityBase
     {
+        private static IModelEndpoint<T> _serverEndpoint= RESTClient.Instance.GetEndpoint<T>();
         public IController(T model)
         {
             Debug.Assert(model != null);
@@ -30,19 +33,25 @@ namespace Dash
 
         public string Id => Model.Id;
 
-        public void UpdateOnServer()
+        public void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
         {
-            
+            error = error ?? ((e) => throw e);
+            _serverEndpoint.UpdateDocument(Model, success, error);
         }
 
-        public void DeleteOnServer()
+        public void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
-            
+            error = error ?? ((e) => throw e);
+            _serverEndpoint.DeleteDocument(Model, success, error);
         }
 
-        public void SaveOnServer()
+        /// <summary>
+        /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
+        /// </summary>
+        public void SaveOnServer(Action<T> success = null, Action<Exception> error = null)
         {
-            
+            error = error ?? ((e) => throw e);
+            _serverEndpoint.AddDocument(Model, success, error);
         }
 
     }

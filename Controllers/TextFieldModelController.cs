@@ -51,13 +51,7 @@ namespace Dash
                     TextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                    {
-
-                    }, exception =>
-                    {
-
-                    });
+                    UpdateOnServer();
                 }
             }
         }

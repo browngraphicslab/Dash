@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
+using DashShared.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -14,10 +17,21 @@ namespace Dash
 
         public static RESTClient Instance { get { return lazy.Value; } }
 
-        public IKeyEndpoint Keys => App.Instance.Container.GetRequiredService<IKeyEndpoint>();
+        private Dictionary<Type, object> _dict = new Dictionary<Type, object>();
 
-        public IFieldEndpoint Fields => App.Instance.Container.GetRequiredService<IFieldEndpoint>();   
+        public IModelEndpoint<T> GetEndpoint<T>() where T:EntityBase
+        {
+            if (!_dict.ContainsKey(typeof(T)))
+            {
+                _dict[typeof(T)] = new ContentUpdatingEndpointWrapper<T>(App.Instance.Container.GetRequiredService<LocalModelEndpoint<T>>());
+            }
+            return (_dict[typeof(T)]) as IModelEndpoint<T>;
+        }
 
-        public IDocumentEndpoint Documents => App.Instance.Container.GetRequiredService<IDocumentEndpoint>();
+        public IModelEndpoint<KeyModel> Keys => GetEndpoint<KeyModel>();
+
+        public IModelEndpoint<FieldModel> Fields => GetEndpoint<FieldModel>();   
+
+        public IModelEndpoint<DocumentModel> Documents => GetEndpoint<DocumentModel>();
     }
 }

@@ -59,13 +59,7 @@ namespace Dash
             {
                 ReferenceFieldModel.Reference = value;
                 // Update the server
-                RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                {
-
-                }, exception =>
-                {
-
-                });
+                UpdateOnServer();
             }
         }
 

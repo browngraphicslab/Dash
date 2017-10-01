@@ -74,13 +74,7 @@ namespace Dash
                 {
                     InkFieldModel.Data = value;
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                    {
-
-                    }, exception =>
-                    {
-
-                    });
+                    UpdateOnServer();
                 }
             }
         }

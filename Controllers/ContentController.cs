@@ -203,6 +203,29 @@ namespace Dash
         }
 
         /// <summary>
+        /// to remove a contorller from this content controller
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public static bool RemoveController(string Id)
+        {
+            IController<T> outC;
+            T outM;
+            _controllers.TryRemove(Id, out outC);
+            _models.TryRemove(Id, out outM);
+            return outC != null && outM != null;
+        }
+
+        /// <summary>
+        /// method to delete all controllers and models.  Should really almost never be called
+        /// </summary>
+        public static void ClearAllControllersAndModels()
+        {
+            _controllers = new ConcurrentDictionary<string, IController<T>>();
+            _models = new ConcurrentDictionary<string, T>();
+        }
+
+        /// <summary>
         /// Gets the requested models by their ids, checking to make sure that the models are of the requested type
         /// </summary>
         /// <typeparam name="TModelType"></typeparam>

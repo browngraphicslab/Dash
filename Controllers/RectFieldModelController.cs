@@ -80,13 +80,7 @@ namespace Dash
                 {
                     RectFieldModel.Data = value;
                     // Update the server
-                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                    {
-
-                    }, exception =>
-                    {
-
-                    });
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                     // update local
                     // update server

@@ -17,13 +17,7 @@ namespace Dash
             set
             {
                 Model.Name = value;
-                RESTClient.Instance.Keys.UpdateKey(Model, model =>
-                {
-                    // Yay!
-                }, exception =>
-                {
-                    // Hayyyyy!
-                });
+                UpdateOnServer();
             }
         }
         public KeyController(string guid) : this(new KeyModel(guid))

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -30,9 +31,9 @@ namespace Dash
             serviceCollection.AddSingleton<ServerEndpoint, ServerEndpoint>();
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
-            serviceCollection.AddSingleton<IDocumentEndpoint, LocalDocumentEndpoint>();
-            serviceCollection.AddSingleton<IFieldEndpoint, LocalFieldEndpoint>();
-            serviceCollection.AddSingleton<IKeyEndpoint, LocalKeyEndpoint>();
+            serviceCollection.AddSingleton<IModelEndpoint<DocumentModel>, LocalDocumentEndpoint>();
+            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, IModelEndpoint<FieldModel>>();
+            serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, IModelEndpoint<KeyModel>>();
 
 
             serviceCollection.AddTransient<IController<DocumentModel>, DocumentController>();

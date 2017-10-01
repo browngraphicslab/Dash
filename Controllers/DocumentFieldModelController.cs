@@ -31,6 +31,7 @@ namespace Dash
             Data = ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
         }
 
+        /*
         public static async Task<DocumentFieldModelController> CreateFromServer(DocumentFieldModel documentFieldModel)
         {
             var localController = ContentController<FieldModel>.GetController<DocumentFieldModelController>(documentFieldModel.Id);
@@ -79,7 +80,7 @@ namespace Dash
             return new DocumentFieldModelController(docController, documentFieldModel);
 
         }
-
+        */
         /// <summary>
         ///     The <see cref="DocumentFieldModel" /> associated with this <see cref="DocumentFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
@@ -126,7 +127,7 @@ namespace Dash
                     };
                     value.DocumentFieldUpdated += primaryKeyHandler;
                     OnFieldModelUpdated(null);
-                    RESTClient.Instance.Fields.UpdateField(Model, dto => { }, exception => throw exception);
+                    UpdateOnServer();
                 }
             }
         }

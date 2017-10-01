@@ -141,7 +141,7 @@ namespace Dash
 
             //DocumentControllerFactory.CreateFromModel(new DocumentModel(new ConcurrentDictionary<KeyModel, FieldModel>(), DocumentType.DefaultType));
 
-            RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.HomePageType, Success, exception => throw exception);
+            RESTClient.Instance.Documents.GetDocumentsByQuery(new DocumentTypeLinqQuery(DashConstants.TypeStore.HomePageType), Success, exception => throw exception);
         }
 
         private void OnPopulatedHomePagedTapped(object sender, TappedRoutedEventArgs e)

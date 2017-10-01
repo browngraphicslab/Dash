@@ -49,10 +49,7 @@ namespace Dash
                     OnFieldModelUpdated(null);
 
                     // Update server
-                    RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                    {
-
-                    }, exception => throw exception);
+                    UpdateOnServer();
                 }
             }
         }
@@ -90,6 +87,7 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Collection;
 
+        /*
         public static async Task<DocumentCollectionFieldModelController> CreateFromServer(
             DocumentCollectionFieldModel docCollectionFieldModel)
         {
@@ -112,6 +110,7 @@ namespace Dash
             }, exception => throw exception);
             return new DocumentCollectionFieldModelController(docControllerList, docCollectionFieldModel);
         }
+        */
 
         public int Count => _documents.Count;
 
@@ -146,14 +145,7 @@ namespace Dash
             {
                 DocumentCollectionFieldModel.Data.Add(docController.GetId());
 
-                // Update server
-                RESTClient.Instance.Fields.UpdateField(Model, dto =>
-                {
-
-                }, exception =>
-                {
-
-                });
+               UpdateOnServer();
             }
 
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
