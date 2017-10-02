@@ -118,10 +118,15 @@ namespace Dash
                 FontSize = 11
             };
             bindTextOrSetOnce(textBlock);
-            
+            return textBlock;
 
+            // bcz: Adding the scroll viewer causes a layout cycle in CollectionDBSchema display.  
+            // this seems like a bug in Xaml, but it's probably more efficient to create these
+            // cell views without a scroll viewer anyway -- instantiate one if the cell gets clicked on?
             var scrollViewer = new ScrollViewer
             {
+                Height=25,
+                Width=70,
                 HorizontalScrollMode = ScrollMode.Enabled,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,

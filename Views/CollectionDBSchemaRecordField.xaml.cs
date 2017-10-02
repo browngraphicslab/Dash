@@ -27,8 +27,8 @@ namespace Dash.Views
     }
     public class CollectionDBSchemaRecordFieldViewModel: DependencyObject
     {
-        public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
-            "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
+        //public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
+        //    "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
         public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
             "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
         public static readonly DependencyProperty BorderThicknessProperty = DependencyProperty.Register(
@@ -45,7 +45,7 @@ namespace Dash.Views
             _fieldKey = fieldKey;
              DataReference = new ReferenceFieldModelController(_document.GetId(), fieldKey);
             BorderThickness = thickness;
-            Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).GetValue(null).ToString();
+           // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).DereferenceToRoot(null).ToString();
         }
         public ReferenceFieldModelController DataReference
         {
@@ -62,11 +62,11 @@ namespace Dash.Views
             get { return (double) GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
         }
-        public string Content
-        {
-            get { return GetValue(ContentProperty)?.ToString(); }
-            set { SetValue(ContentProperty, value); }
-        }
+        //public string Content
+        //{
+        //    get { return new ReferenceFieldModelController(_document.GetId(), _fieldKey).DereferenceToRoot(null).ToString(); }
+        //    set { SetValue(ContentProperty, value); }
+        //}
     }
 
 }
