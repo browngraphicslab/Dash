@@ -519,9 +519,8 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-        private async void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            await System.Threading.Tasks.Task.Delay(200);
             e.Handled = true;
             if (ViewModel == null)
                 return;

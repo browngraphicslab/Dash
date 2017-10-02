@@ -807,48 +807,42 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private bool _singletapped;
-        private async void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            _singletapped = true;
-            await Task.Delay(200);
-            if (_singletapped)
-            {
-                if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
-                e.Handled = true;
-                if (ViewModel.IsInterfaceBuilder)
-                    return;
+            e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
 
-                OnSelected();
-            }
+            OnSelected();
         }
 
         private void SelectionElement_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            _singletapped = false;
             e.Handled = true;
-            InvokeDoubleTap(this, e);
+            InvokeDoubleTap(e);
         }
-        private void InvokeDoubleTap(CollectionFreeformView view, DoubleTappedRoutedEventArgs e)
+        private void InvokeDoubleTap(DoubleTappedRoutedEventArgs e)
         {
-            var freeforms = view.GetDescendantsOfType<CollectionFreeformView>();
+            var freeforms = this.GetDescendantsOfType<CollectionFreeformView>();
             foreach (var ff in freeforms)
             {
                 if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
                 {
-                    InvokeDoubleTap(ff, e);
+                    ff.InvokeDoubleTap(e);
                     return;
                 }
             }
 
             // if no child is found... select the current thing i guess 
-            foreach (DocumentViewModel dvm in view.ViewModel.DocumentViewModels)
+            foreach (DocumentViewModel dvm in ViewModel.DocumentViewModels)
             {
                 Rect rect = new Rect { X = dvm.GroupTransform.Translate.X, Y = dvm.GroupTransform.Translate.Y, Height = dvm.Height, Width = dvm.Width };
-                if (rect.Contains(e.GetPosition(view.xOuterGrid)))
+                if (rect.Contains(e.GetPosition(xOuterGrid)))
                 {
-                    dvm.Width = 600;            // change this!!!!!! 
+                    dvm.Width = 500;            // just as an indicator, must actually set it to lowest selected dlfadkfh
+                    dvm.OpenMenu();             // ??????????????????? 
                     return;
                 }
             }
