@@ -24,25 +24,8 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
     {
-        public class SchemaField
-        {
-            public KeyController Key;
-            public bool Selected = true;
-            public override string ToString()
-            {
-                return Key.Name;
-            }
-
-        }
-        bool SchemaFieldContains(string field)
-        {
-            foreach (var s in SchemaFields)
-                if (s.Key.Name == field)
-                    return true;
-            return false;
-        }
         public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } = new ObservableCollection<CollectionDBSchemaRecordViewModel>();
-        public ObservableCollection<SchemaField> SchemaFields { get; set; } = new ObservableCollection<SchemaField>();
+        public ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel> SchemaHeaders { get; set; } = new ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel>();
         public BaseCollectionViewModel ViewModel { get; private set; }
         public CollectionDBSchemaView()
         {
@@ -50,10 +33,9 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
-            xGridView.ItemsSource = SchemaFields;
-            xRecordsView.ItemsSource = Records;
+            xGridView.ItemsSource = SchemaHeaders;
         }
-
+        
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
@@ -118,39 +100,13 @@ namespace Dash
                 UpdateFields(new Context(ParentDocument));
         }
 
-        private void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        bool SchemaHeadersContains(string field)
         {
-            var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
-            if (collection != null)
-            {
-                ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController((sender as TextBlock).Text), true);
-
-                collection.SetDBView();
-                return;
-            }
-
-            var tbock = sender as TextBlock;
-            for (int i = 0; i < SchemaFields.Count; i++)
-            {
-                var s = SchemaFields[i];
-                if (s.Key.Name == tbock.Text)
-                {
-                    s.Selected = !s.Selected;
-                    SchemaFields.RemoveAt(i);
-                    SchemaFields.Insert(i, s);
-                }
-            }
-
-            var selectedBars = new List<NumberFieldModelController>();
-            for (int i = 0; i < xGridView.Items.Count; i++)
-            {
-                if ((xGridView.Items[i] as SchemaField).Selected)
-                    selectedBars.Add(new NumberFieldModelController(i));
-            }
-
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey, new ListFieldModelController<NumberFieldModelController>(selectedBars), true);
+            foreach (var s in SchemaHeaders)
+                if (s.Key.Name == field)
+                    return true;
+            return false;
         }
-
         public void UpdateFields(Context context)
         {
             var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
@@ -160,20 +116,19 @@ namespace Dash
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaFieldContains(f.Key.Name))
-                            SchemaFields.Add(new SchemaField() { Key = f.Key, Selected = false } );
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, Key = f.Key, Selected = false } );
                 }
-                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaFields[(int)(b as NumberFieldModelController).Data].Key.Name).ToList());
-
-                Records.Clear();
+                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].Key.Name).ToList());
+                
+                var records = new List<CollectionDBSchemaRecordViewModel>();
                 foreach (var d in dbDocs)
                 {
-                    Records.Add(new CollectionDBSchemaRecordViewModel());
-                    foreach (var f in SchemaFields)
-                        Records.Last().RecordFields.Add(new CollectionDBSchemaRecordFieldViewModel(76, d, f.Key)); 
+                    records.Add(new CollectionDBSchemaRecordViewModel(
+                        SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(f.Width+HeaderBorderThickness.BorderThickness.Left+HeaderBorderThickness.BorderThickness.Right, d, f.Key, HeaderBorderThickness.BorderThickness))
+                        ));
                 }
-                xRecordsView.HorizontalAlignment = HorizontalAlignment.Stretch;
-                xRecordsView.VerticalAlignment = VerticalAlignment.Stretch;
+                xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
             }
         }
 
@@ -269,5 +224,17 @@ namespace Dash
             OnSelected();
         }
         #endregion
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xRecordsView.Height = (sender as Grid).ActualHeight - 30;
+            xDataArea.Height = new GridLength(xRecordsView.Height);
+        }
+
+        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        {
+            xRecordsView.Height = (sender as Grid).ActualHeight - 30;
+            xDataArea.Height = new GridLength(xRecordsView.Height);
+        }
     }
 }

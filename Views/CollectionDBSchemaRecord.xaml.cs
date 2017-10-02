@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -20,8 +21,11 @@ namespace Dash.Views
 {
     public sealed partial class CollectionDBSchemaRecord : UserControl
     {
+        static int count = 0;
         public CollectionDBSchemaRecord()
         {
+            count++;
+            Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
 
@@ -31,8 +35,13 @@ namespace Dash.Views
         }
     }
 
-    public class CollectionDBSchemaRecordViewModel {
+    public class CollectionDBSchemaRecordViewModel
+    {
+        public CollectionDBSchemaRecordViewModel(IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
+        {
+            RecordFields = new ObservableCollection<Views.CollectionDBSchemaRecordFieldViewModel>(fields);
+        }
         public DocumentController Document;
-        public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; set; } = new ObservableCollection<CollectionDBSchemaRecordFieldViewModel>();
+        public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; set; }
     }
 }

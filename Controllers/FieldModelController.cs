@@ -193,7 +193,7 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
-        public virtual void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder = false)
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder = false)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };

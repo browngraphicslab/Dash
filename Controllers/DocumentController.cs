@@ -868,13 +868,13 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
         {
-            var fields = EnumFields().ToList();
-            if (fields.Count > 15) return MakeAllViewUIForManyFields(fields);
-            var sp = new StackPanel();
+            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
+            if (fields.Count > 15)
+                return MakeAllViewUIForManyFields(fields);
+            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldModelController> f)
             {
-                if (f.Key.IsUnrenderedKey()) return;
-                f.Value.MakeAllViewUI(f.Key, context, sp, GetId(), isInterfaceBuilder);
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
             }
             #pragma warning disable CS4014 
             MainView.CoreWindow.Dispatcher.RunAsync(
@@ -887,8 +887,8 @@ namespace Dash
                         await Task.Delay(5);
                     }
                 });
-            #pragma warning restore CS4014
-            return sp;
+#pragma warning restore CS4014
+            return panel;
         }
 
         private static FrameworkElement MakeAllViewUIForManyFields(

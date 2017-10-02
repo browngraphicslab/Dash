@@ -124,6 +124,9 @@
     <Compile Include="Views\CollectionDBChartBar.xaml.cs">
       <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CollectionDBSchemaHeader.xaml.cs">
+      <DependentUpon>CollectionDBSchemaHeader.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionDBSchemaRecord.xaml.cs">
       <DependentUpon>CollectionDBSchemaRecord.xaml</DependentUpon>
     </Compile>
@@ -576,6 +579,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionDBChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaHeader.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

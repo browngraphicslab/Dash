@@ -1,5 +1,6 @@
 ﻿using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Dash.Views;
 
 namespace Dash
 {
@@ -28,15 +29,15 @@ namespace Dash
         }
     }
 
-    //bcz: temporary hack --- need to just convert bool to Bold for use anywhere, not just SchemaFields
-    public class BoolToBoldConverter : SafeDataToXamlConverter<CollectionDBSchemaView.SchemaField, FontWeight>
+    //bcz: temporary hack --- need to just convert bool to Bold for use anywhere, not just SchemaHeaders
+    public class BoolToBoldConverter : SafeDataToXamlConverter<CollectionDBSchemaHeader.HeaderViewModel, FontWeight>
     {
-        public override FontWeight ConvertDataToXaml(CollectionDBSchemaView.SchemaField data, object parameter = null)
+        public override FontWeight ConvertDataToXaml(CollectionDBSchemaHeader.HeaderViewModel data, object parameter = null)
         {
             return data.Selected ? FontWeights.ExtraBold : FontWeights.Normal;
         }
 
-        public override CollectionDBSchemaView.SchemaField ConvertXamlToData(FontWeight xaml, object parameter = null)
+        public override CollectionDBSchemaHeader.HeaderViewModel ConvertXamlToData(FontWeight xaml, object parameter = null)
         {
             throw new System.Exception();
             //return xaml.Equals(FontWeights.ExtraBold);

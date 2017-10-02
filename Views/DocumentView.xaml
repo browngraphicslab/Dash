@@ -54,7 +54,7 @@
             </Grid.RowDefinitions>
 
             <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+            <StackPanel x:Name="DocumentViewStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
                 <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
                      HorizontalAlignment="Center"
                      TextAlignment="Center"
@@ -69,7 +69,7 @@
         <!--grid to hold the inner content of the document-->
         <Grid Grid.Row="1" Grid.Column="0">
             <!-- Container for document fields view -->
-            <Grid x:Name="xFieldContainer" x:FieldModifier="public" >
+            <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>

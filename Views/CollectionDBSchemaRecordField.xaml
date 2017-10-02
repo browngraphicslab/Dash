@@ -10,6 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Width="{Binding Width}"
-    Content="{Binding DataReference, Converter={StaticResource ReferenceFieldModelControllerToFrameworkElementConverter}, Mode=OneWay}">
+    >
+    <Border BorderThickness="{Binding BorderThickness}" Child="{Binding DataReference, Converter={StaticResource ReferenceFieldModelControllerToFrameworkElementConverter}, Mode=OneWay}" />
     <!--TextBlock x:Name="xText" FontSize="12" Foreground="Black" Text="{Binding Content}" Width="{Binding Width}"/-->
 </UserControl>
