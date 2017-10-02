@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Controllers;
 using DashShared.Models;
 
 namespace Dash
@@ -281,14 +282,14 @@ namespace Dash
                     foreach (var e in refDoc.EnumFields())
                         if (e.Key.Name == path[1])
                         {
-                            return new ReferenceFieldModelController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
+                            return new DocumentReferenceFieldController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
                         }
             }
 
             foreach (var e in this.EnumFields())
                 if (e.Key.Name == path[0])
                 {
-                    return new ReferenceFieldModelController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
+                    return new DocumentReferenceFieldController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
                 }
 
             //if (searchAllDocsIfFail)
@@ -354,7 +355,7 @@ namespace Dash
                             }
                         }
                     }
-                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
+                    SetField(key, new DocumentReferenceFieldController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
             }
             else
@@ -823,7 +824,7 @@ namespace Dash
                     {
                         var hstack = new StackPanel {Orientation = Orientation.Horizontal};
                         var label = new TextBlock {Text = f.Key.Name + ": "};
-                        var refField = new ReferenceFieldModelController(GetId(), f.Key);
+                        var refField = new DocumentReferenceFieldController(GetId(), f.Key);
                         var dBox = f.Value is ImageFieldModelController
                             ? new ImageBox(refField).Document
                             : new TextingBox(refField).Document;
@@ -849,7 +850,7 @@ namespace Dash
                     {
                         var colView =
                             new CollectionView(
-                                new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key),
+                                new CollectionViewModel(new DocumentReferenceFieldController(GetId(), f.Key),
                                     isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
                         colView.HorizontalAlignment = HorizontalAlignment.Stretch;
                         colView.VerticalAlignment = VerticalAlignment.Stretch;

@@ -39,7 +39,7 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
+            OperatorView opView = new OperatorView {DataContext = opfmc};
             var filterView = new FilterView();
             opView.OperatorContent = filterView;
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
@@ -76,8 +76,8 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
-            var opDoc = opfmc.FieldReference.GetDocumentController(null);
+            OperatorView opView = new OperatorView { DataContext = opfmc};
+            var opDoc = opfmc.GetDocumentController(null);
             var stack = new Windows.UI.Xaml.Controls.StackPanel();
             stack.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
             var returnBox = new Windows.UI.Xaml.Controls.TextBox();

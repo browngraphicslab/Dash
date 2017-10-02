@@ -82,14 +82,14 @@ namespace Dash
         {
             var json = newDocument.Serialize();
             _modelDictionary[newDocument.Id] = json;
-            success(json.CreateObject<T>());
+            success?.Invoke(json.CreateObject<T>());
         }
 
         public virtual void UpdateDocument(T documentToUpdate, Action<T> success, Action<Exception> error)
         {
             var json = documentToUpdate.Serialize();
             _modelDictionary[documentToUpdate.Id] = json;
-            success(json.CreateObject<T>());
+            success?.Invoke(json.CreateObject<T>());
         }
 
         public virtual async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
@@ -104,11 +104,11 @@ namespace Dash
                         doc.CreateObject<T>()
                     }
                 };
-                await success(args);
+                await success?.Invoke(args);
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
 
@@ -123,11 +123,11 @@ namespace Dash
                     var doc = text.CreateObject<T>();
                     list.Add(doc);
                 }
-                await success(new RestRequestReturnArgs(list));
+                await success?.Invoke(new RestRequestReturnArgs(list));
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
 
@@ -136,30 +136,51 @@ namespace Dash
             try
             {
                 _modelDictionary.Remove(document.Id);
-                success();
+                success?.Invoke();
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
 
         public virtual void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             _modelDictionary = new Dictionary<string, string>();
-            success();
+            success?.Invoke();
         }
 
         public virtual async Task GetDocumentsByQuery(IQuery<T> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             try
             {
-                await success(new RestRequestReturnArgs(_modelDictionary.Values.Select(i => i.CreateObject<T>()).Where(query.Func)));
+                await success?.Invoke(new RestRequestReturnArgs(_modelDictionary.Values.Select(i => i.CreateObject<T>()).Where(query.Func)));
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
+
+        private Func<RestRequestReturnArgs, Task> GetCastingFunc<V>(Func<IEnumerable<V>, Task> previousFunc) where V : EntityBase
+        {
+            async Task func(RestRequestReturnArgs args)
+            {
+                await previousFunc(args.ReturnedObjects.OfType<V>());
+            }
+
+            return func;
+        }
+
+        public virtual async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        {
+            await GetDocuments(ids, GetCastingFunc(success), error);
+        }
+
+        public virtual async Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V :EntityBase
+        {
+            await GetDocumentsByQuery(query, GetCastingFunc(success), error);
+        }
+
     }
 }

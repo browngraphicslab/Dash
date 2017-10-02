@@ -32,8 +32,8 @@ namespace Dash
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
             serviceCollection.AddSingleton<IModelEndpoint<DocumentModel>, LocalDocumentEndpoint>();
-            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, IModelEndpoint<FieldModel>>();
-            serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, IModelEndpoint<KeyModel>>();
+            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalModelEndpoint<FieldModel>>();
+            serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, LocalModelEndpoint<KeyModel>>();
 
 
             serviceCollection.AddTransient<IController<DocumentModel>, DocumentController>();

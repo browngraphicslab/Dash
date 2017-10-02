@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -68,8 +69,8 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetLayoutPrototype(); 
-                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25);
-                var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
+                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25);
+                var richTextLayout = new RichTextBox(new DocumentReferenceFieldController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
                 var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
                 prototpeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototpeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
@@ -114,8 +115,8 @@ namespace Dash
             {
                 var prototype = GetLayoutPrototype();
 
-                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var imageLayout = new ImageBox(new ReferenceFieldModelController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
+                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
+                var imageLayout = new ImageBox(new DocumentReferenceFieldController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -153,7 +154,7 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototypeTextLayout =
-                    new TextingBox(new ReferenceFieldModelController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    new TextingBox(new DocumentReferenceFieldController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
                 prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeTextLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 

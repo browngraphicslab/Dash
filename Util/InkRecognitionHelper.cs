@@ -6,6 +6,7 @@ using Windows.Foundation;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -187,7 +188,7 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docControllers),
             };
             var documentController = new DocumentController(fields, DocumentType.DefaultType);
-            documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, size.Width, size.Height).Document, true, true);
+            documentController.SetActiveLayout(new CollectionBox(new DocumentReferenceFieldController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, size.Width, size.Height).Document, true, true);
             _freeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
@@ -283,7 +284,7 @@ namespace Dash
                     var text = TryGetText(str);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
                     doc.SetField(key, new TextFieldModelController(text), true);
-                    var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
+                    var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                     (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
                         rect.Height / 1.2;
                     textFields.Add(textBox.Document);

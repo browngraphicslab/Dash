@@ -45,7 +45,18 @@ namespace Dash
             async Task func(RestRequestReturnArgs arg)
             {
                 AddModelsToControllers(arg.ReturnedObjects);
-                await success(arg);
+                await success?.Invoke(arg);
+            }
+
+            return func;
+        }
+
+        private Func<RestRequestReturnArgs, Task> GetSuccessFunc<V>(Func<IEnumerable<V>, Task> success) where V:EntityBase
+        {
+            async Task func(RestRequestReturnArgs arg)
+            {
+                AddModelsToControllers(arg.ReturnedObjects);
+                await success?.Invoke(arg.ReturnedObjects.OfType<V>());
             }
 
             return func;
@@ -87,6 +98,16 @@ namespace Dash
         public async Task GetDocumentsByQuery(IQuery<T> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             await _endpoint.GetDocumentsByQuery(query, GetSuccessFunc(success), error);
+        }
+
+        public Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        {
+            return _endpoint.GetDocuments(ids, GetSuccessFunc(success), error);
+        }
+
+        public Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        {
+            return _endpoint.GetDocumentsByQuery(query, GetSuccessFunc(success), error);
         }
     }
 }

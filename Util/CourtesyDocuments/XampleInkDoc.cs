@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -31,7 +32,7 @@ namespace Dash
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
             
-            var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey));
+            var prototypeInkLayout = new InkBox(new DocumentReferenceFieldController(_prototypeTwoImages.GetId(), InkFieldKey));
             prototypeInkLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             prototypeInkLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             prototypeInkLayout.Document.SetHeight(double.NaN);

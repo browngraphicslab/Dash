@@ -83,15 +83,25 @@ namespace Dash
             return true;
         }
 
+        public FieldControllerBase Dereference(ReferenceFieldModelController reference)
+        {
+            return null;
+        }
+
+        public FieldControllerBase DereferenceToRoot(ReferenceFieldModelController reference)
+        {
+            return null;
+        }
+
         public void AddDocumentContext(DocumentController document)
         {
             _documentContextList.Add(document);
         }
 
-        public void AddData(ReferenceFieldModelController reference, FieldControllerBase data)
-        {
-            _data[reference.FieldReference] = data;
-        }
+        //public void AddData(ReferenceFieldModelController reference, FieldControllerBase data)
+        //{
+        //    _data[reference.FieldReference] = data;
+        //}
 
         public void AddData(FieldReference reference, FieldControllerBase data)
         {

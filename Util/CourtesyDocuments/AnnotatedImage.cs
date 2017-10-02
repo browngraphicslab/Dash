@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Windows.Foundation;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -29,14 +30,14 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
-            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
+            var prototypeTextLayout = new TextingBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
+            var prototypeImage1Layout = new ImageBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
 
             var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
 
-            prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(KeyStore.HeightFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.HeightFieldKey), true);
+            prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(KeyStore.WidthFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(KeyStore.HeightFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.HeightFieldKey), true);
 
             return prototypeLayout.Document;
         }

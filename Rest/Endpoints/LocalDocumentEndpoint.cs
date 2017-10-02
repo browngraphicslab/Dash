@@ -31,11 +31,11 @@ namespace Dash
                 {
                     ReturnedObjects = new List<EntityBase>(await TrackDownReferences(doc.CreateObject<DocumentModel>()))
                 };
-                await success(args);
+                await success?.Invoke(args);
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
 
@@ -83,11 +83,11 @@ namespace Dash
                     list.Add(await TrackDownReferences(doc));
                 }
 
-                await success(new RestRequestReturnArgs(list.SelectMany(k => k)));
+                await success?.Invoke(new RestRequestReturnArgs(list.SelectMany(k => k)));
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
 
@@ -102,11 +102,11 @@ namespace Dash
                     var doc = text.CreateObject<DocumentModel>();
                     list.AddRange(await TrackDownReferences(doc));
                 }
-                await success(new RestRequestReturnArgs(list));
+                await success?.Invoke(new RestRequestReturnArgs(list));
             }
             catch (Exception e)
             {
-                error(e);
+                error?.Invoke(e);
             }
         }
     }

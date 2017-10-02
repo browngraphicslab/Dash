@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Gaming.Input;
 using DashShared;
 
 namespace Dash
@@ -42,6 +43,14 @@ namespace Dash
         Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error);
 
         /// <summary>
+        /// Gets documents from the server with the given ids but only returns the entities of type V
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success,Action<Exception> error) where V : EntityBase;
+
+        /// <summary>
         ///     Deletes a document from the server.
         /// </summary>
         /// <param name="document"></param>
@@ -65,5 +74,14 @@ namespace Dash
         /// <param name="error"></param>
         /// <returns></returns>
         Task GetDocumentsByQuery(IQuery<T> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error);
+
+        /// <summary>
+        /// method to make an arbitrary query for a subset of document T's but only returns the types V
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase;
     }
 }

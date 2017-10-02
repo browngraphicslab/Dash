@@ -109,7 +109,7 @@ namespace Dash
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey, fmController);
             }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
