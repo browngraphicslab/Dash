@@ -25,11 +25,11 @@ namespace Dash
 
         public static KeyController UmpAssignmentsKey  = new KeyController("9BB856BE-D3C5-425E-A6EF-0F09B28414D3", "UmpAssignments");
         public static KeyController UmpNameKey         = new KeyController("462664D8-11B9-4561-B65B-AB3A2DAADB3B", "UmpName");
-        public static KeyController UmpNameLabelKey    = new KeyController("69079F30-ACFE-442C-8ABE-9115B7B7C974", "UmpNameLabel");
+        public static KeyController UmpNameLabelKey    = new KeyController("69079F30-ACFE-442C-8ABE-9115B7B7C974", "_UmpNameLabel");
         public static KeyController UmpPictureKey      = new KeyController("6B9AD824-C82B-4E11-A216-E83FC87F98C6", "UmpPicture");
         public static KeyController VolNameKey         = new KeyController("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
-        public static KeyController VolNameLabelKey    = new KeyController("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolNameLabel");
-        public static KeyController AgeLabelKey        = new KeyController("C7724C9E-FB0A-4855-86C6-27461D0EF769", "AgeLabel");
+        public static KeyController VolNameLabelKey    = new KeyController("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "_VolNameLabel");
+        public static KeyController AgeLabelKey        = new KeyController("C7724C9E-FB0A-4855-86C6-27461D0EF769", "_AgeLabel");
         public static KeyController AgeKey             = new KeyController("CEFAA1C9-C21D-4429-905B-AB5A68550F76", "Age");
 
         public static KeyController WebUrlKey = new KeyController("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");

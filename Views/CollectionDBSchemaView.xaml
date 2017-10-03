@@ -44,7 +44,14 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView x:Name="xRecordsView" VirtualizingStackPanel.VirtualizationMode="Recycling" Grid.Row="1" ShowsScrollingPlaceholders="True" Background="Beige">
+        <ListView x:Name="xRecordsView" 
+                  VirtualizingStackPanel.VirtualizationMode="Recycling" 
+                  Grid.Row="1" 
+                  SelectionMode="Single"
+                  ShowsScrollingPlaceholders="True" 
+                  Background="Beige"
+                  CanDragItems="True"
+                  >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Left" />

@@ -7,13 +7,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    DragStarting="UserControl_DragStarting" 
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <ListView x:Name="xListView"
                       ItemsSource="{Binding RecordFields}"
                       SelectionMode="None"
-                      ShowsScrollingPlaceholders="False">
+                      ShowsScrollingPlaceholders="False"
+              >
         <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem">
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -26,12 +28,14 @@
         </ListView.ItemContainerStyle>
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Padding="0" Margin="0"/>
+                <StackPanel CanDrag="True" Orientation="Horizontal" Padding="0" Margin="0"/>
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <local:CollectionDBSchemaRecordField DataContext="{Binding}" Tapped="CollectionDBSchemaRecordField_Tapped"/>
+                <local:CollectionDBSchemaRecordField DataContext="{Binding}" ManipulationMode="All" 
+                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed" />
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>

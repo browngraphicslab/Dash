@@ -125,6 +125,7 @@ namespace Dash
                 foreach (var d in dbDocs)
                 {
                     records.Add(new CollectionDBSchemaRecordViewModel(
+                        d,
                         SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(f.Width+HeaderBorderThickness.BorderThickness.Left+HeaderBorderThickness.BorderThickness.Right, d, f.Key, HeaderBorderThickness.BorderThickness))
                         ));
                 }
@@ -224,17 +225,5 @@ namespace Dash
             OnSelected();
         }
         #endregion
-
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xRecordsView.Height = (sender as Grid).ActualHeight - 30;
-            xDataArea.Height = new GridLength(xRecordsView.Height);
-        }
-
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
-        {
-            xRecordsView.Height = (sender as Grid).ActualHeight - 30;
-            xDataArea.Height = new GridLength(xRecordsView.Height);
-        }
     }
 }
