@@ -16,7 +16,6 @@
     Tapped="OnTapped"
     Holding="OnHold"
     IsHoldingEnabled="True"
-    DoubleTapped="OnDoubleTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >

@@ -821,16 +821,11 @@ namespace Dash
         }
         private void OnHold(object sender, HoldingRoutedEventArgs e)
         {
-            Debug.WriteLine("holding"); 
             e.Handled = true;
             ChooseLowest(e);
         }
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            //e.Handled = true;
-            //ChooseLowest(e);
-        }
-        private void ChooseLowest(/*DoubleTappedRoutedEventArgs*/HoldingRoutedEventArgs e)
+
+        private void ChooseLowest(HoldingRoutedEventArgs e)
         {
             var freeforms = xItemsControl.GetDescendantsOfType<CollectionFreeformView>();
             foreach (var ff in freeforms)
@@ -842,27 +837,19 @@ namespace Dash
                 }
             }
 
-            // if no child is found... select the current thing i guess 
+            // in the lowest possible collectionfreeform 
             var docViews = xItemsControl.GetDescendantsOfType<DocumentView>(); 
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
                 {
-                    view.ViewModel.Width = 500;      // just as an indicator, must actually set it to lowest selected dlfadkfh
                     view.OnTapped(view, null); 
                     return;
                 }
             }
-
-            //foreach (DocumentViewModel dvm in ViewModel.DocumentViewModels)
-            //{
-            //    Rect rect = new Rect { X = dvm.GroupTransform.Translate.X, Y = dvm.GroupTransform.Translate.Y, Height = dvm.Height, Width = dvm.Width };
-            //    if (rect.Contains(e.GetPosition(xOuterGrid)))
-            //    {
-            //        dvm.Width = 500;
-            //        return; 
-            //    }
-            //}
+            // if no docview to select, select the current collectionview 
+            var parentView = this.GetFirstAncestorOfType<DocumentView>();
+            parentView.OnTapped(parentView, null); 
         }
 
         #endregion
