@@ -179,11 +179,12 @@ namespace Dash
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
         }
 
-        public override void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder=false)
+        public override void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder=false)
         {
             var rfmc = new ReferenceFieldModelController(id, kc);
             var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
-            var colView = new CollectionView(vm, kc.Name == "CSVRecords" ? CollectionView.CollectionViewType.Schema : CollectionView.CollectionViewType.Grid);
+            var viewType = container.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ??  CollectionView.CollectionViewType.Grid.ToString();
+            var colView = new CollectionView(vm, (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), viewType));
             sp.Children.Add(colView);
             colView.TryBindToParentDocumentSize();
         }

@@ -198,13 +198,13 @@ namespace Dash
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
-            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
+            xMenuCanvas.SetBinding(VisibilityProperty, visibilityBinding);
 
             xMenuCanvas.Children.Add(_docMenu);
             _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
         }
-
+        
         private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move)
@@ -449,6 +449,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed ;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()
@@ -537,10 +538,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            //TODO This disables dragging in the freeform view, this should be uncommented at some point
-            //this.CanDrag = ViewModel.IsLowestSelected;
-            //this.DragStarting -= ViewModel.DocumentView_DragStarting;
-            //this.DragStarting += ViewModel.DocumentView_DragStarting;
+
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)

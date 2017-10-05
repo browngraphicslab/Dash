@@ -104,6 +104,7 @@
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
+    <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
@@ -122,6 +123,15 @@
     <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
     <Compile Include="Views\CollectionDBChartBar.xaml.cs">
       <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaHeader.xaml.cs">
+      <DependentUpon>CollectionDBSchemaHeader.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecord.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecord.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecordField.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecordField.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CollectionDBSchemaView.xaml.cs">
       <DependentUpon>CollectionDBSchemaView.xaml</DependentUpon>
@@ -569,6 +579,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionDBChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaHeader.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaRecordField.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

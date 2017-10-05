@@ -17,6 +17,37 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        public bool HasDelegatesOrPrototype { get; private set; }
+
+        private bool _hasDelegates; 
+        public bool HasDelegates {
+            get {
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
+                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+                : null;
+
+                if (currentDelegates == null) return _hasDelegates =  false;
+                return _hasDelegates = currentDelegates.Data.Count() > 0;
+            }
+            set
+            {
+                _hasDelegates = value;
+                HasDelegatesOrPrototype = value || HasPrototype;
+
+            }
+        }
+        private bool _hasPrototypes;
+        public bool HasPrototype {
+            get {
+                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
+            }
+            set
+            {
+                _hasPrototypes = value;
+                HasDelegatesOrPrototype = value || HasDelegates; 
+            }
+        }
+
         public enum FieldUpdatedAction
         {
             Add,
@@ -493,6 +524,7 @@ namespace Dash
                 shouldExecute = ShouldExecute(c, key);
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+                if (key == KeyStore.PrototypeKey) HasPrototype = true; 
             }
             if (shouldExecute)
             {
@@ -613,6 +645,7 @@ namespace Dash
             // return the now fully populated delegate
             return delegateController;
         }
+
 
         private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
@@ -744,8 +777,8 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
+                HasDelegates = true; 
             }
-
             return currentDelegates;
         }
 
@@ -835,13 +868,13 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
         {
-            var fields = EnumFields().ToList();
-            if (fields.Count > 15) return MakeAllViewUIForManyFields(fields);
-            var sp = new StackPanel();
+            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
+            if (fields.Count > 15)
+                return MakeAllViewUIForManyFields(fields);
+            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldModelController> f)
             {
-                if (f.Key.IsUnrenderedKey()) return;
-                f.Value.MakeAllViewUI(f.Key, context, sp, GetId(), isInterfaceBuilder);
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
             }
             #pragma warning disable CS4014 
             MainView.CoreWindow.Dispatcher.RunAsync(
@@ -854,8 +887,8 @@ namespace Dash
                         await Task.Delay(5);
                     }
                 });
-            #pragma warning restore CS4014
-            return sp;
+#pragma warning restore CS4014
+            return panel;
         }
 
         private static FrameworkElement MakeAllViewUIForManyFields(

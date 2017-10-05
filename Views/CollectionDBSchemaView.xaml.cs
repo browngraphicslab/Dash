@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Views;
 using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -23,24 +24,8 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
     {
-        public class SchemaField
-        {
-            public string Name;
-            public bool Selected = true;
-            public override string ToString()
-            {
-                return Name;
-            }
-
-        }
-        bool SchemaFieldContains(string field)
-        {
-            foreach (var s in SchemaFields)
-                if (s.Name == field)
-                    return true;
-            return false;
-        }
-        public ObservableCollection<SchemaField> SchemaFields { get; set; } = new ObservableCollection<SchemaField>();
+        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } = new ObservableCollection<CollectionDBSchemaRecordViewModel>();
+        public ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel> SchemaHeaders { get; set; } = new ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel>();
         public BaseCollectionViewModel ViewModel { get; private set; }
         public CollectionDBSchemaView()
         {
@@ -48,9 +33,9 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
-            xGridView.ItemsSource = SchemaFields;
+            xGridView.ItemsSource = SchemaHeaders;
         }
-
+        
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
@@ -115,39 +100,13 @@ namespace Dash
                 UpdateFields(new Context(ParentDocument));
         }
 
-        private void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        bool SchemaHeadersContains(string field)
         {
-            var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
-            if (collection != null)
-            {
-                ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController((sender as TextBlock).Text), true);
-
-                collection.SetDBView();
-                return;
-            }
-
-            var tbock = sender as TextBlock;
-            for (int i = 0; i < SchemaFields.Count; i++)
-            {
-                var s = SchemaFields[i];
-                if (s.Name == tbock.Text)
-                {
-                    s.Selected = !s.Selected;
-                    SchemaFields.RemoveAt(i);
-                    SchemaFields.Insert(i, s);
-                }
-            }
-
-            var selectedBars = new List<NumberFieldModelController>();
-            for (int i = 0; i < xGridView.Items.Count; i++)
-            {
-                if ((xGridView.Items[i] as SchemaField).Selected)
-                    selectedBars.Add(new NumberFieldModelController(i));
-            }
-
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey, new ListFieldModelController<NumberFieldModelController>(selectedBars), true);
+            foreach (var s in SchemaHeaders)
+                if (s.Key.Name == field)
+                    return true;
+            return false;
         }
-
         public void UpdateFields(Context context)
         {
             var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
@@ -157,10 +116,20 @@ namespace Dash
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaFieldContains(f.Key.Name))
-                            SchemaFields.Add(new SchemaField() { Name = f.Key.Name, Selected = false } );
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, Key = f.Key, Selected = false } );
                 }
-                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaFields[(int)(b as NumberFieldModelController).Data].Name).ToList());
+                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].Key.Name).ToList());
+                
+                var records = new List<CollectionDBSchemaRecordViewModel>();
+                foreach (var d in dbDocs)
+                {
+                    records.Add(new CollectionDBSchemaRecordViewModel(
+                        d,
+                        SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(f.Width+HeaderBorderThickness.BorderThickness.Left+HeaderBorderThickness.BorderThickness.Right, d, f.Key, HeaderBorderThickness.BorderThickness))
+                        ));
+                }
+                xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
             }
         }
 

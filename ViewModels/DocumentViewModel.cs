@@ -32,7 +32,7 @@ namespace Dash
         private bool _menuOpen = false;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
-        public DocumentController DocumentController;
+        public DocumentController DocumentController { get; set; }
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -436,7 +436,7 @@ namespace Dash
             DocMenuVisibility = Visibility.Visible;
             MenuOpen = true;
         }
-
+        
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
