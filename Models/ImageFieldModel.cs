@@ -8,6 +8,7 @@ namespace Dash
     /// <summary>
     /// A Field Model which holds image data
     /// </summary>
+    [FieldModelTypeAttribute(TypeInfo.Image)]
     public class ImageFieldModel : FieldModel
     {
         /// <summary>

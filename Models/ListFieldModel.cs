@@ -11,6 +11,10 @@ namespace Dash
     [FieldModelTypeAttribute(TypeInfo.List)]
     public class ListFieldModel : FieldModel
     {
+        public ListFieldModel() : base(null)
+        {
+        }
+
         public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo, string id = null) : base(id)
         {
             Data = new List<string>(l);

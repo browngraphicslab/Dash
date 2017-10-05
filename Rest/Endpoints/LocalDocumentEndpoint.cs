@@ -50,19 +50,72 @@ namespace Dash
             base.AddDocument(newDocument, success, error);
         }
 
-        private async Task<IEnumerable<EntityBase>> TrackDownReferences(DocumentModel model, IEnumerable<string> idsToIgnore = null)
+        private async Task<IEnumerable<EntityBase>> GetDocumentAndProps(string documentId)
         {
-            idsToIgnore = idsToIgnore ?? new List<string>();
-
-            Dictionary<string,EntityBase> map = new Dictionary<string, EntityBase> { {model.Id, model} };
-
-            void error(Exception e)
+            if (!_modelDictionary.ContainsKey(documentId))
             {
-                Debug.WriteLine(e);
+                return new List<EntityBase>();
             }
 
+            var doc = _modelDictionary[documentId].CreateObject<DocumentModel>();
 
-            List<EntityBase> entities = new List<EntityBase>(_modelDictionary.Values.Select( i => i.CreateObject<DocumentModel>()));
+            var list = new List<EntityBase>() {doc};
+
+            async Task func(RestRequestReturnArgs args)
+            {
+                list.AddRange(args.ReturnedObjects);
+            }
+
+            await _keys.GetDocuments(doc.Fields.Keys, func, e => throw e);
+            await _fields.GetDocuments(doc.Fields.Values, func, e => throw e);
+
+            return list;
+        }
+
+        private async Task<IEnumerable<EntityBase>> GetFieldModels(IEnumerable<string> fieldModelIds)
+        {
+            List<EntityBase> toReturn = new List<EntityBase>();
+            async Task f(RestRequestReturnArgs arg)
+            {
+                toReturn.AddRange(arg.ReturnedObjects);
+            }
+
+            await _fields.GetDocuments(fieldModelIds, f, e => throw e);
+            return toReturn;
+        }
+
+        private async Task RecursiveGetDocument(string documentId, Dictionary<string, EntityBase> dict)
+        {
+            var docAndProps = await GetDocumentAndProps(documentId);
+            var first = (docAndProps).Where(e => !dict.ContainsKey(e.Id));
+            foreach (var entity in first)
+            {
+                dict.Add(entity.Id, entity);
+            }
+
+            var pointerFields = first.OfType<PointerReferenceFieldModel>().Select(pr => pr.ReferenceFieldModelId).ToArray(); //field ids
+            var documentFields = first.OfType<DocumentReferenceFieldModel>().Select(dr => dr.DocumentId).ToArray(); // document ids
+            var documentCollectionFields = first.OfType<DocumentCollectionFieldModel>().SelectMany(dc => dc.Data).ToArray(); // document ids
+            var documentFieldModels = first.OfType<DocumentFieldModel>().Select(df => df.Data).ToArray(); // document ids
+
+            foreach (var entity in await GetFieldModels(pointerFields))
+            {
+                if (!dict.ContainsKey(entity.Id))
+                {
+                    dict.Add(entity.Id, entity);
+                }
+            }
+
+            foreach (var docId in documentFields.Concat(documentCollectionFields).Concat(documentFieldModels))
+            {
+                await RecursiveGetDocument(docId, dict);
+            }
+        }
+
+        private async Task<IEnumerable<EntityBase>> TrackDownReferences(DocumentModel model)
+        {
+            
+            List<EntityBase> entities = new List<EntityBase>(_modelDictionary.Values.Select(i => i.CreateObject<DocumentModel>()));
 
             async Task ff(RestRequestReturnArgs arg)
             {
@@ -73,57 +126,13 @@ namespace Dash
             await _fields.GetDocumentsByQuery(new EverythingQuery<FieldModel>(), ff, null);
 
             return entities;
-
-
-            // Declare a local function.
-            async Task func(RestRequestReturnArgs arg)
-            {
-                var objs = arg.ReturnedObjects.Where(i => !map.ContainsKey(i.Id)).ToArray();
-
-                idsToIgnore = idsToIgnore.Concat(map.Keys).ToArray();
-
-                foreach (var obj in objs)
-                {
-                    map.Add(obj.Id, obj);
-                } 
-
-                Debug.WriteLine(string.Join(", ", objs.Select( k => k.Id)));
-
-                var pointerFields = objs.OfType<PointerReferenceFieldModel>().ToArray();
-                var documentFields = objs.OfType<DocumentReferenceFieldModel>().ToArray();
-                var documentCollectionFields = objs.OfType<DocumentCollectionFieldModel>().ToArray();
-                var documentFieldModels = objs.OfType<DocumentFieldModel>().ToArray();
-
-                if (pointerFields.Any())
-                {
-                    await _fields.GetDocuments(pointerFields.Select(f => f.ReferenceFieldModelId).Except(idsToIgnore).ToArray(), func, error);
-                    await _keys.GetDocuments(pointerFields.Select(f => f.KeyId).Except(idsToIgnore).ToArray(), func, error);
-                }
-
-                if (documentFields.Any())
-                {
-                    await GetDocumentsExcept(documentFields.Select(f => f.DocumentId).Except(idsToIgnore).ToArray(), func, error, map.Keys);
-                    await _keys.GetDocuments(documentFields.Select(f => f.KeyId).Except(idsToIgnore).ToArray(), func, error);
-                }
-
-
-
-                if (documentCollectionFields.Any())
-                {
-                    await GetDocumentsExcept(documentCollectionFields.SelectMany(i => i.Data).Distinct().Except(idsToIgnore).ToArray(), func, error, map.Keys);
-                }
-
-                if (documentFieldModels.Any())
-                {
-                    await GetDocumentsExcept(documentFieldModels.Select(i => i.Data).Distinct().Except(idsToIgnore).ToArray(), func, error, map.Keys);
-                }
-            }
-
-            await _keys.GetDocuments(model.Fields.Keys.Except(idsToIgnore).ToArray(), func, error);
-            await _fields.GetDocuments(model.Fields.Values.Except(idsToIgnore).ToArray(), func, error);
-
-            return map.Values;
+            
+            var dict = new Dictionary<string, EntityBase>();
+            await RecursiveGetDocument(model.Id, dict);
+            var vals =  dict.Values;
+            return vals;
         }
+
         /*
         private class DocumentComparer : IEqualityComparer<EntityBase>
         {
@@ -169,25 +178,6 @@ namespace Dash
                     var text = _modelDictionary[id];
                     var doc = text.CreateObject<DocumentModel>();
                     list.AddRange(await TrackDownReferences(doc));
-                }
-                await success?.Invoke(new RestRequestReturnArgs(list));
-            }
-            catch (Exception e)
-            {
-                error?.Invoke(e);
-            }
-        }
-
-        private async Task GetDocumentsExcept(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error, IEnumerable<string> idsToIgnore)
-        {
-            try
-            {
-                var list = new List<EntityBase>();
-                foreach (var id in ids)
-                {
-                    var text = _modelDictionary[id];
-                    var doc = text.CreateObject<DocumentModel>();
-                    list.AddRange(await TrackDownReferences(doc, idsToIgnore));
                 }
                 await success?.Invoke(new RestRequestReturnArgs(list));
             }
