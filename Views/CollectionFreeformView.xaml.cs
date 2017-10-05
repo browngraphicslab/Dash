@@ -807,6 +807,8 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
+
+
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
@@ -817,35 +819,50 @@ namespace Dash
 
             OnSelected();
         }
-
-        private void SelectionElement_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void OnHold(object sender, HoldingRoutedEventArgs e)
         {
+            Debug.WriteLine("holding"); 
             e.Handled = true;
-            InvokeDoubleTap(e);
+            ChooseLowest(e);
         }
-        private void InvokeDoubleTap(DoubleTappedRoutedEventArgs e)
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var freeforms = this.GetDescendantsOfType<CollectionFreeformView>();
+            //e.Handled = true;
+            //ChooseLowest(e);
+        }
+        private void ChooseLowest(/*DoubleTappedRoutedEventArgs*/HoldingRoutedEventArgs e)
+        {
+            var freeforms = xItemsControl.GetDescendantsOfType<CollectionFreeformView>();
             foreach (var ff in freeforms)
             {
                 if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
                 {
-                    ff.InvokeDoubleTap(e);
+                    ff.ChooseLowest(e);
                     return;
                 }
             }
 
             // if no child is found... select the current thing i guess 
-            foreach (DocumentViewModel dvm in ViewModel.DocumentViewModels)
+            var docViews = xItemsControl.GetDescendantsOfType<DocumentView>(); 
+            foreach (DocumentView view in docViews)
             {
-                Rect rect = new Rect { X = dvm.GroupTransform.Translate.X, Y = dvm.GroupTransform.Translate.Y, Height = dvm.Height, Width = dvm.Width };
-                if (rect.Contains(e.GetPosition(xOuterGrid)))
+                if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
                 {
-                    dvm.Width = 500;            // just as an indicator, must actually set it to lowest selected dlfadkfh
-                    dvm.OpenMenu();             // ??????????????????? 
+                    view.ViewModel.Width = 500;      // just as an indicator, must actually set it to lowest selected dlfadkfh
+                    view.OnTapped(view, null); 
                     return;
                 }
             }
+
+            //foreach (DocumentViewModel dvm in ViewModel.DocumentViewModels)
+            //{
+            //    Rect rect = new Rect { X = dvm.GroupTransform.Translate.X, Y = dvm.GroupTransform.Translate.Y, Height = dvm.Height, Width = dvm.Width };
+            //    if (rect.Contains(e.GetPosition(xOuterGrid)))
+            //    {
+            //        dvm.Width = 500;
+            //        return; 
+            //    }
+            //}
         }
 
         #endregion

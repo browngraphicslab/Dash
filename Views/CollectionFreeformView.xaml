@@ -14,7 +14,9 @@
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped"
-    DoubleTapped="SelectionElement_DoubleTapped"
+    Holding="OnHold"
+    IsHoldingEnabled="True"
+    DoubleTapped="OnDoubleTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
@@ -40,7 +42,7 @@
                       IsHitTestVisible="{Binding IsSelected}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="CollectionCanvas"
+                    <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
                             Width="0"

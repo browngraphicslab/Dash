@@ -385,7 +385,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+                xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -519,9 +519,11 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        public Rect ClipRect { get { return xClipRect.Rect;  } }
+
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            if (e != null) e.Handled = true;
             if (ViewModel == null)
                 return;
             if (ViewModel.IsInInterfaceBuilder)
