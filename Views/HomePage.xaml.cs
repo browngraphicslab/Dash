@@ -80,6 +80,7 @@ namespace Dash
             };
             var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DashConstants.TypeStore.MainDocumentType, "main-document-" + Guid.NewGuid());
             var newDocument = new DocumentController(model);
+
             var collectionDocumentController =
                 new CollectionBox(new DocumentReferenceFieldController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
@@ -107,7 +108,7 @@ namespace Dash
                 var documentModelDto = homePageDocDtos.FirstOrDefault();
                 if (documentModelDto != null)
                 {
-                   _homePageDocument = new DocumentController(documentModelDto);
+                   _homePageDocument = ContentController<DocumentModel>.GetController<DocumentController>(documentModelDto.Id);
                 }
                 else
                 {
@@ -119,6 +120,7 @@ namespace Dash
                     var model = new DocumentModel(fields.ToDictionary(kvp => kvp.Key.Model, kvp => kvp.Value.Model), DashConstants.TypeStore.HomePageType, "home-document-" + Guid.NewGuid());
 
                     _homePageDocument = new DocumentController(model);
+
                     var collectionDocumentController =
                         new CollectionBox(new DocumentReferenceFieldController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
 

@@ -117,6 +117,7 @@
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
+    <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
     <Compile Include="Rest\Endpoints\IDocumentEndpoint.cs" />
     <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\IKeyEndpoint.cs" />

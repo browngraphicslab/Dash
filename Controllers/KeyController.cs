@@ -20,21 +20,61 @@ namespace Dash
                 UpdateOnServer();
             }
         }
-        public KeyController(string guid) : this(new KeyModel(guid))
+        public KeyController(string guid, bool saveOnServer = true) : this(new KeyModel(guid))
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController(string guid, string name) : this(new KeyModel(guid, name))
+        public KeyController(string guid, string name, bool saveOnServer = true) : this(new KeyModel(guid, name))
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController() : this(new KeyModel())
+        public KeyController(bool saveOnServer = true) : this(new KeyModel())
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController(KeyModel model) : base(model)
+        public KeyController(KeyModel model, bool saveOnServer = true) : base(model)
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
+        }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        /// <summary>
+        /// Gets the name of the key.
+        /// </summary>
+        /// <returns></returns>
+        public string GetName()
+        {
+            return Model.Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var k = obj as KeyController;
+            return k != null && k.Id.Equals(GetId());
+        }
+
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Dash
 
         public DocumentFieldModelController(DocumentFieldModel model) : base(model)
         {
-            Data = ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
+            Data = ContentController<DocumentModel>.GetController<DocumentController>(model.Data);
         }
 
         /*

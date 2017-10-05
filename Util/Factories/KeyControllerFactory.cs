@@ -14,7 +14,7 @@ namespace Dash
     {
         public static KeyController CreateFromModel(KeyModel model)
         {
-            return new KeyController(model);
+            return new KeyController(model, false);
         }
     }
 }

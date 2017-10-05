@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,15 +10,18 @@ namespace Dash.Controllers
 {
     class DocumentReferenceFieldController : ReferenceFieldModelController
     {
-        public string DocumentId { get; set; }
+        public string DocumentId { get { return (Model as DocumentReferenceFieldModel)?.DocumentId; } }
 
         public DocumentReferenceFieldController(string docId, KeyController key) : base(new DocumentReferenceFieldModel(docId, key.Id), key)
         {
-            DocumentId = docId;
+            Debug.Assert(docId != null);
+            //DocumentId = docId;
         }
 
         public DocumentReferenceFieldController(DocumentReferenceFieldModel documentReferenceFieldModel) : base(documentReferenceFieldModel, ContentController<KeyModel>.GetController<KeyController>(documentReferenceFieldModel.KeyId))
         {
+            Debug.Assert(documentReferenceFieldModel?.DocumentId != null);
+            Debug.Assert(DocumentId != null);
         }
 
         public override FieldModelController<ReferenceFieldModel> Copy()

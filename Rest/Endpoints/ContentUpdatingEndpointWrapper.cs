@@ -19,25 +19,37 @@ namespace Dash
 
         private void AddModelsToControllers(IEnumerable<EntityBase> models)
         {
-            foreach (var model in models)
+
+            var docs = models.OfType<DocumentModel>().ToArray();
+            foreach (var model in docs)
             {
-                if (model is DocumentModel)
+                if (!ContentController<DocumentModel>.HasController(model.Id))
                 {
-                    ContentController<DocumentModel>.AddController(((DocumentModel)model).NewController());
-                }
-                else if (model is KeyModel)
-                {
-                    ContentController<KeyModel>.AddController(((KeyModel)model).NewController());
-                }
-                else if (model is FieldModel)
-                {
-                    ContentController<FieldModel>.AddController(((FieldModel)model).NewController());
-                }
-                else
-                {
-                    throw new Exception("unsupported Model Type");
+                    model.NewController();
                 }
             }
+
+            foreach (var model in models.OfType<KeyModel>())
+            {
+                if (!ContentController<KeyModel>.HasController(model.Id))
+                {
+                    model.NewController();
+                }
+            }
+
+            foreach (var model in models.OfType<FieldModel>())
+            {
+                if (!ContentController<FieldModel>.HasController(model.Id))
+                {
+                    model.NewController();
+                }
+            }
+
+            foreach (var model in docs)
+            {
+                ContentController<DocumentModel>.GetController<DocumentController>(model.Id).LoadFields();
+            }
+
         }
 
         private Func<RestRequestReturnArgs, Task> GetSuccessFunc(Func<RestRequestReturnArgs, Task> success)
@@ -64,7 +76,7 @@ namespace Dash
 
         public void AddDocument(T newDocument, Action<T> success, Action<Exception> error)
         {
-            AddModelsToControllers(new List<EntityBase>(){newDocument});
+            //AddModelsToControllers(new List<EntityBase>(){newDocument});
             _endpoint.AddDocument(newDocument, success, error);
         }
 

@@ -13,17 +13,20 @@ namespace Dash
     {
         public static DocumentController NewController(this DocumentModel model)
         {
-            return DocumentControllerFactory.CreateFromModel(model);
+            var controller =  DocumentControllerFactory.CreateFromModel(model);
+            return controller;
         }
 
         public static FieldControllerBase NewController(this FieldModel model)
         {
-            return FieldControllerFactory.CreateFromModel(model);
+           var controller =  FieldControllerFactory.CreateFromModel(model);
+            return controller;
         }
 
         public static KeyController NewController(this KeyModel model)
         {
-            return KeyControllerFactory.CreateFromModel(model);
+            var controller = KeyControllerFactory.CreateFromModel(model);
+            return controller;
         }
     }
 }

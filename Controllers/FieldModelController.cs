@@ -27,7 +27,7 @@ namespace Dash
 
         protected FieldModelController(T fieldModel) : base(fieldModel)
         {
-            // Initialize Local Variables
+            
         }
 
         /// <summary>

@@ -66,16 +66,12 @@ namespace Dash
 
         public DocumentCollectionFieldModelController(DocumentCollectionFieldModel model) : base (model)
         {
+            Data = model.Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i)).ToList();
         }
 
         public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : this(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
         {
-            Data = documents.ToList();
-        }
-
-        private DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents, DocumentCollectionFieldModel fieldModel) : this(fieldModel)
-        {
-            Data = documents.ToList();
+            
         }
 
         /// <summary>

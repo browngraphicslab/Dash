@@ -85,12 +85,12 @@ namespace Dash
 
         public FieldControllerBase Dereference(ReferenceFieldModelController reference)
         {
-            return null;
+            return reference.GetFieldReference().Dereference(this);
         }
 
         public FieldControllerBase DereferenceToRoot(ReferenceFieldModelController reference)
         {
-            return null;
+            return reference.GetFieldReference().DereferenceToRoot(this);
         }
 
         public void AddDocumentContext(DocumentController document)

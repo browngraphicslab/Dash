@@ -95,25 +95,42 @@ namespace Dash
         /// </summary>
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
-        public DocumentController(DocumentModel model) : base(model)
+        public DocumentController(DocumentModel model, bool setFields = true, bool saveOnServer = true) : base(model)
         {
             LayoutName = Model.DocumentType.Type;
 
+            if (setFields)
+            {
+                LoadFields();
+            }
+
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
+        }
+
+        public void LoadFields()
+        {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
-            var fields = model.Fields.Select(kvp => 
-            new KeyValuePair<KeyController, FieldControllerBase>(
-                ContentController<KeyModel>.GetController<KeyController>(kvp.Key), 
-                ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value)));
+            var fields = Model.Fields.Select(kvp =>
+                new KeyValuePair<KeyController, FieldControllerBase>(
+                    ContentController<KeyModel>.GetController<KeyController>(kvp.Key),
+                    ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value)));
 
             SetFields(fields, true);
         }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
-            string id = null) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model), type, id))
+            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model), type, id))
         {
             LayoutName = Model.DocumentType.Type;
             SetFields(fields, true);
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
         
         /*
@@ -460,7 +477,8 @@ namespace Dash
             // if the fields are reference equal just return
             if (!ReferenceEquals(oldField, field))
             {
-                (oldField as FieldControllerBase)?.Dispose();
+                field.SaveOnServer();
+                oldField?.Dispose();
                 proto._fields[key] = field;
                 proto.Model.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
@@ -521,6 +539,7 @@ namespace Dash
             if (SetFieldHelper(key, field, forceMask))
             {
                 shouldExecute = ShouldExecute(c, key);
+                UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
             }
@@ -595,10 +614,15 @@ namespace Dash
         {
             Context c = new Context(this);
             bool shouldExecute = false;
-            foreach (var field in fields.ToArray())
+            bool shouldSave = false;
+
+            var array = fields.ToArray();
+
+            foreach (var field in array)
             {
                 if (SetFieldHelper(field.Key, field.Value, forceMask))
                 {
+                    shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                 }
             }
@@ -606,6 +630,11 @@ namespace Dash
             if (shouldExecute)
             {
                 Execute(c, true);
+            }
+
+            if (shouldSave)
+            {
+                UpdateOnServer();
             }
 
             return shouldExecute;
@@ -622,6 +651,8 @@ namespace Dash
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
+            delegateController.SaveOnServer();
+
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
