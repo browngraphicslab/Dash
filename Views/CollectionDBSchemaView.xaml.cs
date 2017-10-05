@@ -107,20 +107,28 @@ namespace Dash
                     return true;
             return false;
         }
+
+        /// <summary>
+        /// Updates all the fields in the schema view
+        /// </summary>
+        /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
             var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
             var selectedBars = ParentDocument.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
             if (dbDocs != null)
             {
+                // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, Key = f.Key, Selected = false } );
                 }
+                // remove possible infinite loops
                 filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].Key.Name).ToList());
                 
+                // add all the records
                 var records = new List<CollectionDBSchemaRecordViewModel>();
                 foreach (var d in dbDocs)
                 {
@@ -133,6 +141,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// removes any documents which would lead to infinite loops from dbDocs
+        /// </summary>
+        /// <param name="dbDocs"></param>
+        /// <param name="selectedBars"></param>
         public void filterDocuments(List<DocumentController> dbDocs, List<string> selectedBars)
         {
             bool keepAll = selectedBars.Count == 0;
