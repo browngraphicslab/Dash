@@ -30,14 +30,14 @@ namespace Dash
     }
 
     //bcz: temporary hack --- need to just convert bool to Bold for use anywhere, not just SchemaHeaders
-    public class BoolToBoldConverter : SafeDataToXamlConverter<CollectionDBSchemaHeader.HeaderViewModel, FontWeight>
+    public class BoolToBoldConverter : SafeDataToXamlConverter<bool, FontWeight>
     {
-        public override FontWeight ConvertDataToXaml(CollectionDBSchemaHeader.HeaderViewModel data, object parameter = null)
+        public override FontWeight ConvertDataToXaml(bool data, object parameter = null)
         {
-            return data.Selected ? FontWeights.ExtraBold : FontWeights.Normal;
+            return data ? FontWeights.ExtraBold : FontWeights.Normal;
         }
 
-        public override CollectionDBSchemaHeader.HeaderViewModel ConvertXamlToData(FontWeight xaml, object parameter = null)
+        public override bool ConvertXamlToData(FontWeight xaml, object parameter = null)
         {
             throw new System.Exception();
             //return xaml.Equals(FontWeights.ExtraBold);

@@ -25,8 +25,14 @@ namespace Dash.Views
         {
             public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
                 "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
+            public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(
+                "Selected", typeof(bool), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(bool)));
             public KeyController Key;
-            public bool          Selected = true;
+            public bool Selected
+            {
+                get { return (bool)GetValue(SelectedProperty); }
+                set { SetValue(SelectedProperty, value); }
+            }
             public double Width
             {
                 get { return (double)GetValue(WidthProperty); }
