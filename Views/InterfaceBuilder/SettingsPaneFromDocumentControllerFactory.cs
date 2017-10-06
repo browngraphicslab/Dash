@@ -47,13 +47,22 @@ namespace Dash
             {
                 return CreateInkSettingsLayout(layoutDocument);
             }
-
+            if (type == KeyValueDocumentBox.DocumentType)
+            {
+                return CreateKeyValueSettingsLayout(layoutDocument);
+            }
 
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
             
             return null;
         }
-
+        
+        private static UIElement CreateKeyValueSettingsLayout(DocumentController layoutDocument)
+        {
+            var context = new Context();
+            return new KeyValueSettings(layoutDocument, context);
+        }
+        
         private static UIElement CreateInkSettingsLayout(DocumentController layoutDocument)
         {
             var context = new Context();

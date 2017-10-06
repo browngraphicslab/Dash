@@ -145,6 +145,9 @@
     <Compile Include="Views\DBFilterChartBar.xaml.cs">
       <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
+      <DependentUpon>KeyValueSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
     </Compile>
@@ -607,6 +610,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DBFilterChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\KeyValueSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
