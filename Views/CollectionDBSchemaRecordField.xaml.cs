@@ -58,7 +58,7 @@ namespace Dash.Views
             Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             BorderThickness = headerBorder.BorderThickness;
             Document = document;
-            Document.DocumentFieldUpdated += Document_DocumentFieldUpdated;
+            Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
             DataReference = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
             HeaderViewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
            // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).DereferenceToRoot(null).ToString();
@@ -66,8 +66,7 @@ namespace Dash.Views
 
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == HeaderViewModel.FieldKey)
-                DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
+            DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
         }
 
         private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
