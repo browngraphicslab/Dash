@@ -18,7 +18,7 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
 
-    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnDoubleTapped"
           SizeChanged="XOuterGrid_OnSizeChanged" >
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
@@ -39,7 +39,7 @@
                       IsHitTestVisible="{Binding IsSelected}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="CollectionCanvas"
+                    <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
                             Width="0"
