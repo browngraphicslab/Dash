@@ -21,6 +21,9 @@ namespace Dash
         public static readonly string DragPropertyKey = "key";
 
         private DocumentController _documentControllerDataContext;
+        /// <summary>
+        /// Contains
+        /// </summary>
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
@@ -61,8 +64,41 @@ namespace Dash
             }
         }
 
+        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            // if a field has been replaced or updated then set it's source to be the new element
+            if (args.Action == DocumentController.FieldUpdatedAction.Replace ||
+                args.Action == DocumentController.FieldUpdatedAction.Update)
+            {
+                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
+            }
+            else // otherwise 
+            {
+                SetListItemSourceToCurrentDataContext(); // TODO LSM - this could be done in a more granular way... i.e. remove or add the modified field instead of rebuild entire list
+            }
+        }
+
         /// <summary>
-        /// Updates ListView 
+        /// Replaces each element in the ListItemSource with a key equal to the passed in <paramref name="fieldKey"/> 
+        /// with the passed in <paramref name="fieldValue"/>
+        /// </summary>
+        /// <param name="fieldKey"></param>
+        /// <param name="fieldValue"></param>
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        {
+
+            for (var i = 0; i < ListItemSource.Count; i++)
+            {
+                if (ListItemSource[i].Key.Equals(fieldKey))
+                {
+                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
+                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resets the ListItemSource to fields in the current datacontext (this can be thought of as rebuilding the entire list)
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
@@ -72,21 +108,6 @@ namespace Dash
                 {
                     ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext)));
                 }
-        }
-
-        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
-                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
-            else SetListItemSourceToCurrentDataContext();
-        }
-
-        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
-        {
-            for (int i = 0; i < ListItemSource.Count; i++)
-                if (ListItemSource[i].Key == fieldKey)
-                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
         }
 
         private void FocusOn(TextBox tb)

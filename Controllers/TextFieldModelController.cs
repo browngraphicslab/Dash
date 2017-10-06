@@ -38,6 +38,7 @@ namespace Dash
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
+                    // TODO - lsm could the args be set to Update! again this is default so maybe it doesn't matter
                     OnFieldModelUpdated(null);
                     // update local
                     // update server

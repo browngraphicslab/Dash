@@ -22,9 +22,15 @@ namespace Dash
         public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
+        /// <summary>
+        /// Invokes the <see cref="FieldModelUpdated"/> event. If <paramref name="args"/> is null then invokes it with a default set of
+        /// FieldUpdatedEventArgs.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), context);
+            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), Context.InitIfNotNull(context));
         }
 
         /// <summary>
@@ -214,6 +220,7 @@ namespace Dash
 
         public virtual void Dispose()
         {
+            // TODO why is the dispose not implemented for most field model controllers!
         }
 
         public event InkFieldModelController.InkUpdatedHandler InkUpdated;

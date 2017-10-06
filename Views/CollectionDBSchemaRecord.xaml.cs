@@ -23,15 +23,16 @@ namespace Dash.Views
     public sealed partial class CollectionDBSchemaRecord : UserControl
     {
         static int count = 0;
+
+        private PointerPoint _downPt;
+
+
         public CollectionDBSchemaRecord()
         {
             count++;
             // Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
-        
-
-        PointerPoint _downPt;
 
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -47,7 +48,7 @@ namespace Dash.Views
         private void CollectionDBSchemaRecordField_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Complete();
-            var val= this.StartDragAsync(_downPt);
+            StartDragAsync(_downPt);
             e.Handled = true;
         }
 
@@ -70,8 +71,16 @@ namespace Dash.Views
         }
     }
 
+    /// <summary>
+    /// View model to represent a single document (record) in a schema view
+    /// </summary>
     public class CollectionDBSchemaRecordViewModel
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="document">The document that this record is going to represent (think of the document as a row in a database table)</param>
+        /// <param name="fields">List of view models for fields that are in this row (think cell in a database table)</param>
         public CollectionDBSchemaRecordViewModel(DocumentController document, IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
         {
             Document = document;

@@ -36,17 +36,26 @@ namespace Dash.Views
         public static readonly DependencyProperty DataReferenceProperty = DependencyProperty.Register(
             "DataReference", typeof(ReferenceFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(ReferenceFieldModelController)));
 
-        public DocumentController _document;
+        private DocumentController _document;
         public KeyController      _fieldKey;
+
+        /// <summary>
+        /// View model for a single field (think a cell) in a schema view
+        /// </summary>
+        /// <param name="w">The width of this field view</param>
+        /// <param name="document">The document that this field view's field is coming from</param>
+        /// <param name="fieldKey">The key referencing the field in the document</param>
+        /// <param name="thickness">controls padding this is essential for proper alignment</param>
         public CollectionDBSchemaRecordFieldViewModel(double w, DocumentController document, KeyController fieldKey, Thickness thickness)
         {
             Width     = w;
             _document = document;
             _fieldKey = fieldKey;
-             DataReference = new ReferenceFieldModelController(_document.GetId(), fieldKey);
+             DataReference = new ReferenceFieldModelController(_document.GetId(), _fieldKey);
             BorderThickness = thickness;
            // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).DereferenceToRoot(null).ToString();
         }
+
         public ReferenceFieldModelController DataReference
         {
             get { return (ReferenceFieldModelController) GetValue(DataReferenceProperty); }
@@ -62,6 +71,7 @@ namespace Dash.Views
             get { return (double) GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
         }
+
         //public string Content
         //{
         //    get { return new ReferenceFieldModelController(_document.GetId(), _fieldKey).DereferenceToRoot(null).ToString(); }
