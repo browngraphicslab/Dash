@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Windows.UI;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -21,6 +22,37 @@ namespace Dash
 {
     public class DocumentController :  IController<DocumentModel>
     {
+        public bool HasDelegatesOrPrototype { get; private set; }
+
+        private bool _hasDelegates; 
+        public bool HasDelegates {
+            get {
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
+                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+                : null;
+
+                if (currentDelegates == null) return _hasDelegates =  false;
+                return _hasDelegates = currentDelegates.Data.Count() > 0;
+            }
+            set
+            {
+                _hasDelegates = value;
+                HasDelegatesOrPrototype = value || HasPrototype;
+
+            }
+        }
+        private bool _hasPrototypes;
+        public bool HasPrototype {
+            get {
+                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
+            }
+            set
+            {
+                _hasPrototypes = value;
+                HasDelegatesOrPrototype = value || HasDelegates; 
+            }
+        }
+
         public enum FieldUpdatedAction
         {
             Add,
@@ -57,6 +89,17 @@ namespace Dash
         private readonly Dictionary<KeyController, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
+
+        public string Title { get
+            {
+                if (GetField(KeyStore.TitleKey) is TextFieldModelController)
+                {
+                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                    if (textFieldModelController != null)
+                        return textFieldModelController.Data;
+                }
+                return DocumentType.Type;
+            } }
 
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
@@ -206,6 +249,7 @@ namespace Dash
         public DocumentType DocumentType
         {
             get { return Model.DocumentType; }
+            set { Model.DocumentType = value; }
         }
 
 
@@ -276,7 +320,7 @@ namespace Dash
         DocumentController lookupOperator(string opname)
         {
             if (opname == "Add")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController(new OperatorFieldModel("Add")));
+                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController());
             if (opname == "Divide")
                 return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
             return null;
@@ -287,13 +331,13 @@ namespace Dash
             var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]
 
             var docName = path[0];                       //search for <DocName=a>[.<FieldName=b>]
-            var fieldName = (path.Count() > 1 ? path[1] : "");
+            var fieldName = (path.Length > 1 ? path[1] : "");
             var refDoc = docName == "Proto" ? GetPrototype() : docName == "This" ? this : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
             if (refDoc != null)
             {
-                if (path.Count() == 1)
+                if (path.Length == 1)
                 {
-                    return refDoc.GetField(KeyStore.ThisKey);  // found <DocName=a>
+                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
                 }
                 else
                     foreach (var e in refDoc.EnumFields())
@@ -477,6 +521,11 @@ namespace Dash
             // if the fields are reference equal just return
             if (!ReferenceEquals(oldField, field))
             {
+                if (proto.CheckCycle(key, field))
+                {
+                    return false;
+                }
+
                 field.SaveOnServer();
                 oldField?.Dispose();
                 proto._fields[key] = field;
@@ -542,14 +591,12 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+                if (key == KeyStore.PrototypeKey) HasPrototype = true; 
             }
-            if (shouldExecute) { 
+            if (shouldExecute)
+            {
                 Execute(c, true);
             }
-
-            // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-            //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-
             return shouldExecute;
         }
 
@@ -645,7 +692,7 @@ namespace Dash
         ///     Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>
         /// <returns></returns>
-        public DocumentController MakeDelegate()
+        public DocumentController MakeDelegate(string id = null)
         {
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
@@ -653,6 +700,14 @@ namespace Dash
             var delegateController = new DocumentController(delegateModel);
             delegateController.SaveOnServer();
 
+            if (id != null)
+            {
+                delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, id);
+            }
+            else
+            {
+                delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
+            }
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
@@ -673,19 +728,105 @@ namespace Dash
             return delegateController;
         }
 
+
         private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
             {
                 return;
             }
-            if (args.Context.HasAncestorOf(this)) 
+            if (args.Context.ContainsAncestorOf(this))
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, args.FieldArgs, c, false), true);
+                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
+                        args.FieldArgs, c, false), true);
             }
+        }
+
+        /// <summary>
+        /// Checks if adding the given field at the given key would cause a cycle
+        /// </summary>
+        /// <param name="key">The key that the given field would be inserted at</param>
+        /// <param name="field">The field that would be inserted into the document</param>
+        /// <returns>True if the field would cause a cycle, false otherwise</returns>
+        private bool CheckCycle(KeyController key, FieldControllerBase field)
+        {
+            if (!(field is ReferenceFieldModelController))
+            {
+                return false;
+            }
+            var visitedFields = new HashSet<FieldReference>();
+            visitedFields.Add(new DocumentFieldReference(GetId(), key));
+            var rfms = new Queue<Tuple<FieldControllerBase, Context>>();
+
+            //TODO If this is a DocPointerFieldReference this might not work
+            rfms.Enqueue(Tuple.Create(field, new Context(this)));
+
+            while (rfms.Count > 0)
+            {
+                var t = rfms.Dequeue();
+                var fm = t.Item1;
+                var c = t.Item2;
+                if (!(fm is ReferenceFieldModelController))
+                {
+                    continue;
+                }
+                var rfm = (ReferenceFieldModelController)fm;
+                var fieldRef = rfm.GetFieldReference().Resolve(c);
+                var doc = rfm.GetDocumentController(c);
+                Context c2;
+                if (c.DocContextList.Contains(doc))
+                {
+                    c2 = c;
+                }
+                else
+                {
+                    c2 = new Context(c);
+                    c2.AddDocumentContext(doc);
+                }
+                foreach (var fieldReference in visitedFields)
+                {
+                    if (fieldReference.Resolve(c2).Equals(fieldRef))
+                    {
+                        return true;
+                    }
+                }
+                visitedFields.Add(fieldRef);
+
+                var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
+                foreach (var keyController in keys)
+                {
+                    var f = doc.GetField(keyController);
+                    if (f != null)
+                    {
+                        rfms.Enqueue(Tuple.Create(f, c2));
+                    }
+                }
+            }
+
+            var delegates = GetField(KeyStore.DelegatesKey, true) as DocumentCollectionFieldModelController;
+            if (delegates != null)
+            {
+                bool cycle = false;
+                foreach (var documentController in delegates.Data)
+                {
+                    cycle = cycle || documentController.CheckCycle(key, field);
+                }
+                return cycle;
+            }
+            return false;
+        }
+
+        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
+        {
+            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, c) as OperatorFieldModelController;
+            if (opField == null)
+            {
+                return new List<KeyController> { key };
+            }
+            return new List<KeyController>(opField.Inputs.Keys);
         }
 
 
@@ -718,8 +859,8 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
+                HasDelegates = true; 
             }
-
             return currentDelegates;
         }
 
@@ -739,18 +880,8 @@ namespace Dash
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
-            if (opField == null)
-            {
-                return false;
-            }
-            if (opField.Inputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
-            if (opField.Outputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
+            if (opField != null)
+                return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
             return false;
         }
 
@@ -817,94 +948,49 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context)
+        private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
         {
-            var fields = EnumFields().ToList();
+            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
             if (fields.Count > 15)
+                return MakeAllViewUIForManyFields(fields);
+            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
+            void Action(KeyValuePair<KeyController, FieldControllerBase> f)
             {
-                TextBlock block = new TextBlock
-                {
-                    Text = DocumentType.Type,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                return block;
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
             }
 
-            //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
-            var sp = new StackPanel();
-            var source = new List<FrameworkElement>();
 
-            var isInterfaceBuilder = false; // TODO make this a parameter
-
-
-            Action<KeyValuePair<KeyController, FieldControllerBase>> a =
-                delegate(KeyValuePair<KeyController, FieldControllerBase> f)
-                {
-                    if (f.Key.Equals(KeyStore.DelegatesKey) ||
-                        f.Key.Equals(KeyStore.PrototypeKey) ||
-                        f.Key.Equals(KeyStore.LayoutListKey) ||
-                        f.Key.Equals(KeyStore.ActiveLayoutKey) ||
-                        f.Key.Equals(KeyStore.IconTypeFieldKey))
-                    {
-                        return;
-                    }
-
-                    if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController ||
-                        f.Value is NumberFieldModelController)
-                    {
-                        var hstack = new StackPanel {Orientation = Orientation.Horizontal};
-                        var label = new TextBlock {Text = f.Key.Name + ": "};
-                        var refField = new DocumentReferenceFieldController(GetId(), f.Key);
-                        var dBox = f.Value is ImageFieldModelController
-                            ? new ImageBox(refField).Document
-                            : new TextingBox(refField).Document;
-
-                        hstack.Children.Add(label);
-
-                        var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
-
-                        //ele.MaxWidth = 200;
-                        hstack.Children.Add(ele);
-                        sp.Children.Add(hstack);
-                        //source.Add(hstack);
-                    }
-                    else if (f.Value is DocumentFieldModelController)
-                    {
-                        var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                        // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                        var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
-                        sp.Children.Add(view);
-                        //source.Add(view);
-                    }
-                    else if (f.Value is DocumentCollectionFieldModelController)
-                    {
-                        var colView =
-                            new CollectionView(
-                                new CollectionViewModel(new DocumentReferenceFieldController(GetId(), f.Key),
-                                    isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
-                        colView.HorizontalAlignment = HorizontalAlignment.Stretch;
-                        colView.VerticalAlignment = VerticalAlignment.Stretch;
-                        colView.Height = 300;
-
-                        sp.Children.Add(colView);
-                        //source.Add(border);
-                    }
-                };
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+#pragma warning disable CS4014
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                 CoreDispatcherPriority.Low,
                 async () =>
                 {
                     foreach (var f in fields)
                     {
-                        a(f);
+                        Action(f);
                         await Task.Delay(5);
                     }
                 });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+#pragma warning restore CS4014
+            return panel;
+        }
 
+        private static FrameworkElement MakeAllViewUIForManyFields(
+            List<KeyValuePair<KeyController, FieldControllerBase>> fields)
+        {
+            var sp = new StackPanel();
+            for (var i = 0; i < 16; i++)
+            {
+                var block = new TextBlock
+                {
+                    Text = i == 15
+                        ? "+ " + (fields.Count - 15) + " more" 
+                        : "Field " + (i + 1) + ": " + fields[i].Key,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left
+                };
+                sp.Children.Add(block);
+            }     
             return sp;
         }
 
@@ -912,6 +998,10 @@ namespace Dash
         {
             context = new Context(context);
             context.AddDocumentContext(this);
+
+            var contextKey = GetField(KeyStore.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            if (contextKey != null)
+                context.AddDocumentContext(contextKey);
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
@@ -978,6 +1068,10 @@ namespace Dash
             {
                 return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
+            {
+                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
@@ -992,19 +1086,7 @@ namespace Dash
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
 
-                // TODO : if the document has no Data, i.e the active layout has not loaded from the server
-                // TODO cont... we should display a nice loading screen instead of this ugly Red Rectangle
-                if (doc.Data == null)
-                {
-                    return new Rectangle { Fill = new SolidColorBrush(Colors.Red) };
-                }
-
-                doc.FieldModelUpdated += (sender, args, context1) =>
-                {
-
-                };
-
-                if (doc.Data.DocumentType.Equals(DefaultLayout.DocumentType))
+                if (doc.Data.DocumentType == DefaultLayout.DocumentType)
                 {
                     if (isInterfaceBuilder)
                     {

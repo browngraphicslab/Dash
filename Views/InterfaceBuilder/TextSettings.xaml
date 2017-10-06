@@ -38,6 +38,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!--FONT SIZE-->
@@ -107,14 +108,41 @@
                     </local:SettingsPaneBlock>
                 </Grid>
 
+                <!--COLOR-->
+                <Grid Grid.Row="3" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <local:SettingsPaneBlock>
+                        <local:SettingsPaneBlock.MainContent>
+                            <ComboBox x:Name="xBackgroundColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                <Rectangle.Fill>
+                                                    <SolidColorBrush Color="{Binding Color}" />
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </local:SettingsPaneBlock.MainContent>
+                        <local:SettingsPaneBlock.Title>TEXT COLOR</local:SettingsPaneBlock.Title>
+                    </local:SettingsPaneBlock>
+                </Grid>
+
                 <!--SIZE-->
-                <Grid x:Name="xSizeRow" Grid.Row="3"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid x:Name="xSizeRow" Grid.Row="4"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
                 <!--POSITION-->
-                <Grid x:Name="xPositionRow" Grid.Row="4"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid x:Name="xPositionRow" Grid.Row="5"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
                 <!--ALIGNMENT-->
-                <Grid x:Name="xAlignmentRow" Grid.Row="5" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
+                <Grid x:Name="xAlignmentRow" Grid.Row="6" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
 
             </Grid>
         </Grid>

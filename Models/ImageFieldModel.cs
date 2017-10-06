@@ -16,13 +16,22 @@ namespace Dash
         /// </summary>
         public Uri Data;
 
+        public string ByteData = null;
+
+        public ImageFieldModel() : base(null)
+        {
+            
+        }
+
+
         /// <summary>
         /// Create a new Image Field Model which represents the image pointed to by the <paramref name="data"/>
         /// </summary>
         /// <param name="data">The uri that the image this field model encapsulates is sourced from</param>
-        public ImageFieldModel(Uri data, string id = null) : base(id)
+        public ImageFieldModel(Uri path, string bytes = null, string id = null) : base(id)
         {
-            Data = data;
+            Data = path;
+            ByteData = bytes;
         }
     }
 }

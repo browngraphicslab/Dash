@@ -11,11 +11,15 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.Storage;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
@@ -40,12 +44,13 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance { get; private set; }
+
         private RadialMenuView _radialMenu;
         private static CollectionView _mainCollectionView;
+        private Flyout OperatorMenuFlyout;
 
-
+        public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()
@@ -55,17 +60,6 @@ namespace Dash
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
 
-            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
-            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
-            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2, 2, 0, 0, 1, 1);
-            TestMatrix(2, 2, 1, 1, 1, 1);
-            TestMatrix(2, 2, 2, 2, 1, 1);
-            TestMatrix(2, 2, 4, 4, 1, 1);
-            TestMatrix(4, 4, 0, 0, 2, 2);
-            TestMatrix(4, 4, 1, 1, 2, 2);
-            TestMatrix(4, 4, 2, 2, 2, 2);
-            TestMatrix(4, 4, 4, 4, 2, 2);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -88,15 +82,142 @@ namespace Dash
 
                 //var jsonDoc = JsonToDashUtil.RunTests();
             }
+
+            // create the collection document model using a request
+            var fields = new Dictionary<KeyController, FieldControllerBase>();
+            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
+            
+            var collectionDocumentController =
+                new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
+            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+
+            // set the main view's datacontext to be the collection
+            xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+
+            // set the main view's width and height to avoid NaN errors
+            xMainDocView.Width = MyGrid.ActualWidth;
+            xMainDocView.Height = MyGrid.ActualHeight;
+
+            // Set the instance to be itself, there should only ever be one MainView
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Instance = this;
+
+            _radialMenu = new RadialMenuView(xCanvas);
+            _radialMenu.Loaded += delegate
+            {
+                _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
+            };
+            Loaded += OnLoaded;
+
+            //KeyUp += OnKeyUp;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
 
-        private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
+        private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
-            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
-            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
-            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
-            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                if (e.VirtualKey == VirtualKey.Down)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                }
+
+                if (e.VirtualKey == VirtualKey.Up)
+                {
+
+                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                }
+            }
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
+        {
+            if (e.VirtualKey == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x, y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                TabMenu.ShowAt(xCanvas, pos);
+                TabMenu.Instance.SetTextBoxFocus();
+            }
+
+            if (xCanvas.Children.Contains(TabMenu.Instance))
+            {
+                if (e.VirtualKey == VirtualKey.Escape)
+                {
+                    xCanvas.Children.Remove(TabMenu.Instance);
+                }
+
+                if (e.VirtualKey == VirtualKey.Enter)
+                {
+                    TabMenu.Instance.SearchView.ActivateItem();
+                }
+            }
+        }
+
+        private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType != PointerDeviceType.Touch) return;
+            var pointerPosition = e.GetPosition(this);
+            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                .FirstOrDefault();
+            TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+            TabMenu.ShowAt(xCanvas, pos, true);
+            TabMenu.Instance.SetTextBoxFocus();
+            e.Handled = true;
+        }
+
+        private void OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Tab)
+            {
+                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+                var x = pointerPosition.X - Window.Current.Bounds.X;
+                var y = pointerPosition.Y - Window.Current.Bounds.Y;
+                var pos = new Point(x,y);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
+                    .FirstOrDefault();
+                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+                if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+                xCanvas.Children.Add(TabMenu.Instance);
+                Canvas.SetLeft(TabMenu.Instance, pos.X);
+                Canvas.SetTop(TabMenu.Instance, pos.Y);
+                TabMenu.Instance.SetTextBoxFocus();
+            }
+
+            if (e.Key == VirtualKey.Escape)
+            {
+                xCanvas.Children.Remove(TabMenu.Instance);
+            }
+
+        }
+
+
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            GlobalInkSettings.Hue = 200;
+            GlobalInkSettings.Brightness = 30;
+            GlobalInkSettings.Size = 4;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.Opacity = 1;
+
+            OperatorMenuFlyout = new Flyout
+            {
+                Content = TabMenu.Instance,
+                
+            };
+
         }
 
         public CollectionView GetMainCollectionView()
@@ -106,12 +227,12 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-            xCanvas.Children.Add(OperatorSearchView.Instance);
+            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
+            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
+            xCanvas.Children.Add(TabMenu.Instance);
             Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            Canvas.SetLeft(TabMenu.Instance, absPos.X);
+            Canvas.SetTop(TabMenu.Instance, absPos.Y);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -178,7 +299,7 @@ namespace Dash
             var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
-            var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));
+            var responseAsDocument = new JsonToDashUtil().ParseJsonString(tweetsByUser, tweetsByUserURL.ToString(true));
             DisplayDocument(responseAsDocument);
 
         }
@@ -363,7 +484,7 @@ namespace Dash
 
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var protoNumbers = new Numbers().Document;
+            var protoNumbers = new Numbers("1").Document;
             protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
             var protoLayout = protoNumbers.GetActiveLayout().Data;
             protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
@@ -373,8 +494,8 @@ namespace Dash
             Random r = new Random();
             for (int i = 0; i < 10; ++i)
             {
-                var delNumbers = protoNumbers.MakeDelegate();
-                if (i != 4)
+                var delNumbers = protoNumbers.MakeDelegate((i + 2).ToString());
+                //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);
                 delNumbers.SetField(Numbers.Number5FieldKey,
@@ -386,5 +507,44 @@ namespace Dash
                 DisplayDocument(delNumbers);
             }
         }
+
+        private void DocPointerReferenceOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
+            var innerDict = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [textKey] = new TextFieldModelController("Prototype text")
+            };
+            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
+            var dict = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
+            };
+            var proto = new DocumentController(dict, DocumentType.DefaultType);
+
+            var freeform = new FreeFormDocument(new List<DocumentController>
+                {
+                    new TextingBox(new PointerReferenceFieldController(new DocumentReferenceFieldController(proto.GetId(), KeyStore.DataKey), textKey)).Document
+                },
+                new Point(0, 0), new Size(400, 400)).Document;
+            proto.SetActiveLayout(freeform, true, false);
+
+            var del1 = proto.MakeDelegate();
+            var delLayout = del1.GetActiveLayout().Data.MakeDelegate();
+            delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del1.SetActiveLayout(delLayout, true, false);
+
+            var innerDelDict = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [textKey] = new TextFieldModelController("Delegate 1 text")
+            };
+            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
+            del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
+
+            DisplayDocument(proto);
+            DisplayDocument(del1);
+        }
+
+       
     }
 }

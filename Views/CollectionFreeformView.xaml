@@ -13,7 +13,6 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
-    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -26,7 +25,7 @@
         </Grid.Clip>
 
         <InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
-        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"  ></Canvas>
+        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>
         
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />

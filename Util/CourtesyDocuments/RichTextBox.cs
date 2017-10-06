@@ -4,6 +4,7 @@ using Windows.UI.Xaml;
 using Dash;
 using DashShared;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 
 namespace Dash
 {
@@ -15,7 +16,6 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
             Document = new DocumentController(fields, DocumentType);
-            SetLayoutForDocument(Document, Document, forceMask: true, addToLayoutList: true);
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
         {
@@ -49,8 +49,12 @@ namespace Dash
                 {
                     TargetFieldReference = referenceToText,
                     TargetDocContext = context
+                    
                 };
                 rtv = richText;
+                rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
+                rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
+                //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
             }

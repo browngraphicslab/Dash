@@ -9,6 +9,7 @@ using Dash.Converters;
 using Windows.UI.Xaml.Data;
 using static Dash.DocumentController;
 using System.Diagnostics;
+using Dash.Controllers;
 using DashShared.Models;
 
 namespace Dash
@@ -19,11 +20,14 @@ namespace Dash
         ///     Key for collection data
         ///     TODO This might be better in a different class
         /// </summary>
-        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public static KeyController CollectionKey =
+            new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+
         public override object GetValue(Context context)
         {
             return GetDocuments();
         }
+
         public override bool SetValue(object value)
         {
             if (!(value is List<DocumentController>))
@@ -32,6 +36,7 @@ namespace Dash
             SetDocuments(value as List<DocumentController>);
             return true;
         }
+
         public List<DocumentController> Data
         {
             get { return _documents; }
@@ -64,14 +69,16 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(DocumentCollectionFieldModel model) : base (model)
+        public DocumentCollectionFieldModelController(DocumentCollectionFieldModel model) : base(model)
         {
-            Data = model.Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i)).ToList();
+            Data = model.Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i))
+                .ToList();
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : this(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : this(
+            new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
         {
-            
+
         }
 
         /// <summary>
@@ -141,15 +148,19 @@ namespace Dash
             {
                 DocumentCollectionFieldModel.Data.Add(docController.GetId());
 
-               UpdateOnServer();
+                UpdateOnServer();
             }
 
-            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController> { docController }));
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
+                CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
+                new List<DocumentController> {docController}));
         }
 
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
-            var keylist = (sender.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            var keylist = (sender
+                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
+                    new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
             if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
                 OnFieldModelUpdated(args.FieldArgs);
         }
@@ -160,7 +171,9 @@ namespace Dash
             var isDocInList = _documents.Remove(doc);
             DocumentCollectionFieldModel.Data.Remove(doc.GetId());
             if (isDocInList)
-                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController> { doc }));
+                OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
+                    CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove,
+                    new List<DocumentController> {doc}));
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
@@ -176,7 +189,9 @@ namespace Dash
             foreach (var docController in Data)
                 docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
 
-            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace, new List<DocumentController>(docControllers)));
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
+                CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace,
+                new List<DocumentController>(docControllers)));
         }
 
         /// <summary>
@@ -193,11 +208,28 @@ namespace Dash
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
-        
+
         public override FieldModelController<DocumentCollectionFieldModel> Copy()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
         }
+
+
+        public override void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp,
+            string id, bool isInterfaceBuilder = false)
+        {
+            var rfmc = new DocumentReferenceFieldController(id, kc);
+            var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
+            var viewType =
+                container.GetActiveLayout()?.Data
+                    ?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ??
+                CollectionView.CollectionViewType.Grid.ToString();
+            var colView = new CollectionView(vm,
+                (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), viewType));
+            sp.Children.Add(colView);
+            colView.TryBindToParentDocumentSize();
+        }
+
 
         public class CollectionFieldUpdatedEventArgs : FieldUpdatedEventArgs
         {

@@ -28,7 +28,11 @@
                   >
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <local:DocumentView x:Name="xDocumentDisplay" Height="300" Width="300" IsHitTestVisible="False"/>
+                    <Border BorderBrush="#20000000" BorderThickness="1" CornerRadius="5">
+                        <Viewbox Height="300" Width="300">
+                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
+                        </Viewbox>
+                    </Border>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
@@ -38,10 +39,6 @@ namespace Dash
             return Model.Id;
         }
 
-        public virtual void Dispose()
-        {
-        }
-        
         public override bool Equals(object obj)
         {
             var cont = obj as FieldModelController<T>;
@@ -64,84 +61,14 @@ namespace Dash
 
         public T Copy<T>() where T : FieldControllerBase
         {
+
             return Copy() as T;
         }
 
-        public static async Task<FieldControllerBase> CreateFromServer(FieldModel fieldModel)
+
+        public virtual void Dispose()
         {
-            throw new NotImplementedException();
-            FieldControllerBase returnController = null;
-            if (fieldModel is NumberFieldModel)
-            {
-                returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
-            }
-            else if (fieldModel is TextFieldModel)
-            {
-                returnController = TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
-            }
 
-
-            //TODO fill this is
-
-            return returnController;
-            /*
-            FieldModelController returnController;
-
-
-            switch (fieldModel.GetType())
-            {
-                case TypeInfo.None:
-                    throw new NotImplementedException();
-                case NumberFieldModel:
-                    returnController = NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
-                    break;
-                case TypeInfo.Text:
-                    returnController = TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
-                    break;
-                case TypeInfo.Image:
-                    returnController = ImageFieldModelController.CreateFromServer(fieldModel as ImageFieldModel);
-                    break;
-                case TypeInfo.Collection:
-                    returnController =
-                        await DocumentCollectionFieldModelController.CreateFromServer(
-                            fieldModel as DocumentCollectionFieldModel);
-                    break;
-                case TypeInfo.Document:
-                    returnController = await DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
-                    break;
-                case TypeInfo.Reference:
-                    returnController =
-                        ReferenceFieldModelController.CreateFromServer(fieldModel as ReferenceFieldModel);
-                    break;
-                case TypeInfo.Operator:
-                    throw new NotImplementedException();
-                //returnController = OperatorFieldModelController.CreateFromServer(fieldModel as OperatorFieldModel);
-                case TypeInfo.Point:
-                    returnController = PointFieldModelController.CreateFromServer(fieldModel as PointFieldModel);
-                    break;
-                case TypeInfo.List:
-                    returnController = new ListFieldModelController<TextFieldModelController>();
-                    break;
-                case TypeInfo.Ink:
-                    returnController = InkFieldModelController.CreateFromServer(fieldModel as InkFieldModel);
-                    break;
-                case TypeInfo.RichTextField:
-                    returnController = RichTextFieldModelController.CreateFromServer(fieldModel as RichTextFieldModel);
-                    break;
-                case TypeInfo.Rectangle:
-                    returnController = RectFieldModelController.CreateFromServer(fieldModel as RectFieldModel);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            lock (l)
-            {
-                threadCount--;
-                Debug.WriteLine($"exit fc : {threadCount}");
-            }
-
-            return returnController;*/
         }
 
         public event InkFieldModelController.InkUpdatedHandler InkUpdated;

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using TextWrapping = DashShared.TextWrapping;
@@ -114,6 +115,20 @@ namespace Dash
             };
 
             return scrollViewer;
+        }
+
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder = false)
+        {
+            var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+            var label = new TextBlock { Text = kc.Name + ": " };
+            var refField = new DocumentReferenceFieldController(id, kc);
+            var dBox = this is ImageFieldModelController
+                ? new ImageBox(refField).Document
+                : new TextingBox(refField).Document;
+            hstack.Children.Add(label);
+            var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
+            hstack.Children.Add(ele);
+            sp.Children.Add(hstack);
         }
 
         /// <summary>

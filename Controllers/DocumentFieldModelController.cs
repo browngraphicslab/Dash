@@ -153,9 +153,15 @@ namespace Dash
             return new DocumentFieldModelController(Data.GetPrototype() ?? new DocumentController(new DocumentModel(new Dictionary<KeyModel, FieldModel>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document")))));
         }
 
+        public override void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder=false)
+        {
+            var view = new DocumentView(new DocumentViewModel(Data, isInterfaceBuilder));
+            sp.Children.Add(view);
+        }
+
         public override FieldModelController<DocumentFieldModel> Copy()
         {
-            return new DocumentFieldModelController(Data);
+            return new DocumentFieldModelController(Data.GetCopy());
         }
     }
 }

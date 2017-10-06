@@ -16,7 +16,7 @@ namespace Dash
 
         public OperatorBox(ReferenceFieldModelController refToOp)
         {
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
+            var fields = DefaultLayoutFields(new Point(), new Size(200,100), refToOp);
             Document = new DocumentController(fields, DocumentType);
         }
 
@@ -41,7 +41,9 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey) ?? null;
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView {DataContext = opfmc.GetFieldReference()};
+
+            OperatorView opView = new OperatorView {DataContext = opfmc.GetFieldReference() };
+            SetupBindings(opView, docController, context);
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
             return opView;
         }

@@ -22,9 +22,9 @@ namespace Dash
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Reference, args.Action), args.Context);
+            OnFieldModelUpdated(args.FieldArgs, args.Context);
         }
 
         public override void Dispose()
@@ -87,7 +87,7 @@ namespace Dash
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
-        
+
         public override object GetValue(Context context)
         {
             var refDoc = GetDocumentController(context);

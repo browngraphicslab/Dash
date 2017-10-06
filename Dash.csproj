@@ -29,6 +29,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -67,7 +68,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
     <NoWarn>;2008</NoWarn>
     <DebugType>full</DebugType>
@@ -90,6 +91,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\pokemon_species.csv" />
+    <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
   </ItemGroup>
   <ItemGroup>
@@ -102,9 +105,11 @@
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
+    <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
     <Compile Include="Controllers\PointerReferenceFieldController.cs" />
+    <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
@@ -135,11 +140,66 @@
     <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\TaskQueue.cs" />
+    <Compile Include="Converters\StringToBrushConverter.cs" />
+    <Compile Include="Views\FieldPreview.xaml.cs">
+      <DependentUpon>FieldPreview.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\IFileParser.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
+    <Compile Include="Views\CollectionDBChartBar.xaml.cs">
+      <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaHeader.xaml.cs">
+      <DependentUpon>CollectionDBSchemaHeader.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecord.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecord.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaRecordField.xaml.cs">
+      <DependentUpon>CollectionDBSchemaRecordField.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBSchemaView.xaml.cs">
+      <DependentUpon>CollectionDBSchemaView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionDBView.xaml.cs">
+      <DependentUpon>CollectionDBView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChart.xaml.cs">
+      <DependentUpon>DBFilterChart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChartBar.xaml.cs">
+      <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadialColorPicker.xaml.cs">
+      <DependentUpon>RadialColorPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadialMenuSlider.xaml.cs">
+      <DependentUpon>RadialMenuSlider.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InkSettingsPane.xaml.cs">
+      <DependentUpon>InkSettingsPane.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
-    <Compile Include="FreeformInkControl.cs" />
+    <Compile Include="Util\FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Data.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Events.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Helper.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Options.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GripperHoverWrapper.cs" />
+    <Compile Include="Views\CollectionPageView.xaml.cs">
+      <DependentUpon>CollectionPageView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionTextView.xaml.cs">
       <DependentUpon>CollectionTextView.xaml</DependentUpon>
     </Compile>
@@ -251,8 +311,8 @@
     <Compile Include="Views\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OperatorSearchView.xaml.cs">
-      <DependentUpon>OperatorSearchView.xaml</DependentUpon>
+    <Compile Include="Views\TabMenu.xaml.cs">
+      <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
@@ -347,7 +407,6 @@
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
-    <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
     <Compile Include="Models\DocumentFieldModel.cs" />
@@ -360,8 +419,6 @@
     <Compile Include="Controllers\Operators\Arithmetic\AddOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
@@ -401,7 +458,7 @@
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\GlobalInkSettings.cs" />
-    <Compile Include="Util\JsonToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
@@ -518,6 +575,7 @@
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\operator_bg.png" />
     <Content Include="Assets\ppsqft.txt" />
+    <Content Include="Assets\radial_color_wheel.png" />
     <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
@@ -540,6 +598,62 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FieldPreview.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionDBChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaHeader.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaRecordField.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBSchemaView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionDBView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RadialColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RadialMenuSlider.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InkSettingsPane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -643,7 +757,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\OperatorSearchView.xaml">
+    <Page Include="Views\TabMenu.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -827,11 +941,15 @@
       <Name>DashShared</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Folder Include="Models\OperatorModels\Set\" />
     <Folder Include="Push\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CsvHelper">
+      <Version>2.16.3</Version>
+    </PackageReference>
     <PackageReference Include="Flurl.Http">
       <Version>1.2.0</Version>
     </PackageReference>
@@ -859,6 +977,11 @@
     <PackageReference Include="Win2D.uwp">
       <Version>1.19.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsIoT, Version=10.0.15063.0">
+      <Name>Windows IoT Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

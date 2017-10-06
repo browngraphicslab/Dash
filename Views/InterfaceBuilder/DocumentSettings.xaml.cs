@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -45,7 +46,7 @@ namespace Dash
         /// </summary>
         private void SetupNewLayoutDropDown()
         {
-            xAddLayoutComboBox.ItemsSource = new List<string> { "⊡ Freeform", "▤ List", "⊞ Grid" };
+            xAddLayoutComboBox.ItemsSource = new List<string> { "⊡ Freeform", "▤ List", "⊶ Key Value", "⊞ Grid" };
             xAddLayoutComboBox.SelectionChanged += (s, e) => {
                 SetNewActiveLayout((string)xAddLayoutComboBox.SelectedItem);
 
@@ -136,6 +137,12 @@ namespace Dash
             {
                 newLayout = new ListViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
+            }
+            else if (layout == "⊶ Key Value")
+            {
+                if (_dataDocument.GetField(KeyStore.ThisKey) == null)
+                    _dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(_dataDocument), true);
+                newLayout = new KeyValueDocumentBox(new DocumentReferenceFieldController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
             }
             else
             {

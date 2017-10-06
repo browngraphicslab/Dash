@@ -27,7 +27,10 @@ namespace Dash
             string docId = context.GetDeepestDelegateOf(GetDocumentController(context).GetId()) ?? GetDocumentController(context).GetId();
             return new DocumentFieldReference(docId, FieldKey);
         }
-
+        public override FieldReference Copy()
+        {
+            return new DocumentPointerFieldReference(DocumentReference.Copy(), FieldKey);
+        }
         public override bool Equals(object obj)
         {
             DocumentPointerFieldReference reference = obj as DocumentPointerFieldReference;

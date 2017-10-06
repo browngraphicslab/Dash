@@ -54,18 +54,21 @@ namespace Dash
         {
             try
             {
-                var d = new Dictionary<string, string>(_modelDictionary);
-                var file = await DashConstants.LocalStorageFolder.CreateFileAsync(_fileName,
-                    CreationCollisionOption.ReplaceExisting);
-                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                if (_modelDictionary != null)
                 {
-                    using (var outgoingStream = stream.GetOutputStreamAt(0))
+                    var d = new Dictionary<string, string>(_modelDictionary);
+                    var file = await DashConstants.LocalStorageFolder.CreateFileAsync(_fileName,
+                        CreationCollisionOption.ReplaceExisting);
+                    using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
-                        using (var dw = new DataWriter(outgoingStream))
+                        using (var outgoingStream = stream.GetOutputStreamAt(0))
                         {
-                            dw.WriteString(JsonConvert.SerializeObject(d));
-                            await dw.StoreAsync();
-                            await dw.FlushAsync();
+                            using (var dw = new DataWriter(outgoingStream))
+                            {
+                                dw.WriteString(JsonConvert.SerializeObject(d));
+                                await dw.StoreAsync();
+                                await dw.FlushAsync();
+                            }
                         }
                     }
                 }

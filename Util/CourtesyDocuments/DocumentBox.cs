@@ -8,6 +8,7 @@ using Dash;
 using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -24,7 +25,32 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
-        
+        protected static void SetupDocumentBinding(DocumentView element, DocumentController docController, Context context)
+        {
+            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
+            if (data != null)
+            {
+                var binding = new FieldBinding<FieldControllerBase>()
+                {
+                    Document = docController,
+                    Key = KeyStore.DataKey,
+                    Mode = Windows.UI.Xaml.Data.BindingMode.TwoWay,
+                    Context = context,
+                    GetConverter = GetFieldConverter
+                };
+                element.AddFieldBinding(DocumentView.DataContextProperty, binding);
+            }
+        }
+        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
+        {
+            if (fieldModelController is DocumentFieldModelController)
+            {
+                return new DocumentToViewModelConverter();
+            }
+            return null;
+        }
+
+
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
@@ -51,6 +77,8 @@ namespace Dash
 
             var border = new Border();
             border.Child = docView;
+
+            SetupDocumentBinding(docView, docController, context);
 
             // bind the text height
             //var docheightController = GetHeightField(docController, context);

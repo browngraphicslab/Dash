@@ -41,6 +41,7 @@ namespace Dash
             var uriToImage = OperationCreationHelper.Operators["UriToImage"];
             var map = OperationCreationHelper.Operators["Map"];
             var api = OperationCreationHelper.Operators["Api"];
+            var dbfilter = OperationCreationHelper.Operators["DBFilter"];
             var concat = OperationCreationHelper.Operators["Concat"];
             var docAppend = OperationCreationHelper.Operators["Append"];
             var filter = OperationCreationHelper.Operators["Filter"];
@@ -54,6 +55,7 @@ namespace Dash
                 union,
                 intersection,
                 zip,
+                dbfilter,
                 filter
             };
             var maps = new ObservableCollection<OperatorBuilder>
@@ -81,6 +83,7 @@ namespace Dash
                 new SearchCategoryItem("÷", "ARITHMETIC", arithmetics, Actions.AddOperator),
                 new SearchCategoryItem("→", "MAP", maps, Actions.AddOperator),
                 new SearchCategoryItem("∈", "SET", sets, Actions.AddOperator),
+                new SearchCategoryItem("F", "DBFilter", sets, Actions.AddOperator),
                 new SearchCategoryItem(string.Empty, "CUSTOM", null, Actions.AddOperator)
             };
 

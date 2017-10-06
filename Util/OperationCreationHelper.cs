@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Controllers.Operators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -17,6 +18,7 @@ namespace Dash
             AddOperator<IntersectionOperatorModelController>("Intersection", "∩");
             AddOperator<UnionOperatorFieldModelController>("Union", "∪");
             AddOperator<ZipOperatorFieldController>("Zip");
+            AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentModel.CreateDBFilterDocumentController, "⊇");
             AddOperator<ConcatOperator>("Concat");
             AddOperator<DocumentAppendOperatorController>("Append");
             AddOperator<ImageOperatorFieldModelController>("UriToImage", "◑");
@@ -28,7 +30,7 @@ namespace Dash
 
         public static void AddOperator<T>(string name) where T : OperatorFieldModelController, new()
         {
-            Operators[name] = new OperatorBuilder(() => OperatorDocumentModel.CreateOperatorDocumentModel(new T()), () => new T(), name, name);
+            Operators[name] = new OperatorBuilder(() => OperatorDocumentModel.CreateOperatorDocumentModel(new T(), name), () => new T(), name, name);
         }
 
         public static void AddOperator(string name, Func<DocumentController> docGeneratorFunc, Func<OperatorFieldModelController> opGeneratorFunc)
@@ -38,7 +40,7 @@ namespace Dash
 
         public static void AddOperator<T>(string name, string icon) where T : OperatorFieldModelController, new()
         {
-            Operators[name] = new OperatorBuilder(() => OperatorDocumentModel.CreateOperatorDocumentModel(new T()), () => new T(), name, icon);
+            Operators[name] = new OperatorBuilder(() => OperatorDocumentModel.CreateOperatorDocumentModel(new T(), name), () => new T(), name, icon);
         }
 
         public static void AddOperator(string name, Func<DocumentController> docGeneratorFunc, Func<OperatorFieldModelController> opGeneratorFunc, string icon)

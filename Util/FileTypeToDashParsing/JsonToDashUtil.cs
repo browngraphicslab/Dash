@@ -9,104 +9,68 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Storage;
+using CsvHelper;
 using DashShared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Dash
 {
-    public class JsonToDashUtil
+    public class JsonToDashUtil : IFileParser
     {
-        static DocumentController JsonDocument = null;
-        public static DocumentController RunTests()
+        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath = null)
         {
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            ParseRecipes().Wait();
-            stopwatch.Stop();
-            return JsonDocument;
+            var text = await FileIO.ReadTextAsync(item);
+            return ParseJsonString(text, item.Path);
         }
 
-        public static async Task ParseRecipes()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/RecipeReturn.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
-        }
-
-        public static async Task ParseArrayOfObjects()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
-        }
-
-        public static async Task ParseYoutube()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, "ms-appx:///Assets/youtubeJson.txt");
-        }
-
-        public static async Task ParseA()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
-            var jsonString = File.ReadAllText(file.Path);
-            //var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, file.Path);
-        }
-
-        public static async Task ParseCustomer()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            JsonDocument = Parse(jsonString, file.Path);
-        }
-
-        public static void ParseSingleItem()
-        {
-            var jsonString = @"[1,2,3]";
-            JsonDocument = Parse(jsonString, "an/example/base/path");
-        }
-
-        public static DocumentController Parse(string json, string path)
+        public DocumentController ParseJsonString(string json, string path)
         {
             var jtoken = JToken.Parse(json);
             var newSchema = new DocumentSchema(path);
             return ParseRoot(jtoken, newSchema);
         }
 
-        private static DocumentController ParseRoot(JToken jtoken, DocumentSchema schema)
+        /// <summary>
+        /// Parses the root of the Json object, this will recursively parse the rest of the json object
+        /// </summary>
+        /// <param name="jtoken"></param>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        private DocumentController ParseRoot(JToken jtoken, DocumentSchema schema)
         {
+            // if the root is an object parse the object
             if (jtoken.Type == JTokenType.Object)
             {
                 var obj = ParseObject(jtoken, schema);
                 return obj;
             }
-            else
-            {
-                var key = schema.GetKey(jtoken);
-                var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
-                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<KeyController, FieldControllerBase>{[key]=field});
+            var key = schema.GetKey(jtoken);
+            var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
+            SetDefaultFieldsOnPrototype(schema.Prototype,
+                new Dictionary<KeyController, FieldControllerBase> { [key] = field });
 
-                // wrap the field in an instance of the prototype
-                var protoInstance = schema.Prototype.MakeDelegate();
-                protoInstance.SetField(key, field, true);
+            // wrap the field in an instance of the prototype
+            var protoInstance = schema.Prototype.MakeDelegate();
 
-                SetDefaultsOnActiveLayout(schema, protoInstance);
-                return protoInstance;
-            }
+            DBTest.DBDoc.AddChild(protoInstance);
+            protoInstance.SetField(key, field, true);
+
+            SetDefaultsOnActiveLayout(schema, protoInstance);
+            return protoInstance;
         }
 
-        private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
+
+        private void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
             var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
             protoInstance.SetActiveLayout(activeLayout, true, false);
             var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
+            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
             activeLayout.SetFields(defaultLayoutFields, true);
         }
 
-        private static FieldControllerBase ParseChild(JToken jtoken, DocumentSchema parentSchema)
+        private FieldControllerBase ParseChild(JToken jtoken, DocumentSchema parentSchema)
         {
             if (jtoken.Type == JTokenType.Object)
             {
@@ -117,7 +81,8 @@ namespace Dash
                 // wrap the document we found in a field model since it is not a root
                 var docFieldModelController = new DocumentFieldModelController(protoInstance);
                 return docFieldModelController;
-            } else if (jtoken.Type == JTokenType.Array)
+            }
+            else if (jtoken.Type == JTokenType.Array)
             {
                 return ParseArray(jtoken, parentSchema);
             }
@@ -127,7 +92,7 @@ namespace Dash
             }
         }
 
-        private static DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
+        private DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
         {
             var jObject = jtoken as JObject;
 
@@ -145,12 +110,13 @@ namespace Dash
             SetDefaultFieldsOnPrototype(schema.Prototype, fields);
 
             var protoInstance = schema.Prototype.MakeDelegate();
+            DBTest.DBDoc.AddChild(protoInstance);
             SetDefaultsOnActiveLayout(schema, protoInstance);
             protoInstance.SetFields(fields, true);
             return protoInstance;
         }
 
-        private static FieldControllerBase ParseArray(JToken jtoken, DocumentSchema schema)
+        private FieldControllerBase ParseArray(JToken jtoken, DocumentSchema schema)
         {
             var jArray = jtoken as JArray;
 
@@ -167,7 +133,8 @@ namespace Dash
                     var childSchema = schema.AddChildSchemaOrReturnCurrentChild(item);
                     var parsedItem = ParseObject(item, childSchema);
                     docList.Add(parsedItem);
-                } else if (item.Type == JTokenType.Array) // we fail on nested arrays
+                }
+                else if (item.Type == JTokenType.Array) // we fail on nested arrays
                 {
                     return null;
                 }
@@ -203,7 +170,7 @@ namespace Dash
             throw new NotImplementedException(" we don't support arrays of documents and values");
         }
 
-        private static FieldControllerBase ParseValue(JToken jtoken)
+        private FieldControllerBase ParseValue(JToken jtoken)
         {
             try
             {
@@ -229,12 +196,12 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
 
-        private static FieldControllerBase ParseText(string text)
+        private FieldControllerBase ParseText(string text)
         {
             string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
             foreach (var ext in _imageExtensions)
@@ -247,7 +214,7 @@ namespace Dash
             return new TextFieldModelController(text);
         }
 
-        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldControllerBase> fields)
+        private void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldControllerBase> fields)
         {
             foreach (var field in fields)
             {
@@ -258,11 +225,12 @@ namespace Dash
                 }
             }
         }
-
-       
     }
 
-    internal class DocumentSchema 
+    /// <summary>
+    /// Essentially a utility class for maintaining a single prototype over a collection of documents that are parsed
+    /// </summary>
+    public class DocumentSchema
     {
         public readonly string BasePath;
 
@@ -271,7 +239,7 @@ namespace Dash
         public DocumentSchema(string basePath)
         {
             BasePath = basePath;
-            Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), 
+            Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
                 new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -314,5 +282,5 @@ namespace Dash
         }
     }
 
-    
+
 }

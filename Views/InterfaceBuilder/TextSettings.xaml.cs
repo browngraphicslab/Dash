@@ -7,6 +7,8 @@ using DashShared;
 using FontWeights = Windows.UI.Text.FontWeights;
 using System.Collections.Generic;
 using Dash.Converters;
+using Windows.UI;
+using System.Reflection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -15,10 +17,13 @@ namespace Dash
     public sealed partial class TextSettings : UserControl
     {
         private ObservableCollection<string> _fontWeights = new ObservableCollection<string>();
+        ObservableCollection<NamedColor> colors { get; set; }
 
         public TextSettings()
         {
             this.InitializeComponent();
+            this.AddColors();
+
         }
 
         public TextSettings(DocumentController editedLayoutDocument, Context context) : this()
@@ -29,6 +34,10 @@ namespace Dash
             BindFontWeight(editedLayoutDocument, context);
             BindFontSize(editedLayoutDocument, context);
             BindFontAlignment(editedLayoutDocument, context);
+            xBackgroundColorComboBox.SelectionChanged += delegate
+            {
+                this.ColorSelectionChanged(editedLayoutDocument, context);
+            };
         }
 
         private void BindFontAlignment(DocumentController docController, Context context)
@@ -47,6 +56,7 @@ namespace Dash
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);
             xAlignmentListView.SelectionChanged += delegate (object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
         }
+
 
         private void BindFontWeight(DocumentController docController, Context context)
         {
@@ -88,6 +98,24 @@ namespace Dash
 
             xFontSizeSlider.SetBinding(Slider.ValueProperty, fontSizeBinding);
             xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
+        }
+
+        private void ColorSelectionChanged(DocumentController docController, Context context)
+        {
+            var textController = docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextFieldModelController;
+            Debug.Assert(textController != null);
+            var col = (xBackgroundColorComboBox.SelectedItem as NamedColor).Color;
+            docController.SetField(TextingBox.BackgroundColorKey, new TextFieldModelController(col.ToString()), true);
+        }
+        
+
+        private void AddColors()
+        {
+            if (colors == null) colors = new ObservableCollection<NamedColor>();
+            foreach (var color in typeof(Colors).GetRuntimeProperties())
+            {
+                colors.Add(new NamedColor() { Name = color.Name, Color = (Color)color.GetValue(null) });
+            }
         }
     }
 }

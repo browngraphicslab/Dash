@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using Dash.Controllers.Operators;
+using DashShared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -78,7 +80,8 @@ namespace Dash
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
             
-            xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+            if (GetText() != null)
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
             
             xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
         }
@@ -121,7 +124,7 @@ namespace Dash
                 }
             }
 
-            if (allText.TrimEnd('\r') != GetText().ReadableString.TrimEnd('\r'))
+            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
             {
                 string allRtfText;
                 xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
@@ -132,12 +135,17 @@ namespace Dash
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
         {
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
             if (theDoc == null && createIfNeeded)
             {
                 if (refText.StartsWith("http"))
                 {
                     theDoc = DBTest.CreateWebPage(refText);
+                }
+                else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
+                {
+                    theDoc = DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {

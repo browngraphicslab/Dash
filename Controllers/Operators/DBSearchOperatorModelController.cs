@@ -15,11 +15,6 @@ namespace Dash.Controllers.Operators
     }
     public class DBSearchOperatorFieldModelController : OperatorFieldModelController
     {
-        public static void ForceUpdate(DocumentFieldReference docFieldRef)
-        {
-            var opDoc = ContentController<DocumentModel>.GetController<DocumentController>(docFieldRef.DocumentId);
-            opDoc.Execute(null, true);
-        }
         public DBSearchOperatorFieldModel DBSearchOperatorFieldModel {  get { return OperatorFieldModel as DBSearchOperatorFieldModel; } }
        
         static public DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)

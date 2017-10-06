@@ -33,16 +33,17 @@ namespace Dash
             set { DataContext = value; }
         }
         public CollectionView ParentCollection { get; set; }
+
+        public CompoundOperatorEditor CompoundFreeform { get; set; }
+
         public DocumentView ParentDocument { get; set; }
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Text
+            Freeform, List, Grid, Page, Text, DB, Schema
         }
 
         private CollectionViewType _viewType;
-
-        private CollectionFreeformView _freeformView;
 
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
@@ -51,6 +52,23 @@ namespace Dash
             ViewModel = vm;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
+        }
+        public static CollectionView GetParentCollectionView(DependencyObject sender)
+        {
+            var item = VisualTreeHelper.GetParent(sender);
+            var cv = item as CollectionView;
+            while (item != null && !(item is CollectionView))
+            {
+                item = VisualTreeHelper.GetParent(item);
+                if (item is CollectionView)
+                    cv = item as CollectionView;
+            }
+            return cv;
+        }
+
+        public void TryBindToParentDocumentSize()
+        {
+            Util.ForceBindHeightToParentDocumentHeight(this);
         }
 
         #region Load And Unload Initialization and Cleanup
@@ -65,7 +83,8 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
+            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
 
             switch (_viewType)
             {
@@ -75,8 +94,17 @@ namespace Dash
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
                     break;
+                case CollectionViewType.Page:
+                    CurrentView = new CollectionPageView();
+                    break;
+                case CollectionViewType.DB:
+                    CurrentView = new CollectionDBView();
+                    break;
+                case CollectionViewType.Schema:
+                    CurrentView = new CollectionDBSchemaView();
+                    break;
                 case CollectionViewType.List:
-                    CurrentView = new CollectionListView();
+                    CurrentView = new CollectionDBView();// new CollectionListView();
                     break;
                 case CollectionViewType.Text:
                     CurrentView = new CollectionTextView();
@@ -84,8 +112,9 @@ namespace Dash
             }
             xContentControl.Content = CurrentView;
 
-            if (ParentDocument.IsRoot())
+            if (true || ParentDocument == MainPage.Instance.xMainDocView )
             {
+                ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
             }
@@ -106,11 +135,13 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
-            CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView).CanLink = true;
-            (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.CanLink = true;
+            freeform.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -118,10 +149,12 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
-            KeyController outputKey = ViewModel.CollectionKey;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
-            CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef, false);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.EndDrag(ioRef, false);
         }
 
         #endregion
@@ -141,10 +174,29 @@ namespace Dash
             xContentControl.Content = CurrentView;
         }
 
+        public void SetDBView()
+        {
+            if (CurrentView is CollectionDBView) return;
+            CurrentView = new CollectionDBView();
+            xContentControl.Content = CurrentView;
+        }
+        private void SetSchemaView()
+        {
+            if (CurrentView is CollectionDBSchemaView) return;
+            CurrentView = new CollectionDBSchemaView();
+            xContentControl.Content = CurrentView;
+        }
+
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
+            xContentControl.Content = CurrentView;
+        }
+        private void SetBrowseView()
+        {
+            if (CurrentView is CollectionPageView) return;
+            CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
         }
 
@@ -171,6 +223,16 @@ namespace Dash
         {
             xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
+            var lvb = ((UIElement)xContentControl.Content)?.GetFirstDescendantOfType<ListViewBase>();
+            var sitemsCount = lvb?.SelectedItems.Count;
+            if (lvb?.SelectedItems.Count > 0)
+                try
+                {
+                    lvb.SelectedItems.Clear();
+                }
+                catch (Exception)
+                {
+                }
         }
 
         private void SelectAllItems()
@@ -208,7 +270,22 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
-        
+
+        private int GetMenuIndex() 
+        {
+            switch (_viewType)
+            {
+                case CollectionViewType.Freeform:
+                    return 5; 
+                case CollectionViewType.Grid:
+                    return 0; 
+                case CollectionViewType.List:
+                    return 2; 
+                default: return -1; 
+            }
+        }
+
+
 
         private void MakeMenu()
         {
@@ -218,10 +295,12 @@ namespace Dash
             var noSelection = new Action(MakeSelectionModeNone);
             var selectAll = new Action(SelectAllItems);
             var setGrid = new Action(SetGridView);
+            var setBrowse = new Action(SetBrowseView);
             var setList = new Action(SetListView);
+            var setSchema = new Action(SetSchemaView);
+            var setDB = new Action(SetDBView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
-
 
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
@@ -231,13 +310,14 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap),
-                new MenuButton(Symbol.Page, "Json", menuColor, GetJson),
-                new MenuButton(Symbol.Edit, "Enter", menuColor, EnterCollection),
+
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
+                new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
+
+
             };
 
-            if (ParentDocument.IsRoot() == false)
+            if (ParentDocument.IsMainCollection == false)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));
 
             var documentButtons = new List<MenuButton>
@@ -294,7 +374,7 @@ namespace Dash
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsRoot() == false)
+            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsMainCollection == false)
             {
                 CloseMenu();
             }

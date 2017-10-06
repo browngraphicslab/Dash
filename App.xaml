@@ -43,6 +43,7 @@
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF007AFF"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
+        <SolidColorBrush x:Key="DraggerLineStroke" Color="#66007AFF"/>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"></SolidColorBrush>
 
@@ -203,8 +204,10 @@
         </Style>
 
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
+        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"></local:BoolToBoldConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
-        <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
+        <local:BoundFieldModelControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"></local:BoundFieldModelControllerToFrameworkElementConverter>
+        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"></local:ReferenceFieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
         <!--<local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>-->

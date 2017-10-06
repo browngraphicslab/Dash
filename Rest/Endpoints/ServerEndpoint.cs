@@ -59,11 +59,21 @@ namespace Dash
                 var response = PostAsJson ? await Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")) :
                                             await Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent);
 
+
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
+
                     // then throw the HttpRequestException
                     response.EnsureSuccessStatusCode();
+
+                    //TODO we should extract this logging from this class
+                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
+                    // create api exception wrapper which lets us print a useful message to debug output
+                    var ex = new ApiException(response);
+                    //Debug.WriteLine(ex.ApiExceptionMessage());
+                    throw ex;
+
                 }
 
                 // otherwise return the result
@@ -72,10 +82,10 @@ namespace Dash
             // catch exceptions which occur when we were unable to connect to the server!
             catch (AggregateException ex)
             {
-                Debug.WriteLine("One or more exceptions has occurred:");
+                //Debug.WriteLine("One or more exceptions has occurred:");
                 foreach (var exception in ex.InnerExceptions)
                 {
-                    Debug.WriteLine("  " + exception.Message);
+                    //Debug.WriteLine("  " + exception.Message);
                 }
 
                 throw;
@@ -98,6 +108,8 @@ namespace Dash
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
+                    // create api exception wrapper which lets us print a useful message to debug output
+
                     // then throw the HttpRequestException
                     response.EnsureSuccessStatusCode();
                 }

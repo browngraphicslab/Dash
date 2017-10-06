@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -12,6 +14,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
 using Dash.Models;
@@ -20,13 +23,14 @@ using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
     public static class Actions
     {
         
-       
+
         public static void AddSearch(object o, DragEventArgs e)
         {
             //if (!c.Children.Contains(_searchView))
@@ -51,77 +55,22 @@ namespace Dash
             MainPage.Instance.AddGenericFilter(o, e);
         }
 
-        public static void ChangeInkColor(Color color, RadialMenu menu = null)
-        {
-            GlobalInkSettings.Color = color;
-            GlobalInkSettings.UpdateInkPresenters();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
-
-        public static void ChoosePen(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void ChoosePencil(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void ChooseEraser(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.UpdateInkPresenters(false);
-        }
-
-        public static void SetOpacity(double opacity)
-        {
-            GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-        public static void SetSize(double size)
-        {
-            GlobalInkSettings.Size = size;
-            GlobalInkSettings.UpdateInkPresenters();
-        }
-
-
-        public static void DisplayBrightnessSlider(RadialMenuView obj)
-        {
-            obj.OpenSlider();
-        }
-
-        public static void CloseSliderPanel(RadialMenuView obj)
-        {
-            obj.CloseSlider();
-        }
-
-        public static void SetBrightness(double brightness, RadialMenu menu)
-        {
-            GlobalInkSettings.BrightnessFactor = brightness;
-            GlobalInkSettings.UpdateInkPresenters();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
-
 
         public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
         {
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddOperator(Func<DocumentController> documentCreationFunc)
+        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection;
+            var freeForm = TabMenu.AddsToThisCollection;
 
             if (freeForm == null)
             {
                 return;
             }
             
-            var searchView = OperatorSearchView.Instance.SearchView;
+            var searchView = TabMenu.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
@@ -136,7 +85,7 @@ namespace Dash
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
+                freeForm.ViewModel.AddDocument(opController, null);
             }
         }
 
@@ -144,13 +93,13 @@ namespace Dash
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
+            
+            var newDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+            newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
-            var fields = new Dictionary<KeyController, FieldControllerBase>()
-            {
-                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
-            };
+            collection.ViewModel.AddDocument(newDoc, null);
 
-            collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+            DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
@@ -158,19 +107,69 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
-            var fields = new Dictionary<KeyController, FieldControllerBase>()
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
+            cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
+            var newDoc = cnote.Document;
+            
+            collection.ViewModel.AddDocument(newDoc, null);
+            DBTest.DBDoc.AddChild(newDoc);
+        }
+
+        public static async void ImportFields(ICollectionView collection, DragEventArgs e)
+        {
+            FileOpenPicker openPicker = new FileOpenPicker();
+            openPicker.ViewMode = PickerViewMode.List;
+            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            StorageFile storageFile = await openPicker.PickSingleFileAsync();
+            if (storageFile != null)
             {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
-            };
-
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                        new DocumentReferenceFieldController(documentController.GetId(),
-                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
-                    .Document, true, true);
-
-            collection.ViewModel.AddDocument(documentController, null);
+                var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                    e.GetPosition(MainPage.Instance));
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
+                {
+                    [KeyStore.ActiveLayoutKey] =
+                    new DocumentFieldModelController(
+                        new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+                };
+                var doc = new DocumentController(fields, DocumentType.DefaultType);
+                var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
+                var layout = doc.GetActiveLayout();
+                var data =
+                    layout.Data.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
+                if (storageFile.IsOfType(StorageItemTypes.Folder))
+                {
+                    //Add collection of new documents?
+                }
+                else if (storageFile.IsOfType(StorageItemTypes.File))
+                {
+                    switch (storageFile.FileType)
+                    {
+                        case ".jpg":
+                        case ".png":
+                            var imgController = new ImageFieldModelController();
+                            var btmp = new BitmapImage(new Uri(storageFile.Path, UriKind.Absolute));
+                            imgController.Data = btmp;
+                            doc.SetField(key, imgController, true);
+                            var imgBox = new ImageBox(new DocumentReferenceFieldController(doc.GetId(), key), 0, 0, btmp.PixelWidth, btmp.PixelHeight);
+                            data?.AddDocument(imgBox.Document);
+                            break;
+                        case ".txt":
+                            var text = await FileIO.ReadTextAsync(storageFile);
+                            var txtController = new TextFieldModelController(text);
+                            doc.SetField(key, txtController, true);
+                            var txtBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key), 0, 0, 200, 200);
+                            data?.AddDocument(txtBox.Document);
+                            break;
+                        case ".doc":
+                            // TODO implement for more file types
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                collection.ViewModel.AddDocument(doc, null);
+            }
+            
         }
         
         public static void AddCollectionTEST(ICollectionView collection, DragEventArgs e)
@@ -186,41 +185,34 @@ namespace Dash
             }
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(numbers)
-                }
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
-            var col = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
-            var layoutDoc =
-                new CollectionBox(new DocumentReferenceFieldController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
 
-            //Make second collection
+            var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+            var layoutDocument = new CollectionBox(new DocumentReferenceFieldController(collectionDocument.GetId(),  
+                DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+            collectionDocument.SetActiveLayout(layoutDocument, true, true); 
+
+
+            // Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
             var fields2 = new Dictionary<KeyController, FieldControllerBase>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new[]
-                    {numbers2, twoImages2})
+                new DocumentCollectionFieldModelController(new[] {numbers2, twoImages2})
             };
             var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
+
                 new CollectionBox(new DocumentReferenceFieldController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
+                    DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+            col2.SetActiveLayout(layoutDoc2, true, true); 
+
 
             //Display collections
             DisplayDocument(collection, col2, where);
-            DisplayDocument(collection, col, where);
+            DisplayDocument(collection, collectionDocument, where);
         }
 
         public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
@@ -231,10 +223,10 @@ namespace Dash
                 var w = docController.GetWidthField().Data;
 
                 var pos = (Point)where;
-                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            //DBTest.DBDoc.AddChild(docController);
+            DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -282,6 +274,21 @@ namespace Dash
             DisplayDocument(collectionView, postitNote, where);
         }
 
+        public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            FileOpenPicker picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+            var results = await picker.PickMultipleFilesAsync();
+            FileDropHelper.HandleDropOnCollection(results, collectionView, where);
+        }
+
+        #region Ink Commands
+
         public static void SetTouchInput(object obj)
         {
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Touch;
@@ -305,13 +312,24 @@ namespace Dash
 
         public static void ToggleSelectionMode(object o)
         {
-            GlobalInkSettings.IsSelectionEnabled = true;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Selection;
         }
 
-        public static void ToggleInkRecognition(object o)
+        public static void ChoosePen(object o)
         {
-            GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
         }
 
+        public static void ChoosePencil(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+        }
+        
+        #endregion
     }
 }
