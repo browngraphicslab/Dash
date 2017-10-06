@@ -55,7 +55,7 @@ namespace Dash
 
             var grid = new Grid();
             SetupBindings(grid, docController, context);
-            LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
+            LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
 
             grid.Clip = new RectangleGeometry();
             grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
@@ -76,7 +76,7 @@ namespace Dash
                 }
                 else
                 {
-                    LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout);
+                    LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
             };
             grid.Loaded += delegate

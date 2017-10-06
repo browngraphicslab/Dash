@@ -75,7 +75,7 @@ namespace Dash
 
             //add to key to framework element dictionary
             var reference = data as ReferenceFieldModelController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = view;
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = view.ConnectionEllipse;
 
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)

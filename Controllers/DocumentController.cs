@@ -922,7 +922,7 @@ namespace Dash
             }
             if (DocumentType == StackLayout.DocumentType)
             {
-                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //skipped
+                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
             if (DocumentType == WebBox.DocumentType)
             {
@@ -934,16 +934,17 @@ namespace Dash
             }
             if (DocumentType == OperatorBox.DocumentType)
             {
-                return OperatorBox.MakeView(this, context, isInterfaceBuilder); //TODO: skipped the operators for now
+                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType == InkBox.DocumentType)
-            {
-                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //unsure about this one
-            }
+            //TODO: Do we even want ink fields on documents other than in collections?
+            //if (DocumentType == InkBox.DocumentType)
+            //{
+            //    return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //unsure about this one
+            //}
             if (DocumentType == GridViewLayout.DocumentType) //
             {
                 return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
