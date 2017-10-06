@@ -826,11 +826,6 @@ namespace Dash
 
             OnSelected();
         }
-        private void OnHold(object sender, HoldingRoutedEventArgs e)
-        {
-            //e.Handled = true;
-            //ChooseLowest(e);
-        }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {

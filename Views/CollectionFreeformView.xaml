@@ -14,8 +14,6 @@
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped"
-    Holding="OnHold"
-    IsHoldingEnabled="True"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
