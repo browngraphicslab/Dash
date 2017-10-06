@@ -86,7 +86,7 @@ namespace Dash
             for (int i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key == fieldKey)
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
+                        new BoundFieldModelController(fieldValue, RealDataContext));
         }
 
         private void FocusOn(TextBox tb)
@@ -171,9 +171,20 @@ namespace Dash
 
                 fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
             }
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
-            _documentControllerDataContext.SetField(key, fmController, true);
+
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext)));
+            RealDataContext.SetField(key, fmController, true);
             //*/ 
+        }
+
+        public DocumentController RealDataContext
+        {
+            get
+            {
+                return _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null ?
+                _documentControllerDataContext.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data :
+                _documentControllerDataContext;
+            }
         }
 
         /// <summary>

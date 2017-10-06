@@ -24,11 +24,22 @@ namespace Dash.Views
         {
             this.InitializeComponent();
         }
+        
+        public delegate void FieldTapped(CollectionDBSchemaRecordField field);
+        public static event FieldTapped FieldTappedEvent;
+
+        private void UserControl_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (FieldTappedEvent != null)
+                FieldTappedEvent(this);
+        }
     }
     public class CollectionDBSchemaRecordFieldViewModel: DependencyObject
     {
         //public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
         //    "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(
+            "Selected", typeof(bool), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(bool)));
         public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
             "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
         public static readonly DependencyProperty BorderThicknessProperty = DependencyProperty.Register(
@@ -36,16 +47,31 @@ namespace Dash.Views
         public static readonly DependencyProperty DataReferenceProperty = DependencyProperty.Register(
             "DataReference", typeof(ReferenceFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(ReferenceFieldModelController)));
 
-        public DocumentController _document;
-        public KeyController      _fieldKey;
-        public CollectionDBSchemaRecordFieldViewModel(double w, DocumentController document, KeyController fieldKey, Thickness thickness)
+        public DocumentController Document;
+        public int                Row;
+        public CollectionDBSchemaHeader.HeaderViewModel HeaderViewModel;
+        public CollectionDBSchemaRecordFieldViewModel(DocumentController document, CollectionDBSchemaHeader.HeaderViewModel headerViewModel, Border headerBorder, int row)
         {
-            Width     = w;
-            _document = document;
-            _fieldKey = fieldKey;
-             DataReference = new ReferenceFieldModelController(_document.GetId(), fieldKey);
-            BorderThickness = thickness;
+            HeaderViewModel = headerViewModel;
+            Row = row;
+            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
+            BorderThickness = headerBorder.BorderThickness;
+            Document = document;
+            Document.DocumentFieldUpdated += Document_DocumentFieldUpdated;
+            DataReference = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
+            HeaderViewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
            // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).DereferenceToRoot(null).ToString();
+        }
+
+        private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (args.Reference.FieldKey == HeaderViewModel.FieldKey)
+                DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
+        }
+
+        private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
+        {
+            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
         }
         public ReferenceFieldModelController DataReference
         {
@@ -59,8 +85,13 @@ namespace Dash.Views
         }
         public double Width
         {
-            get { return (double) GetValue(WidthProperty); }
+            get { return (double)GetValue(WidthProperty);  }
             set { SetValue(WidthProperty, value); }
+        }
+        public bool Selected
+        {
+            get { return (bool)GetValue(SelectedProperty); }
+            set { SetValue(SelectedProperty, value); }
         }
         //public string Content
         //{

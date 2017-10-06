@@ -107,6 +107,8 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
+            if (e.Handled)
+                return;
             if (e.VirtualKey == VirtualKey.Tab)
             {
                 var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
