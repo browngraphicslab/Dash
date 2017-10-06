@@ -808,12 +808,19 @@ namespace Dash
         }
 
 
-
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        private bool _singleTapped; 
+        private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = true;
+            if (IsLowestSelected) return;
+
+            // so that doubletap is not overrun by tap events 
+            _singleTapped = true;
+            await Task.Delay(100);
+            if (!_singleTapped) return; 
+
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
-            e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
@@ -821,11 +828,18 @@ namespace Dash
         }
         private void OnHold(object sender, HoldingRoutedEventArgs e)
         {
-            e.Handled = true;
-            ChooseLowest(e);
+            //e.Handled = true;
+            //ChooseLowest(e);
         }
 
-        private void ChooseLowest(HoldingRoutedEventArgs e)
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _singleTapped = false; 
+            e.Handled = true;
+            ChooseLowest(e); 
+        }
+
+        private void ChooseLowest(/*HoldingRoutedEventArgs*/ DoubleTappedRoutedEventArgs e)
         {
             var freeforms = xItemsControl.GetDescendantsOfType<CollectionFreeformView>();
             foreach (var ff in freeforms)

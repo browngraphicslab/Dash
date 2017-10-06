@@ -521,8 +521,11 @@ namespace Dash
 
         public Rect ClipRect { get { return xClipRect.Rect;  } }
 
-        public void OnTapped(object sender, TappedRoutedEventArgs e)
+        public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (IsSelected) return; 
+            await System.Threading.Tasks.Task.Delay(100);
+
             if (e != null) e.Handled = true;
             if (ViewModel == null)
                 return;
