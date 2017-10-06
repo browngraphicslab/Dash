@@ -27,7 +27,7 @@ namespace Dash.Views
                 "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
             public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(
                 "Selected", typeof(bool), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(bool)));
-            public KeyController Key;
+            public KeyController FieldKey;
             public bool Selected
             {
                 get { return (bool)GetValue(SelectedProperty); }
@@ -41,7 +41,7 @@ namespace Dash.Views
             public DocumentController SchemaDocument;
             public override string ToString()
             {
-                return Key.Name;
+                return FieldKey.Name;
             }
 
         }
@@ -56,7 +56,7 @@ namespace Dash.Views
             if (collection != null)
             {
                 var viewModel = (DataContext as HeaderViewModel);
-                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.Key.Name), true);
+                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
 
                 collection.SetDBView();
             }

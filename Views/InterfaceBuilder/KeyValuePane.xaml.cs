@@ -64,38 +64,38 @@ namespace Dash
             }
         }
 
-        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            // if a field has been replaced or updated then set it's source to be the new element
-            if (args.Action == DocumentController.FieldUpdatedAction.Replace ||
-                args.Action == DocumentController.FieldUpdatedAction.Update)
-            {
-                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
-            }
-            else // otherwise 
-            {
-                SetListItemSourceToCurrentDataContext(); // TODO LSM - this could be done in a more granular way... i.e. remove or add the modified field instead of rebuild entire list
-            }
-        }
+        //private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        //{
+        //    // if a field has been replaced or updated then set it's source to be the new element
+        //    if (args.Action == DocumentController.FieldUpdatedAction.Replace ||
+        //        args.Action == DocumentController.FieldUpdatedAction.Update)
+        //    {
+        //        UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
+        //    }
+        //    else // otherwise 
+        //    {
+        //        SetListItemSourceToCurrentDataContext(); // TODO LSM - this could be done in a more granular way... i.e. remove or add the modified field instead of rebuild entire list
+        //    }
+        //}
 
-        /// <summary>
-        /// Replaces each element in the ListItemSource with a key equal to the passed in <paramref name="fieldKey"/> 
-        /// with the passed in <paramref name="fieldValue"/>
-        /// </summary>
-        /// <param name="fieldKey"></param>
-        /// <param name="fieldValue"></param>
-        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
-        {
+        ///// <summary>
+        ///// Replaces each element in the ListItemSource with a key equal to the passed in <paramref name="fieldKey"/> 
+        ///// with the passed in <paramref name="fieldValue"/>
+        ///// </summary>
+        ///// <param name="fieldKey"></param>
+        ///// <param name="fieldValue"></param>
+        //void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        //{
 
-            for (var i = 0; i < ListItemSource.Count; i++)
-            {
-                if (ListItemSource[i].Key.Equals(fieldKey))
-                {
-                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
-                }
-            }
-        }
+        //    for (var i = 0; i < ListItemSource.Count; i++)
+        //    {
+        //        if (ListItemSource[i].Key.Equals(fieldKey))
+        //        {
+        //            ListItemSource[i] = new KeyFieldContainer(fieldKey,
+        //                new BoundFieldModelController(fieldValue, _documentControllerDataContext));
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Resets the ListItemSource to fields in the current datacontext (this can be thought of as rebuilding the entire list)
@@ -108,6 +108,23 @@ namespace Dash
                 {
                     ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext)));
                 }
+        }
+
+        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            // if a field has been replaced or updated then set it's source to be the new element
+            // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
+            if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
+                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
+            else SetListItemSourceToCurrentDataContext();
+        }
+
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        {
+            for (int i = 0; i < ListItemSource.Count; i++)
+                if (ListItemSource[i].Key == fieldKey)
+                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
+                        new BoundFieldModelController(fieldValue, RealDataContext));
         }
 
         private void FocusOn(TextBox tb)
@@ -192,9 +209,20 @@ namespace Dash
 
                 fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
             }
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
-            _documentControllerDataContext.SetField(key, fmController, true);
+
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext)));
+            RealDataContext.SetField(key, fmController, true);
             //*/ 
+        }
+
+        public DocumentController RealDataContext
+        {
+            get
+            {
+                return _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null ?
+                _documentControllerDataContext.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data :
+                _documentControllerDataContext;
+            }
         }
 
         /// <summary>

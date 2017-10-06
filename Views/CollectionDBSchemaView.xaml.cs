@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -6,6 +7,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Controllers.Operators;
 using Dash.Views;
+using Windows.System;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Controls.Primitives;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -22,6 +26,8 @@ namespace Dash
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
             xGridView.ItemsSource = SchemaHeaders;
+            Loaded   += CollectionDBSchemaView_Loaded1;
+            Unloaded += CollectionDBSchemaView_Unloaded1;
         }
 
         public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
@@ -72,6 +78,88 @@ namespace Dash
 
         #endregion
 
+        private void CollectionDBSchemaView_Unloaded1(object sender, RoutedEventArgs e)
+        {
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
+        }
+
+        private void CollectionDBSchemaView_Loaded1(object sender, RoutedEventArgs e)
+        {
+            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
+        }
+
+        private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
+        {
+            var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
+            var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+            if (column != -1)
+            {
+                FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
+                updateEditBox(dc);
+                xEditField.ShowAt(this);
+            }
+        }
+
+        private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
+        {
+            xEditTextBox.Tag = dc;
+            var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            if (field is TextFieldModelController)
+                xEditTextBox.Text = (field as TextFieldModelController).Data;
+            else xEditTextBox.Text = field.ToString();
+            dc.Selected = true;
+            xEditTextBox.SelectAll();
+        }
+
+        private void xEditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                e.Handled = true;
+            }
+            if (e.Key == Windows.System.VirtualKey.Tab)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void xEditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                SetFieldValue(dc);
+                var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                var recordViewModel = xRecordsView.Items[Math.Max(0,Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                updateEditBox(recordViewModel.RecordFields[column]);
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Tab)
+            {
+                var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                SetFieldValue(dc);
+                var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                var recordViewModel = xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel;
+                updateEditBox(recordViewModel.RecordFields[Math.Max(0,Math.Min(recordViewModel.RecordFields.Count - 1, column + direction))]);
+            }
+            e.Handled = true;
+        }
+
+
+        private void xEditField_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+        {
+            var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+            SetFieldValue(dc);
+        }
+
+        private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
+        {
+            dc.Document.ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, new Context(dc.Document)));
+            dc.DataReference = new ReferenceFieldModelController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
+            dc.Selected = false;
+        }
+
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
@@ -88,6 +176,7 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
+            SchemaHeaders.First().Width = 150;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -113,7 +202,7 @@ namespace Dash
         private bool SchemaHeadersContains(string field)
         {
             foreach (var s in SchemaHeaders)
-                if (s.Key.Name == field)
+                if (s.FieldKey.Name == field)
                     return true;
             return false;
         }
@@ -133,30 +222,25 @@ namespace Dash
             {
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)
-                foreach (var f in d.EnumFields())
-                    if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
-                        SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel
-                        {
-                            SchemaDocument = ParentDocument,
-                            Width = 70,
-                            Key = f.Key,
-                            Selected = false
-                        });
+                {
+                    foreach (var f in d.EnumFields())
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, FieldKey = f.Key, Selected = false } );
+                }
                 // remove possible infinite loops
-                filterDocuments(dbDocs,
-                    selectedBars.Select(b => SchemaHeaders[(int) (b as NumberFieldModelController).Data].Key.Name)
-                        .ToList());
-
+                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].FieldKey.Name).ToList());
+                
                 // add all the records
                 var records = new List<CollectionDBSchemaRecordViewModel>();
-                foreach (var document in dbDocs)
+                int recordCount = 0;
+                foreach (var d in dbDocs)
+                {
                     records.Add(new CollectionDBSchemaRecordViewModel(
-                        document,
-                        SchemaHeaders.Select(headerViewModel => new CollectionDBSchemaRecordFieldViewModel(
-                            headerViewModel.Width + HeaderBorderThickness.BorderThickness.Left + HeaderBorderThickness.BorderThickness.Right, 
-                            document, headerViewModel.Key,
-                            HeaderBorderThickness.BorderThickness))
-                    ));
+                        d,
+                        SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
+                        ));
+                    recordCount++;
+                }
                 xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
             }
         }

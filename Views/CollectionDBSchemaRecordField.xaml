@@ -12,6 +12,8 @@
     Width="{Binding Width}"
     Padding="{Binding BorderThickness}"
     Height="25"
+    Tapped="UserControl_Tapped" 
+    FontWeight="{Binding Selected,Converter={StaticResource BoolToBoldConverter}}"
     Content="{Binding DataReference, Converter={StaticResource ReferenceFieldModelControllerToFrameworkElementConverter}, Mode=OneWay}"
     >
 </UserControl>

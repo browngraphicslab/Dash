@@ -22,28 +22,38 @@
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="MinHeight" Value="0" />
             </Style>
+            <Flyout x:Name="xEditField" Closing="xEditField_Closing">
+                <TextBox x:Name="xEditTextBox" Style="{StaticResource xPlainTextBox}" Width="200" Height="50" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="False"> </TextBox>
+            </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="30"></RowDefinition>
             <RowDefinition x:Name="xDataArea" Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Border Visibility="Collapsed" x:Name="HeaderBorderThickness" BorderThickness="1" />
-        <ListView x:Name="xGridView" Grid.Row="0"
-                  CanDragItems="{Binding CanDragItems}"
-                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Padding="0" Margin="0" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
-                        <localView:CollectionDBSchemaHeader DataContext="{Binding}" Height="25"/>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Grid x:Name="ItemIndexColumn" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ListView x:Name="xGridView" Grid.Column="1"
+                      CanDragItems="{Binding CanDragItems}"
+                      SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Padding="0" Margin="0">
+                        </StackPanel>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
+                            <localView:CollectionDBSchemaHeader DataContext="{Binding}" Height="25"/>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
         <ListView x:Name="xRecordsView" 
                   VirtualizingStackPanel.VirtualizationMode="Recycling" 
                   Grid.Row="1" 
