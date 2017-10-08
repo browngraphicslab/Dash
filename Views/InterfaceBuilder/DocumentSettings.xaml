@@ -22,7 +22,7 @@
             <Grid Grid.Row="0" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Button Margin="0,5,0,10" Width="200" Height="35" HorizontalAlignment="Center" Content="EDIT">
                     <Button.Background>
-                        <SolidColorBrush Color="SteelBlue"></SolidColorBrush>
+                        <SolidColorBrush Color="{StaticResource WindowsBlueColor}"></SolidColorBrush>
                     </Button.Background>
                 </Button>
             </Grid>
@@ -59,7 +59,7 @@
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->
-                                <Button x:Name="xAddLayoutButton" Background="SteelBlue" Grid.Column="1" >
+                                <Button x:Name="xAddLayoutButton" Background="{StaticResource WindowsBlue}" Grid.Column="1" >
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>

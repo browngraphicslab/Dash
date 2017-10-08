@@ -13,6 +13,6 @@
                     Margin="{Binding ElementName=xDocumentButtonsStackPanel, Path=Margin}"
                     Width="{Binding ElementName=xDocumentButtonsStackPanel, Path=Width}">
         </StackPanel>
-        <StackPanel x:Name="xDocumentButtonsStackPanel" HorizontalAlignment="Left" Margin="0,0,10,0"></StackPanel>
+        <StackPanel x:Name="xDocumentButtonsStackPanel" MinWidth="30" HorizontalAlignment="Left" Orientation="Vertical" Margin="0,0,0,0"></StackPanel>
     </Grid>
 </UserControl>

@@ -10,9 +10,6 @@
     d:DesignWidth="300">
 
     <Grid Width="300" HorizontalAlignment="Center" MinHeight="300" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -136,13 +133,13 @@
                 </Grid>
 
                 <!--SIZE-->
-                <Grid x:Name="xSizeRow" Grid.Row="4"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid x:Name="xSizeRow" Grid.Row="4"  Width="230" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinHeight="30"/>
 
                 <!--POSITION-->
-                <Grid x:Name="xPositionRow" Grid.Row="5"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid x:Name="xPositionRow" Grid.Row="5"  Width="230" HorizontalAlignment="Stretch" VerticalAlignment="Center"  MinHeight="30"/>
 
                 <!--ALIGNMENT-->
-                <Grid x:Name="xAlignmentRow" Grid.Row="6" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
+                <Grid x:Name="xAlignmentRow" Grid.Row="6" Width="230" HorizontalAlignment="Stretch" VerticalAlignment="Center"  MinHeight="30"></Grid>
 
             </Grid>
         </Grid>
