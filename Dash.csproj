@@ -101,6 +101,8 @@
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorModelController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />

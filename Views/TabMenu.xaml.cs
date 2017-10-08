@@ -42,6 +42,9 @@ namespace Dash
 
         private void MakeView()
         {
+            var add = OperationCreationHelper.Operators["Add"].OperationDocumentConstructor;
+            var subtract = OperationCreationHelper.Operators["Subtract"].OperationDocumentConstructor;
+            var multiply = OperationCreationHelper.Operators["Multiply"].OperationDocumentConstructor;
             var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor;
             var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor;
             var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor;
@@ -62,6 +65,9 @@ namespace Dash
                 createBlankDocument,
                 createBlankPostitNote,
                 createBlankCollection,
+                add,
+                subtract,
+                multiply,
                 divide,
                 union,
                 intersection,
