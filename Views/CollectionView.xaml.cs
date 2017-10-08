@@ -112,7 +112,8 @@ namespace Dash
             }
             xContentControl.Content = CurrentView;
 
-            if (true || ParentDocument == MainPage.Instance.xMainDocView )
+            if (MainPage.Instance != null && ParentDocument == MainPage.Instance.xMainDocView ||
+                HomePage.Instance != null && ParentDocument == HomePage.Instance.MainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);

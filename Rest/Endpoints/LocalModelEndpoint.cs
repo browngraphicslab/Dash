@@ -35,9 +35,18 @@ namespace Dash
                 new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\" + _fileName);
-                _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
-                _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
+                if (File.Exists(DashConstants.LocalStorageFolder.Path + "\\" + _fileName))
+                {
+                    var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\" + _fileName);
+                    _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
+                    _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
+                }
+                else
+                {
+                    _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
+                }
+
+                Debug.WriteLine("Database at:   "+ DashConstants.LocalStorageFolder.Path);
             }
             catch (Exception e)
             {

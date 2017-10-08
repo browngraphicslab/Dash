@@ -43,19 +43,23 @@ namespace Dash
     public sealed partial class HomePage : Page
     {
         private DocumentController _homePageDocument;
-        private DocumentView _mainDocView;
+        public DocumentView MainDocView;
+
+        public static HomePage Instance { get; private set; }
+
 
         public HomePage()
         {
             InitializeComponent();
+            Instance = this;
         }
 
         private void XOutterGridSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (_mainDocView != null)
+            if (MainDocView != null)
             {
-                _mainDocView.Width = e.NewSize.Width;
-                _mainDocView.Height = e.NewSize.Height;
+                MainDocView.Width = e.NewSize.Width;
+                MainDocView.Height = e.NewSize.Height;
             }
         }
 
@@ -130,14 +134,14 @@ namespace Dash
                 UITask.Run(() =>
                 {
                     homePageViewModel = new DocumentViewModel(_homePageDocument);
-                    _mainDocView = new DocumentView(homePageViewModel);
+                    MainDocView = new DocumentView(homePageViewModel);
 
                     // set the main view's width and height to avoid NaN errors
-                    _mainDocView.Width = xOuterGrid.ActualWidth;
-                    _mainDocView.Height = xOuterGrid.ActualHeight;
+                    MainDocView.Width = xOuterGrid.ActualWidth;
+                    MainDocView.Height = xOuterGrid.ActualHeight;
 
-                    Grid.SetRow(_mainDocView, 1);
-                    xOuterGrid.Children.Add(_mainDocView);
+                    Grid.SetRow(MainDocView, 1);
+                    xOuterGrid.Children.Add(MainDocView);
                 });
 
             }
