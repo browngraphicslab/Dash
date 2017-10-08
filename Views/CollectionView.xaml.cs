@@ -124,7 +124,7 @@ namespace Dash
 
         #endregion
 
-        #region Operator connection stuff
+        #region Operator connection output
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -149,6 +149,41 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.EndDrag(ioRef, false);
+        }
+
+        #endregion
+
+        #region Operator connection input
+        private void ConnectionEllipseInput_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Complete();
+        }
+
+        private void ConnectionEllipseInput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (ParentCollection == null) return;
+            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            Ellipse el = ConnectionEllipseInput;
+            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
+
+            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            freeform.CanLink = true;
+            freeform.StartDrag(ioRef);
+        }
+
+        private void ConnectionEllipseInput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (ParentCollection == null) return;
+            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            Ellipse el = ConnectionEllipseInput;
             KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
