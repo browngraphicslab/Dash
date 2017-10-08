@@ -217,7 +217,7 @@ namespace Dash.StaticClasses
                     var image = field as ImageFieldModelController;
                     data = image.ImageFieldModel.Data.AbsoluteUri;
                 }
-                if (data.Equals(value.ToLower()))
+                if (data.ToLower().Equals(value.ToLower()))
                 {
                     valueEqualsDocuments.Add(document);
                 }
