@@ -49,8 +49,7 @@ namespace Dash
             xAddLayoutComboBox.SelectionChanged += (s, e) => {
                 SetNewActiveLayout((string)xAddLayoutComboBox.SelectedItem);
 
-                xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xAddLayoutButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xAddLayoutComboBox.Opacity = 0;
             };
             xAddLayoutComboBox.LostFocus += (s, e) =>
             {

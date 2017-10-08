@@ -56,15 +56,6 @@ namespace Dash
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             tb.SetBinding(TextBox.TextProperty, spacingBinding);
-
-            //var spacingTextBinding = new Binding()
-            //{
-            //    Source = tb,
-            //    Path = new PropertyPath(nameof(tb.Text)),
-            //    Mode = BindingMode.TwoWay,
-            //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            //};
-            //slider.SetBinding(Slider.ValueProperty, spacingTextBinding);
         }
         #region ValueSlider
 

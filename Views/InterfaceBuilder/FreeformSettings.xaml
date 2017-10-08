@@ -59,20 +59,8 @@
                 <!--SPACING-->
                 <Grid Grid.Row="4" x:Name="xSpacingGrid" HorizontalAlignment="Stretch" VerticalAlignment="Center" Visibility="Collapsed">
                     <local:SettingsPaneBlock>
-                        <local:SettingsPaneBlock.MainContent>
-                            <!--<Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="1.2*"/>
-                                    <ColumnDefinition Width="0.8*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid Grid.Column="0">
-                                    <Slider x:Name="xSpacingSlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="50" StepFrequency="1" Foreground="SteelBlue"/>
-                                </Grid>
-                                <Grid Grid.Column="1" Margin="15,0,0,0">
-                                    <TextBox x:Name="xSpacingSliderTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
-                                </Grid>
-                            </Grid>-->
-                            <Grid>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid>
                                 <TextBox x:Name="xSpacingTextbox" BorderBrush="Transparent" Background="White" VerticalAlignment="Center" FontSize="12" LostFocus="xSpacingTextbox_OnLostFocus"  TextAlignment="Center"/>
                                 <Grid x:Name="xSpacingMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                                       Background="Transparent"
