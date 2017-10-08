@@ -6,17 +6,28 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    
-    <Grid Height="Auto">
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <local:SettingsPaneBlock>
             <local:SettingsPaneBlock.MainContent>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
                     </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" Margin="0,5,5,0">
-                        <TextBox x:Name="xWidthTextBox" Header="Width" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>
+                    <Grid Grid.Column="0" Margin="0,0,5,0">
+                        <!--<TextBox x:Name="xWidthTextBox" Header="Width" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,5" TextAlignment="Center"  FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>-->
+                        <TextBox x:Name="xWidthTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" />
+
+                        <Border x:Name="xWidthLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
+                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
+                            <Border.Background>
+                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
+                            </Border.Background>
+                            <TextBlock Text="Width" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        </Border>
                         <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -41,8 +52,18 @@
                             </Border>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Column="1" Margin="5,5,0,0">
-                        <TextBox x:Name="xHeightTextBox" Header="Height" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"  Margin="0,0,0,10" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>
+                    <Grid Grid.Column="1" Margin="5,0,0,0">
+                        <!--<TextBox x:Name="xHeightTextBox" Header="Height" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"  Margin="0,0,0,5" TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>-->
+                        <TextBox x:Name="xHeightTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" />
+                        <Border x:Name="xHeightLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
+                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
+                            <Border.Background>
+                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
+                            </Border.Background>
+                            <TextBlock Text="Height" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        </Border>
                         <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"

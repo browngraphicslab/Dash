@@ -54,8 +54,7 @@ namespace Dash
             };
             xAddLayoutComboBox.LostFocus += (s, e) =>
             {
-                xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xAddLayoutButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xAddLayoutComboBox.Opacity = 0;
             };
         }
 
@@ -111,9 +110,9 @@ namespace Dash
         // to be rewritten this just cycles through our possible layouts for documents
         private void CreateNewActiveLayout_TEMP(object sender, TappedRoutedEventArgs e)
         {
-            xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            (sender as Button).Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            xAddLayoutComboBox.Focus(FocusState.Programmatic);
             xAddLayoutComboBox.IsDropDownOpen = true;
+            xAddLayoutComboBox.Opacity = 1;
         }
 
         /// <summary>
@@ -170,6 +169,11 @@ namespace Dash
                 delegateNewLayout.SetFields(defaultLayoutFields, true);
                 dataDocDelegate.SetActiveLayout(delegateNewLayout, true, false);
             }
+        }
+
+        private void XAddLayoutComboBox_OnDropDownClosed(object sender, object e)
+        {
+            xAddLayoutComboBox.Opacity = 0;
         }
     }
 }

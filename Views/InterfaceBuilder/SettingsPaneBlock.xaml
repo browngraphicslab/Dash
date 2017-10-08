@@ -12,43 +12,31 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xGrid" HorizontalAlignment="Stretch">
+        <Grid x:Name="xGrid" HorizontalAlignment="Stretch" Tapped="XTitle_OnTapped">
+            <Grid.Background>
+                <SolidColorBrush Color="Black" Opacity="0.05"></SolidColorBrush>
+            </Grid.Background>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="30"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" Width="25">
-                <Button x:Name="xCollapseExpandButton" Content="˅" Padding="0" Margin="10,0,0,0" Height="Auto" Width="Auto" Foreground="DimGray" Background="Transparent"/>
+                <TextBlock x:Name="xCollapseExpandButton" Text="˅" Margin="0,0,0,0" Padding="10"  Height="Auto" Width="Auto" Foreground="White" />
             </Grid>
-            <Grid Grid.Column="1"  HorizontalAlignment="Stretch" Height="40" Tapped="XTitle_OnTapped" Background="Transparent" Padding="4" Margin="0,0,20,0">
-                <TextBlock x:Name="xTitle" Text="{x:Bind Title}"  Margin="5,0,0,0" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch"></TextBlock>
+            <Grid Grid.Column="1"  HorizontalAlignment="Stretch" Height="40" Background="Transparent" Margin="0,0,30,0">
+                <TextBlock x:Name="xTitle" Text="{x:Bind Title}" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="White"></TextBlock>
             </Grid>
         </Grid>
         <Grid x:Name="xContentGrid" Grid.Row="1">
-            <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
+            <Grid.Background>
+                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+            </Grid.Background>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ContentPresenter Grid.Column="1"  Content="{x:Bind MainContent}" Margin="0,10,30,10"></ContentPresenter>
         </Grid>
     </Grid>
-    <!--<Grid Width="230" Padding="0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="2.5*"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Background="Transparent">
-            <Grid x:Name="xTitle" Width="230" Tapped="XTitle_OnTapped">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="40"/>
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0">
-                    <TextBlock x:Name="xTitleTextBlock" Text="{x:Bind Title}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,5,0,5" FontSize="12"></TextBlock>
-                </Grid>
-                <Grid Grid.Column="1">
-                    <Button x:Name="xCollapseExpandButton" FontFamily="Marlett" Content="6" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent"/>
-                </Grid>
-            </Grid>
-        </Grid>
-        <Grid x:Name="xContentGrid" Grid.Row="1" Background="Transparent">
-            <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
-        </Grid>
-    </Grid>-->
 </UserControl>
+
