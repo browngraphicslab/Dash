@@ -55,7 +55,7 @@
                                 
                                 <!--NEW LAYOUT OPTIONS DROPDOWN--> 
                                 <ComboBox x:Name="xAddLayoutComboBox" Grid.Column="1" Opacity="0"  MinWidth="36"
-                                          BorderBrush="Transparent" FontSize="12" DropDownClosed="XAddLayoutComboBox_OnDropDownClosed">
+                                          BorderBrush="Transparent" FontSize="12">
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->

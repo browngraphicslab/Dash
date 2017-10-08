@@ -55,6 +55,10 @@ namespace Dash
             {
                 xAddLayoutComboBox.Opacity = 0;
             };
+            xAddLayoutComboBox.DropDownClosed += (s, e) =>
+            {
+                xAddLayoutComboBox.Opacity = 0;
+            };
         }
 
         private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
@@ -111,6 +115,7 @@ namespace Dash
         {
             xAddLayoutComboBox.Focus(FocusState.Programmatic);
             xAddLayoutComboBox.IsDropDownOpen = true;
+            // visibility doesn't work on first tap on the button
             xAddLayoutComboBox.Opacity = 1;
         }
 
@@ -170,9 +175,5 @@ namespace Dash
             }
         }
 
-        private void XAddLayoutComboBox_OnDropDownClosed(object sender, object e)
-        {
-            xAddLayoutComboBox.Opacity = 0;
-        }
     }
 }
