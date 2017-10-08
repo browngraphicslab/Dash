@@ -150,7 +150,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipse;
             KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
@@ -171,7 +171,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = ConnectionEllipseInput;
             KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
             CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
