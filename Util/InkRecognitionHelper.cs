@@ -130,7 +130,8 @@ namespace Dash
             foreach (var rect in rectToDocView.Keys)
             {
                 if (point1.X < rect.X && point2.X > rect.X + rect.Width ||
-                    point1.X > rect.X + rect.Width && point2.X < rect.X)
+                    point1.X > rect.X + rect.Width && point2.X < rect.X || point1.Y < rect.Y && point2.Y > rect.Y + rect.Height ||
+                    point1.Y > rect.Y + rect.Height && point2.Y < rect.Y)
                     if (PathIntersectsRect(
                         inkPoints, rect))
                     {
@@ -220,11 +221,48 @@ namespace Dash
         private bool IsLinear(IEnumerable<Point> points)
         {
             var pList = points.ToList();
+            var r1 = GetRSquared(pList);
+            var r2 = GetRSquared(RotatePoints(pList));
+            return r1 > 0.9 || r2 > 0.9;
+        }
+
+        private double GetRSquared(List<Point> pList)
+        {
             var xVals = pList.Select(p => p.X).ToArray();
             var yVals = pList.Select(p => p.Y).ToArray();
             Util.LinearRegression(xVals, yVals, 0, pList.Count, out double rsquared, out double yInt,
                 out double slope);
-            return rsquared > 0.85;
+            return rsquared;
+        }
+
+        private double GetRange(IEnumerable<double> vals)
+        {
+            var min = double.PositiveInfinity;
+            var max = double.NegativeInfinity;
+            foreach (var val in vals)
+            {
+                if (val > max) max = val;
+                if (val < min) min = val;
+            }
+            return max - min;
+        }
+
+        private List<Point> RotatePoints(List<Point> points)
+        {
+            List<Point> newPoints = new List<Point>();
+            var ctrIndex = points.Count / 2;
+            var ctrPoint = points[ctrIndex];
+            foreach (var point in points)
+            {
+                var dx = point.X - ctrPoint.X;
+                var dy = point.Y - ctrPoint.Y;
+                var dist = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
+                var currAngle = Math.Atan2(dy, dx);
+                if (dx < 0) currAngle += Math.PI;
+                var newPoint = new Point(Math.Cos(currAngle + Math.PI/4) * dist + ctrPoint.X, Math.Sin(currAngle + Math.PI/4) * dist + ctrPoint.Y);
+                newPoints.Add(newPoint);
+            }
+            return newPoints;
         }
 
         private bool PathIntersectsRect(IEnumerable<Point> path, Rect rect)
@@ -321,14 +359,14 @@ namespace Dash
 
         private void AddOperatorFromRegion(InkAnalysisInkDrawing region)
         {
-            OperatorSearchView.AddsToThisCollection = FreeformInkControl.FreeformView;
-            if (MainPage.Instance.xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
-            MainPage.Instance.xCanvas.Children.Add(OperatorSearchView.Instance);
+            TabMenu.AddsToThisCollection = FreeformInkControl.FreeformView;
+            if (MainPage.Instance.xCanvas.Children.Contains(TabMenu.Instance)) return;
+            MainPage.Instance.xCanvas.Children.Add(TabMenu.Instance);
             Point absPos =
                 Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
                     FreeformInkControl.TargetCanvas, MainPage.Instance);
-            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
+            Canvas.SetLeft(TabMenu.Instance, absPos.X);
+            Canvas.SetTop(TabMenu.Instance, absPos.Y);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
         }

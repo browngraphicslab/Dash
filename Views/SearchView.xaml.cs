@@ -21,26 +21,88 @@ namespace Dash
 {
     public sealed partial class SearchView : UserControl
     {
-        private Dictionary<PivotItem, SearchCategoryItem> _items = new Dictionary<PivotItem, SearchCategoryItem>();
-        public SearchView(List<SearchCategoryItem> categories)
+        private SearchCategoryItem _searchList;
+        public SearchView(SearchCategoryItem categories)
         {
             this.InitializeComponent();
             this.MakeCategories(categories);
             //this.SetManipulation();
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
+            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
+
         }
 
-        private void MakeCategories(List<SearchCategoryItem> categories)
+        public void ConfigureForTouch()
         {
-            foreach (var category in categories)
+            _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
+        }
+
+        public void ConfigureForMouse()
+        {
+            _searchList.List.ItemContainerStyle = this.Resources["MouseStyle"] as Style;
+        }
+
+        public void MoveSelectedDown()
+        {
+            if (_searchList.List.SelectedIndex < 0)
             {
-                var pivotItem = new PivotItem();
-                pivotItem.Content = category;
-                pivotItem.Header = MakePivotItemHeader(category);
-                _items.Add(pivotItem, category);
-                xRootPivot.Items?.Add(pivotItem);
+                _searchList.List.SelectedIndex = 0;
+
+            } 
+            else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
+            {
+                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex + 1;
+                _searchList.List.ScrollIntoView(_searchList.List.SelectedItem);
+
             }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
+
+        }
+
+        public void ActivateItem()
+        {
+            _searchList.ActivateItem(_searchList.SelectedItem);
+        }
+
+        public void MoveSelectedUp()
+        {
+            if (_searchList.List.SelectedIndex <= 0)
+            {
+                _searchList.List.SelectedIndex = 0;
+                
+            }
+            else
+            {
+                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex - 1;
+            }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
+        }
+
+        private void MakeCategories(SearchCategoryItem categories)
+        {
+            _searchList = categories;
+            ListGrid.Children.Add(categories);
+            categories.Margin=new Thickness(0);
+            OuterGrid.Width = categories.List.Width;
+        }
+
+        public void SetNoSelection()
+        {
+            if (_searchList != null)
+            {
+                _searchList.List.SelectedIndex = -1;
+                _searchList.SelectedItem = null;
+            }
+            xSearch.Text = string.Empty;
+            UpdateList(string.Empty);
+        }
+
+        public void SetTextBoxFocus()
+        {
+            xSearch.Focus(FocusState.Programmatic);
         }
 
         /// <summary>
@@ -119,9 +181,10 @@ namespace Dash
         /// <param name="query"></param>
         private void UpdateList(string query)
         {
+            
             var results = GetMatches(query);
-            if (xRootPivot.SelectedItem != null)
-                _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
+            //if (xTitleList.SelectedItem != null)
+            _searchList.List.ItemsSource = results;
         }
 
         /// <summary>
@@ -132,18 +195,15 @@ namespace Dash
         private ObservableCollection<object> GetMatches(string searchInput)
         {
             var suggestions = new ObservableCollection<object>();
-            if (xRootPivot.SelectedItem == null) return suggestions; 
-            var items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
-            if (items != null)
+            //if (xTitleList.SelectedItem == null) return suggestions; 
+            var docNames = _searchList.ListContent;
+            if (docNames != null)
             {
-                foreach (var item in items)
+                foreach (var name in docNames)
                 {
-                    // don't know what to filter yet (how to filter document, collection, fields... etc.)
-                    var type = item.Name.ToLower();
-                    var input = searchInput.ToLower();
-                    if (type.Contains(input))
+                    if (name.ToLower().Contains(searchInput.ToLower()) || searchInput == string.Empty)
                     {
-                        suggestions.Add(item);
+                        suggestions.Add(name);
                     }
                 }
             }
@@ -159,16 +219,19 @@ namespace Dash
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                if (sender.Text.Length > 0)
-                {
-                    sender.ItemsSource = GetMatches(sender.Text);
-                }
-                else
-                {
-                    sender.ItemsSource = null;
-                    if (xRootPivot.SelectedItem != null)
-                        _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
-                }
+                UpdateList(sender.Text);
+
+                //if (sender.Text.Length > 0)
+                //{
+                //    //sender.ItemsSource = GetMatches(sender.Text);
+                //    UpdateList(sender.Text);
+                //}
+                //else
+                //{
+                //    sender.ItemsSource = null;
+                //    if (xTitleList.SelectedItem != null)
+                //        _items[xTitleList.SelectedItem as PivotItem].List.ItemsSource = _items[xTitleList.SelectedItem as PivotItem].ListContent;
+                //}
             }
         }
 
@@ -179,23 +242,24 @@ namespace Dash
         /// <param name="e"></param>
         private void xRootPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            foreach(var item in xRootPivot.Items)
-            {
-                var pivotItem = item as PivotItem;
-                var headerBorder = pivotItem.Header as Border;
-                if (xRootPivot.SelectedItem as PivotItem == pivotItem)
-                {
-                    headerBorder.Background = new SolidColorBrush(Colors.SteelBlue);
-                }
-                else
-                {
-                    headerBorder.Background = new SolidColorBrush(Colors.Gray);
-                }
-            }
+            //foreach(var item in xRootPivot.Items)
+            //{
+            //    var pivotItem = item as PivotItem;
+            //    var headerBorder = pivotItem.Header as Border;
+            //    if (xRootPivot.SelectedItem as PivotItem == pivotItem)
+            //    {
+            //        headerBorder.Background = new SolidColorBrush(Colors.SteelBlue);
+            //    }
+            //    else
+            //    {
+            //        headerBorder.Background = new SolidColorBrush(Colors.Gray);
+            //    }
+            //}
             xSearch.ItemsSource = null;
             // doesn't update list
 //            UpdateList(xSearch.Text);
         }
-        
+
+     
     }
 }

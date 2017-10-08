@@ -38,6 +38,11 @@ namespace Dash
 
         protected abstract DocumentController InstantiatePrototypeLayout();
 
+        /// <summary>
+        /// Fully dereference the field associated with the data key in the passed in docController
+        /// //TODO explain default field model controller idea here once it is written
+        /// </summary>
+        /// <returns></returns>
         protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;

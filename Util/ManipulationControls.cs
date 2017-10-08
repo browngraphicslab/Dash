@@ -6,17 +6,20 @@ using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-namespace Dash {
+namespace Dash
+{
 
     /// <summary>
     /// Instantiations of this class in a UserControl element will give that
     /// control's selected UIElement the ability to be moved and zoomed based on
     /// interactions with its given handleControl grid.
     /// </summary>
-    public class ManipulationControls : IDisposable {
+    public class ManipulationControls : IDisposable
+    {
 
         // == MEMBERS ==
 
@@ -39,13 +42,29 @@ namespace Dash {
         private bool _processManipulation;
 
         /// <summary>
+        /// Ensure pointerwheel only changes size of documents when it's selected 
+        /// </summary>
+        private bool PointerWheelEnabled
+        {
+            get
+            {
+                var docView = _element as DocumentView;
+                if (docView != null) return docView.IsLowestSelected;
+                var colView = _element as CollectionFreeformView;
+                if (colView != null) return colView.IsLowestSelected;
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Created a manipulation control to move element
         /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
         /// </summary>
         /// <param name="element">The element to add manipulation to</param>
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel) {
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel)
+        {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
             _doesRespondToPointerWheel = doesRespondToPointerWheel;
@@ -86,7 +105,7 @@ namespace Dash {
 
             if (_doesRespondToPointerWheel)
             {
-                _element.PointerWheelChanged -= EmptyPointerWheelChanged; 
+                _element.PointerWheelChanged -= EmptyPointerWheelChanged;
                 _element.PointerWheelChanged += PointerWheelMoveAndScale;
             }
             _disabled = false;
@@ -124,8 +143,12 @@ namespace Dash {
 
         private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
         {
-            _processManipulation = true;
-            TranslateAndScale(e);
+            if (PointerWheelEnabled)
+            {
+                _processManipulation = true;
+                TranslateAndScale(e);
+            }
+
         }
 
         private void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -141,8 +164,9 @@ namespace Dash {
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
-            
+        private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+
             TranslateAndScale(e);
         }
 
@@ -155,14 +179,14 @@ namespace Dash {
             var point = e.GetCurrentPoint(_element);
 
             // get the scale amount
-            float scaleAmount = (float) Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+            float scaleAmount = (float)Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
             ClampScale(newScale, ref scaleAmount);
-            
+
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
                 point.Position, new Point(scaleAmount, scaleAmount)));
         }
@@ -181,12 +205,12 @@ namespace Dash {
             }
             if (r != Rect.Empty)
             {
-                var trans    = new Point(-r.Left + (rect.Width - r.Width)/2, -r.Top);
+                var trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
                 else
-                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) /2);
+                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) / 2);
 
                 OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left, r.Top), scaleAmt));
             }
@@ -229,12 +253,12 @@ namespace Dash {
         {
             if (newScale > MaxScale)
             {
-                scale = (float) (MaxScale / ElementScale);
+                scale = (float)(MaxScale / ElementScale);
                 ElementScale = MaxScale;
             }
             else if (newScale < MinScale)
             {
-                scale = (float) (MinScale / ElementScale);
+                scale = (float)(MinScale / ElementScale);
                 ElementScale = MinScale;
             }
             else

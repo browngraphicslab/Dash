@@ -112,7 +112,7 @@ namespace Dash
                 //if (Parent == null)
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
-              }
+            }
         }
 
 
@@ -169,7 +169,7 @@ namespace Dash
 
             copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-                copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
@@ -228,7 +228,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
-            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
+            xMenuCanvas.SetBinding(VisibilityProperty, visibilityBinding);
 
             if (!useFixedMenu)
                 xMenuCanvas.Children.Add(_docMenu);
@@ -418,7 +418,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+                xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -486,6 +486,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()
@@ -563,9 +564,27 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        public Rect ClipRect { get { return xClipRect.Rect;  } }
+
+        public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (IsSelected)
+                return;
+            if (e != null)
             e.Handled = true;
+
+            /*
+            if (IsSelected) return; 
+            await System.Threading.Tasks.Task.Delay(100);
+
+            if (e != null) e.Handled = true;
+            if (ViewModel == null)
+                return;
+            if (ViewModel.IsInInterfaceBuilder)
+                return;
+
+            OnSelected();
+            */
         }
 
         protected override void OnActivated(bool isSelected)
@@ -601,10 +620,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            //TODO This disables dragging in the freeform view, this should be uncommented at some point
-            //this.CanDrag = ViewModel.IsLowestSelected;
-            //this.DragStarting -= ViewModel.DocumentView_DragStarting;
-            //this.DragStarting += ViewModel.DocumentView_DragStarting;
+
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)

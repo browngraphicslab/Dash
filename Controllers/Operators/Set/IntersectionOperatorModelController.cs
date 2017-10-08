@@ -50,7 +50,8 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new IntersectionOperatorModelController(OperatorFieldModel);
+            //return new IntersectionOperatorModelController(OperatorFieldModel);
+            return new IntersectionOperatorModelController();
         }
         public override object GetValue(Context context)
         {

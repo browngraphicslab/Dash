@@ -87,6 +87,7 @@ namespace Dash
         {
             Util.ForceBindHeightToParentDocumentHeight(this);
         }
+
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -306,11 +307,11 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    return 2; 
+                    return 5; 
                 case CollectionViewType.Grid:
                     return 0; 
                 case CollectionViewType.List:
-                    return 1; 
+                    return 2; 
                 default: return -1; 
             }
         }
@@ -343,7 +344,7 @@ namespace Dash
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
-                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
+                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
             };
 
 
@@ -490,7 +491,7 @@ namespace Dash
         /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
         /// in order to make ellipses hit test visible and the rest not 
         /// </summary>
-        private void xContentControl_Loaded(object sender, RoutedEventArgs e)           // TODO think up a better way to do this 
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)         
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;

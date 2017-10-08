@@ -17,7 +17,7 @@
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0" Margin="0,5,5,0">
                         <TextBox x:Name="xWidthTextBox" Header="Width" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>
-                        <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                        <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
                               PointerPressed="XMovementDetectionGrid_OnPointerPressed"
@@ -43,7 +43,7 @@
                     </Grid>
                     <Grid Grid.Column="1" Margin="5,5,0,0">
                         <TextBox x:Name="xHeightTextBox" Header="Height" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"  Margin="0,0,0,10" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>
-                        <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                        <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
                               PointerPressed="XMovementDetectionGrid_OnPointerPressed"

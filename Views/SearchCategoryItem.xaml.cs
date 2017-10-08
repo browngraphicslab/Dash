@@ -26,7 +26,7 @@ namespace Dash
         /// <summary>
         /// All objects under this category
         /// </summary>
-        public ObservableCollection<OperatorBuilder> ListContent { get; }
+        public ObservableCollection<string> ListContent { get; }
 
         /// <summary>
         /// Returns the list view used to display objects
@@ -47,7 +47,12 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-        
+
+        private Action<Func<DocumentController>> _action;
+
+        public object SelectedItem;
+
+        private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
         
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
@@ -56,22 +61,56 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<OperatorBuilder> content, Action<Func<DocumentController>> action)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<Func<DocumentController>> content)
         {
             this.InitializeComponent();
-            Icon = icon;
-            Title = title;
-            ListContent = content;
-            xList.DisplayMemberPath = nameof(OperatorBuilder.Name);
-            ListDisplayMemberPath = xList.DisplayMemberPath;
-
-            xList.Tapped += delegate
+            //Icon = icon;
+            //Title = title;
+            _titleToFuncDictionary = new Dictionary<string, Func<DocumentController>>();
+            ListContent = new ObservableCollection<string>();
+            foreach (var func in content)
             {
-                action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
-                MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
-            };
+                var name = func.Invoke().Title;
+                _titleToFuncDictionary[name] = func;
+                ListContent.Add(name);
+            }
+            xList.Tapped += XList_Tapped;
         }
 
+        private void XList_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ActivateItem();
+        }
+
+        public void ActivateItem()
+        {
+            if (xList.SelectedIndex == -1) return;
+            var name = xList.SelectedItem as string;
+            var func = _titleToFuncDictionary[name];
+            if (func != null)
+            {
+                Actions.AddDocFromFunction(func);
+            }
+
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
+        }
+
+        public void ActivateItem(object selectedItem)
+        {
+            if (selectedItem == null)
+            {
+                ActivateItem();
+                return;
+            }
+            var name = selectedItem as string;
+            var func = _titleToFuncDictionary[name];
+            if (func != null)
+            {
+                Actions.AddDocFromFunction(func);
+            }
+
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
+        }
         private void XList_OnLoaded(object sender, RoutedEventArgs e)
         {
             Util.FixListViewBaseManipulationDeltaPropagation(xList);

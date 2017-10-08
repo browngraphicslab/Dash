@@ -1,22 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Navigation;
-using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -26,7 +14,7 @@ namespace Dash
     {
         public SizeSettings()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
 
@@ -73,18 +61,18 @@ namespace Dash
 
         private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (sender == xXMovementDetectionGrid)
+            if (sender == xWidthMovementDetectionGrid)
             {
                 xWidthTextBox.Focus(FocusState.Programmatic);
-                xXMovementDetectionGrid.IsHitTestVisible = false;
-                xXMovementDetectionGrid.Visibility = Visibility.Collapsed;
+                xWidthMovementDetectionGrid.IsHitTestVisible = false;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Collapsed;
 
             }
-            else if (sender == xYMovementDetectionGrid)
+            else if (sender == xHeightMovementDetectionGrid)
             {
                 xHeightTextBox.Focus(FocusState.Programmatic);
-                xYMovementDetectionGrid.IsHitTestVisible = false;
-                xYMovementDetectionGrid.Visibility = Visibility.Collapsed;
+                xHeightMovementDetectionGrid.IsHitTestVisible = false;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -96,14 +84,14 @@ namespace Dash
             {
                 foreach (var child in children)
                 {
-                    this.CreateAndRunOpacityAnimation(child, 0, 0.5);
+                    CreateAndRunOpacityAnimation(child, 0, 0.5);
                     if ((string)(child as Border)?.Tag == "Deduct")
                     {
-                        this.CreateAndRunRepositionAnimation(child, 100);
+                        CreateAndRunRepositionAnimation(child, 100);
                     }
                     else if ((string)(child as Border)?.Tag == "Increment")
                     {
-                        this.CreateAndRunRepositionAnimation(child, -100);
+                        CreateAndRunRepositionAnimation(child, -100);
                     }
                 }
             }
@@ -113,14 +101,14 @@ namespace Dash
 
         private void XMovementDetectionGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            this.HideDeductAndIncrement(sender);
+            HideDeductAndIncrement(sender);
             e.Handled = true;
         }
 
         private void XMovementDetectionGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
         {
             // event not firing?
-            this.HideDeductAndIncrement(sender);
+            HideDeductAndIncrement(sender);
             e.Handled = true;
         }
 
@@ -128,13 +116,13 @@ namespace Dash
         {
             if (sender == xWidthTextBox)
             {
-                xXMovementDetectionGrid.IsHitTestVisible = true;
-                xXMovementDetectionGrid.Visibility = Visibility.Visible;
+                xWidthMovementDetectionGrid.IsHitTestVisible = true;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Visible;
             }
             else if (sender == xHeightTextBox)
             {
-                xYMovementDetectionGrid.IsHitTestVisible = true;
-                xYMovementDetectionGrid.Visibility = Visibility.Visible;
+                xHeightMovementDetectionGrid.IsHitTestVisible = true;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -142,7 +130,7 @@ namespace Dash
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.3));
 
-            DoubleAnimation opacityAnimation = new DoubleAnimation()
+            DoubleAnimation opacityAnimation = new DoubleAnimation
             {
                 SpeedRatio = 2,
                 From = from,
@@ -150,7 +138,7 @@ namespace Dash
                 Duration = duration,
                 EnableDependentAnimation = true
             };
-            Storyboard opacityStoryboard = new Storyboard()
+            Storyboard opacityStoryboard = new Storyboard
             {
                 Duration = duration
             };
@@ -164,13 +152,13 @@ namespace Dash
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
-            RepositionThemeAnimation repositionAnimation = new RepositionThemeAnimation()
+            RepositionThemeAnimation repositionAnimation = new RepositionThemeAnimation
             {
                 SpeedRatio = 1.3,
                 FromHorizontalOffset = horizontalOffset,
                 Duration = duration
             };
-            Storyboard repositionStoryboard = new Storyboard()
+            Storyboard repositionStoryboard = new Storyboard
             {
                 Duration = duration
             };
@@ -184,78 +172,88 @@ namespace Dash
             var deltaX = e.Delta.Translation.X;
             if (deltaX > 0)
             {
-                if (sender == xXMovementDetectionGrid)
+                if (sender == xWidthMovementDetectionGrid)
                 {
-                    (xWidthDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xWidthDeduct, xWidthDeduct.Opacity, 0.5);
-                    (xWidthIncrement.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xWidthIncrement, xWidthIncrement.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xWidthTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xWidthTextBox.Text);
-                    }
-                    xWidthTextBox.SetValue(TextBox.TextProperty,
-                        (currentValue + 1).ToString());
+                    ChangeTextBoxText(xWidthMovementDetectionGrid, xWidthTextBox, true, false);
                 }
-                else if (sender == xYMovementDetectionGrid)
+                else if (sender == xHeightMovementDetectionGrid)
                 {
-                    (xHeightDeduct.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHeightDeduct, xHeightDeduct.Opacity, 0.5);
-                    (xHeightIncrement.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xHeightIncrement, xHeightIncrement.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xHeightTextBox.Text.Equals(string.Empty))
-                    {
-                        currentValue = double.Parse(xHeightTextBox.Text);
-                    }
-                    xHeightTextBox.SetValue(TextBox.TextProperty,
-                        (currentValue + 1).ToString());
+                    ChangeTextBoxText(xHeightMovementDetectionGrid, xHeightTextBox, true, false);
                 }
             }
             if (deltaX < 0)
             {
-                if (sender == xXMovementDetectionGrid)
+                if (sender == xWidthMovementDetectionGrid)
                 {
-                    (xWidthIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xWidthIncrement, xWidthIncrement.Opacity, 0.5);
-                    (xWidthDeduct.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xWidthDeduct, xWidthDeduct.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xWidthTextBox.Text.Equals(string.Empty))
-                    {
-                        double.TryParse(xWidthTextBox.Text, out currentValue);
-                    }
-                    if (currentValue != 0)
-                    {
-                        xWidthTextBox.SetValue(TextBox.TextProperty,
-                            (currentValue - 1).ToString());
-                    }
+
+
+                    ChangeTextBoxText(xWidthMovementDetectionGrid, xWidthTextBox, false, false);
                 }
-                else if (sender == xYMovementDetectionGrid)
+                else if (sender == xHeightMovementDetectionGrid)
                 {
-                    (xHeightIncrement.Child as TextBlock).FontSize = 20;
-                    this.CreateAndRunOpacityAnimation(xHeightIncrement, xHeightIncrement.Opacity, 0.5);
-                    (xHeightDeduct.Child as TextBlock).FontSize = 26;
-                    this.CreateAndRunOpacityAnimation(xHeightDeduct, xHeightDeduct.Opacity, 1);
-                    double currentValue = 0;
-                    if (!xHeightTextBox.Text.Equals(string.Empty))
-                    {
-                        double.TryParse(xHeightTextBox.Text, out currentValue);
-                    }
-                    if (currentValue != 0)
-                    {
-                        xHeightTextBox.SetValue(TextBox.TextProperty,
-                            (currentValue - 1).ToString());
-                    }
+                    ChangeTextBoxText(xHeightMovementDetectionGrid, xHeightTextBox, false, false);
                 }
             }
             e.Handled = true;
         }
 
+        private void ChangeTextBoxText(Grid sender, TextBox textbox, bool isIncrement, bool canBeNegative)
+        {
+            var children = sender.Children;
+            Border increment = null;
+            Border deduct = null;
+            foreach (var child in children)
+            {
+                if ((string)(child as Border).Tag == "Increment")
+                {
+                    increment = child as Border;
+                }
+                else if ((string)(child as Border).Tag == "Deduct")
+                {
+                    deduct = child as Border;
+                }
+            }
+
+
+            double currentValue = 0;
+            if (!textbox.Text.Equals(string.Empty))
+            {
+                currentValue = double.Parse(textbox.Text);
+            }
+            if (isIncrement)
+            {
+                (deduct.Child as TextBlock).FontSize = 20;
+                CreateAndRunOpacityAnimation(deduct, deduct.Opacity, 0.5);
+                (increment.Child as TextBlock).FontSize = 26;
+                CreateAndRunOpacityAnimation(increment, increment.Opacity, 1);
+                textbox.SetValue(TextBox.TextProperty,
+                    (currentValue + 1).ToString());
+            }
+            else
+            {
+                (increment.Child as TextBlock).FontSize = 20;
+                CreateAndRunOpacityAnimation(increment, increment.Opacity, 0.5);
+                (deduct.Child as TextBlock).FontSize = 26;
+                CreateAndRunOpacityAnimation(deduct, deduct.Opacity, 1);
+                if (canBeNegative)
+                {
+                    textbox.SetValue(TextBox.TextProperty,
+                        (currentValue - 1).ToString());
+                }
+                else
+                {
+                    if (currentValue != 0)
+                    {
+                        textbox.SetValue(TextBox.TextProperty,
+                            (currentValue - 1).ToString());
+                    }
+                }
+            }
+        }
+
         private void XMovementDetectionGrid_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            this.HideDeductAndIncrement(sender);
+            HideDeductAndIncrement(sender);
             e.Handled = true;
         }
 
@@ -267,7 +265,7 @@ namespace Dash
             {
                 foreach (var child in children)
                 {
-                    this.CreateAndRunOpacityAnimation(child, child.Opacity, 0);
+                    CreateAndRunOpacityAnimation(child, child.Opacity, 0);
                 }
             }
             (xWidthIncrement.Child as TextBlock).FontSize = 20;

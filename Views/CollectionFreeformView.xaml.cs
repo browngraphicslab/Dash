@@ -391,7 +391,7 @@ namespace Dash
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
 
-        
+
 
         public void CancelDrag(Pointer p)
         {
@@ -701,7 +701,6 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         }
 
         #region Flyout
-      
         #endregion
 
         #region DragAndDrop
@@ -724,6 +723,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
             if (InkFieldModelController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
@@ -736,14 +736,57 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+
+        private bool _singleTapped; 
+        private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = true;
+            if (IsLowestSelected) return;
+
+            // so that doubletap is not overrun by tap events 
+            _singleTapped = true;
+            await Task.Delay(100);
+            if (!_singleTapped) return; 
+
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
-            e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
             OnSelected();
+        }
+
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _singleTapped = false; 
+            e.Handled = true;
+            ChooseLowest(e); 
+        }
+
+        private void ChooseLowest(/*HoldingRoutedEventArgs*/ DoubleTappedRoutedEventArgs e)
+        {
+            var freeforms = xItemsControl.GetDescendantsOfType<CollectionFreeformView>();
+            foreach (var ff in freeforms)
+            {
+                if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
+                {
+                    ff.ChooseLowest(e);
+                    return;
+                }
+            }
+
+            // in the lowest possible collectionfreeform 
+            var docViews = xItemsControl.GetDescendantsOfType<DocumentView>(); 
+            foreach (DocumentView view in docViews)
+            {
+                if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
+                {
+                    view.OnTapped(view, null); 
+                    return;
+                }
+            }
+            // if no docview to select, select the current collectionview 
+            var parentView = this.GetFirstAncestorOfType<DocumentView>();
+            parentView.OnTapped(parentView, null); 
         }
 
         #endregion
@@ -866,7 +909,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-            
+
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion
@@ -893,9 +936,8 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if(e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
-            Debug.WriteLine("Pointer entered: " + sender.GetType());
+            if (e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
+                Debug.WriteLine("Pointer entered: " + sender.GetType());
         }
-
     }
 }

@@ -11,7 +11,7 @@ using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -141,6 +141,21 @@ namespace Dash
             var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
             var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
             xKeyNameTextBox.Text = keyName;
+
+            //binds selectable container's grid row and column to its layoutDocument's 
+            var rowBinding = new Binding
+            {
+                Source = layoutDocument.GetField(GridLayout.GridRowKey),
+                Path = new PropertyPath("Data")
+            }; 
+            SetBinding(Grid.RowProperty, rowBinding);
+
+            var colBinding = new Binding
+            {
+                Source = layoutDocument.GetField(GridLayout.GridColumnKey),
+                Path = new PropertyPath("Data")
+            };
+            SetBinding(Grid.ColumnProperty, colBinding);
         }
 
         private void SelectableContainer_Unloaded(object sender, RoutedEventArgs e)

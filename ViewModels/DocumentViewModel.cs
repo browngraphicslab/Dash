@@ -32,7 +32,7 @@ namespace Dash
         private bool _menuOpen = false;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
-        public DocumentController DocumentController;
+        public DocumentController DocumentController { get; set; }
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -42,6 +42,12 @@ namespace Dash
                 Width = width;
                 MenuOpen = menuOpen;
             }
+        }
+
+        public bool IsDraggerVisible
+        {
+            get { return _isDraggerVisible; }
+            set { SetProperty(ref _isDraggerVisible, value); }
         }
 
         public bool MenuOpen
@@ -170,6 +176,7 @@ namespace Dash
 
 
         string _displayName = "<doc>";
+        private bool _isDraggerVisible = true;
 
         public string DisplayName
         {
@@ -429,7 +436,7 @@ namespace Dash
             DocMenuVisibility = Visibility.Visible;
             MenuOpen = true;
         }
-
+        
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
@@ -443,6 +450,11 @@ namespace Dash
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
                 // different sources based on whether it's a collection or a document 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
+        }
+
+        public void OnCollectionSelectedChanged(bool isCollectionSelected)
+        {
+               
         }
 
         public void Dispose()

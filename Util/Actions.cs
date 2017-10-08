@@ -58,16 +58,16 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddOperator(Func<DocumentController> documentCreationFunc)
+        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection;
+            var freeForm = TabMenu.AddsToThisCollection;
 
             if (freeForm == null)
             {
                 return;
             }
             
-            var searchView = OperatorSearchView.Instance.SearchView;
+            var searchView = TabMenu.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
@@ -82,7 +82,7 @@ namespace Dash
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
+                freeForm.ViewModel.AddDocument(opController, null);
             }
         }
 
@@ -90,13 +90,10 @@ namespace Dash
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
+            
+            var newDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
-            var fields = new Dictionary<KeyController, FieldModelController>()
-            {
-                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document)
-            };
-
-            var newDoc = new DocumentController(fields, DocumentType.DefaultType);
             collection.ViewModel.AddDocument(newDoc, null);
 
             DBTest.DBDoc.AddChild(newDoc);
@@ -190,9 +187,7 @@ namespace Dash
             var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDocument = new CollectionBox(new ReferenceFieldModelController(collectionDocument.GetId(),  
                 DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
-            collectionDocument.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDocument), true);
-            collectionDocument.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDocument }), true);
+            collectionDocument.SetActiveLayout(layoutDocument, true, true); 
 
             // Make second collection
             var numbers2 = new Numbers().Document;
@@ -206,10 +201,7 @@ namespace Dash
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
-            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(KeyStore.LayoutListKey,
-                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
+            col2.SetActiveLayout(layoutDoc2, true, true); 
 
             //Display collections
             DisplayDocument(collection, col2, where);

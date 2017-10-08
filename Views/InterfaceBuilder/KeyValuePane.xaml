@@ -58,8 +58,8 @@
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left"  />
                         </ScrollViewer>
-                        <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
 
+                        <Border Grid.Column="1" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
                         <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                         </ScrollViewer>
@@ -68,25 +68,6 @@
             </ListView.ItemTemplate>
         </ListView>
         <Grid Grid.Row="3"  x:Name="xImageGrid">
-            <!--<Button x:Name="xAddButton" Padding="10" Grid.Column="0" VerticalAlignment="Bottom" Height="32" Width="32" HorizontalAlignment="Left" IsTapEnabled="True" Tapped="AddButton_Tapped"  >
-                
-                <Viewbox>
-                    <SymbolIcon></SymbolIcon>
-                </Viewbox>
-            </Button>-->
-
-            <!--<TextBox x:Name="xNewKeyField" Grid.Column="1"  HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged" Margin="0,0,0.333,0" ></TextBox>-->
-
-            <!--<Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                </Grid.RowDefinitions>-->
-                
-                <!--<TextBox  Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged" 
-                          PlaceholderText="Value" />-->
-            <!--</Grid>-->
-            <!--<ComboBox  Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" SelectionChanged="xTypeComboBox_SelectionChanged" PlaceholderText="Type"/>-->
 
             <Button x:Name="xCreateFieldButton" Height="40" Background="SteelBlue" Foreground="White" HorizontalAlignment="Stretch" Click="ShowCreateFieldOptions">CREATE FIELD</Button>
             <StackPanel x:Name="xNewFieldPanel" HorizontalAlignment="Stretch" Background ="Transparent" BorderBrush="DimGray" Visibility="Collapsed">

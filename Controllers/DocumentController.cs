@@ -17,6 +17,37 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        public bool HasDelegatesOrPrototype { get; private set; }
+
+        private bool _hasDelegates; 
+        public bool HasDelegates {
+            get {
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
+                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+                : null;
+
+                if (currentDelegates == null) return _hasDelegates =  false;
+                return _hasDelegates = currentDelegates.Data.Count() > 0;
+            }
+            set
+            {
+                _hasDelegates = value;
+                HasDelegatesOrPrototype = value || HasPrototype;
+
+            }
+        }
+        private bool _hasPrototypes;
+        public bool HasPrototype {
+            get {
+                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
+            }
+            set
+            {
+                _hasPrototypes = value;
+                HasDelegatesOrPrototype = value || HasDelegates; 
+            }
+        }
+
         public enum FieldUpdatedAction
         {
             Add,
@@ -50,10 +81,30 @@ namespace Dash
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
+        /// <summary>
+        /// Dictionary mapping Key's to field updated event handlers. TODO what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
+        /// </summary>
         private readonly Dictionary<KeyController, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public string Title { get
+            {
+                if (GetField(KeyStore.TitleKey) is TextFieldModelController)
+                {
+                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                    if (textFieldModelController != null)
+                        return textFieldModelController.Data;
+                }
+                return DocumentType.Type;
+            } }
+
+        /// <summary>
+        /// Adds a field updated listener which is only fired when the field associated with the passed in key
+        /// has changed
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="handler"></param>
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             //++totalCount;
@@ -404,14 +455,23 @@ namespace Dash
             return result;
         }
 
+        /// <summary>
+        /// Returns whether or not the field has changed that is associated with the passed in key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="field"></param>
+        /// <param name="forceMask"></param>
+        /// <returns></returns>
         private bool SetFieldHelper(KeyController key, FieldModelController field, bool forceMask)
         {
+            // get the prototype with the desired key or just get ourself
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
+            // get the old value of the field
             FieldModelController oldField;
             proto._fields.TryGetValue(key, out oldField);
 
-            // if the fields are reference equal just return
+            // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
             {
                 if (proto.CheckCycle(key, field))
@@ -419,7 +479,7 @@ namespace Dash
                     return false;
                 }
 
-                oldField?.Dispose();
+                oldField?.Dispose(); // TODO this currently does nothing
 
                 proto._fields[key] = field;
                 proto.DocumentModel.Fields[key] = field == null ? "" : field.FieldModel.Id;
@@ -427,19 +487,25 @@ namespace Dash
                 SetupNewFieldListeners(key, field, oldField, new Context(proto));
                 return true;
             }
-            return false;
+            return false; 
         }
 
+        /// <summary>
+        /// Adds listeners to the field model updated event which fire the document model updated event
+        /// </summary>
         private void SetupNewFieldListeners(KeyController key, FieldModelController newField, FieldModelController oldField, Context context)
         {
+            // fire document field updated if the field has been replaced or if it did not exist before
             var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
+
+
             FieldModelController.FieldModelUpdatedHandler handler =
                 delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
                     var newContext = new Context(c);
-                    if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0) // don't add This if a delegate of This is already in the Context
+                    if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                         newContext.AddDocumentContext(this);
                     if (ShouldExecute(newContext, reference.FieldKey))
                     {
@@ -450,7 +516,7 @@ namespace Dash
                 };
             if (oldField != null)
             {
-                oldField.FieldModelUpdated -= handler;
+                oldField.FieldModelUpdated -= handler; // TODO does this even work, isn't it removing the new reference to handler not the old one
             }
             if (newField != null)
             {
@@ -472,20 +538,18 @@ namespace Dash
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
         public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck = true)
         {
-            // check field type compatibility
-            //if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;                                      
-
-            Context c = new Context(this);
-            bool shouldExecute = false;
+            // TODO check field type compatibility
+            var context = new Context(this);
+            var shouldExecute = false;
             if (SetFieldHelper(key, field, forceMask))
             {
-                shouldExecute = ShouldExecute(c, key);
+                shouldExecute = ShouldExecute(context, key);
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true; 
             }
             if (shouldExecute)
             {
-                Execute(c, true);
+                Execute(context, true);
             }
             return shouldExecute;
         }
@@ -602,6 +666,7 @@ namespace Dash
             // return the now fully populated delegate
             return delegateController;
         }
+
 
         private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
@@ -733,8 +798,8 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
+                HasDelegates = true; 
             }
-
             return currentDelegates;
         }
 
@@ -749,23 +814,23 @@ namespace Dash
             return GetDereferencedField(key, context) as T;
         }
 
-
+        /// <summary>
+        /// Returns whether or not the current document should execute.
+        /// <para>
+        /// Documents should execute if all the following are true
+        ///     1. they are an operator
+        ///     2. the input contains the updated key or the output contains the updated key
+        /// </para>
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="updatedKey"></param>
+        /// <returns></returns>
         public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
-            if (opField == null)
-            {
-                return false;
-            }
-            if (opField.Inputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
-            if (opField.Outputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
+            if (opField != null)
+                return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
             return false;
         }
 
@@ -834,15 +899,15 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
         {
-            var fields = EnumFields().ToList();
-            if (fields.Count > 15) return MakeAllViewUIForManyFields(fields);
-            var sp = new StackPanel();
+            var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
+            if (fields.Count > 15)
+                return MakeAllViewUIForManyFields(fields);
+            var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldModelController> f)
             {
-                if (f.Key.IsUnrenderedKey()) return;
-                f.Value.MakeAllViewUI(f.Key, context, sp, GetId(), isInterfaceBuilder);
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
             }
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            #pragma warning disable CS4014 
             MainView.CoreWindow.Dispatcher.RunAsync(
                 CoreDispatcherPriority.Low,
                 async () =>
@@ -853,34 +918,27 @@ namespace Dash
                         await Task.Delay(5);
                     }
                 });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            return sp;
+#pragma warning restore CS4014
+            return panel;
         }
 
-        private static FrameworkElement MakeAllViewUIForManyFields(List<KeyValuePair<KeyController, FieldModelController>> fields)
+        private static FrameworkElement MakeAllViewUIForManyFields(
+            List<KeyValuePair<KeyController, FieldModelController>> fields)
         {
-            var lv = new ListView {SelectionMode = ListViewSelectionMode.None};
-            var source = new List<FrameworkElement>();
-            for (var i = 0; i < 15; i++)
+            var sp = new StackPanel();
+            for (var i = 0; i < 16; i++)
             {
                 var block = new TextBlock
                 {
-                    Text = "Field " + (i + 1) + ": " + fields[i].Key,
+                    Text = i == 15
+                        ? "+ " + (fields.Count - 15) + " more" 
+                        : "Field " + (i + 1) + ": " + fields[i].Key,
                     VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
+                    HorizontalAlignment = HorizontalAlignment.Left
                 };
-                source.Add(block);
-            }
-            var nextBlock = new TextBlock
-            {
-                Text = "+ " + (fields.Count - 15) + " more",
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            source.Add(nextBlock);
-            lv.ItemsSource = source;
-            lv.Loaded += (s, e) => Util.FixListViewBaseManipulationDeltaPropagation(lv);
-            return lv;
+                sp.Children.Add(block);
+            }     
+            return sp;
         }
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
@@ -995,13 +1053,25 @@ namespace Dash
             return makeAllViewUI(context);
         }
 
+        /// <summary>
+        /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
+        /// listeners to <see cref="DocumentFieldUpdated"/>
+        /// </summary>
+        /// <param name="sender">The <see cref="DocumentController"/> which is being updated</param>
+        /// <param name="args">Represents the behavior of the update</param>
+        /// <param name="updateDelegates"></param>
         protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
+            // this invokes listeners which have been added on a per key level of granularity
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
             {
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
             }
+
+            // this invokes listeners which have been added on a per doc level of granularity
             DocumentFieldUpdated?.Invoke(sender, args);
+
+
             if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
             {
                 PrototypeFieldUpdated?.Invoke(sender, args);

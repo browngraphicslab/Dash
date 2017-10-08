@@ -24,6 +24,9 @@ namespace Dash
         public static readonly string DragPropertyKey = "key";
 
         private DocumentController _documentControllerDataContext;
+        /// <summary>
+        /// Contains
+        /// </summary>
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
@@ -65,7 +68,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Updates ListView 
+        /// Resets the ListItemSource to fields in the current datacontext (this can be thought of as rebuilding the entire list)
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
@@ -79,6 +82,8 @@ namespace Dash
 
         private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
+            // if a field has been replaced or updated then set it's source to be the new element
+            // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
             if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
                 UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
             else SetListItemSourceToCurrentDataContext();
@@ -89,7 +94,7 @@ namespace Dash
             for (int i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key == fieldKey)
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
+                        new BoundFieldModelController(fieldValue, RealDataContext));
         }
 
         private void FocusOn(TextBox tb)
@@ -178,10 +183,21 @@ namespace Dash
 
                 fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
             }
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
-            _documentControllerDataContext.SetField(key, fmController, true);
+
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext)));
+            RealDataContext.SetField(key, fmController, true);
             //*/ 
             return true;
+        }
+
+        public DocumentController RealDataContext
+        {
+            get
+            {
+                return _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null ?
+                _documentControllerDataContext.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data :
+                _documentControllerDataContext;
+            }
         }
 
         /// <summary>

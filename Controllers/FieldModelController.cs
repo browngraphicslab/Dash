@@ -22,9 +22,15 @@ namespace Dash
         public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
+        /// <summary>
+        /// Invokes the <see cref="FieldModelUpdated"/> event. If <paramref name="args"/> is null then invokes it with a default set of
+        /// FieldUpdatedEventArgs.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), context);
+            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), Context.InitIfNotNull(context));
         }
 
         /// <summary>
@@ -118,10 +124,15 @@ namespace Dash
                 FontSize = 11
             };
             bindTextOrSetOnce(textBlock);
-            
+            return textBlock;
 
+            // bcz: Adding the scroll viewer causes a layout cycle in CollectionDBSchema display.  
+            // this seems like a bug in Xaml, but it's probably more efficient to create these
+            // cell views without a scroll viewer anyway -- instantiate one if the cell gets clicked on?
             var scrollViewer = new ScrollViewer
             {
+                Height=25,
+                Width=70,
                 HorizontalScrollMode = ScrollMode.Enabled,
                 HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
                 VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
@@ -193,7 +204,7 @@ namespace Dash
 
         public abstract FieldModelController GetDefaultController();
 
-        public virtual void MakeAllViewUI(KeyController kc, Context context, StackPanel sp, string id, bool isInterfaceBuilder = false)
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder = false)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };
@@ -209,6 +220,7 @@ namespace Dash
 
         public virtual void Dispose()
         {
+            // TODO why is the dispose not implemented for most field model controllers!
         }
 
         public event InkFieldModelController.InkUpdatedHandler InkUpdated;

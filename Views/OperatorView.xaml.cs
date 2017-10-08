@@ -270,5 +270,15 @@ namespace Dash
             EndDraggedLink(sender, null, true, view);
             view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
         }
+
+        private void FieldPreview_OnLoading(FrameworkElement sender, object args)
+        {
+            var preview = sender as FieldPreview;
+            if (preview == null)
+            {
+                return;
+            }
+            preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
+        }
     }
 }
