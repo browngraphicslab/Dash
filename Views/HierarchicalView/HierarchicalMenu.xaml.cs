@@ -204,7 +204,7 @@ namespace Dash
         {
             xPaneGridTranslateTransform.X = 0;
             ListViewTranslateX = 0;
-            //xListViewTranslateTransform.X = 0;
+            MainPage.Instance.xLeftRect.IsHitTestVisible = true;
         }
 
         private void CreateAndPlayClosePaneAnimation()

@@ -9,7 +9,7 @@
     d:DesignHeight="800"
     d:DesignWidth="400">
 
-    <Grid x:Name="xPaneGrid" Height="800" Width="100"  VerticalAlignment="Stretch" HorizontalAlignment="Left" ManipulationMode="TranslateX">
+    <Grid x:Name="xPaneGrid" Height="800" Width="200"  VerticalAlignment="Stretch" HorizontalAlignment="Left" ManipulationMode="TranslateX">
         <Grid.RenderTransform>
             <TranslateTransform x:Name="xPaneGridTranslateTransform"></TranslateTransform>
         </Grid.RenderTransform>
