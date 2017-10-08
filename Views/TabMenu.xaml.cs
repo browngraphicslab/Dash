@@ -67,7 +67,7 @@ namespace Dash
                 intersection,
                 zip,
                 filter,
-                api, 
+                api,
                 concat,
                 docAppend,
                 compound,
@@ -122,7 +122,7 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        public static void ShowAt(Canvas canvas, Point position, bool isTouch=false)
+        public static void ShowAt(Canvas canvas, Point position, bool isTouch = false)
         {
             if (Instance != null)
             {

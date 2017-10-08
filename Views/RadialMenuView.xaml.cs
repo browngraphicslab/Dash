@@ -36,12 +36,6 @@ namespace Dash
     {
         public static RadialMenu MainMenu;
         private Canvas _parentCanvas;
-        private List<RadialItemModel> _colors;
-        private StackPanel _sliderPanel;
-        private Slider _slider;
-        private TextBlock _sliderHeader;
-        private StackPanel _stackPanel;
-        private Floating _floatingMenu;
         public static string RadialMenuDropKey = "A84862E6-34C3-44AC-A162-EE7DE702DAA0";
         public Symbol? PenInkSymbol = (Symbol) 0xEE56;
         public Symbol? PencilInkSymbol = (Symbol) 0xED63;
@@ -65,13 +59,13 @@ namespace Dash
         /// </summary>
         public double Diameter
         {
-            get { return RadialMenu.Diameter; }
+            get { return xRadialMenu.Diameter; }
             set
             {
                 if (value > 0.15 * ApplicationView.GetForCurrentView().VisibleBounds.Width ||
                     value > 0.15 * ApplicationView.GetForCurrentView().VisibleBounds.Height)
                 {
-                    RadialMenu.Diameter = value;
+                    xRadialMenu.Diameter = value;
                 }
             }
         }
@@ -81,8 +75,8 @@ namespace Dash
         /// </summary>
         public double StartAngle
         {
-            get { return RadialMenu.StartAngle; }
-            set { RadialMenu.StartAngle = value; }
+            get { return xRadialMenu.StartAngle; }
+            set { xRadialMenu.StartAngle = value; }
         }
 
         /// <summary>
@@ -92,26 +86,23 @@ namespace Dash
         {
             get
             {
-                return RadialMenu.Visibility == Visibility.Visible;
+                return xRadialMenu.Visibility == Visibility.Visible;
             }
             set
             {
-                RadialMenu.CenterButtonLeft = 95;
-                RadialMenu.CenterButtonTop = 95;
+                xRadialMenu.CenterButtonLeft = 95;
+                xRadialMenu.CenterButtonTop = 95;
                 if (!value)
                 {
-                    RadialMenu.Collapse();
+                    xRadialMenu.Collapse();
                 }
                 else
                 {
-                    RadialMenu.Expand();
+                    xRadialMenu.Expand();
                 }
             }
         }
 
-        private MeterSubMenu _strokeMeter;
-        private MeterSubMenu _opacityMeter;
-        private InkSettingsPane _settingsPane;
         private List<RadialMenuButton> _inputButtons;
 
         private List<RadialMenuButton> _strokeButtons;
@@ -165,7 +156,7 @@ namespace Dash
         public void CloseInkMenu()
         {
             if (SettingsPane != null) SettingsPane.Visibility = Visibility.Collapsed;
-            RadialMenu.Margin = new Thickness(0, 0, 0, 0);
+            xRadialMenu.Margin = new Thickness(0, 0, 0, 0);
             Floating.ManipulateControlPosition(16, 23.5, 215, 215);
         }
 
@@ -177,10 +168,10 @@ namespace Dash
         /// <param name="valueSetAction"></param>
         public void OpenInkMenu()
         {
-            Point pos1 = Util.PointTransformFromVisual(new Point(107.5, 107.5), RadialMenu, _parentCanvas);
+            Point pos1 = Util.PointTransformFromVisual(new Point(107.5, 107.5), xRadialMenu, _parentCanvas);
             if (SettingsPane == null) FindName("SettingsPane");
             SettingsPane.Visibility = Visibility.Visible;
-            RadialMenu.Margin = new Thickness(32, 15, 0, 0);
+            xRadialMenu.Margin = new Thickness(32, 15, 0, 0);
 
             //Clicks the pen and ink buttons the first time they are loaded. hacky? yes.
             if (!_inkOpened)
@@ -188,8 +179,8 @@ namespace Dash
                 DispatcherTimer timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(300)};
                 timer.Tick += delegate
                 {
-                    RadialMenu.ClickInnerRadialMenuButton(SetPenInputButton);
-                    RadialMenu.ClickInnerRadialMenuButton(SetPenInkButton);
+                    xRadialMenu.ClickInnerRadialMenuButton(SetPenInputButton);
+                    xRadialMenu.ClickInnerRadialMenuButton(SetPenInkButton);
                     _inkOpened = true;
                     timer.Stop();
                 };
@@ -203,27 +194,27 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
-            RadialMenu.Diameter = 215;
-            RadialMenu.StartAngle = 0;
-            RadialMenu.CenterButtonIcon = "🛠️";
-            RadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
-            RadialMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
-            RadialMenu.CenterButtonBackgroundFill = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
-            RadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);
-            RadialMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            RadialMenu.UseIndicationArcs = true;
-            RadialMenu.IndicationArcStrokeThickness = 3;
-            RadialMenu.IndicationArcDistanceFromEdge = 20;
-            RadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["TranslucentWhite"]).Color;
-            RadialMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.InnerReleasedColor = ((SolidColorBrush) App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.OuterHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            RadialMenu.OuterDisabledColor = ((SolidColorBrush) App.Instance.Resources["WindowsBlue"]).Color;
-            RadialMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            RadialMenu.OuterThickness = 10;
-            RadialMenu.CenterButtonSize = 45;
+            xRadialMenu.Diameter = 215;
+            xRadialMenu.StartAngle = 0;
+            xRadialMenu.CenterButtonIcon = "🛠️";
+            xRadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
+            xRadialMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
+            xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
+            xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);
+            xRadialMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.UseIndicationArcs = true;
+            xRadialMenu.IndicationArcStrokeThickness = 3;
+            xRadialMenu.IndicationArcDistanceFromEdge = 20;
+            xRadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
+            xRadialMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.InnerReleasedColor = ((SolidColorBrush) App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.OuterHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.OuterDisabledColor = ((SolidColorBrush) App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.OuterThickness = 10;
+            xRadialMenu.CenterButtonSize = 45;
         }
         
 
@@ -299,7 +290,7 @@ namespace Dash
 
         private void Ink_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            RadialMenu.ChangeMenu(null, InkSubMenu);
+            xRadialMenu.ChangeMenu(null, InkSubMenu);
         }
 
         private void SetActionModel(RadialItemModel item, RadialMenuButton button)
@@ -328,20 +319,20 @@ namespace Dash
 
         private void RadialMenu_OnCenterButtonTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (RadialMenu.Pie.Visibility == Visibility.Collapsed)
+            if (xRadialMenu.Pie.Visibility == Visibility.Collapsed)
             {
-                RadialMenu.HorizontalAlignment = HorizontalAlignment.Left;
+                xRadialMenu.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else
             {
-                RadialMenu.VerticalAlignment = VerticalAlignment.Center;
-                RadialMenu.HorizontalAlignment = HorizontalAlignment.Center;
+                xRadialMenu.VerticalAlignment = VerticalAlignment.Center;
+                xRadialMenu.HorizontalAlignment = HorizontalAlignment.Center;
             }
         }
 
         private void Input_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)
         {
-            RadialMenu.ChangeMenu(sender, InputSubMenu);
+            xRadialMenu.ChangeMenu(sender, InputSubMenu);
         }
     }
 }

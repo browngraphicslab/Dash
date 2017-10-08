@@ -94,6 +94,7 @@
     <Content Include="Assets\pokemon_species.csv" />
     <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
+    <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClipSettings.xaml.cs">
@@ -162,6 +163,10 @@
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
+    <Compile Include="Util\FontIcons\Attributes.cs" />
+    <Compile Include="Util\FontIcons\FontAwesome.cs" />
+    <Compile Include="Util\FontIcons\FontAwesomeIcon.cs" />
+    <Compile Include="Util\Util.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Data.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Events.cs" />
@@ -229,6 +234,15 @@
     <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\DragOutDocIcon.xaml.cs">
+      <DependentUpon>DragOutDocIcon.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\MainMenu.xaml.cs">
+      <DependentUpon>MainMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\MenuButtonContainer.xaml.cs">
+      <DependentUpon>MenuButtonContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
       <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
     </Compile>
@@ -285,9 +299,6 @@
     <Compile Include="Models\RadialSubmenuModel.cs" />
     <Compile Include="Views\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TabMenu.xaml.cs">
-      <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
@@ -442,7 +453,6 @@
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
-    <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
@@ -518,10 +528,10 @@
     <Compile Include="Views\SearchCategoryItem.xaml.cs">
       <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\WindowTemplate.cs" />
-    <Compile Include="Views\WindowView.xaml.cs">
-      <DependentUpon>WindowView.xaml</DependentUpon>
+    <Compile Include="Views\TabMenu.xaml.cs">
+      <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -546,8 +556,9 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
-    <Content Include="Assets\gridbg.png" />
-    <Content Include="Assets\GRIDTRANSPARENT.png" />
+    <Content Include="Assets\docmenu.png" />
+    <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\gridbg2.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -559,7 +570,6 @@
     <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
-    <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
@@ -689,6 +699,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Document Menu\DragOutDocIcon.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MainMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MenuButtonContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DocumentSelectionPolygon.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -734,10 +756,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SearchView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\TabMenu.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -904,7 +922,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\WindowView.xaml">
+    <Page Include="Views\TabMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

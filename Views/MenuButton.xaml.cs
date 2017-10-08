@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Views.Document_Menu;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
@@ -19,6 +20,9 @@ namespace Dash
         private Button _button;
         private Action _buttonAction;
         private double _verticalOffset;
+        private Storyboard OpacityAnimation;
+        private Storyboard TranslationAnimation;
+        private MenuButtonContainer content;
 
         public bool RotateOnTap = false;
         public bool IsComposite;
@@ -126,48 +130,24 @@ namespace Dash
         public SymbolIcon ButtonIcon { get { return _symbol; } }
         public TextBlock ButtonText { get { return _descriptionText; } }
         /// <summary>
-        /// Create a circular button with an icon and a string description
+        /// Create a circular button with an icon with a string description
         /// </summary>
         /// <param name="icon"></param>
         /// <param name="name"></param>
         /// <param name="background"></param>
         private void InstantiateButton(Symbol icon, string name, Color background)
         {
-            // create symbol for button
-            _symbol = new SymbolIcon()
-            {
-                Symbol = icon,
-                Foreground = new SolidColorBrush(Colors.White)
-            };
-            // create rounded(circular) border to hold the symbol
-            _border = new Border()
-            {
-                Height = 40,
-                Width = 40,
-                CornerRadius = new CornerRadius(20),
-                Background = new SolidColorBrush(background),
-                BorderBrush = new SolidColorBrush(background),
-                Child = _symbol
-            };
+
             // create button to contain the border with the symbol
-            _button = new Button()
-            {
-                Background = new SolidColorBrush(Colors.Transparent),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Padding = new Thickness(-2.5),
-                Content = _border
-            };
-            // create textblock containing a description of the button
-            _descriptionText = new TextBlock()
-            {
-                Text = name,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Top,
-                FontSize = 10
-            };
+            MenuButtonContainer content = new MenuButtonContainer(icon, name);
+            _descriptionText = content.Label;
+            _button = content.Button;
+            _border = content.Border;
+            content.Border.Background = new SolidColorBrush(background);
+            this.content = content;
+
             // add all content to stack panel
-            xButtonStackPanel.Children.Add(_button);
-            xButtonStackPanel.Children.Add(_descriptionText);
+            xButtonStackPanel.Children.Add(content);
 
             _button.Tapped += Button_Tapped;
             _button.DoubleTapped += Button_DoubleTapped;
@@ -277,6 +257,15 @@ namespace Dash
         {
             OpactiyAnimationHelper(1,0);
         }
+
+        /// <summary>
+        /// Runs the instantiation animations again.
+        /// </summary>
+        public void AnimateAppearance() {
+            OpacityAnimation.Begin();
+            TranslationAnimation.Begin();
+        }
+
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
@@ -291,11 +280,16 @@ namespace Dash
                 }
                 return;
             }
-            this.CreateAndRunRepositionAnimation(_button, 200, 0);
-            this.CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
 
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            TranslationAnimation = CreateAndRunRepositionAnimation(content, 100, 0);
+            OpacityAnimation = CreateAndRunOpacityAnimation(content, 0, 1);
+            /*
+            CreateAndRunRepositionAnimation(_button, 200, 0);
+            CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
+
+            CreateAndRunOpacityAnimation(_button, 0, 1);
+            CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            */
         }
 
         /// <summary>
@@ -361,7 +355,7 @@ namespace Dash
 
         }
 
-        private void CreateAndRunRepositionAnimation(UIElement target, double horizontalOffset, double verticalOffset)
+        private Storyboard CreateAndRunRepositionAnimation(UIElement target, double horizontalOffset, double verticalOffset)
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
@@ -380,9 +374,10 @@ namespace Dash
             repositionStoryboard.Children.Add(repositionAnimation);
             Storyboard.SetTarget(repositionAnimation, target);
             repositionStoryboard.Begin();
+            return repositionStoryboard;
         }
 
-        private void CreateAndRunOpacityAnimation(UIElement target, double from, double to)
+        private Storyboard CreateAndRunOpacityAnimation(UIElement target, double from, double to)
         {
             Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
@@ -403,6 +398,7 @@ namespace Dash
             Storyboard.SetTarget(opacityAnimation, target);
             Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
             opacityStoryboard.Begin();
+            return opacityStoryboard;
         }
     }
 }

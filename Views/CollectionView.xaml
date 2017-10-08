@@ -5,19 +5,23 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-    <Grid x:Name="xOuterGrid" BorderThickness="3">
+    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            
+
+            <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
 
@@ -30,19 +34,21 @@
                         VerticalAlignment="Stretch"
                         ManipulationMode="All"
                 >
+
                     <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded" 
                                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Grid HorizontalAlignment="Right" 
-                        PointerPressed="ConnectionEllipse_OnPointerPressed"
-                        PointerReleased="ConnectionEllipse_OnPointerReleased"
-                        ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
-                        Width="50" Height="50" Background="Transparent"
-                        ManipulationMode="None">
+                      PointerPressed="ConnectionEllipse_OnPointerPressed"
+                      PointerReleased="ConnectionEllipse_OnPointerReleased"
+                      ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
+                      VerticalAlignment="Center"
+                      Background="Transparent"
+                      ManipulationMode="None">
                     <Ellipse x:Name="ConnectionEllipse"
                                 x:FieldModifier="public"
                                 Style="{StaticResource xLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-,0"/>
+                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-2,0"/>
                 </Grid>
                 <Grid HorizontalAlignment="Left" 
                         PointerPressed="ConnectionEllipseInput_OnPointerPressed"

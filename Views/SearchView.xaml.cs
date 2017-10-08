@@ -130,9 +130,10 @@ namespace Dash
 
             var headerBorder = new Border()
             {
-                Width = 75,
-                Height = 45,
-                CornerRadius = new CornerRadius(5)
+                Width = 55,
+                Height = 50,
+                Background = new SolidColorBrush(Colors.Transparent),
+                CornerRadius = new CornerRadius(0)
             };
             if (category.Icon != string.Empty && category.Icon != null)
             {

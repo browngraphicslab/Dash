@@ -9,24 +9,28 @@
     d:DesignHeight="800"
     d:DesignWidth="300">
 
-    <Grid Width="250" HorizontalAlignment="Stretch" Background="LightSteelBlue" BorderBrush="Transparent">
+
+    <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
+        <Grid.Background>
+            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/> <!--"settings"-->
             <RowDefinition Height="30"/> <!--"listview"-->
             <RowDefinition /> <!-- all the little drop downs -->
-            <RowDefinition Height="100"/> <!-- empty space? --> 
+            <RowDefinition Height="50"/> <!-- empty space? --> 
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+        <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
                 <Run Text="SETTINGS"/>
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <TextBlock HorizontalAlignment="Center">
                 <Run Text="ListView Layout"/>
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="2" Width="250">
+        <Grid Grid.Row="2" HorizontalAlignment="Stretch">
             <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -37,19 +41,33 @@
                     </Grid.RowDefinitions>
 
                     <!--SPACING-->
-                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
-                                <Grid Margin="0,5,0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.2*"/>
-                                        <ColumnDefinition Width="0.8*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0">
-                                        <Slider x:Name="xSpacingSlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="50" StepFrequency="1" Foreground="SteelBlue"/>
-                                    </Grid>
-                                    <Grid Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBox x:Name="xSpacingSliderTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
+                                <Grid>
+                                    <TextBox x:Name="xSpacingTextbox" BorderBrush="Transparent" Background="White" VerticalAlignment="Center" FontSize="12" LostFocus="xSpacingTextbox_OnLostFocus"  TextAlignment="Center"/>
+                                    <Grid x:Name="xSpacingMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                                          Background="Transparent"
+                                          VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                                          PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                                          PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                                          PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                                          ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                                          ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
+                                        <Border x:Name="xDeduct" Tag="Deduct" Width="25" Height="25"
+                                                HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0">
+                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                                       FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center">
+                                            </TextBlock>
+                                        </Border>
+                                        <Border x:Name="xIncrement" Tag="Increment" Width="25" Height="25"
+                                                HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0">
+                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                                       FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center">
+                                            </TextBlock>
+                                        </Border>
                                     </Grid>
                                 </Grid>
                             </local:SettingsPaneBlock.MainContent>
@@ -58,13 +76,13 @@
                     </Grid>
 
                     <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="1"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid x:Name="xSizeRow" Grid.Row="1"  HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
                     <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="2"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid x:Name="xPositionRow" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
                     <!--ALIGNMENT-->
-                    <Grid x:Name="xAlignmentRow" Grid.Row="3" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
+                    <Grid x:Name="xAlignmentRow" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"></Grid>
                 </Grid>
             </ScrollViewer>
         </Grid>
