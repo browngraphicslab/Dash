@@ -23,7 +23,7 @@
                 <Setter Property="MinHeight" Value="0" />
             </Style>
             <Flyout x:Name="xEditField" Closing="xEditField_Closing">
-                <TextBox x:Name="xEditTextBox" Style="{StaticResource xPlainTextBox}" Width="200" Height="50" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="False"> </TextBox>
+                <TextBox x:Name="xEditTextBox" Width="200" Height="50" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="False"> </TextBox>
             </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>

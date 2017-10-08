@@ -1,29 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Numerics;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Media.Effects;
-using Windows.Storage;
 using Windows.System;
-using Windows.System.Diagnostics;
 using Windows.UI;
-using Windows.UI.Composition;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views;
-using Windows.UI.Xaml.Shapes;
-using Dash.Sources.FilePicker.PDF;
-using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -568,23 +558,28 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (IsSelected)
-                return;
-            if (e != null)
-            e.Handled = true;
-
-            /*
-            if (IsSelected) return; 
-            await System.Threading.Tasks.Task.Delay(100);
-
+            if (!IsSelected)
+            {
+                await System.Threading.Tasks.Task.Delay(100);
+                OnSelected();
+            }
             if (e != null) e.Handled = true;
-            if (ViewModel == null)
-                return;
-            if (ViewModel.IsInInterfaceBuilder)
-                return;
 
-            OnSelected();
-            */
+
+            //if (!IsSelected)
+            //{
+            //    await System.Threading.Tasks.Task.Delay(100);
+
+            //    if (e != null) e.Handled = true;
+            //    if (ViewModel == null)
+            //        return;
+            //    if (ViewModel.IsInInterfaceBuilder)
+            //        return;
+
+            //    OnSelected();
+            //}
+
+
         }
 
         protected override void OnActivated(bool isSelected)
