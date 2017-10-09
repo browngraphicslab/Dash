@@ -129,7 +129,13 @@ namespace Dash
             return found ? referenceDocId : null;
         }
 
-        public static Context SafeInit(Context context)
+        /// <summary>
+        /// Initializes a new context if the passed in <paramref name="context"/> is not null.
+        /// otherwise returns the passed in <paramref name="context"/>
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static Context InitIfNotNull(Context context)
         {
             return context ?? new Context();
         }

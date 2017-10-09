@@ -47,7 +47,6 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-            ChromeButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.View)};
             xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
             xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
@@ -118,6 +117,13 @@ namespace Dash
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
+        {
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
+                .FirstOrDefault(AssertIsCompositeLayout);
+            return elem as SelectableContainer;
         }
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
@@ -224,12 +230,6 @@ namespace Dash
             return layoutDocument;
         }
 
-        private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
-        {
-            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
-                .FirstOrDefault(AssertIsCompositeLayout);
-            return elem as SelectableContainer;
-        }
 
         private bool AssertIsCompositeLayout(object obj)
         {
@@ -238,7 +238,7 @@ namespace Dash
                 return false;
             }
             var cont = (SelectableContainer)obj;
-            return this.IsCompositeLayout(cont.LayoutDocument);
+            return IsCompositeLayout(cont.LayoutDocument);
         }
 
         private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)

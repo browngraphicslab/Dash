@@ -105,7 +105,9 @@ namespace Dash
             AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
         }
 
+
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+
         {
             context = context ?? new Context();
             context.AddDocumentContext(docController);
@@ -122,7 +124,7 @@ namespace Dash
                 grid.Children.Add(element);
             }
             if (isInterfaceBuilder)
-            {
+            {                                                                                                   
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
                 return container;

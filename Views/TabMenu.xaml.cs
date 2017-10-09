@@ -32,10 +32,19 @@ namespace Dash
         {
             this.InitializeComponent();
             this.MakeView();
+            this.LostFocus += OnLostFocus;
+        }
+
+        private void OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            MainPage.Instance.xCanvas.Children.Remove(this);
         }
 
         private void MakeView()
         {
+            var add = OperationCreationHelper.Operators["Add"].OperationDocumentConstructor;
+            var subtract = OperationCreationHelper.Operators["Subtract"].OperationDocumentConstructor;
+            var multiply = OperationCreationHelper.Operators["Multiply"].OperationDocumentConstructor;
             var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor;
             var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor;
             var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor;
@@ -50,23 +59,33 @@ namespace Dash
             Func<DocumentController> createBlankDocument = BlankDoc;
             Func<DocumentController> createBlankCollection = BlankCollection;
             Func<DocumentController> createBlankPostitNote = BlankNote;
+            
 
             var all = new ObservableCollection<Func<DocumentController>>
             {
                 createBlankDocument,
                 createBlankPostitNote,
                 createBlankCollection,
+                add,
+                subtract,
+                multiply,
                 divide,
                 union,
                 intersection,
                 zip,
                 filter,
-                api, 
+                api,
                 concat,
                 docAppend,
                 compound,
                 map,
             };
+
+            foreach (var doc in ContentController.GetControllers<DocumentController>())
+            {
+                Func<DocumentController> getDoc = () => doc.GetCopy();
+                all.Add(getDoc);
+            }
 
             xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
         }
@@ -116,7 +135,7 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        public static void ShowAt(Canvas canvas, Point position, bool isTouch=false)
+        public static void ShowAt(Canvas canvas, Point position, bool isTouch = false)
         {
             if (Instance != null)
             {
@@ -129,9 +148,8 @@ namespace Dash
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();
-                
-                
             }
         }
+        
     }
 }

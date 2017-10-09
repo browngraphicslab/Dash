@@ -19,19 +19,19 @@
             </Grid.RowDefinitions>
 
             <!--EDIT-->
-            <Grid Grid.Row="0" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                 <Button Margin="0,5,0,10" Width="200" Height="35" HorizontalAlignment="Center" Content="EDIT">
                     <Button.Background>
-                        <SolidColorBrush Color="SteelBlue"></SolidColorBrush>
+                        <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
                     </Button.Background>
                 </Button>
             </Grid>
 
             <!--LAYOUT-->
-            <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                 <local:SettingsPaneBlock>
                     <local:SettingsPaneBlock.MainContent>
-                        <Grid Margin="0,5,0,5">
+                        <Grid >
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"></RowDefinition>
                                 <RowDefinition Height="Auto"></RowDefinition>
@@ -54,12 +54,15 @@
                                 </ComboBox>
                                 
                                 <!--NEW LAYOUT OPTIONS DROPDOWN--> 
-                                <ComboBox x:Name="xAddLayoutComboBox" Grid.Column="1" Visibility="Collapsed" MinWidth="36"
-                                          BorderBrush="Transparent" FontSize="12" IsDropDownOpen="True">
+                                <ComboBox x:Name="xAddLayoutComboBox" Grid.Column="1" Opacity="0"  MinWidth="36"
+                                          BorderBrush="Transparent" FontSize="12">
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->
-                                <Button x:Name="xAddLayoutButton" Background="SteelBlue" Grid.Column="1" >
+                                <Button x:Name="xAddLayoutButton" Grid.Column="1" >
+                                    <Button.Background>
+                                        <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
+                                    </Button.Background>
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>

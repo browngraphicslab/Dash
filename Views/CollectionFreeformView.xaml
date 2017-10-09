@@ -18,14 +18,15 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
 
-    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnDoubleTapped"
           SizeChanged="XOuterGrid_OnSizeChanged" >
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
 
         <InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
-        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>
+
+        <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>
         
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
@@ -39,7 +40,7 @@
                       IsHitTestVisible="{Binding IsSelected}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="CollectionCanvas"
+                    <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
                             Width="0"

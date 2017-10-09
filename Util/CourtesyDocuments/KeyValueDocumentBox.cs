@@ -27,7 +27,6 @@ namespace Dash
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
 
-            ///* 
             ReferenceFieldModelController refToData;
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
 
@@ -37,8 +36,6 @@ namespace Dash
                 return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
-
-            var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
 
             var border = new Border();
 

@@ -32,6 +32,35 @@ namespace Dash
         public FrameworkElement Temp1 { get; set; }
         public FrameworkElement Temp2 { get; set; }
 
+        public LinearGradientBrush GradientBrush { get; set; }
+
+        public void setGradientAngle() // TODO: remove all references to this
+        {
+
+            var pos1 = Element1.TransformToVisual(ToElement)
+                .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
+
+            var pos2 = Element2?.TransformToVisual(ToElement)
+                           .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+
+            var g = new GradientStopCollection();
+            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["OutputHandleColor"]).Color, Offset = 0 });
+            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["InputHandleColor"]).Color, Offset = 1 });
+
+            if (pos1.X > pos2.X)
+            {
+                g[0].Offset = 1;
+                g[1].Offset = 0;
+            }
+            else
+            {
+                g[0].Offset = 0;
+                g[1].Offset = 1;
+            }
+            
+                GradientBrush = new LinearGradientBrush(g, 0);
+        }
+
         public Point Pos2 { get; set; }
         private PathFigureCollection _col = new PathFigureCollection();
         private PathFigure _figure;

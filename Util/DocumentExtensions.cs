@@ -136,6 +136,7 @@ namespace Dash
                     new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
                         true);
             }
+
             return newDoc;
         }
 

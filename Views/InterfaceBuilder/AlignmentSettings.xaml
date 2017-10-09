@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Height="Auto" Width="230">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -17,14 +17,12 @@
         <Grid Grid.Row="0">
             <local:SettingsPaneBlock>
                 <local:SettingsPaneBlock.MainContent>
-                    <Grid Margin="0,5,0,5">
                         <ComboBox x:Name="xHorizontalAlignmentComboBox" HorizontalAlignment="Stretch" BorderBrush="Transparent" FontSize="12">
                             <ComboBoxItem>Left</ComboBoxItem>
                             <ComboBoxItem>Center</ComboBoxItem>
                             <ComboBoxItem>Right</ComboBoxItem>
                             <ComboBoxItem>Stretch</ComboBoxItem>
                         </ComboBox>
-                    </Grid>
                 </local:SettingsPaneBlock.MainContent>
                 <local:SettingsPaneBlock.Title>HORIZONTAL ALIGNMENT</local:SettingsPaneBlock.Title>
             </local:SettingsPaneBlock>
@@ -32,14 +30,12 @@
         <Grid Grid.Row="1">
             <local:SettingsPaneBlock>
                 <local:SettingsPaneBlock.MainContent>
-                    <Grid Margin="0,5,0,5">
                         <ComboBox x:Name="xVerticalAlignmentComboBox" HorizontalAlignment="Stretch" BorderBrush="Transparent" FontSize="12">
                             <ComboBoxItem>Top</ComboBoxItem>
                             <ComboBoxItem>Center</ComboBoxItem>
                             <ComboBoxItem>Bottom</ComboBoxItem>
                             <ComboBoxItem>Stretch</ComboBoxItem>
                         </ComboBox>
-                    </Grid>
                 </local:SettingsPaneBlock.MainContent>
                 <local:SettingsPaneBlock.Title>VERTICAL ALIGNMENT</local:SettingsPaneBlock.Title>
             </local:SettingsPaneBlock>

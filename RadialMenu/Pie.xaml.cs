@@ -3,6 +3,7 @@ using Windows.UI.Xaml.Media;
 namespace RadialMenuControl.UserControl
 {
     using Components;
+    using Dash;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Collections.Specialized;
@@ -189,8 +190,8 @@ namespace RadialMenuControl.UserControl
                     Height = Height,
                     Width = Width,
                     // Arc & Stroke
-                    StrokeColor = slice.StrokeColor ?? SourceRadialMenu.InnerNormalColor,
-                    StrokeThickness = slice.StrokeThickness ?? 0,
+                    StrokeColor = slice.StrokeColor ?? Color.FromArgb(20,0,0,0),
+                StrokeThickness = slice.StrokeThickness ?? 1,
                     OuterArcThickness = slice.OuterThickness ?? SourceRadialMenu.OuterThickness,
                     // The defaults below use OneNote-like purple colors
                     InnerNormalColor = slice.InnerNormalColor ?? SourceRadialMenu.InnerNormalColor,
@@ -211,10 +212,8 @@ namespace RadialMenuControl.UserControl
                     IconFontFamily = slice.IconFontFamily,
                     IconForegroundBrush = slice.IconForegroundBrush,
                     IconImage = slice.IconImage,
-                    IconImageSideLength = (Size / 2) * .25,
                     IsLabelHidden = slice.IsLabelHidden,
                     Label = slice.Label,
-                    LabelSize = slice.LabelSize,
                     // Original Button
                     OriginalRadialMenuButton = slice,
                     // Access Keys

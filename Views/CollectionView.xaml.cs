@@ -16,6 +16,13 @@ using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+
+using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using System.Numerics;
 using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -44,7 +51,7 @@ namespace Dash
         }
 
         private CollectionViewType _viewType;
-
+        
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             InitializeComponent();
@@ -53,6 +60,16 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
+
+        #region Background Translation Variables
+        private CanvasBitmap _bgImage;
+        private bool _resourcesLoaded;
+        private CanvasImageBrush _bgBrush;
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private float _backgroundOpacity = .95f;
+        #endregion
+        
         public static CollectionView GetParentCollectionView(DependencyObject sender)
         {
             var item = VisualTreeHelper.GetParent(sender);
@@ -70,6 +87,7 @@ namespace Dash
         {
             Util.ForceBindHeightToParentDocumentHeight(this);
         }
+
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -85,10 +103,18 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
 
-            switch (_viewType)
+            // set the top-level viewtype to be freeform by default
+            if (ParentDocument == MainPage.Instance.MainDocView)
+            {
+                _viewType = CollectionViewType.Freeform;
+            }
+                switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
+
+                    CurrentView = /*_freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
+
+
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -109,13 +135,18 @@ namespace Dash
                     CurrentView = new CollectionTextView();
                     break;
             }
+
             xContentControl.Content = CurrentView;
 
+            // use a fully dark gridbg for the parent-level, nested collectionviews
+            // use a lighter background
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
+                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
             }
 
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
@@ -162,7 +193,8 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView =/* _freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
+
             xContentControl.Content = CurrentView;
         }
 
@@ -275,11 +307,11 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    return 2; 
+                    return 5; 
                 case CollectionViewType.Grid:
                     return 0; 
                 case CollectionViewType.List:
-                    return 1; 
+                    return 2; 
                 default: return -1; 
             }
         }
@@ -312,7 +344,7 @@ namespace Dash
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
-                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
+                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
             };
 
 
@@ -374,11 +406,92 @@ namespace Dash
 
         #endregion
 
+
+
+        private void SetInitialTransformOnBackground()
+        {
+            var composite = new TransformGroup();
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = 1,
+                ScaleY = 1
+            };
+
+            composite.Children.Add(scale);
+            SetTransformOnBackground(composite);
+        }
+
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            var task = Task.Run(async () =>
+            {
+                // Load the background image and create an image brush from it
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+            });
+            args.TrackAsyncAction(task.AsAsyncAction());
+
+            task.ContinueWith(continuationTask =>
+            {
+                SetInitialTransformOnBackground();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+
+        public void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+        }
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+            return currentScale;
+        }
+
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (!_resourcesLoaded) return;
+
+            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+            var session = args.DrawingSession;
+            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+        }
+
         /// <summary>
         /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
         /// in order to make ellipses hit test visible and the rest not 
         /// </summary>
-        private void xContentControl_Loaded(object sender, RoutedEventArgs e)           // TODO think up a better way to do this 
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)         
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;

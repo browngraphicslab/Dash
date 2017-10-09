@@ -4,12 +4,12 @@ using DashShared;
 
 namespace Dash
 {
-    public class AddOperatorModelController : OperatorFieldModelController
+    public class AddOperatorFieldModelController : OperatorFieldModelController
     {
-        public AddOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public AddOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public AddOperatorModelController() : base(new OperatorFieldModel("Add"))
+        public AddOperatorFieldModelController() : base(new OperatorFieldModel("Add"))
         {
         }
 
@@ -44,7 +44,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new AddOperatorModelController(OperatorFieldModel);
+            return new AddOperatorFieldModelController(OperatorFieldModel);
         }
         public override object GetValue(Context context)
         {

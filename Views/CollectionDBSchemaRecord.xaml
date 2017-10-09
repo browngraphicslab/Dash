@@ -1,0 +1,41 @@
+﻿<UserControl
+    x:Class="Dash.Views.CollectionDBSchemaRecord"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    d:DataContext="{d:DesignInstance local:CollectionDBSchemaRecordViewModel}"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DragStarting="UserControl_DragStarting" 
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Width="30" Height="25" Background="ForestGreen" ManipulationMode="All" 
+                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed"  />
+        <ListView x:Name="xListView" Grid.Column="1"
+            ItemsSource="{Binding RecordFields}"
+            SelectionMode="None"
+            VirtualizingStackPanel.VirtualizationMode="Recycling" 
+            ShowsScrollingPlaceholders="False">
+        <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel CanDrag="True" Orientation="Horizontal" Padding="0" Margin="0"/>
+            </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <local:CollectionDBSchemaRecordField DataContext="{Binding}" ManipulationMode="All" 
+                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed" />
+            </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</UserControl>

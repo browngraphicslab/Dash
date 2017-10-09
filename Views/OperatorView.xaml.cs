@@ -29,11 +29,24 @@ namespace Dash
         private bool _isCompound;
         private IOReference _currOutputRef;
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
+        private DocumentView documentView;
 
         public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             this.InitializeComponent();
             _keysToFrameworkElements = keysToFrameworkElements;
+            this.Loaded += OperatorView_Loaded;
+        }
+
+        private void OperatorView_Loaded(object sender, RoutedEventArgs e)
+        {
+            documentView = this.GetFirstAncestorOfType<DocumentView>();
+            if (documentView == null)
+                return;
+            
+            xTitle.Text = _operator.GetOperatorType();
+
+            documentView.StyleOperator(0);
         }
 
         public object OperatorContent
@@ -268,6 +281,16 @@ namespace Dash
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             EndDraggedLink(sender, null, true, view);
             view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
+        }
+
+        private void FieldPreview_OnLoading(FrameworkElement sender, object args)
+        {
+            var preview = sender as FieldPreview;
+            if (preview == null)
+            {
+                return;
+            }
+            preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
         }
     }
 }

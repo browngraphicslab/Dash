@@ -22,7 +22,7 @@ namespace Dash
         /// <returns>The xaml equivalent to the data</returns>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            Debug.Assert(value is TData, "You are trying to convert data into xaml, but the data is of the wrong type");
+            Debug.Assert(value is TData, "You are trying to convert data of type " + value?.GetType() + " into xaml type " + targetType + ", but the types don't match");
 
             // TODO somehow make sure that this assert works. it started failing on me
             Debug.Assert(targetType.IsAssignableFrom(typeof(TXaml)),

@@ -9,24 +9,28 @@
     d:DesignHeight="800"
     d:DesignWidth="300">
 
-    <Grid Width="250" HorizontalAlignment="Stretch" Background="LightSteelBlue" BorderBrush="Transparent">
+
+    <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
+        <Grid.Background>
+            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
             <RowDefinition />
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+        <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
                 <Run Text="SETTINGS"/>
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <TextBlock HorizontalAlignment="Center">
                 <Run Text="Ink"/>
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="2" Width="250">
+        <Grid Grid.Row="2" HorizontalAlignment="Stretch">
             <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -38,13 +42,13 @@
                     
 
                     <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="0"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xSizeRow" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
                     <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="1"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xPositionRow" Grid.Row="1"  HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
                     <!--ALIGNMENT-->
-                    <Grid x:Name="xAlignmentRow" Grid.Row="2" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+                    <Grid x:Name="xAlignmentRow" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"></Grid>
 
                 </Grid>
             </ScrollViewer>
