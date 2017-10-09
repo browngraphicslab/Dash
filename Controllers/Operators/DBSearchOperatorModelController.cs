@@ -17,7 +17,7 @@ namespace Dash.Controllers.Operators
     {
         public DBSearchOperatorFieldModel DBSearchOperatorFieldModel {  get { return OperatorFieldModel as DBSearchOperatorFieldModel; } }
        
-        static public DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
+        public static DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
@@ -32,7 +32,7 @@ namespace Dash.Controllers.Operators
             return searchOp;
         }
 
-        static public DocumentController CreateSearch(FieldControllerBase fieldContainingSearchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
+        public static DocumentController CreateSearch(FieldControllerBase fieldContainingSearchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);

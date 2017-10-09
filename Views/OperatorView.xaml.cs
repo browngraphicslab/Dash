@@ -53,7 +53,7 @@ namespace Dash
             {
                 _lastDataContext = args.NewValue;
             }
-            _operator = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>(null);
+            _operator = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
             _isCompound = _operator.IsCompound();
 
             var inputsBinding = new Binding

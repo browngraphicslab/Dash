@@ -13,6 +13,11 @@ namespace Dash
     public class RectFieldModel : FieldModel
     {
 
+        public RectFieldModel()
+        {
+            
+        }
+
         public RectFieldModel(Rect data, string id = null) : base(id)
         {
             Data = data;

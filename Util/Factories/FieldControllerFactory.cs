@@ -18,9 +18,16 @@ namespace Dash
     {
         public static FieldControllerBase CreateFromModel(FieldModel model)
         {
-            var t = model.GetType();
+            Type t = model.GetType();
+            System.Reflection.TypeInfo ti;
 
-            var type = t.GetTypeInfo().GetCustomAttribute<FieldModelTypeAttribute>();
+            FieldModelTypeAttribute type = null;
+            do
+            {
+                ti = t.GetTypeInfo();
+                type = ti.GetCustomAttribute<FieldModelTypeAttribute>();
+                t = ti.BaseType;
+            } while (type == null && t != null);
 
             if (type == null)
             {

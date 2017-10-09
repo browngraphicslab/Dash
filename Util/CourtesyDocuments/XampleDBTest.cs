@@ -383,7 +383,7 @@ namespace Dash
             
         };
         static List<SeenIt> BeenThere = new List<SeenIt>();
-        static public void ResetCycleDetection()
+        public static void ResetCycleDetection()
         {
             return;
             if (DBTest.PrototypeUmp != null)

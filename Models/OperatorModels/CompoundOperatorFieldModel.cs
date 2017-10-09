@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {

@@ -15,6 +15,7 @@ namespace Dash
         static OperationCreationHelper()
         {
             AddOperator<DivideOperatorFieldModelController>("Divide", "÷");
+            AddOperator<AddOperatorModelController>("Add", "+");
             AddOperator<IntersectionOperatorModelController>("Intersection", "∩");
             AddOperator<UnionOperatorFieldModelController>("Union", "∪");
             AddOperator<ZipOperatorFieldController>("Zip");

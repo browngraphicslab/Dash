@@ -72,42 +72,32 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is DocumentController)
+            async Task Success(IEnumerable<DocumentModel> mainPages)
             {
-                // get the main document from the navigation context
-                MainDocument = e.Parameter as DocumentController;
-                // set the main view's datacontext to be the collection
-                xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+                var doc = mainPages.FirstOrDefault();
+                if (doc != null)
+                {
+                    MainDocument = ContentController<DocumentModel>.GetController<DocumentController>(doc.Id);
+                   
+                }
+                else
+                {
+                    var fields = new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
+                    };
+                    MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
 
-                // set the main view's width and height to avoid NaN errors
-                xMainDocView.Width = MyGrid.ActualWidth;
-                xMainDocView.Height = MyGrid.ActualHeight;
-                return;
+                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    MainDocument.SetActiveLayout(layout, true, true);
+                }
+                xMainDocView.DataContext = new DocumentViewModel(MainDocument);
             }
 
-            //// create the collection document model using a request
-            //var fields = new Dictionary<KeyController, FieldControllerBase>();
-            //fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            //MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-            
-            //var collectionDocumentController =
-            //    new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            //collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
-            //collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-            //MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
-
-            //// set the main view's datacontext to be the collection
-            //xMainDocView.DataContext = new DocumentViewModel(MainDocument);
-
-            //// set the main view's width and height to avoid NaN errors
-            //xMainDocView.Width = MyGrid.ActualWidth;
-            //xMainDocView.Height = MyGrid.ActualHeight;
-
-
-
-
+            await RESTClient.Instance.Documents.GetDocumentsByQuery<DocumentModel>(
+                new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)

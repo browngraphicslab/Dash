@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Windows.Foundation.Metadata;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
