@@ -158,6 +158,8 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
+            HierarchicalMenu.Instance.AddToListItemSource(this);
+
             LayoutName = model.DocumentType.Type;
             // Add Events
         }
@@ -663,6 +665,9 @@ namespace Dash
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = new DocumentFieldModelController(this);
             delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
+
+            // make delegate in hierarchicalmenu
+            HierarchicalMenu.Instance.MakeDelegate(this, delegateController);
 
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();

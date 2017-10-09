@@ -92,6 +92,7 @@ namespace Dash
             };
             Loaded += OnLoaded;
 
+            xCanvas.Children.Add(HierarchicalMenu.Instance);
 
             //KeyUp += OnKeyUp;
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
@@ -555,6 +556,13 @@ namespace Dash
             DisplayDocument(del1);
         }
 
-       
+        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (e.Delta.Translation.X > 0)
+            {
+                HierarchicalMenu.Instance.OpenPane();
+            }
+        }
+
     }
 }

@@ -115,6 +115,15 @@
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
+    <Compile Include="Views\HierarchicalMenu\HierarchicalMenu.xaml.cs">
+      <DependentUpon>HierarchicalMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HierarchicalMenu\HierarchicalViewItem.xaml.cs">
+      <DependentUpon>HierarchicalViewItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\HierarchicalMenu\HierarchicalViewItemList.xaml.cs">
+      <DependentUpon>HierarchicalViewItemList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
@@ -327,7 +336,7 @@
     <Compile Include="Util\DocumentPointerFieldReference.cs" />
     <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
-    <Compile Include="Views\RichTextSettings.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\RichTextFieldModel.cs" />
@@ -596,6 +605,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\HierarchicalMenu\HierarchicalMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HierarchicalMenu\HierarchicalViewItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\HierarchicalMenu\HierarchicalViewItemList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FieldPreview.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -804,7 +825,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\RichTextSettings.xaml">
+    <Page Include="Views\InterfaceBuilder\RichTextSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

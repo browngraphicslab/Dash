@@ -37,6 +37,8 @@ namespace Dash
         // the document view that is being dragged
         public static DocumentView DragDocumentView;
 
+        public static Dictionary<DocumentController, DocumentView> DocumentViews = new Dictionary<DocumentController, DocumentView>(); 
+
         public bool ProportionalScaling { get; set; }
 
         public static int dvCount = 0;
@@ -102,6 +104,9 @@ namespace Dash
                 //if (Parent == null)
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
+
+                DocumentViews.Add(ViewModel.DocumentController, this);
+                HierarchicalMenu.Instance.SetDocViewIcon(ViewModel.DocumentController);
             }
         }
 
@@ -461,6 +466,8 @@ namespace Dash
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
+            DocumentViews.Remove(ViewModel.DocumentController);
+            HierarchicalMenu.Instance.RemoveFromListSource(ViewModel.DocumentController);
 
             if (useFixedMenu)
                 MainPage.Instance.HideDocumentMenu();
@@ -546,14 +553,22 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            SetTop();
+            HierarchicalMenu.Instance.HighLightItem(ViewModel?.DocumentController);
+            if (ParentCollection == null) return;
+            OuterGrid.BorderBrush = new SolidColorBrush(Colors.White);
+            OuterGrid.BorderThickness = new Thickness(3);
+            e.Handled = true;
+        }
+
+        public void SetTop()
+        {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
 
             OnSelected();
-            e.Handled = true;
         }
-
         public Rect ClipRect { get { return xClipRect.Rect;  } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)

@@ -12,10 +12,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xGrid" HorizontalAlignment="Stretch" Tapped="XTitle_OnTapped">
-            <Grid.Background>
-                <SolidColorBrush Color="Black" Opacity="0.05"></SolidColorBrush>
-            </Grid.Background>
+        <Grid x:Name="xGrid" HorizontalAlignment="Stretch" Tapped="XTitle_OnTapped" Background="{StaticResource DocumentHighlightBackground}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"/>
                 <ColumnDefinition />
@@ -24,13 +21,10 @@
                 <TextBlock x:Name="xCollapseExpandButton" Text="˅" Margin="0,0,0,0" Padding="10"  Height="Auto" Width="Auto" Foreground="White" />
             </Grid>
             <Grid Grid.Column="1"  HorizontalAlignment="Stretch" Height="40" Background="Transparent" Margin="0,0,30,0">
-                <TextBlock x:Name="xTitle" Text="{x:Bind Title}" Grid.Column="1" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="White"></TextBlock>
+                <TextBlock x:Name="xTitle" Text="{x:Bind Title}" FontSize="12"  Height="Auto" VerticalAlignment="Center" HorizontalAlignment="Stretch" Foreground="White"></TextBlock>
             </Grid>
         </Grid>
         <Grid x:Name="xContentGrid" Grid.Row="1">
-            <Grid.Background>
-                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
-            </Grid.Background>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"/>
                 <ColumnDefinition/>
