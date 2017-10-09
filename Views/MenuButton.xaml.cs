@@ -17,12 +17,12 @@ namespace Dash
     public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
-        private Button _button;
         private Action _buttonAction;
         private double _verticalOffset;
         private Storyboard OpacityAnimation;
         private Storyboard TranslationAnimation;
         private MenuButtonContainer content;
+        public MenuButtonContainer Contents {  get { return content; } }
 
         public bool RotateOnTap = false;
         public bool IsComposite;
@@ -35,7 +35,7 @@ namespace Dash
             IsComposite = false;
         }
 
-        private int _selectedInd; 
+        private int _selectedInd;
         private List<Button> _buttons = new List<Button>();
         private Border _border;
 
@@ -55,7 +55,7 @@ namespace Dash
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
 
-            _selectedInd = selectedInd < 0 ? icons.Count - 1 : selectedInd; 
+            _selectedInd = selectedInd < 0 ? icons.Count - 1 : selectedInd;
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
@@ -119,15 +119,13 @@ namespace Dash
                     (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
                     buttonActions[j]?.Invoke();
 
-                    _selectedInd = j; 
+                    _selectedInd = j;
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
                 i++;
             }
         }
-
-        SymbolIcon _symbol;
-        public SymbolIcon ButtonIcon { get { return _symbol; } }
+        
         public TextBlock ButtonText { get { return _descriptionText; } }
         /// <summary>
         /// Create a circular button with an icon with a string description
@@ -139,18 +137,16 @@ namespace Dash
         {
 
             // create button to contain the border with the symbol
-            MenuButtonContainer content = new MenuButtonContainer(icon, name);
+            content = new MenuButtonContainer(icon, name);
             _descriptionText = content.Label;
-            _button = content.Button;
             _border = content.Border;
             content.Border.Background = new SolidColorBrush(background);
-            this.content = content;
 
             // add all content to stack panel
             xButtonStackPanel.Children.Add(content);
 
-            _button.Tapped += Button_Tapped;
-            _button.DoubleTapped += Button_DoubleTapped;
+            content.Tapped       += Button_Tapped;
+            content.DoubleTapped += Button_DoubleTapped;
         }
 
         private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -172,9 +168,9 @@ namespace Dash
 
         public void Dispose()
         {
-            if (_button == null) return; 
-            _button.Tapped -= Button_Tapped;
-            _button.DoubleTapped -= Button_DoubleTapped;
+            if (content == null) return;
+            content.Tapped -= Button_Tapped;
+            content.DoubleTapped -= Button_DoubleTapped;
         }
 
         /// <summary>
@@ -185,10 +181,10 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var rotationTransform = new RotateTransform();
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = rotationTransform;
-                _button.RenderTransformOrigin = new Point(0.5, 0.5);
+                content.RenderTransform = rotationTransform;
+                content.RenderTransformOrigin = new Point(0.5, 0.5);
             }
             else
             {
@@ -213,9 +209,9 @@ namespace Dash
 
         private void OpactiyAnimationHelper(int from, int to)
         {
-            if (_button != null)
+            if (content != null)
             {
-                this.CreateAndRunOpacityAnimation(_button, from, to);
+                this.CreateAndRunOpacityAnimation(content, from, to);
                 this.CreateAndRunOpacityAnimation(_descriptionText, from, to);
             }
             else
@@ -304,9 +300,9 @@ namespace Dash
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = translateTransform;
+                content.RenderTransform = translateTransform;
                 _descriptionText.RenderTransform = translateTransform;
             }
             else
@@ -333,9 +329,9 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = translateTransform;
+                content.RenderTransform = translateTransform;
                 _descriptionText.RenderTransform = translateTransform;
             }
             else
