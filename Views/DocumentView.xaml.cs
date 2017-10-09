@@ -539,47 +539,23 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        /// <summary>
-        /// Called when the pointer first goes down on the document. Selects it and brings it to the
-        /// foreground of the canvas, in front of all other documents.
-        /// </summary>
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (ParentCollection == null) return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-
-            OnSelected();
-            e.Handled = true;
-        }
-
+        
         public Rect ClipRect { get { return xClipRect.Rect;  } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsSelected)
             {
-                await System.Threading.Tasks.Task.Delay(100);
+                await Task.Delay(100);
+
+                //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+                if (ParentCollection == null) return;
+                ParentCollection.MaxZ += 1;
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+
+                if (e != null) e.Handled = true;
                 OnSelected();
             }
-            if (e != null) e.Handled = true;
-
-
-            //if (!IsSelected)
-            //{
-            //    await System.Threading.Tasks.Task.Delay(100);
-
-            //    if (e != null) e.Handled = true;
-            //    if (ViewModel == null)
-            //        return;
-            //    if (ViewModel.IsInInterfaceBuilder)
-            //        return;
-
-            //    OnSelected();
-            //}
-
-
         }
 
         protected override void OnActivated(bool isSelected)

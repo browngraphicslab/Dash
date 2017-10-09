@@ -757,8 +757,6 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-
-            Debug.WriteLine("doubletapped...");
             _singleTapped = false; 
             e.Handled = true;
             ChooseLowest(e); 
@@ -767,7 +765,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         private void ChooseLowest(DoubleTappedRoutedEventArgs e)
         {
             // get all descendants of free form views and call double tap on the lowest one
-            var freeforms = xItemsControl.GetDescendantsOfType<CollectionFreeformView>();
+            var freeforms = xItemsControl.GetImmediateDescendantsOfType<CollectionFreeformView>();
             foreach (var ff in freeforms)
             {
                 if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
@@ -778,7 +776,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             }
 
             // in the lowest possible collectionfreeform 
-            var docViews = xItemsControl.GetDescendantsOfType<DocumentView>(); 
+            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>(); 
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
