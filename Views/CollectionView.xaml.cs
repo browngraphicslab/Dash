@@ -112,8 +112,7 @@ namespace Dash
             }
             xContentControl.Content = CurrentView;
 
-            if (MainPage.Instance != null && ParentDocument == MainPage.Instance.xMainDocView ||
-                HomePage.Instance != null && ParentDocument == HomePage.Instance.MainDocView)
+            if (MainPage.Instance != null && ParentDocument == MainPage.Instance.xMainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
@@ -290,19 +289,6 @@ namespace Dash
 
         private void MakeMenu()
         {
-            var multipleSelection = new Action(MakeSelectionModeMultiple);
-            var deleteSelection = new Action(DeleteSelection);
-            var singleSelection = new Action(MakeSelectionModeSingle);
-            var noSelection = new Action(MakeSelectionModeNone);
-            var selectAll = new Action(SelectAllItems);
-            var setGrid = new Action(SetGridView);
-            var setBrowse = new Action(SetBrowseView);
-            var setList = new Action(SetListView);
-            var setSchema = new Action(SetSchemaView);
-            var setDB = new Action(SetDBView);
-            var setFreeform = new Action(SetFreeformView);
-            var deleteCollection = new Action(DeleteCollection);
-
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
@@ -312,14 +298,30 @@ namespace Dash
                 },
                 //toggle grid/list/freeform view buttons 
 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
+                new MenuButton(
+                    new List<Symbol> { Symbol.ViewAll,
+                        Symbol.BrowsePhotos,
+                        Symbol.List,
+                        Symbol.Folder,
+                        Symbol.Admin,
+                        Symbol.View,
+                        Symbol.AttachCamera}, 
+                    menuColor, 
+                    new List<Action> { SetGridView,
+                        SetBrowseView,
+                        SetListView,
+                        SetDBView,
+                        SetSchemaView,
+                        SetFreeformView,
+                        EnterCollection}, 
+                    GetMenuIndex()),
+                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
 
 
             };
 
             if (ParentDocument.IsMainCollection == false)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
 
             var documentButtons = new List<MenuButton>
             {

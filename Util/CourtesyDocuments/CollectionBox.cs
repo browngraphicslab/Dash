@@ -75,11 +75,11 @@ namespace Dash
             var view = new CollectionView(collectionViewModel,  viewType);
 
 
-            if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType &&
-                context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.HomePageType)
-            {
+            //if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType &&
+            //    context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.HomePageType)
+            //{
                 SetupBindings(view, docController, context);
-            }
+            //}
 
             view.Opacity = opacityValue;
             if (isInterfaceBuilderLayout)

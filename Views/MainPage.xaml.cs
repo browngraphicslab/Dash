@@ -57,9 +57,19 @@ namespace Dash
         {
             InitializeComponent();
 
-            _radialMenu = new RadialMenuView(xCanvas);
-            xCanvas.Children.Add(_radialMenu);
+            // Set the instance to be itself, there should only ever be one MainView
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Instance = this;
 
+            _radialMenu = new RadialMenuView(xCanvas);
+            _radialMenu.Loaded += delegate
+            {
+                _radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
+            };
+            Loaded += OnLoaded;
+
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -74,47 +84,30 @@ namespace Dash
                 // set the main view's width and height to avoid NaN errors
                 xMainDocView.Width = MyGrid.ActualWidth;
                 xMainDocView.Height = MyGrid.ActualHeight;
-
-                // Set the instance to be itself, there should only ever be one MainView
-                Debug.Assert(Instance == null,
-                    "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
-                Instance = this;
-
-                //var jsonDoc = JsonToDashUtil.RunTests();
+                return;
             }
 
-            // create the collection document model using a request
-            var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
+            //// create the collection document model using a request
+            //var fields = new Dictionary<KeyController, FieldControllerBase>();
+            //fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            //MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
             
-            var collectionDocumentController =
-                new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
-            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+            //var collectionDocumentController =
+            //    new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            //collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            //collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
+            //MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
-            // set the main view's datacontext to be the collection
-            xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+            //// set the main view's datacontext to be the collection
+            //xMainDocView.DataContext = new DocumentViewModel(MainDocument);
 
-            // set the main view's width and height to avoid NaN errors
-            xMainDocView.Width = MyGrid.ActualWidth;
-            xMainDocView.Height = MyGrid.ActualHeight;
+            //// set the main view's width and height to avoid NaN errors
+            //xMainDocView.Width = MyGrid.ActualWidth;
+            //xMainDocView.Height = MyGrid.ActualHeight;
 
-            // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
-            Instance = this;
 
-            _radialMenu = new RadialMenuView(xCanvas);
-            _radialMenu.Loaded += delegate
-            {
-                _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
-            };
-            Loaded += OnLoaded;
 
-            //KeyUp += OnKeyUp;
-            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
-            Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)

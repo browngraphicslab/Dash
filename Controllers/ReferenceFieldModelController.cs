@@ -44,12 +44,12 @@ namespace Dash
 
         public override FieldControllerBase Dereference(Context context)
         {
-            return context.Dereference(this);
+            return GetFieldReference().Dereference(context);
         }
 
         public override FieldControllerBase DereferenceToRoot(Context context)
         {
-            return context.DereferenceToRoot(this);
+            return GetFieldReference().DereferenceToRoot(context);
         }
 
         public abstract FieldReference GetFieldReference();
