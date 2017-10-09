@@ -219,12 +219,12 @@
                                                     <ColumnDefinition Width="auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                <Rectangle Grid.Column="0" Height="15" Width="15" Margin="2" VerticalAlignment="Center" Stroke="Transparent">
                                                     <Rectangle.Fill>
                                                         <SolidColorBrush Color="{Binding Color}" />
                                                     </Rectangle.Fill>
                                                 </Rectangle>
-                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
@@ -246,12 +246,12 @@
                                                     <ColumnDefinition Width="auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                <Rectangle Grid.Column="0" Height="15" Width="15" Margin="2" VerticalAlignment="Center" Stroke="Transparent">
                                                     <Rectangle.Fill>
                                                         <SolidColorBrush Color="{Binding Color}" />
                                                     </Rectangle.Fill>
                                                 </Rectangle>
-                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0"/>
                                             </Grid>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
