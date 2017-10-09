@@ -159,7 +159,6 @@ namespace Dash
 
             copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
@@ -189,7 +188,7 @@ namespace Dash
             copyButtonView.DragStarting += (s, e) =>
             {
                 _moveTimer.Stop();
-                e.Data.RequestedOperation = copyButton.ButtonIcon.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
+                e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
                 ViewModel.DocumentView_DragStarting(this, e);
             };
             copyButtonView.DropCompleted += CopyButtonView_DropCompleted1;
@@ -241,7 +240,7 @@ namespace Dash
 
         private void CopyButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
-            copyButton.ButtonIcon.Symbol = Symbol.Copy;
+            copyButton.Contents.Symbol = Symbol.Copy;
             copyButton.ButtonText.Text = "Copy";
             _moveTimer.Stop();
         }
@@ -255,7 +254,7 @@ namespace Dash
 
         private void Timer_Tick(object sender, object e)
         {
-            copyButton.ButtonIcon.Symbol = Symbol.MoveToFolder;
+            copyButton.Contents.Symbol = Symbol.MoveToFolder;
             copyButton.ButtonText.Text = "Move";
         }
 

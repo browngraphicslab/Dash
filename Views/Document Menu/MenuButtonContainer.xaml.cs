@@ -30,6 +30,7 @@ namespace Dash.Views.Document_Menu
             xSymbol.Symbol = symbol;
             xLabel.Text = label.ToLower();
         }
+        public Symbol Symbol { get { return xSymbol.Symbol; } set { xSymbol.Symbol = value; } }
         public TextBlock Label { get { return xLabel; } }
         public Button Button { get { return xButton; } }
         public Border Border { get { return xBorder; } set { xBorder = value; } }
