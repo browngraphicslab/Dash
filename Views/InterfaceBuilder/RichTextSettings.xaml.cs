@@ -17,8 +17,10 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -47,11 +49,11 @@ namespace Dash
 
         private void AddHandlers(DocumentController docController, Context context)
         {
-            xFontSizeSlider.ValueChanged += delegate
+            xFontSizeTextBox.TextChanged += delegate
             {
                 this.FontSizeChanged(docController, context);
             };
-            xFontWeightSlider.ValueChanged += delegate
+            xFontWeightTextBox.TextChanged += delegate
             {
                 this.FontWeightChanged(docController, context);
             };
@@ -276,7 +278,8 @@ namespace Dash
             if (selectedText != null)
             {
                 ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
-                charFormatting.Weight = (int) xFontWeightSlider.Value;
+                var currentValue = int.Parse(xFontWeightTextBox.Text);
+                charFormatting.Size = currentValue;
                 richTextController.SelectedText.CharacterFormat = charFormatting;
             }
         }
@@ -289,7 +292,8 @@ namespace Dash
             if (selectedText != null)
             {
                 ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
-                charFormatting.Size = (int)xFontWeightSlider.Value;
+                var currentValue = int.Parse(xFontSizeTextBox.Text);
+                charFormatting.Size = currentValue;
                 richTextController.SelectedText.CharacterFormat = charFormatting;
             }
         }
@@ -352,7 +356,212 @@ namespace Dash
             {
                 fonts.Add(new FontFamily(font));
             }
+
         }
+        #region ValueSlider
+
+        private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (sender == xFontWeightMovementDetectionGrid)
+            {
+                xFontWeightTextBox.Focus(FocusState.Programmatic);
+                xFontWeightMovementDetectionGrid.IsHitTestVisible = false;
+                xFontWeightMovementDetectionGrid.Visibility = Visibility.Collapsed;
+
+            } else if (sender == xFontSizeMovementDetectionGrid)
+            {
+                xFontSizeTextBox.Focus(FocusState.Programmatic);
+                xFontSizeMovementDetectionGrid.IsHitTestVisible = false;
+                xFontSizeMovementDetectionGrid.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void XMovementDetectionGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var grid = sender as Panel;
+            var children = grid?.Children;
+            if (children != null)
+            {
+                foreach (var child in children)
+                {
+                    this.CreateAndRunOpacityAnimation(child, 0, 0.5);
+                    if ((string)(child as Border)?.Tag == "Deduct")
+                    {
+                        this.CreateAndRunRepositionAnimation(child, 100);
+                    }
+                    else if ((string)(child as Border)?.Tag == "Increment")
+                    {
+                        this.CreateAndRunRepositionAnimation(child, -100);
+                    }
+                }
+            }
+            e.Handled = true;
+        }
+
+
+        private void XMovementDetectionGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            this.HideDeductAndIncrement(sender);
+            e.Handled = true;
+        }
+
+        private void XMovementDetectionGrid_OnPointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            // event not firing?
+            this.HideDeductAndIncrement(sender);
+            e.Handled = true;
+        }
+
+        private void xTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender == xFontWeightTextBox)
+            {
+                xFontWeightMovementDetectionGrid.IsHitTestVisible = true;
+                xFontWeightMovementDetectionGrid.Visibility = Visibility.Visible;
+            } else if (sender == xFontSizeTextBox)
+            {
+                xFontSizeMovementDetectionGrid.IsHitTestVisible = true;
+                xFontWeightMovementDetectionGrid.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void CreateAndRunOpacityAnimation(UIElement target, double from, double to)
+        {
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.3));
+
+            DoubleAnimation opacityAnimation = new DoubleAnimation()
+            {
+                SpeedRatio = 2,
+                From = from,
+                To = to,
+                Duration = duration,
+                EnableDependentAnimation = true
+            };
+            Storyboard opacityStoryboard = new Storyboard()
+            {
+                Duration = duration
+            };
+            opacityStoryboard.Children.Add(opacityAnimation);
+            Storyboard.SetTarget(opacityAnimation, target);
+            Storyboard.SetTargetProperty(opacityAnimation, "Opacity");
+            opacityStoryboard.Begin();
+        }
+
+        private void CreateAndRunRepositionAnimation(UIElement target, double horizontalOffset)
+        {
+            Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
+
+            RepositionThemeAnimation repositionAnimation = new RepositionThemeAnimation()
+            {
+                SpeedRatio = 1.3,
+                FromHorizontalOffset = horizontalOffset,
+                Duration = duration
+            };
+            Storyboard repositionStoryboard = new Storyboard()
+            {
+                Duration = duration
+            };
+            repositionStoryboard.Children.Add(repositionAnimation);
+            Storyboard.SetTarget(repositionAnimation, target);
+            repositionStoryboard.Begin();
+        }
+
+        private void XMovementDetectionGrid_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var deltaX = e.Delta.Translation.X;
+            if (deltaX > 0)
+            {
+                if (sender == xFontWeightMovementDetectionGrid)
+                {
+                    (xDeduct.Child as TextBlock).FontSize = 20;
+                    this.CreateAndRunOpacityAnimation(xDeduct, xDeduct.Opacity, 0.5);
+                    (xIncrement.Child as TextBlock).FontSize = 26;
+                    this.CreateAndRunOpacityAnimation(xIncrement, xIncrement.Opacity, 1);
+                    double currentValue = 0;
+                    if (!xFontWeightTextBox.Text.Equals(string.Empty))
+                    {
+                        currentValue = double.Parse(xFontWeightTextBox.Text);
+                    }
+                        xFontWeightTextBox.SetValue(TextBox.TextProperty,
+                            (currentValue + 10).ToString());
+                } else if (sender == xFontSizeMovementDetectionGrid)
+                {
+                    (xSizeDeduct.Child as TextBlock).FontSize = 20;
+                    this.CreateAndRunOpacityAnimation(xSizeDeduct, xSizeDeduct.Opacity, 0.5);
+                    (xSizeIncrement.Child as TextBlock).FontSize = 26;
+                    this.CreateAndRunOpacityAnimation(xSizeIncrement, xSizeIncrement.Opacity, 1);
+                    double currentValue = 0;
+                    if (!xFontSizeTextBox.Text.Equals(string.Empty))
+                    {
+                        currentValue = double.Parse(xFontSizeTextBox.Text);
+                    }
+                        xFontSizeTextBox.SetValue(TextBox.TextProperty, (currentValue + 1).ToString());
+                    
+                }
+            }
+            if (deltaX < 0)
+            {
+                if (sender == xFontWeightMovementDetectionGrid)
+                {
+                    (xIncrement.Child as TextBlock).FontSize = 20;
+                    this.CreateAndRunOpacityAnimation(xIncrement, xIncrement.Opacity, 0.5);
+                    (xDeduct.Child as TextBlock).FontSize = 26;
+                    this.CreateAndRunOpacityAnimation(xDeduct, xDeduct.Opacity, 1);
+                    double currentValue = 0;
+                    if (!xFontWeightTextBox.Text.Equals(string.Empty))
+                    {
+                        currentValue = double.Parse(xFontWeightTextBox.Text);
+                    }
+                    if (currentValue > 0)
+                    {
+                        xFontWeightTextBox.SetValue(TextBox.TextProperty,
+                            (currentValue - 10).ToString());
+                    }
+                } else if (sender == xFontSizeMovementDetectionGrid)
+                {
+                    (xSizeIncrement.Child as TextBlock).FontSize = 20;
+                    this.CreateAndRunOpacityAnimation(xSizeIncrement, xSizeIncrement.Opacity, 0.5);
+                    (xSizeDeduct.Child as TextBlock).FontSize = 26;
+                    this.CreateAndRunOpacityAnimation(xSizeDeduct, xSizeDeduct.Opacity, 1);
+                    double currentValue = 0;
+                    if (!xFontSizeTextBox.Text.Equals(string.Empty))
+                    {
+                        currentValue = double.Parse(xFontSizeTextBox.Text);
+                    }
+                    if (currentValue > 4)
+                    {
+                        xFontSizeTextBox.SetValue(TextBox.TextProperty,
+                            (currentValue - 1).ToString());
+                    }
+                }
+            }
+            e.Handled = true;
+        }
+
+        private void XMovementDetectionGrid_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            this.HideDeductAndIncrement(sender);
+            e.Handled = true;
+        }
+
+        private void HideDeductAndIncrement(object sender)
+        {
+            var grid = sender as Panel;
+            var children = grid?.Children;
+            if (children != null)
+            {
+                foreach (var child in children)
+                {
+                    this.CreateAndRunOpacityAnimation(child, child.Opacity, 0);
+                }
+            }
+            (xIncrement.Child as TextBlock).FontSize = 20;
+            (xDeduct.Child as TextBlock).FontSize = 20;
+            (xSizeIncrement.Child as TextBlock).FontSize = 20;
+            (xSizeDeduct.Child as TextBlock).FontSize = 20;
+        }
+
+        #endregion
     }
     public class NamedColor
     {
