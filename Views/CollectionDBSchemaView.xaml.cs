@@ -30,8 +30,17 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded1;
         }
 
-        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
-            new ObservableCollection<CollectionDBSchemaRecordViewModel>();
+        private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            var recordSource = xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>;
+            var slist = SchemaHeaders.ToArray().ToList();
+            foreach (var r in recordSource)
+                if (r.RecordFields.Count == slist.Count)
+                {
+                    RefreshRecords();
+                    break;
+                }
+        }
 
         public ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel> SchemaHeaders { get; set; } =
             new ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel>();
@@ -220,29 +229,51 @@ namespace Dash
                     DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
             if (dbDocs != null)
             {
+                SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, FieldKey = f.Key, Selected = false } );
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key, Selected = false });
                 }
+                SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
                 // remove possible infinite loops
                 filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].FieldKey.Name).ToList());
-                
+
                 // add all the records
-                var records = new List<CollectionDBSchemaRecordViewModel>();
-                int recordCount = 0;
-                foreach (var d in dbDocs)
-                {
-                    records.Add(new CollectionDBSchemaRecordViewModel(
-                        d,
-                        SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
-                        ));
-                    recordCount++;
-                }
-                xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
+                UpdateRecords(dbDocs);
             }
+        }
+
+        private void UpdateRecords(List<DocumentController> dbDocs)
+        {
+            var records = new List<CollectionDBSchemaRecordViewModel>();
+            int recordCount = 0;
+            foreach (var d in dbDocs)
+            {
+                records.Add(new CollectionDBSchemaRecordViewModel(
+                    d,
+                    SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
+                    ));
+                recordCount++;
+            }
+            xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
+        }
+
+        private void RefreshRecords()
+        {
+            var records = new List<CollectionDBSchemaRecordViewModel>();
+            int recordCount = 0;
+            foreach (var r in (xRecordsView.ItemsSource as  ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray() )
+            {
+                records.Add(new CollectionDBSchemaRecordViewModel(
+                    r.Document,
+                    SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(r.Document, f, HeaderBorderThickness, recordCount))
+                    ));
+                recordCount++;
+            }
+            xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
         }
 
         /// <summary>
@@ -338,5 +369,14 @@ namespace Dash
         }
 
         #endregion
+
+        private void xGridView_Drop(object sender, DragEventArgs e)
+        {
+        }
+
+        private void xGridView_DragOver(object sender, DragEventArgs e)
+        {
+
+        }
     }
 }
