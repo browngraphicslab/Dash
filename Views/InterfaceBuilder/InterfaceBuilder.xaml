@@ -11,7 +11,6 @@
     MinWidth="800"
     MinHeight="545"
     Background="Transparent">
-    <local:WindowTemplate.HeaderColor>Red</local:WindowTemplate.HeaderColor>
     <local:WindowTemplate.InnerContent>
         <Grid>
             <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>

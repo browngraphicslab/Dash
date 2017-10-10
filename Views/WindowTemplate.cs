@@ -71,15 +71,15 @@ namespace Dash
         /// <summary>
         /// The inner content of the window can be anything!
         /// </summary>
-        public Color HeaderColor
+        public Brush HeaderColor
         {
-            get { return (Color)GetValue(HeaderColorProperty); }
+            get { return (Brush)GetValue(HeaderColorProperty); }
             set { SetValue(HeaderColorProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for InnerContent.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeaderColorProperty =
-            DependencyProperty.Register("HeaderColor", typeof(Color), typeof(WindowTemplate), new PropertyMetadata(Colors.Pink));
+            DependencyProperty.Register("HeaderColor", typeof(Brush), typeof(WindowTemplate), new PropertyMetadata(Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush));
 
         /// <summary>
         /// On apply template we add events and get parts from xaml

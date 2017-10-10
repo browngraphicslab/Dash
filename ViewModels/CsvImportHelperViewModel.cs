@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class CsvImportHelperViewModel : ViewModelBase
+    public class CsvImportHelperViewModel : ViewModelBase, IHeaderViewModel
     {
 
         public ObservableCollection<string> Headers { get; set; }
@@ -21,9 +21,24 @@ namespace Dash
             DocumentTypeMaps = new ObservableCollection<DocumentTypeToColumnMapViewModel>();
         }
 
+        public void AddHeader(string header)
+        {
+            if (!Headers.Contains(header))
+            {
+                Headers.Add(header);
+            }
+        }
+
+        public void RemoveHeader(string header)
+        {
+            if (Headers.Contains(header))
+            {
+                Headers.Remove(header);
+            }
+        }
     }
 
-    public class DocumentTypeToColumnMapViewModel : ViewModelBase
+    public class DocumentTypeToColumnMapViewModel : ViewModelBase, IHeaderViewModel
     {
         private DocumentType _documentType;
 
@@ -41,5 +56,26 @@ namespace Dash
             DocumentType = docType;
         }
 
+        public void AddHeader(string header)
+        {
+            if (!Headers.Contains(header))
+            {
+                Headers.Add(header);
+            }
+        }
+
+        public void RemoveHeader(string header)
+        {
+            if (Headers.Contains(header))
+            {
+                Headers.Remove(header);
+            }
+        }
+    }
+
+    public interface IHeaderViewModel
+    {
+        void AddHeader(string header);
+        void RemoveHeader(string header);
     }
 }

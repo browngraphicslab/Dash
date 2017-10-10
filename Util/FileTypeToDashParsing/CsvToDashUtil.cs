@@ -5,7 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Storage;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls.Primitives;
 using CsvHelper;
 using Newtonsoft.Json;
 using Dash.Controllers.Operators;
@@ -25,7 +28,12 @@ namespace Dash
             csv.ReadHeader(); // TODO can we check to see if the csv has a header or not? otherwise this fails, what happens when it doesn't
             var headers = csv.FieldHeaders;
 
-            MainPage.Instance.xCanvas.Children.Add(new CSVImportHelper(new CsvImportHelperViewModel(headers)));
+            MainPage.Instance.DisplayElement(new CSVImportHelper(new CsvImportHelperViewModel(headers)), 
+                new Point(MainPage.Instance.MainDocView.ActualWidth/2, MainPage.Instance.MainDocView.ActualHeight/2), 
+                MainPage.Instance.xCanvas);
+
+
+            //MainPage.Instance.xCanvas.Children.Add(new CSVImportHelper(new CsvImportHelperViewModel(headers)));
 
             var records = new List<Dictionary<string, dynamic>>();
             while (csv.Read())
