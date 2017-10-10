@@ -91,7 +91,9 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
             
-            var newDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
+            var newDoc = newDocProto.MakeDelegate();
             newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
             collection.ViewModel.AddDocument(newDoc, null);

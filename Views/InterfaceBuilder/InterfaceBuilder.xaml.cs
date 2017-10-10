@@ -143,8 +143,13 @@ namespace Dash
                 var context = new Context(dataDocController);
                 var dataField = dataDocController.GetDereferencedField(dataKey, context);
 
-                // get a layout document for the data
-                var layoutDocument = GetLayoutDocumentForData(dataField, dataDocController, dataKey, context);
+                // get a layout document for the data - use the most abstract prototype as the field reference document
+                //  (otherwise, the layout would point directly to the data instance which would make it impossible to
+                //   create Data copies since the layout would point directly to the (source) data instance and not the common prototype).
+                var dataPrototypeDoc = kvp.Value;
+                while (dataPrototypeDoc.GetPrototype() != null)
+                    dataPrototypeDoc = dataPrototypeDoc.GetPrototype();
+                var layoutDocument = GetLayoutDocumentForData(dataField, dataPrototypeDoc, dataKey, context);
                 if (layoutDocument == null)
                     return;
 
