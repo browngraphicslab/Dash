@@ -13,9 +13,14 @@ using Windows.Storage.Pickers;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Email;
+using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Composition;
+using Windows.UI.Popups;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
@@ -85,7 +90,7 @@ namespace Dash
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
             if (to == null) to = Window.Current.Content;
-            return from.TransformToVisual(to).TransformPoint(p);
+            return @from.TransformToVisual(to).TransformPoint(p);
         }
 
         /// <summary>
@@ -329,7 +334,7 @@ namespace Dash
                 {
                     var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
 
-                    var displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
+                    var displayInformation = DisplayInformation.GetForCurrentView();
 
                     encoder.SetPixelData(
                             BitmapPixelFormat.Bgra8,
@@ -356,13 +361,13 @@ namespace Dash
             string subject = "send help";
             string message = "brown cit 4th floor graphics lab";
 
-            var email = new Windows.ApplicationModel.Contacts.ContactEmail
+            var email = new ContactEmail
             {
                 Address = recipientAddress,
-                Kind = Windows.ApplicationModel.Contacts.ContactEmailKind.Personal
+                Kind = ContactEmailKind.Personal
             };
 
-            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
+            var emailMessage = new EmailMessage
             {
                 Body = message,
                 Subject = subject
@@ -373,16 +378,16 @@ namespace Dash
             StorageFile attachmentFile = await picker.PickSingleFileAsync();
             if (attachmentFile != null)
             {
-                var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile);
-                var attachment = new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream);
+                var stream = RandomAccessStreamReference.CreateFromFile(attachmentFile);
+                var attachment = new EmailAttachment(attachmentFile.Name, stream);
                 emailMessage.Attachments.Add(attachment);
             }
 
-            var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
+            var emailRecipient = new EmailRecipient(email.Address);
             emailMessage.To.Add(emailRecipient);
 
 
-            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
+            await EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
         /// <summary>
@@ -392,19 +397,19 @@ namespace Dash
         {
             using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, password)) // gmail
             {
-                var email = new Windows.ApplicationModel.Email.EmailMessage
+                var email = new EmailMessage
                 {
                     Subject = subject,
                     Body = message
                 };
 
-                email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
+                email.To.Add(new EmailRecipient(addressTo));
                 // TODO add CC? and BCC??  
 
                 if (attachment != null)
                 {
-                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachment);
-                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachment.Name, stream));
+                    var stream = RandomAccessStreamReference.CreateFromFile(attachment);
+                    email.Attachments.Add(new EmailAttachment(attachment.Name, stream));
                 }
                 SmtpResult result = await client.SendMailAsync(email);
 
@@ -424,7 +429,7 @@ namespace Dash
                     popupMsg = "Something went wrong :(";
                 }
 
-                var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
+                var popup = new MessageDialog(popupMsg);
                 await popup.ShowAsync();
             }
         }
@@ -478,6 +483,44 @@ namespace Dash
             rsquared = dblR * dblR;
             yintercept = meanY - ((sCo / ssX) * meanX);
             slope = sCo / ssX;
+        }
+
+        public static DocumentController BlankDoc()
+        {
+            var docfields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.TitleKey] = new TextFieldModelController("Document")
+            };
+            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
+            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
+            blankDocument.SetActiveLayout(layout, true, true);
+            return blankDocument;
+        }
+
+        public static DocumentController BlankCollection()
+        {
+            var colfields = new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(),
+                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
+            };
+            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
+            colDoc.SetActiveLayout(
+                new CollectionBox(
+                    new ReferenceFieldModelController(colDoc.GetId(),
+                        DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
+            colDoc.SetField(KeyStore.CollectionOutputKey,
+                new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)), true);
+            return colDoc;
+        }
+
+        public static DocumentController BlankNote()
+        {
+            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
+            return postitNote;
         }
     }
 }

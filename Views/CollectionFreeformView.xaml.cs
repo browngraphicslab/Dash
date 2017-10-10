@@ -167,8 +167,12 @@ namespace Dash
                     foreach (var textFMC in linksListFMC.TypedData)
                     {
                         var keyID = textFMC.Data;
-                        var keyValuePair = doc.EnumFields().Where(kvp => kvp.Key.Id == keyID).FirstOrDefault();
-                        AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
+                        var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
+                        if (keyValuePair.Key != null)
+                        {
+                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
+                        }
+                        
                     }
                 }
             }
@@ -190,6 +194,12 @@ namespace Dash
                 }
             }
             if (referencedDoc == null) return;
+            if (fmController == null)
+            {
+                var op = referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                var type = op.Outputs[reference.FieldKey];
+                fmController = TypeInfoHelper.CreateFieldModelController(type);
+            }
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
             var document1 = docView1.ViewModel.DocumentController;
@@ -197,8 +207,8 @@ namespace Dash
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
 
-            IOReference outputtingReference = new IOReference(referencedFieldKey, fmController, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
-            IOReference inputtingReference = new IOReference(referencingFieldKey, document2.GetField(referencingFieldKey), new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
+            IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
+            IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
 
             StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
             _currReference = outputtingReference;
@@ -540,8 +550,8 @@ namespace Dash
                 return;
             }
 
-            if (!isCompoundOperator)
-            {
+            //if (!isCompoundOperator)
+            //{
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
@@ -560,7 +570,7 @@ namespace Dash
                     linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
                 }
                 
-            }
+            //}
 
 
 

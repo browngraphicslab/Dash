@@ -196,7 +196,7 @@ namespace Dash
                         {
                             var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
                                 .Equals(pair.Key.DereferenceToRoot(null));
-                            if (referencesEqual)
+                            if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
                             {
                                 view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
                                 doc2.SetField(field.Key,
@@ -341,12 +341,9 @@ namespace Dash
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
-            var fields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(recognizedDocuments)
-            };
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            var documentController = Util.BlankCollection();
+            documentController.SetField(DocumentCollectionFieldModelController.CollectionKey,
+                new DocumentCollectionFieldModelController(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
                     new ReferenceFieldModelController(documentController.GetId(),

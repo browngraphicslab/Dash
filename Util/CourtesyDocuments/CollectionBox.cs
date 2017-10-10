@@ -28,6 +28,7 @@ namespace Dash
 
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -75,7 +76,11 @@ namespace Dash
 
             //add to key to framework element dictionary
             var reference = data as ReferenceFieldModelController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = view.ConnectionEllipse;
+            if (keysToFrameworkElementsIn != null)
+            {
+                keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
+                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+            }
 
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
