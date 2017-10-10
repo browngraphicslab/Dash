@@ -6,6 +6,7 @@ using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using DashShared;
 using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
@@ -25,7 +26,7 @@ namespace Dash
 
         private object _dragSender;
         private object _dragReceiver;
-        private bool _succesfulDrop;
+        private bool _isDroppedOnOtherList;
 
         public CSVImportHelper(CsvImportHelperViewModel viewModel)
         {
@@ -49,11 +50,16 @@ namespace Dash
             _dragSender = sender;
         }
 
+        /// <summary>
+        /// Called when a header item has finished being dragged to another list
+        /// </summary>
         private void XHeaderGrid_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             var headerVM = sender.DataContext as IHeaderViewModel;
 
-            if (_succesfulDrop)
+            // if the drop occured on another list in this importer
+            // remove each of the headers that were moved
+            if (_isDroppedOnOtherList)
             {
                 if (args.DropResult == DataPackageOperation.Move)
                 {
@@ -64,7 +70,7 @@ namespace Dash
                 }
             }
 
-            _succesfulDrop = false;
+            _isDroppedOnOtherList = false;
             _dragSender = null;
             _dragReceiver = null;
 
@@ -76,10 +82,12 @@ namespace Dash
         /// </summary>
         private void XHeaderGrid_OnDragOver(object sender, DragEventArgs e)
         {
+            // if it was dragged from another list view in this importer
             if (e.DataView.Properties.ContainsKey(_csvImportDragKey))
             {
                 _dragReceiver = sender;
 
+                // and its not the same list view
                 if (!ReferenceEquals(_dragReceiver, _dragSender))
                 {
                     e.AcceptedOperation = DataPackageOperation.Move;
@@ -98,12 +106,13 @@ namespace Dash
             var serializedItems = await e.DataView.GetTextAsync();
             var deserializedItems = JsonConvert.DeserializeObject<List<string>>(serializedItems);
 
+
             var headerVM = (sender as FrameworkElement)?.DataContext as IHeaderViewModel;
             foreach (var header in deserializedItems)
             {
                 headerVM?.AddHeader(header);
             }
-            _succesfulDrop = true;
+            _isDroppedOnOtherList = true;
 
             def.Complete();
         }
