@@ -24,6 +24,9 @@ namespace Dash
             var csv = new CsvReader(streamReader);
             csv.ReadHeader(); // TODO can we check to see if the csv has a header or not? otherwise this fails, what happens when it doesn't
             var headers = csv.FieldHeaders;
+
+            MainPage.Instance.xCanvas.Children.Add(new CSVImportHelper(new CsvImportHelperViewModel(headers)));
+
             var records = new List<Dictionary<string, dynamic>>();
             while (csv.Read())
             {
