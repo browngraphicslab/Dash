@@ -37,7 +37,11 @@ namespace Dash
             foreach (var r in recordSource)
                 if (r.RecordFields.Count == slist.Count)
                 {
-                    RefreshRecords();
+                    UpdateRecords((xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray().Select((xr)=> xr.Document));
+                    var stuff = new ListFieldModelController<TextFieldModelController>();
+                    foreach (var s in SchemaHeaders)
+                        stuff.Add(new TextFieldModelController(s.FieldKey.Id));
+                    ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
         }
@@ -208,10 +212,12 @@ namespace Dash
                 UpdateFields(new Context(ParentDocument));
         }
 
+        /// </summary>
+        public static KeyController HeaderListKey = new KeyController("7C3F0C3F-F065-4094-8802-F572B35C4D42", "HeaderList");
         private bool SchemaHeadersContains(string field)
         {
             foreach (var s in SchemaHeaders)
-                if (s.FieldKey.Name == field)
+                if (s.FieldKey.Id == field)
                     return true;
             return false;
         }
@@ -224,29 +230,32 @@ namespace Dash
         {
             var dbDocs = ParentDocument
                 .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
-            var selectedBars = ParentDocument
-                .GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(
-                    DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
+            var headerList = ParentDocument
+                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldModelController>();
             if (dbDocs != null)
             {
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
+                SchemaHeaders.Clear();
+                foreach (var h in headerList)
+                { 
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width = 70, Selected = false,
+                                                     FieldKey = ContentController.GetController<KeyController>((h as TextFieldModelController).Data)  });
+                }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Id))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key, Selected = false });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
-                // remove possible infinite loops
-                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].FieldKey.Name).ToList());
 
                 // add all the records
                 UpdateRecords(dbDocs);
             }
         }
 
-        private void UpdateRecords(List<DocumentController> dbDocs)
+        private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
             var records = new List<CollectionDBSchemaRecordViewModel>();
             int recordCount = 0;
@@ -255,21 +264,6 @@ namespace Dash
                 records.Add(new CollectionDBSchemaRecordViewModel(
                     d,
                     SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
-                    ));
-                recordCount++;
-            }
-            xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
-        }
-
-        private void RefreshRecords()
-        {
-            var records = new List<CollectionDBSchemaRecordViewModel>();
-            int recordCount = 0;
-            foreach (var r in (xRecordsView.ItemsSource as  ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray() )
-            {
-                records.Add(new CollectionDBSchemaRecordViewModel(
-                    r.Document,
-                    SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(r.Document, f, HeaderBorderThickness, recordCount))
                     ));
                 recordCount++;
             }
