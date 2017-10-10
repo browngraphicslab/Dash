@@ -27,6 +27,8 @@ namespace Dash
         private const string CloseButtonName = "PART_CloseButton";
         private const string FadeOutAnimationName = "FadeOut";
 
+        protected event Action OnWindowClosed;
+
         /// <summary>
         /// Private variable to get the container which determines the size of the window
         /// so we don't have to look for it on manipulation delta
@@ -79,7 +81,7 @@ namespace Dash
 
         // Using a DependencyProperty as the backing store for InnerContent.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HeaderColorProperty =
-            DependencyProperty.Register("HeaderColor", typeof(Brush), typeof(WindowTemplate), new PropertyMetadata(Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush));
+            DependencyProperty.Register("HeaderColor", typeof(Brush), typeof(WindowTemplate), new PropertyMetadata(null/*Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush*/));
 
         /// <summary>
         /// On apply template we add events and get parts from xaml
@@ -159,6 +161,7 @@ namespace Dash
             Debug.Assert(fadeAnimation != null);
             fadeAnimation.SpeedRatio = 0.7;
             fadeAnimation.Begin();
+            OnWindowClosed?.Invoke();
         }
 
         /// <summary>

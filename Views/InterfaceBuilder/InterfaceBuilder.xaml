@@ -10,7 +10,8 @@
     d:DesignWidth="400"
     MinWidth="800"
     MinHeight="545"
-    Background="Transparent">
+    Background="Transparent"
+    HeaderColor="{StaticResource DocumentBackgroundOpaque}">
     <local:WindowTemplate.InnerContent>
         <Grid>
             <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>

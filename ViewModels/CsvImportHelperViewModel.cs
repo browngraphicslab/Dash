@@ -8,17 +8,32 @@ using DashShared;
 
 namespace Dash
 {
-    public class CsvImportHelperViewModel : ViewModelBase, IHeaderViewModel
+    public interface IHeaderViewModel
+    {
+        void AddHeader(string header);
+        void RemoveHeader(string header);
+    }
+
+    public interface IDataDocTypeViewModel
+    {
+        void AddDataDocType(DocumentType docType);
+        void RemoveDataDocType(DocumentType docType);
+    }
+
+    public class CsvImportHelperViewModel : ViewModelBase, IHeaderViewModel, IDataDocTypeViewModel
     {
 
         public ObservableCollection<string> Headers { get; set; }
 
         public ObservableCollection<DocumentTypeToColumnMapViewModel> DocumentTypeMaps { get; set; }
 
+        public ObservableCollection<DocumentType> DataDocTypes { get; set; }
+
         public CsvImportHelperViewModel(IEnumerable<string> headers)
         {
             Headers = new ObservableCollection<string>(headers);
             DocumentTypeMaps = new ObservableCollection<DocumentTypeToColumnMapViewModel>();
+            DataDocTypes = new ObservableCollection<DocumentType>();
         }
 
         public void AddHeader(string header)
@@ -36,7 +51,24 @@ namespace Dash
                 Headers.Remove(header);
             }
         }
+
+        public void AddDataDocType(DocumentType docType)
+        {
+            if (!DataDocTypes.Contains(docType))
+            {
+                DataDocTypes.Add(docType);
+            }
+        }
+
+        public void RemoveDataDocType(DocumentType docType)
+        {
+            if (DataDocTypes.Contains(docType))
+            {
+                DataDocTypes.Remove(docType);
+            }
+        }
     }
+
 
     public class DocumentTypeToColumnMapViewModel : ViewModelBase, IHeaderViewModel
     {
@@ -73,9 +105,4 @@ namespace Dash
         }
     }
 
-    public interface IHeaderViewModel
-    {
-        void AddHeader(string header);
-        void RemoveHeader(string header);
-    }
 }

@@ -6,8 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="350"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CsvImportHelperViewModel}"
+    d:DesignHeight="400"
+    d:DesignWidth="500" d:DataContext="{d:DesignInstance local:CsvImportHelperViewModel}"
+    MinWidth="500"
+    MinHeight="400"
+    HeaderColor="{StaticResource DocumentBackgroundOpaque}"
     >
     
     <local:WindowTemplate.InnerContent>
@@ -16,24 +19,16 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <!--grid view containing headers-->
             <TextBlock Grid.Row="0">Headers</TextBlock>
-            <ListView Grid.Row="1" x:Name="xHeaderGrid" ItemsSource="{Binding Headers}" ShowsScrollingPlaceholders="False" SelectionMode="Extended" Background="{StaticResource DocumentBackgroundOpaque}"
-                  CanDragItems="True" AllowDrop="True" DragItemsStarting="XHeaderGridOnDragItemsStarting" Drop="XHeaderGrid_OnDrop" DragItemsCompleted="XHeaderGrid_OnDragItemsCompleted" DragOver="XHeaderGrid_OnDragOver">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
+            <ListView Grid.Row="1" x:Name="xHeaderGrid" ItemsSource="{Binding Headers}" Style="{StaticResource xDragAndDropListView}" MinHeight="40"
+                      DragItemsStarting="XHeaderGridOnDragItemsStarting" Drop="XHeaderGrid_OnDrop" DragItemsCompleted="XHeaderGrid_OnDragItemsCompleted" DragOver="XHeaderGrid_OnDragOver">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="#20000000"
@@ -64,22 +59,12 @@
                             <Border BorderBrush="#20000000"
                                 BorderThickness="2"
                                 CornerRadius="5" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding DocumentType.Type}" Margin="4"/>
+                                <TextBlock Text="{Binding DocumentType.Type}" Margin="4" DragStarting="DocumentTypeDragStarting" PointerPressed="DocumentType_PointerPressed"/>
                             </Border>
                             <!--the list of headers associated with that document type-->
-                            <ListView Grid.Column="1" ItemsSource="{Binding Headers}" ShowsScrollingPlaceholders="False" SelectionMode="Extended" Background="{StaticResource DocumentBackgroundOpaque}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                  CanDragItems="True" AllowDrop="True" DragItemsStarting="XHeaderGridOnDragItemsStarting" Drop="XHeaderGrid_OnDrop" DragItemsCompleted="XHeaderGrid_OnDragItemsCompleted" DragOver="XHeaderGrid_OnDragOver">
-                                <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                    </Style>
-                                </ListView.ItemContainerStyle>
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
+                            <ListView Grid.Column="1" ItemsSource="{Binding Headers}" Style="{StaticResource xDragAndDropListView}"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      DragItemsStarting="XHeaderGridOnDragItemsStarting" Drop="XHeaderGrid_OnDrop" DragItemsCompleted="XHeaderGrid_OnDragItemsCompleted" DragOver="XHeaderGrid_OnDragOver">
                                 <ListView.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#20000000"
@@ -119,7 +104,22 @@
                     <SymbolIcon Symbol="Cancel"></SymbolIcon>
                 </Button>
             </Grid>
-
+            <TextBlock Grid.Row="5">Data Documents</TextBlock>
+            <ListView Grid.Row="6" x:Name="xDataGrid" ItemsSource="{Binding DataDocTypes}" Style="{StaticResource xDragAndDropListView}" MinHeight="40"
+                      DragItemsStarting="XDataGrid_OnDragItemsStarting" Drop="XDataGrid_OnDrop" DragItemsCompleted="XDataGrid_OnDragItemsCompleted" DragOver="XDataGrid_OnDragOver">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#20000000"
+                                BorderThickness="2"
+                                CornerRadius="5" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Type}" Margin="4"/>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        <Button Grid.Row="7" x:Name="xParseButton" Grid.ColumnSpan="3" Background="{StaticResource WindowsBlue}" 
+                HorizontalAlignment="Stretch" FontSize="23" 
+                Tapped="xParseCSVButtonPressed">Parse</Button>
         </Grid>
     </local:WindowTemplate.InnerContent>
 

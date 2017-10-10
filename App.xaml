@@ -637,6 +637,30 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
+        
+        <!--csv import list view-->
+        <Style TargetType="ListView" x:Key="xDragAndDropListView">
+            <Setter Property="ShowsScrollingPlaceholders" Value="False"/>
+            <Setter Property="CanDragItems" Value="True"/>
+            <Setter Property="AllowDrop" Value="True"/>
+            <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"/>
+            <Setter Property="SelectionMode" Value="Extended"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!--Collection Grid View-->
         <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">

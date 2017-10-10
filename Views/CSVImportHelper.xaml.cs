@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -19,21 +20,38 @@ namespace Dash
     {
         private readonly CsvImportHelperViewModel _vm;
 
+        private TaskCompletionSource<DocumentController> _tcs;
+
+
         /// <summary>
         /// Private drag key to determine if the drag operations came from this view
         /// </summary>
-        private static string _csvImportDragKey = "fd3f2da7-1a44-4b3f-ad14-d90e3206ce32";
+        private static string _headerDragKey = "08AFF7A5-823C-4810-93B6-AEFCBB0C37D0";
+        private static string _dataDragKey = "199DCDDF-5C62-4FB2-B60C-A9B39943F86C";
+        private string _dataListDragKey = "0B586B7A-C835-405A-89DA-B562C0E8D1CE";
 
-        private object _dragSender;
-        private object _dragReceiver;
-        private bool _isDroppedOnOtherList;
+
+        // private variables for header drag and drop
+        private object _headerDragSender;
+        private object _headerDragReceiver;
+        private bool _isDroppedOnOtherHeaderList;
+
+        // private variable for data drag and drop
+        private bool _selfDragOnDataList;
+
 
         public CSVImportHelper(CsvImportHelperViewModel viewModel)
         {
             InitializeComponent();
             DataContext = viewModel;
             _vm = viewModel;
+            _tcs = new TaskCompletionSource<DocumentController>();
+
+            // event for when the window closes
+            OnWindowClosed += OnOnWindowClosed;
         }
+
+        #region HeaderDragAndDrop
 
         /// <summary>
         /// Called when a header item is dragged from a list
@@ -46,8 +64,8 @@ namespace Dash
             e.Data.SetText(serializedItems);
             // we want to move items between lists
             e.Data.RequestedOperation = DataPackageOperation.Move;
-            e.Data.Properties[_csvImportDragKey] = true;
-            _dragSender = sender;
+            e.Data.Properties[_headerDragKey] = true;
+            _headerDragSender = sender;
         }
 
         /// <summary>
@@ -59,7 +77,7 @@ namespace Dash
 
             // if the drop occured on another list in this importer
             // remove each of the headers that were moved
-            if (_isDroppedOnOtherList)
+            if (_isDroppedOnOtherHeaderList)
             {
                 if (args.DropResult == DataPackageOperation.Move)
                 {
@@ -70,9 +88,9 @@ namespace Dash
                 }
             }
 
-            _isDroppedOnOtherList = false;
-            _dragSender = null;
-            _dragReceiver = null;
+            _isDroppedOnOtherHeaderList = false;
+            _headerDragSender = null;
+            _headerDragReceiver = null;
 
         }
 
@@ -83,12 +101,12 @@ namespace Dash
         private void XHeaderGrid_OnDragOver(object sender, DragEventArgs e)
         {
             // if it was dragged from another list view in this importer
-            if (e.DataView.Properties.ContainsKey(_csvImportDragKey))
+            if (e.DataView.Properties.ContainsKey(_headerDragKey))
             {
-                _dragReceiver = sender;
+                _headerDragReceiver = sender;
 
                 // and its not the same list view
-                if (!ReferenceEquals(_dragReceiver, _dragSender))
+                if (!ReferenceEquals(_headerDragReceiver, _headerDragSender))
                 {
                     e.AcceptedOperation = DataPackageOperation.Move;
                     return;
@@ -112,10 +130,97 @@ namespace Dash
             {
                 headerVM?.AddHeader(header);
             }
-            _isDroppedOnOtherList = true;
+            _isDroppedOnOtherHeaderList = true;
 
             def.Complete();
         }
+
+        #endregion
+
+        #region DocumentTypeDragAndDrop
+
+        private void DocumentTypeDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var tb = sender as TextBlock;
+            if (tb != null)
+            {
+                var docType = _vm.DocumentTypeMaps.FirstOrDefault(i => i.DocumentType.Type.Equals(tb.Text))?.DocumentType;
+                if (docType != null)
+                {
+                    args.AllowedOperations = DataPackageOperation.Copy;
+                    args.Data.SetText(JsonConvert.SerializeObject(docType));
+                    args.Data.Properties[_dataDragKey] = true;
+                    return;
+                }
+            }
+            args.AllowedOperations = DataPackageOperation.None;
+        }
+
+        private void DocumentType_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var pointerPoint = e.GetCurrentPoint(sender as UIElement);
+            (sender as UIElement).StartDragAsync(pointerPoint);
+        }
+
+        private void XDataGrid_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            // Set the content of the DataPackage
+            var items = e.Items.Select(item => item as DocumentType).ToList();
+            var serializedItems = JsonConvert.SerializeObject(items);
+            e.Data.SetText(serializedItems);
+            // we want to move items between lists
+            e.Data.RequestedOperation = DataPackageOperation.Copy;
+            e.Data.Properties[_dataListDragKey] = true;
+        }
+
+        private async void XDataGrid_OnDrop(object sender, DragEventArgs e)
+        {
+            var def = e.GetDeferral();
+
+            if (e.DataView.Properties.ContainsKey(_dataListDragKey))
+            {
+                _selfDragOnDataList = true;
+            }
+            else
+            {
+                var serializedItems = await e.DataView.GetTextAsync();
+                var docType = JsonConvert.DeserializeObject<DocumentType>(serializedItems);
+
+                var dataVM = (sender as FrameworkElement)?.DataContext as IDataDocTypeViewModel;
+                dataVM?.AddDataDocType(docType);
+            }
+
+            def.Complete();
+        }
+
+        private void XDataGrid_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (_selfDragOnDataList)
+            {
+                _selfDragOnDataList = false;
+                return;
+            }
+
+            var dataVM = sender.DataContext as IDataDocTypeViewModel;
+            foreach (var item in args.Items)
+            {
+                dataVM.RemoveDataDocType(item as DocumentType);
+            }
+        }
+
+        private void XDataGrid_OnDragOver(object sender, DragEventArgs e)
+        {
+            // if it was dragged from a data view
+            if (e.DataView.Properties.ContainsKey(_dataDragKey) || e.DataView.Properties.ContainsKey(_dataListDragKey))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+                e.Handled = true;
+                return;           
+            }
+            e.AcceptedOperation = DataPackageOperation.None;
+        }
+
+        #endregion
 
         #region AddDocType
 
@@ -202,6 +307,19 @@ namespace Dash
 
         #endregion
 
+        private void xParseCSVButtonPressed(object sender, TappedRoutedEventArgs e)
+        {
+            
+        }
 
+        private void OnOnWindowClosed()
+        {
+            _tcs.SetResult(null);
+        }
+
+        public async Task<DocumentController> GetDoc()
+        {
+            return await _tcs.Task;
+        }
     }
 }

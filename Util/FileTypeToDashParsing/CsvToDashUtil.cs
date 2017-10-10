@@ -28,43 +28,47 @@ namespace Dash
             csv.ReadHeader(); // TODO can we check to see if the csv has a header or not? otherwise this fails, what happens when it doesn't
             var headers = csv.FieldHeaders;
 
-            MainPage.Instance.DisplayElement(new CSVImportHelper(new CsvImportHelperViewModel(headers)), 
+            var csvImporter = new CSVImportHelper(new CsvImportHelperViewModel(headers));
+            MainPage.Instance.DisplayElement(csvImporter, 
                 new Point(MainPage.Instance.MainDocView.ActualWidth/2, MainPage.Instance.MainDocView.ActualHeight/2), 
                 MainPage.Instance.xCanvas);
+            var newDoct = await csvImporter.GetDoc();
 
-
-            //MainPage.Instance.xCanvas.Children.Add(new CSVImportHelper(new CsvImportHelperViewModel(headers)));
-
-            var records = new List<Dictionary<string, dynamic>>();
-            while (csv.Read())
+            if (newDoct == null)
             {
-                var record = new Dictionary<string, dynamic>();
-                for (int i = 0; i < headers.Length; i++)
+                var records = new List<Dictionary<string, dynamic>>();
+                while (csv.Read())
                 {
-                    double double_field;
-                    string string_field;
-                    if (csv.TryGetField(i, out double_field))
+                    var record = new Dictionary<string, dynamic>();
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        record[headers[i]] = double_field;
+                        double double_field;
+                        string string_field;
+                        if (csv.TryGetField(i, out double_field))
+                        {
+                            record[headers[i]] = double_field;
+                        }
+                        else if (csv.TryGetField(i, out string_field))
+                        {
+                            record[headers[i]] = string_field;
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Failed to get field");
+                        }
                     }
-                    else if (csv.TryGetField(i, out string_field))
-                    {
-                        record[headers[i]] = string_field;
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Failed to get field");
-                    }
+                    records.Add(record);
                 }
-                records.Add(record);
-            }
-            var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
-            {
-                ["CSVRecords"] = records,
-            };
+                var resultDict = new Dictionary<string, List<Dictionary<string, dynamic>>>()
+                {
+                    ["CSVRecords"] = records,
+                };
 
-            var json = JsonConvert.SerializeObject(resultDict);
-            return  new JsonToDashUtil().ParseJsonString(json, item.Path);
+                var json = JsonConvert.SerializeObject(resultDict);
+                return new JsonToDashUtil().ParseJsonString(json, item.Path);
+            }
+
+            return null;
         }
     }
 }
