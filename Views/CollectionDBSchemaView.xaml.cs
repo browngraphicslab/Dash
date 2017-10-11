@@ -46,6 +46,10 @@ namespace Dash
                 }
         }
 
+        //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
+        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
+            new ObservableCollection<CollectionDBSchemaRecordViewModel>();
+
         public ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel> SchemaHeaders { get; set; } =
             new ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel>();
 
