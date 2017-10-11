@@ -550,7 +550,10 @@ namespace Dash
             {
                 shouldExecute = ShouldExecute(context, key);
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true; 
+                if (key.Equals(KeyStore.PrototypeKey) &&
+                    // also, make sure the prototype is not just an abstract interface .. if it is, then don't mark this as having a prototype
+                    (field as DocumentFieldModelController)?.Data.GetField(KeyStore.AbstractInterfaceKey,true) == null)
+                    HasPrototype = true; 
             }
             if (shouldExecute)
             {

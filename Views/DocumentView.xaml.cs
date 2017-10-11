@@ -173,39 +173,50 @@ namespace Dash
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
-
             var moveButtonView = moveButton.View;
             moveButtonView.CanDrag = true;
+            moveButton.ManipulationMode = ManipulationModes.All;
+            moveButton.ManipulationDelta += (s, e) => e.Handled = true;
+            moveButton.ManipulationStarted += (s, e) => e.Handled = true;
             moveButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            moveButtonView.DropCompleted += MoveButtonView_DropCompleted;
+            moveButtonView.DropCompleted += ButtonView_DropCompleted;
             var copyButtonView = copyButton.View;
             copyButtonView.CanDrag = true;
+            copyButton.ManipulationMode = ManipulationModes.All;
+            copyButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
             copyButtonView.DragStarting += (s, e) =>
             {
                 _moveTimer.Stop();
                 e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            copyButtonView.DropCompleted += CopyButtonView_DropCompleted1;
+            copyButtonView.DropCompleted += ButtonView_DropCompleted;
             var copyDataButtonView = copyDataButton.View;
             copyDataButtonView.CanDrag = true;
+            copyDataButton.ManipulationMode = ManipulationModes.All;
+            copyDataButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyDataButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyDataButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
             var copyViewButtonView = copyViewButton.View;
             copyViewButtonView.CanDrag = true;
+            copyViewButton.ManipulationMode = ManipulationModes.All;
+            copyViewButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyViewButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyViewButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 e.Data.Properties.Add("View", true);
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
 
 
@@ -225,24 +236,19 @@ namespace Dash
             _moveTimer.Tick += Timer_Tick;
         }
 
-        private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
+        private void ButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move)
             {
                 var coll = CollectionView.GetParentCollectionView(this);
                 coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
             }
-        }
-
-        private void MoveButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-        }
-
-        private void CopyButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            copyButton.Contents.Symbol = Symbol.Copy;
-            copyButton.ButtonText.Text = "Copy";
-            _moveTimer.Stop();
+            else
+            { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
+                var currentTranslate = ViewModel.GroupTransform.Translate;
+                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+                ViewModel.GroupTransform = new TransformGroupData(ViewModel.DocumentController.GetActiveLayout().Data.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+            }
         }
 
         DispatcherTimer _moveTimer = new DispatcherTimer();

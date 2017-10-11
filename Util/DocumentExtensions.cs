@@ -111,6 +111,12 @@ namespace Dash
             }
             return newDoc;
         }
+        public static DocumentController GetSameCopy(this DocumentController doc, Point where)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            activeLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
+            return doc;
+        }
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
             var activeLayout = doc.GetActiveLayout()?.Data;
