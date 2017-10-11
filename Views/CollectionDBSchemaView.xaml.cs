@@ -234,7 +234,7 @@ namespace Dash
         public void UpdateFields(Context context)
         {
             var dbDocs = ParentDocument
-                .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
+                .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
             var headerList = ParentDocument
                 .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldModelController>();
             if (dbDocs != null)
@@ -368,14 +368,5 @@ namespace Dash
         }
 
         #endregion
-
-        private void xGridView_Drop(object sender, DragEventArgs e)
-        {
-        }
-
-        private void xGridView_DragOver(object sender, DragEventArgs e)
-        {
-
-        }
     }
 }

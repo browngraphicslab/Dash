@@ -193,9 +193,9 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView =/* _freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
-
+            CurrentView = new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
         }
 
         private void SetTextView()
@@ -203,6 +203,7 @@ namespace Dash
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
         }
 
         public void SetDBView()
@@ -210,12 +211,14 @@ namespace Dash
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
         }
         private void SetSchemaView()
         {
             if (CurrentView is CollectionDBSchemaView) return;
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
         }
 
         private void SetListView()
@@ -229,6 +232,7 @@ namespace Dash
             if (CurrentView is CollectionPageView) return;
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
         }
 
         private void SetGridView()
@@ -236,6 +240,7 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
+            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
         }
 
         public void MakeSelectionModeMultiple()

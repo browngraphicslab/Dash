@@ -677,33 +677,21 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             }
             else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
             {
-                var doc = _currReference.FieldReference.DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.Data;
-                var pos = e.GetCurrentPoint(this).Position;
-                var cnote = new CollectionNote(pos, _currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey ? CollectionView.CollectionViewType.DB : CollectionView.CollectionViewType.Freeform);
-                if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
-                {
-                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
-                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
-                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
-                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
-                    var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
-                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
-                    cnote.Document.GetPositionField().Data = pos;
-                }
-                else if (_currReference.FieldReference.FieldKey == DBSearchOperatorFieldModelController.ResultsKey)
-                {
-                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
-                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
-                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
-                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
-                    cnote.Document.GetPositionField().Data = pos;
-                }
-                else
-                {
-                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
-                }
+                var droppedField   = _currReference.FieldReference;
+                var droppedSrcDoc  = droppedField.GetDocumentController(null);
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
+
+                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
+                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
+               
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
+
+                if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
+                {
+                    var field = droppedSrcDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
+                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
+                }
             }
             CancelDrag(e.Pointer);
         }

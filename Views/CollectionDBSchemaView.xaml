@@ -40,8 +40,6 @@
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
-                      DragOver="xGridView_DragOver"
-                      Drop="xGridView_Drop" 
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
