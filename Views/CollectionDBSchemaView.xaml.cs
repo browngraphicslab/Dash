@@ -193,7 +193,8 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
-            SchemaHeaders.First().Width = 150;
+            if (SchemaHeaders.Count > 0)
+                SchemaHeaders.First().Width = 150;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)

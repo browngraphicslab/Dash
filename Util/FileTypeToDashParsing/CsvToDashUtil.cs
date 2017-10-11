@@ -53,7 +53,12 @@ namespace Dash
             };
 
             var json = JsonConvert.SerializeObject(resultDict);
-            return  new JsonToDashUtil().ParseJsonString(json, item.Path);
+            var x=  new JsonToDashUtil().ParseJsonString(json, item.Path);
+            foreach (var m in x.EnumFields(true))
+                if (m.Value is DocumentCollectionFieldModelController)
+                    foreach (var d in (m.Value as DocumentCollectionFieldModelController).Data)
+                        DBTest.DBDoc.AddChild(d);
+            return x;
         }
     }
 }

@@ -53,9 +53,9 @@ namespace Dash
             //categories.Add(new SearchCategoryItem(string.Empty, "COLLECTION", collections, null));
             //categories.Add(new SearchCategoryItem(string.Empty, "FIELD", fields, null));
             //categories.Add(new SearchCategoryItem(string.Empty, "ALL", all, null));
-            var searchView = new SearchView(categories[0]);
+            //var searchView = new SearchView(categories[0]);
 
-            xMainGrid.Children.Add(searchView);
+            //xMainGrid.Children.Add(searchView);
         }
 
         private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

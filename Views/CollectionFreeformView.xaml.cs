@@ -690,6 +690,14 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
                     cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
                     cnote.Document.GetPositionField().Data = pos;
                 }
+                else if (_currReference.FieldReference.FieldKey == DBSearchOperatorFieldModelController.ResultsKey)
+                {
+                    var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
+                    var droppedRef = doc == null ? new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey) :
+                        new ReferenceFieldModelController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
+                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
+                    cnote.Document.GetPositionField().Data = pos;
+                }
                 else
                 {
                     cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
