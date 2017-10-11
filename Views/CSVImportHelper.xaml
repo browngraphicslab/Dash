@@ -41,7 +41,7 @@
             </ListView>
             <!--list of all the doc type to header mappings-->
             <TextBlock Grid.Row="2">Document Types</TextBlock>
-            <ListView Grid.Row="3" x:Name="xDocTypeList" ItemsSource="{Binding DocumentTypeMaps}" Background="{StaticResource DocumentBackgroundOpaque}" AllowDrop="True">
+            <ListView Grid.Row="3" x:Name="xDocTypeList" ItemsSource="{Binding DocToColumnMaps}" Background="{StaticResource DocumentBackgroundOpaque}" AllowDrop="True">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -62,7 +62,7 @@
                                 <TextBlock Text="{Binding DocumentType.Type}" Margin="4" DragStarting="DocumentTypeDragStarting" PointerPressed="DocumentType_PointerPressed"/>
                             </Border>
                             <!--the list of headers associated with that document type-->
-                            <ListView Grid.Column="1" ItemsSource="{Binding Headers}" Style="{StaticResource xDragAndDropListView}"
+                            <ListView Grid.Column="1" ItemsSource="{Binding MappedHeaders}" Style="{StaticResource xDragAndDropListView}"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       DragItemsStarting="XHeaderGridOnDragItemsStarting" Drop="XHeaderGrid_OnDrop" DragItemsCompleted="XHeaderGrid_OnDragItemsCompleted" DragOver="XHeaderGrid_OnDragOver">
                                 <ListView.ItemTemplate>

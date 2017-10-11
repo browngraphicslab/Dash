@@ -20,7 +20,7 @@ namespace Dash
     {
         private readonly CsvImportHelperViewModel _vm;
 
-        private TaskCompletionSource<DocumentController> _tcs;
+        private TaskCompletionSource<CsvImportHelperViewModel> _tcs;
 
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Dash
             InitializeComponent();
             DataContext = viewModel;
             _vm = viewModel;
-            _tcs = new TaskCompletionSource<DocumentController>();
+            _tcs = new TaskCompletionSource<CsvImportHelperViewModel>();
 
             // event for when the window closes
             OnWindowClosed += OnOnWindowClosed;
@@ -81,7 +81,7 @@ namespace Dash
             {
                 if (args.DropResult == DataPackageOperation.Move)
                 {
-                    foreach (var item in args.Items)
+                    foreach (var item in args.Items.ToArray())
                     {
                         headerVM.RemoveHeader(item as string);
                     }
@@ -144,7 +144,7 @@ namespace Dash
             var tb = sender as TextBlock;
             if (tb != null)
             {
-                var docType = _vm.DocumentTypeMaps.FirstOrDefault(i => i.DocumentType.Type.Equals(tb.Text))?.DocumentType;
+                var docType = _vm.DocToColumnMaps.FirstOrDefault(i => i.DocumentType.Type.Equals(tb.Text))?.DocumentType;
                 if (docType != null)
                 {
                     args.AllowedOperations = DataPackageOperation.Copy;
@@ -295,11 +295,16 @@ namespace Dash
         /// <param name="docType"></param>
         private void AddNewDocType(string docType)
         {
-            _vm.DocumentTypeMaps.Add(
-                new DocumentTypeToColumnMapViewModel(
-                    new DocumentType(DashShared.Util.GenerateNewId(), docType)
-                )
-            );
+
+            var docTypes = docType.Split(new []{','}, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var type in docTypes)
+            {
+                _vm.DocToColumnMaps.Add(
+                    new DocumentTypeToColumnMapViewModel(
+                        new DocumentType(DashShared.Util.GenerateNewId(), type.Trim())
+                    )
+                );
+            }
 
             ToggleAddDocTypeUI(false);
             xNewDocTypeTextBox.Text = string.Empty;
@@ -309,15 +314,28 @@ namespace Dash
 
         private void xParseCSVButtonPressed(object sender, TappedRoutedEventArgs e)
         {
-            
+            // don't do anything if there is no data document
+            if (_vm.DataDocTypes.Count == 0)
+            {
+                return;
+            }
+            if (_tcs != null)
+            {
+                _tcs.SetResult(_vm);
+                _tcs = null;
+            }
+
+            CloseWindow();
+
         }
 
         private void OnOnWindowClosed()
         {
-            _tcs.SetResult(null);
+            _tcs?.SetResult(null);
+            _tcs = null;
         }
 
-        public async Task<DocumentController> GetDoc()
+        public async Task<CsvImportHelperViewModel> GetConfigFromUser()
         {
             return await _tcs.Task;
         }

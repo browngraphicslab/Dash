@@ -121,6 +121,7 @@ namespace DashShared
             public static KeyModel IconTypeFieldKey = new KeyModel("ICON7D27-FA81-4D88-B2FA-42B7888525AF", "_IconType");
             public static KeyModel SystemUriKey = new KeyModel("CA740B60-10D5-4B2C-9C9A-E6E4A7D2CA4E", "File Path");
             public static KeyModel ThumbnailFieldKey = new KeyModel("67D3BD61-43EC-4BDE-913A-E459F9D15E76", "_ThumbnailField");
+            public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
         }
 
         public static class DocumentTypeStore

@@ -25,14 +25,14 @@ namespace Dash
 
         public ObservableCollection<string> Headers { get; set; }
 
-        public ObservableCollection<DocumentTypeToColumnMapViewModel> DocumentTypeMaps { get; set; }
+        public ObservableCollection<DocumentTypeToColumnMapViewModel> DocToColumnMaps { get; set; }
 
         public ObservableCollection<DocumentType> DataDocTypes { get; set; }
 
         public CsvImportHelperViewModel(IEnumerable<string> headers)
         {
             Headers = new ObservableCollection<string>(headers);
-            DocumentTypeMaps = new ObservableCollection<DocumentTypeToColumnMapViewModel>();
+            DocToColumnMaps = new ObservableCollection<DocumentTypeToColumnMapViewModel>();
             DataDocTypes = new ObservableCollection<DocumentType>();
         }
 
@@ -80,27 +80,27 @@ namespace Dash
             set => SetProperty(ref _documentType, value);
         }
 
-        public ObservableCollection<string> Headers { get; set; }
+        public ObservableCollection<string> MappedHeaders { get; set; }
 
         public DocumentTypeToColumnMapViewModel(DocumentType docType)
         {
-            Headers = new ObservableCollection<string>();
+            MappedHeaders = new ObservableCollection<string>();
             DocumentType = docType;
         }
 
         public void AddHeader(string header)
         {
-            if (!Headers.Contains(header))
+            if (!MappedHeaders.Contains(header))
             {
-                Headers.Add(header);
+                MappedHeaders.Add(header);
             }
         }
 
         public void RemoveHeader(string header)
         {
-            if (Headers.Contains(header))
+            if (MappedHeaders.Contains(header))
             {
-                Headers.Remove(header);
+                MappedHeaders.Remove(header);
             }
         }
     }

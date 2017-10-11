@@ -169,7 +169,7 @@ namespace Dash
             throw new NotImplementedException(" we don't support arrays of documents and values");
         }
 
-        private FieldModelController ParseValue(JToken jtoken)
+        public FieldModelController ParseValue(JToken jtoken)
         {
             try
             {

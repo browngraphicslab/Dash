@@ -157,6 +157,11 @@ namespace Dash
         /// </summary>
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            CloseWindow();
+        }
+
+        protected void CloseWindow()
+        {
             var fadeAnimation = GetTemplateChild(FadeOutAnimationName) as Storyboard;
             Debug.Assert(fadeAnimation != null);
             fadeAnimation.SpeedRatio = 0.7;

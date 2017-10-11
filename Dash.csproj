@@ -956,7 +956,6 @@
       <Name>DashShared</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="CsvHelper">
       <Version>2.16.3</Version>
