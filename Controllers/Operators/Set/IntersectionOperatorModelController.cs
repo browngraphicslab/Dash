@@ -29,7 +29,7 @@ namespace Dash
         {
         }
 
-        public IntersectionOperatorModelController() : base(new OperatorFieldModel("Intersection"))
+        public IntersectionOperatorModelController() : base(new OperatorFieldModel(OperatorType.Intersection))
         {
         }
 

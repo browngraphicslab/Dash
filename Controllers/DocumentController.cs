@@ -20,18 +20,20 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class DocumentController :  IController<DocumentModel>
+    public class DocumentController : IController<DocumentModel>
     {
         public bool HasDelegatesOrPrototype { get; private set; }
 
-        private bool _hasDelegates; 
-        public bool HasDelegates {
-            get {
+        private bool _hasDelegates;
+        public bool HasDelegates
+        {
+            get
+            {
                 var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
                 ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
                 : null;
 
-                if (currentDelegates == null) return _hasDelegates =  false;
+                if (currentDelegates == null) return _hasDelegates = false;
                 return _hasDelegates = currentDelegates.Data.Count() > 0;
             }
             set
@@ -42,14 +44,16 @@ namespace Dash
             }
         }
         private bool _hasPrototypes;
-        public bool HasPrototype {
-            get {
+        public bool HasPrototype
+        {
+            get
+            {
                 return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
             }
             set
             {
                 _hasPrototypes = value;
-                HasDelegatesOrPrototype = value || HasDelegates; 
+                HasDelegatesOrPrototype = value || HasDelegates;
             }
         }
 
@@ -90,7 +94,9 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
-        public string Title { get
+        public string Title
+        {
+            get
             {
                 if (GetField(KeyStore.TitleKey) is TextFieldModelController)
                 {
@@ -99,7 +105,8 @@ namespace Dash
                         return textFieldModelController.Data;
                 }
                 return DocumentType.Type;
-            } }
+            }
+        }
 
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
@@ -175,7 +182,7 @@ namespace Dash
                 SaveOnServer();
             }
         }
-        
+
         /*
         public static int threadCount = 0;
         public static object l = new object();
@@ -527,7 +534,7 @@ namespace Dash
                 }
 
                 field.SaveOnServer();
-                oldField?.Dispose();
+                oldField?.DisposeField();
                 proto._fields[key] = field;
                 proto.Model.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
@@ -578,7 +585,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true) 
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
         {
             // check field type compatibility
             //if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;                                      
@@ -591,7 +598,7 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key == KeyStore.PrototypeKey) HasPrototype = true; 
+                if (key == KeyStore.PrototypeKey) HasPrototype = true;
             }
             if (shouldExecute)
             {
@@ -692,22 +699,14 @@ namespace Dash
         ///     Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>
         /// <returns></returns>
-        public DocumentController MakeDelegate(string id = null)
+        public DocumentController MakeDelegate()
         {
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
-            delegateController.SaveOnServer();
 
-            if (id != null)
-            {
-                delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, id);
-            }
-            else
-            {
-                delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-            }
+            //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
@@ -859,7 +858,7 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
-                HasDelegates = true; 
+                HasDelegates = true;
             }
             return currentDelegates;
         }
@@ -984,13 +983,13 @@ namespace Dash
                 var block = new TextBlock
                 {
                     Text = i == 15
-                        ? "+ " + (fields.Count - 15) + " more" 
+                        ? "+ " + (fields.Count - 15) + " more"
                         : "Field " + (i + 1) + ": " + fields[i].Key,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Left
                 };
                 sp.Children.Add(block);
-            }     
+            }
             return sp;
         }
 

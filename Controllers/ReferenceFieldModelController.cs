@@ -27,7 +27,7 @@ namespace Dash
             OnFieldModelUpdated(args.FieldArgs, args.Context);
         }
 
-        public override void Dispose()
+        public override void DisposeField()
         {
             var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);

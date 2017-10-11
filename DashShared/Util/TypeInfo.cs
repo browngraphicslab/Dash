@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace DashShared
 {
@@ -28,4 +30,23 @@ namespace DashShared
         Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink | RichTextField | Rectangle
     }
 
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum OperatorType
+    {
+        Add,
+        DBfilter,
+        Zip,
+        Filter,
+        CollectionMap,
+        Intersection,
+        Union,
+        Map,
+        ImageToUri,
+        DocumentAppend,
+        Concat,
+        Divide,
+        Search,
+        Api,
+        Compound
+    }
 }

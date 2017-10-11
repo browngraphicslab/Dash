@@ -43,7 +43,7 @@ namespace Dash
         public static readonly KeyController Test2Key = new KeyController("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
         public static readonly KeyController Test3Key = new KeyController("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
 
-        public ApiOperatorController() : base(new OperatorFieldModel("api"))
+        public ApiOperatorController() : base(new OperatorFieldModel(OperatorType.Api))
         {
         }
 

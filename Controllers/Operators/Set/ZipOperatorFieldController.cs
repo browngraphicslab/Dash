@@ -14,7 +14,7 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
 
-        public ZipOperatorFieldController() : base(new OperatorFieldModel("zip"))
+        public ZipOperatorFieldController() : base(new OperatorFieldModel(OperatorType.Zip))
         {
         }
 

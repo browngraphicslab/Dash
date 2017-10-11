@@ -17,7 +17,11 @@ namespace Dash
 
         public static readonly KeyController OutputCollectionKey = new KeyController("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
 
-        public CollectionMapOperator() : base(new OperatorFieldModel("CollectionMap"))
+        public CollectionMapOperator() : base(new OperatorFieldModel(OperatorType.CollectionMap))
+        {
+        }
+
+        public CollectionMapOperator(OperatorFieldModel model) : base(model)
         {
         }
 

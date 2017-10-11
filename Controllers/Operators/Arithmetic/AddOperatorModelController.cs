@@ -9,7 +9,7 @@ namespace Dash
         public AddOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public AddOperatorModelController() : base(new OperatorFieldModel("Add"))
+        public AddOperatorModelController() : base(new OperatorFieldModel(OperatorType.Add))
         {
         }
 

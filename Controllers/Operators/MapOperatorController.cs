@@ -15,7 +15,7 @@ namespace Dash
 
         public static KeyController OutputKey = new KeyController("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
 
-        public MapOperatorController() : base(new OperatorFieldModel("map")) { }
+        public MapOperatorController() : base(new OperatorFieldModel(OperatorType.Map)) { }
 
         public MapOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {

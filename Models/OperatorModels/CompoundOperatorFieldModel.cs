@@ -9,7 +9,7 @@ namespace Dash
         public Dictionary<KeyController, List<FieldReference>> InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>();
         public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
 
-        public CompoundOperatorFieldModel(string type) : base(type)
+        public CompoundOperatorFieldModel() : base(OperatorType.Compound)
         {
             IsCompound = true;
         }

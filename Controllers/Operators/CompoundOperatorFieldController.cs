@@ -17,7 +17,7 @@ namespace Dash
         {
         }
 
-        public CompoundOperatorFieldController() : base(new CompoundOperatorFieldModel("Compound"))
+        public CompoundOperatorFieldController() : base(new CompoundOperatorFieldModel())
         {
         }
 

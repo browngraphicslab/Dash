@@ -9,7 +9,7 @@ namespace Dash
     public class DivideOperatorFieldModelController : OperatorFieldModelController
     {
 
-        public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
+        public DivideOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Divide))
         {
         }
 

@@ -10,7 +10,7 @@ namespace Dash.Controllers.Operators
 {
     public class DBFilterOperatorFieldModel : OperatorFieldModel
     {
-        public DBFilterOperatorFieldModel() : base("DBfilter")
+        public DBFilterOperatorFieldModel() : base(OperatorType.DBfilter)
         {
         }
     }

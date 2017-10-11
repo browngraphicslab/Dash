@@ -13,7 +13,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
-    public abstract class FieldModelController<T> : FieldControllerBase, IDisposable where T : FieldModel
+    public abstract class FieldModelController<T> : FieldControllerBase where T : FieldModel
     {
 
         public static int threadCount;
@@ -65,11 +65,6 @@ namespace Dash
             return Copy() as T;
         }
 
-
-        public virtual void Dispose()
-        {
-
-        }
 
         public event InkFieldModelController.InkUpdatedHandler InkUpdated;
     }

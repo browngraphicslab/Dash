@@ -30,7 +30,7 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public UnionOperatorFieldModelController() : base(new OperatorFieldModel("Union"))
+        public UnionOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Union))
         {
         }
 

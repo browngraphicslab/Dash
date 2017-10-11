@@ -169,6 +169,11 @@ namespace Dash
             return grid;
         }
 
+        public virtual void DisposeField()
+        {
+            DeleteOnServer();
+        }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

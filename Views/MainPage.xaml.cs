@@ -477,7 +477,7 @@ namespace Dash
             Random r = new Random();
             for (int i = 0; i < 10; ++i)
             {
-                var delNumbers = protoNumbers.MakeDelegate((i + 2).ToString());
+                var delNumbers = protoNumbers.MakeDelegate();
                 //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
                     new NumberFieldModelController(i + 2), true);

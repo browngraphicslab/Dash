@@ -14,7 +14,7 @@ namespace Dash
 
         public static readonly KeyController OutputDocumentKey = new KeyController("114C5C68-7A02-491D-8B52-43A27EC63BE4", "OutputDocument");
 
-        public DocumentAppendOperatorController() : base(new OperatorFieldModel("DocumentConcat"))
+        public DocumentAppendOperatorController() : base(new OperatorFieldModel(OperatorType.DocumentAppend))
         {
         }
         public DocumentAppendOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)

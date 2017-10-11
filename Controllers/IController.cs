@@ -33,13 +33,13 @@ namespace Dash
 
         public string Id => Model.Id;
 
-        public void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
+        public virtual void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
         {
             error = error ?? ((e) => throw e);
             _serverEndpoint.UpdateDocument(Model, success, error);
         }
 
-        public void DeleteOnServer(Action success = null, Action<Exception> error = null)
+        public virtual void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             error = error ?? ((e) => throw e);
             _serverEndpoint.DeleteDocument(Model, success, error);
@@ -48,7 +48,7 @@ namespace Dash
         /// <summary>
         /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
         /// </summary>
-        public void SaveOnServer(Action<T> success = null, Action<Exception> error = null)
+        public virtual void SaveOnServer(Action<T> success = null, Action<Exception> error = null)
         {
             error = error ?? ((e) => throw e);
             _serverEndpoint.AddDocument(Model, success, error);

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -47,18 +48,21 @@ namespace Dash
         {
             TypedData.Add(element);
             ListFieldModel.Data.Add(element.GetId());
+            UpdateOnServer();
         }
 
         public void AddRange(IList<T> elements)
         {
             TypedData.AddRange(elements);
             ListFieldModel.Data.AddRange(elements.Select(fmc => fmc.GetId()));
+            UpdateOnServer();
         }
 
         public void Remove(T element)
         {
             TypedData.Remove(element);
             ListFieldModel.Data.Remove(element.GetId());
+            UpdateOnServer();
         }
 
         public void Set(IEnumerable<T> elements)
@@ -68,6 +72,7 @@ namespace Dash
             TypedData.AddRange(collection);
             ListFieldModel.Data.Clear();
             ListFieldModel.Data.AddRange(collection.Select(e => e.GetId()));
+            UpdateOnServer();
         }
 
         public List<T> GetElements()
@@ -109,6 +114,15 @@ namespace Dash
         public override FieldControllerBase GetDefaultController()
         {
             return new ListFieldModelController<T>();
+        }
+
+        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            base.UpdateOnServer(success, error);
+            foreach (var fmc in TypedData)
+            {
+                fmc.UpdateOnServer();
+            }
         }
     }
 }

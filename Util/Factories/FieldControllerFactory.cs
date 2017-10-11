@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Dash.Controllers;
+using Dash.Controllers.Operators;
 using DashShared;
 using DashShared.Models;
 using Flurl.Util;
@@ -98,11 +99,55 @@ namespace Dash
         {
             //TODO
             OperatorFieldModelController controller = null;
-            switch (model.Type.ToLower())
+            switch (model.Type)
             {
-                case "add":
+                case OperatorType.Add:
                     controller = new AddOperatorModelController(model);
                     break;
+                case OperatorType.DBfilter:
+                    controller = new DBFilterOperatorFieldModelController(model as DBFilterOperatorFieldModel);
+                    break;
+                case OperatorType.Zip:
+                    controller = new ZipOperatorFieldController(model);
+                    break;
+                case OperatorType.Filter:
+                    controller = new FilterOperatorFieldModelController(model);
+                    break;
+                case OperatorType.CollectionMap:
+                    controller = new CollectionMapOperator(model);
+                    break;
+                case OperatorType.Intersection:
+                    controller = new IntersectionOperatorModelController(model);
+                    break;
+                case OperatorType.Union:
+                    controller = new UnionOperatorFieldModelController(model);
+                    break;
+                case OperatorType.Map:
+                    controller = new MapOperatorController(model);
+                    break;
+                case OperatorType.ImageToUri:
+                    controller = new ImageOperatorFieldModelController(model);
+                    break;
+                case OperatorType.DocumentAppend:
+                    controller = new DocumentAppendOperatorController(model);
+                    break;
+                case OperatorType.Concat:
+                    controller = new ConcatOperator(model);
+                    break;
+                case OperatorType.Divide:
+                    controller = new DivideOperatorFieldModelController(model);
+                    break;
+                case OperatorType.Search:
+                    controller = new DBSearchOperatorFieldModelController(model as DBSearchOperatorFieldModel);
+                    break;
+                case OperatorType.Api:
+                    controller = new ApiOperatorController(model);
+                    break;
+                case OperatorType.Compound:
+                    controller = new CompoundOperatorFieldController(model as CompoundOperatorFieldModel);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return controller;

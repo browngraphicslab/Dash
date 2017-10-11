@@ -10,7 +10,7 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel("ImageToUri"))
+        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel(OperatorType.ImageToUri))
         {
         }
 

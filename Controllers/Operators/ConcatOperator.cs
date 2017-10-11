@@ -14,7 +14,7 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
 
-        public ConcatOperator() : base(new OperatorFieldModel("concat")) { }
+        public ConcatOperator() : base(new OperatorFieldModel(OperatorType.Concat)) { }
 
         public ConcatOperator(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {

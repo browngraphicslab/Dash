@@ -9,7 +9,7 @@ namespace Dash.Controllers.Operators
 {
     public class DBSearchOperatorFieldModel : OperatorFieldModel
     {
-        public DBSearchOperatorFieldModel() : base("search")
+        public DBSearchOperatorFieldModel() : base(OperatorType.Search)
         {
         }
     }
