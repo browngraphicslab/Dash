@@ -48,6 +48,9 @@ namespace Dash.Views
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
+            ManipulationMode = ManipulationModes.All;
+            ManipulationStarted += (sender, e) => e.Handled = true;
+            ManipulationDelta += (sender, e) => e.Handled = true;
         }
 
         private void SelectTap(object sender, TappedRoutedEventArgs e)

@@ -240,6 +240,7 @@ namespace Dash
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), 
                 new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
+            Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController(Prototype.DocumentType.Type + "API"), true);
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
         }

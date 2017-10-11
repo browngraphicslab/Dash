@@ -59,6 +59,7 @@ namespace Dash
             ViewModel = vm;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
+
         }
 
         #region Background Translation Variables
@@ -103,40 +104,37 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
 
+            if (_collectionMenu == null)
+                MakeMenu();
             // set the top-level viewtype to be freeform by default
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 _viewType = CollectionViewType.Freeform;
             }
-                switch (_viewType)
+            switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-
-                    CurrentView = /*_freeformView != null ? _freeformView : _freeformView =*/ new CollectionFreeformView(this) {InkFieldModelController = ViewModel.InkFieldModelController};
-
-
+                    SetFreeformView();
                     break;
                 case CollectionViewType.Grid:
-                    CurrentView = new CollectionGridView();
+                    SetGridView();
                     break;
                 case CollectionViewType.Page:
-                    CurrentView = new CollectionPageView();
+                    SetBrowseView();
                     break;
                 case CollectionViewType.DB:
-                    CurrentView = new CollectionDBView();
+                    SetDBView();
                     break;
                 case CollectionViewType.Schema:
-                    CurrentView = new CollectionDBSchemaView();
+                    SetSchemaView();
                     break;
                 case CollectionViewType.List:
-                    CurrentView = new CollectionDBView();// new CollectionListView();
+                    SetListView();
                     break;
                 case CollectionViewType.Text:
-                    CurrentView = new CollectionTextView();
+                    SetTextView();
                     break;
             }
-
-            xContentControl.Content = CurrentView;
 
             // use a fully dark gridbg for the parent-level, nested collectionviews
             // use a lighter background
@@ -195,7 +193,8 @@ namespace Dash
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+            ViewModes?.HighlightAction(SetFreeformView);
         }
 
         private void SetTextView()
@@ -203,7 +202,8 @@ namespace Dash
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+            ViewModes?.HighlightAction(SetTextView);
         }
 
         public void SetDBView()
@@ -211,14 +211,16 @@ namespace Dash
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+            ViewModes?.HighlightAction(SetDBView);
         }
         private void SetSchemaView()
         {
             if (CurrentView is CollectionDBSchemaView) return;
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+            ViewModes?.HighlightAction(SetSchemaView);
         }
 
         private void SetListView()
@@ -226,13 +228,15 @@ namespace Dash
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
+            ViewModes?.HighlightAction(SetListView);
         }
         private void SetBrowseView()
         {
             if (CurrentView is CollectionPageView) return;
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+            ViewModes?.HighlightAction(SetBrowseView);
         }
 
         private void SetGridView()
@@ -240,7 +244,8 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
-            ParentDocument.ViewModel.DocumentController.GetActiveLayout().Data.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+            ViewModes?.HighlightAction(SetGridView);
         }
 
         public void MakeSelectionModeMultiple()
@@ -306,23 +311,9 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
-
-        private int GetMenuIndex() 
-        {
-            switch (_viewType)
-            {
-                case CollectionViewType.Freeform:
-                    return 5; 
-                case CollectionViewType.Grid:
-                    return 0; 
-                case CollectionViewType.List:
-                    return 2; 
-                default: return -1; 
-            }
-        }
-
-
-
+        
+        public MenuButton ViewModes;
+        
         private void MakeMenu()
         {
             var multipleSelection = new Action(MakeSelectionModeMultiple);
@@ -346,7 +337,9 @@ namespace Dash
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView}, GetMenuIndex()),
+                (ViewModes = new MenuButton(
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView})),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
                 //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
@@ -372,7 +365,6 @@ namespace Dash
 
         private void OpenMenu()
         {
-            if (_collectionMenu == null) MakeMenu();
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
