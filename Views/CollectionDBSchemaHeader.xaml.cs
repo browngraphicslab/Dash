@@ -39,6 +39,7 @@ namespace Dash.Views
                 set { SetValue(WidthProperty, value); }
             }
             public DocumentController SchemaDocument;
+            public CollectionDBSchemaView SchemaView;
             public override string ToString()
             {
                 return FieldKey.Name;
@@ -59,8 +60,17 @@ namespace Dash.Views
             if (collection != null)
             {
                 var viewModel = (DataContext as HeaderViewModel);
-                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
+                viewModel.SchemaView.Sort(viewModel);
+            }
+        }
 
+        private void TextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
+            if (collection != null)
+            {
+                var viewModel = (DataContext as HeaderViewModel);
+                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
                 collection.SetDBView();
             }
         }

@@ -227,6 +227,25 @@ namespace Dash
             return false;
         }
 
+        KeyController _lastFieldSortKey = null;
+        public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
+        {
+            var dbDocs = ParentDocument
+                   .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+
+            var records = new SortedList<string, DocumentController>();
+            foreach (var d in dbDocs)
+            {
+                var str = d.GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                if (records.ContainsKey(str))
+                    records.Add(str + new Guid(), d);
+                else records.Add(str, d);
+            }
+            if (_lastFieldSortKey == viewModel.FieldKey)
+                UpdateRecords(records.Select((r) => r.Value).Reverse());
+            else UpdateRecords(records.Select((r) => r.Value));
+            _lastFieldSortKey = viewModel.FieldKey;
+        }
         /// <summary>
         ///     Updates all the fields in the schema view
         /// </summary>
@@ -243,7 +262,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width = 70, Selected = false,
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, Selected = false,
                                                      FieldKey = ContentController.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
@@ -251,7 +270,7 @@ namespace Dash
                 {
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Id))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key, Selected = false });
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key, Selected = false });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
