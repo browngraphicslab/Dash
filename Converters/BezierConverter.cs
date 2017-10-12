@@ -13,7 +13,7 @@ namespace Dash
     {
         public delegate void OnPathUpdatedEventHandler(BezierConverter converter);
 
-        public OnPathUpdatedEventHandler OnPathUpdated;
+        public event OnPathUpdatedEventHandler OnPathUpdated;
 
         public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
         {

@@ -259,6 +259,7 @@ namespace Dash
 
             itemsPanelCanvas.Children.Remove(line);
             RefToLine.Remove(reff);
+            LineToConverter[line].OnPathUpdated -= UpdateGradient;
             LineToConverter.Remove(line);
         }
 
@@ -579,19 +580,25 @@ namespace Dash
 
             if (_connectionLine != null)
             {
-                //_connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
                 RefToLine.Add(ioReference.FieldReference, _connectionLine);
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
-                _converter.OnPathUpdated += (converter) =>
-                {
-                    var line = LineToConverter.FirstOrDefault(k => k.Value.Equals(converter)).Key;
-                    if(line != null) line.Stroke = converter.GradientBrush;
-                };
+                _converter.OnPathUpdated += UpdateGradient;
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
 
+        }
+
+        /// <summary>
+        /// Fires when an element on the end of a path is moved, has the converter update the gradient 
+        /// angle of the path's fill to match the position of the elements.
+        /// </summary>
+        /// <param name="converter"></param>
+        private void UpdateGradient(BezierConverter converter)
+        {
+            var line = LineToConverter.FirstOrDefault(k => k.Value.Equals(converter)).Key;
+            if (line != null) line.Stroke = converter.GradientBrush;
         }
 
         /// <summary>
