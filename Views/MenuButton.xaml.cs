@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -17,12 +18,12 @@ namespace Dash
     public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
-        private Button _button;
         private Action _buttonAction;
         private double _verticalOffset;
         private Storyboard OpacityAnimation;
         private Storyboard TranslationAnimation;
         private MenuButtonContainer content;
+        public MenuButtonContainer Contents {  get { return content; } }
 
         public bool RotateOnTap = false;
         public bool IsComposite;
@@ -34,8 +35,7 @@ namespace Dash
             this.CreateAndRunInstantiationAnimation(false);
             IsComposite = false;
         }
-
-        private int _selectedInd; 
+        
         private List<Button> _buttons = new List<Button>();
         private Border _border;
 
@@ -46,27 +46,35 @@ namespace Dash
         }
 
         public Border View { get { return _border; } }
-
+        public void HighlightAction(Action action)
+        {
+            foreach (var b in _buttons) (b.Content as Border).Background = ButtonsBackground;
+            foreach (var menubutton in _buttons)
+            {
+                if (((Action)(menubutton.Tag)) == action)
+                    (menubutton.Content as Border).Background = new SolidColorBrush(Colors.Gray);
+            }
+        }
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
-        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions, int selectedInd = -1)
+        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions)
         {
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
-
-            _selectedInd = selectedInd < 0 ? icons.Count - 1 : selectedInd; 
+            
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
             IsComposite = true;
         }
-
+        SolidColorBrush ButtonsBackground;
         /// <summary>
         /// Create a set of related toggle-able buttons with edges rounded at the top and buttom 
         /// </summary>
         private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
         {
+            ButtonsBackground = new SolidColorBrush(background);
             int i = 0;
             foreach (Symbol icon in icons)
             {
@@ -81,8 +89,8 @@ namespace Dash
                 {
                     Height = 40,
                     Width = 40,
-                    Background = new SolidColorBrush(background),
-                    BorderBrush = new SolidColorBrush(background),
+                    Background = ButtonsBackground,
+                    BorderBrush = ButtonsBackground,
                     Child = symbol
                 };
                 // if it's the first button, round the top 
@@ -93,8 +101,6 @@ namespace Dash
                     _border.CornerRadius = new CornerRadius(0, 0, 20, 20);
                     //border.Background = new SolidColorBrush(Colors.Gray);
                 }
-
-                if (i == _selectedInd) _border.Background = new SolidColorBrush(Colors.Gray);
 
                 // create button to contain the border with the symbol
                 var button = new Button()
@@ -111,23 +117,19 @@ namespace Dash
 
                 //Capture the right value for i
                 int j = i;
+                button.Tag = buttonActions[j];
                 //events 
                 button.Tapped += (s, e) =>
                 {
                     e.Handled = true;
-                    foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
-                    (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
                     buttonActions[j]?.Invoke();
-
-                    _selectedInd = j; 
+                    HighlightAction(buttonActions[j]);
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
                 i++;
             }
         }
-
-        SymbolIcon _symbol;
-        public SymbolIcon ButtonIcon { get { return _symbol; } }
+        
         public TextBlock ButtonText { get { return _descriptionText; } }
         /// <summary>
         /// Create a circular button with an icon with a string description
@@ -139,18 +141,16 @@ namespace Dash
         {
 
             // create button to contain the border with the symbol
-            MenuButtonContainer content = new MenuButtonContainer(icon, name);
+            content = new MenuButtonContainer(icon, name);
             _descriptionText = content.Label;
-            _button = content.Button;
             _border = content.Border;
             content.Border.Background = new SolidColorBrush(background);
-            this.content = content;
 
             // add all content to stack panel
             xButtonStackPanel.Children.Add(content);
 
-            _button.Tapped += Button_Tapped;
-            _button.DoubleTapped += Button_DoubleTapped;
+            content.Tapped       += Button_Tapped;
+            content.DoubleTapped += Button_DoubleTapped;
         }
 
         private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -172,9 +172,9 @@ namespace Dash
 
         public void Dispose()
         {
-            if (_button == null) return; 
-            _button.Tapped -= Button_Tapped;
-            _button.DoubleTapped -= Button_DoubleTapped;
+            if (content == null) return;
+            content.Tapped -= Button_Tapped;
+            content.DoubleTapped -= Button_DoubleTapped;
         }
 
         /// <summary>
@@ -185,10 +185,10 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var rotationTransform = new RotateTransform();
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = rotationTransform;
-                _button.RenderTransformOrigin = new Point(0.5, 0.5);
+                content.RenderTransform = rotationTransform;
+                content.RenderTransformOrigin = new Point(0.5, 0.5);
             }
             else
             {
@@ -213,9 +213,9 @@ namespace Dash
 
         private void OpactiyAnimationHelper(int from, int to)
         {
-            if (_button != null)
+            if (content != null)
             {
-                this.CreateAndRunOpacityAnimation(_button, from, to);
+                this.CreateAndRunOpacityAnimation(content, from, to);
                 this.CreateAndRunOpacityAnimation(_descriptionText, from, to);
             }
             else
@@ -304,9 +304,9 @@ namespace Dash
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = translateTransform;
+                content.RenderTransform = translateTransform;
                 _descriptionText.RenderTransform = translateTransform;
             }
             else
@@ -333,9 +333,9 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.2));
 
             var translateTransform = new TranslateTransform();
-            if (_button != null)
+            if (content != null)
             {
-                _button.RenderTransform = translateTransform;
+                content.RenderTransform = translateTransform;
                 _descriptionText.RenderTransform = translateTransform;
             }
             else

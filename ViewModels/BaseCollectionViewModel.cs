@@ -174,14 +174,24 @@ namespace Dash
 
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
-                var items = e.DataView?.Properties.ContainsKey("DocumentControllerList") == true ?                  
+                var collectionViewModel = e.DataView.Properties.ContainsKey("CollectionViewModel") == true ?
+                          e.DataView.Properties["CollectionViewModel"] as CollectionViewModel : null;
+
+                var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?                  
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
+
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
-
-                var payloadLayoutDelegates = items.Select((p) => e.DataView.Properties.ContainsKey("View") || e.AcceptedOperation == DataPackageOperation.Move ? p.GetViewCopy(where): e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where));
+                
+                var payloadLayoutDelegates = items.Select((p) => e.DataView.Properties.ContainsKey("View")        ? p.GetViewCopy(where) :
+                                                                 e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) : 
+                                                                 e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where));
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
+                if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
+                {
+                    e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
+                }
             }
             
             SetGlobalHitTestVisiblityOnSelectedItems(false);

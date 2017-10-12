@@ -32,12 +32,15 @@ namespace Dash
             var csv = new CsvReader(streamReader);
             var headers = GetHeadersFromCsv(csv);
 
+            // skip to the next row
             csv.Read();
 
+            // set up a prototype document that models each of the rows
             var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
-            var protoFieldDict = new Dictionary<KeyController, FieldModelController>();
+            var protoFieldDict = new Dictionary<KeyController, FieldModelController>(); // dictionary of fields to set on the prototype document
             var headerToFieldMap = new Dictionary<string, FieldModelController>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
+            // generate a default field model controller for each of the fields
             foreach (var header in headers)
             {
                 var key = new KeyController(DashShared.Util.GenerateNewId(), header);
@@ -46,14 +49,11 @@ namespace Dash
                 headerToFieldMap.Add(header, field);
                 headerToKeyMap.Add(header, key);
             }
-
             protoDoc.SetFields(protoFieldDict.ToList(), true);
-            protoDoc.SetActiveLayout(new DefaultLayout().Document, true, true);
-            var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            protoDoc.GetActiveLayout().Data.SetFields(defaultLayoutFields, true);
 
-            var outputDocs = new List<DocumentController>();
-
+            // go through the entire csv generating a delegate of the prototype document to represent each row
+            // and set the fields on that delegate to the values found in the cell of the row
+            var rowDocs = new List<DocumentController>();
             do
             {
                 var delgate = protoDoc.MakeDelegate();
@@ -61,26 +61,35 @@ namespace Dash
                 {
                     delgate.SetField(headerToKeyMap[header], Util.StringToFieldModelController(csv[header]), true);
                 }
-                outputDocs.Add(delgate);
+                rowDocs.Add(delgate);
             } while (csv.Read());
-
-            var outputDic = new Dictionary<KeyController, FieldModelController>
-            {
-                [CollectionBox.CollectionViewTypeKey] = new DocumentCollectionFieldModelController(outputDocs)
-            };
-
+      
             var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType());
-            outputDoc.SetActiveLayout(new DefaultLayout().Document, true, true);
-            defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
-            outputDoc.GetActiveLayout().Data.SetFields(defaultLayoutFields, true);
+            SetDefaultActiveLayout(outputDoc); // set active layout on the output doc
 
-            outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(outputDocs), true);
+            outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);
 
             return outputDoc;
         }
 
-        private static string[] GetHeadersFromCsv(CsvReader csv)
+        /// <summary>
+        /// Set the active layout on the output doc
+        /// </summary>
+        /// <param name="doc"></param>
+        private static void SetDefaultActiveLayout(DocumentController doc)
+        {
+            doc.SetActiveLayout(new DefaultLayout().Document, true, true);
+            var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
+            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey,
+                new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
+            doc.GetActiveLayout().Data.SetFields(defaultLayoutFields, true);
+        }
+
+        /// <summary>
+        /// Get all the headers form a csv reader
+        /// </summary>
+        /// <param name="csv"></param>
+        private static string[] GetHeadersFromCsv(ICsvReader csv)
         {
             csv.ReadHeader(); // TODO can we check to see if the csv has a header or not? otherwise this fails, what happens when it doesn't
             var headers = csv.FieldHeaders;

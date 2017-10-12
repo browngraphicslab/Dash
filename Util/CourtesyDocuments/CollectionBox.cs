@@ -70,8 +70,8 @@ namespace Dash
             var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
             var typeString = (docController.GetField(CollectionViewTypeKey) as TextFieldModelController).Data;
-            CollectionView.CollectionViewType viewType =  (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
-            var view = new CollectionView(collectionViewModel,  viewType);
+            var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
+            var view       = new CollectionView(collectionViewModel,  viewType);
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
             {

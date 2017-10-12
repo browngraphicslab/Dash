@@ -44,7 +44,7 @@ namespace Dash
             var stack = new Windows.UI.Xaml.Controls.StackPanel();
             stack.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
             var returnBox = new Windows.UI.Xaml.Controls.TextBox();
-            returnBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            returnBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             returnBox.Height = 50;
             returnBox.Text = "";
             returnBox.AcceptsReturn = true;
@@ -57,7 +57,7 @@ namespace Dash
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
             var searchBox = new Windows.UI.Xaml.Controls.TextBox();
-            searchBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            searchBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             searchBox.Height = 50;
             searchBox.Text = "";
             searchBox.AcceptsReturn = true;

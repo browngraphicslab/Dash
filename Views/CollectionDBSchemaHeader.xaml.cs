@@ -39,6 +39,7 @@ namespace Dash
                 set { SetValue(WidthProperty, value); }
             }
             public DocumentController SchemaDocument;
+            public CollectionDBSchemaView SchemaView;
             public override string ToString()
             {
                 return FieldKey.Name;
@@ -48,6 +49,9 @@ namespace Dash
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
+            ManipulationMode = ManipulationModes.All;
+            ManipulationStarted += (sender, e) => e.Handled = true;
+            ManipulationDelta += (sender, e) => e.Handled = true;
         }
 
         private void SelectTap(object sender, TappedRoutedEventArgs e)
@@ -56,8 +60,17 @@ namespace Dash
             if (collection != null)
             {
                 var viewModel = (DataContext as HeaderViewModel);
-                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
+                viewModel.SchemaView.Sort(viewModel);
+            }
+        }
 
+        private void TextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
+            if (collection != null)
+            {
+                var viewModel = (DataContext as HeaderViewModel);
+                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
                 collection.SetDBView();
             }
         }

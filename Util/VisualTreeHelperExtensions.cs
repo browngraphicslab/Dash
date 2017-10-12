@@ -34,6 +34,33 @@ namespace Dash
                 yield return child;
             }
         }
+        public static IEnumerable<T> GetImmediateDescendantsOfType<T>(this DependencyObject start) where T : DependencyObject
+        {
+            var queue = new Queue<DependencyObject>();
+            var count = VisualTreeHelper.GetChildrenCount(start);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(start, i);
+                if (child is T)
+                    yield return child as T;
+                else
+                    queue.Enqueue(child);
+            }
+            while (queue.Count > 0)
+            {
+                var parent = queue.Dequeue();
+                var count2 = VisualTreeHelper.GetChildrenCount(parent);
+
+                for (int i = 0; i < count2; i++)
+                {
+                    var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is T)
+                        yield return child as T;
+                    else
+                        queue.Enqueue(child);
+                }
+            }
+        }
 
         public static IEnumerable<DependencyObject> GetDescendants(this DependencyObject start)
         {

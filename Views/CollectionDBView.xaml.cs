@@ -30,14 +30,14 @@ namespace Dash
             DataContextChanged += CollectionDBView_DataContextChanged;
             Loaded += CollectionDBView_Loaded;
             SizeChanged += CollectionDBView_SizeChanged;
-            xParameter.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            xParameter.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
         }
 
         private void CollectionDBView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (ParentDocument != null)
-                UpdateChart(new Context(ParentDocument));
+                UpdateChart(new Context(ParentDocument), true);
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
@@ -147,7 +147,7 @@ namespace Dash
         }
 
 
-        public void UpdateChart(Context context)
+        public void UpdateChart(Context context, bool updateViewOnly=false)
         {
             var dbDocs  = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context).Data;
             var buckets = ParentDocument.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, context)?.Data;
@@ -172,7 +172,7 @@ namespace Dash
                     }
                 }
 
-                var barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars);
+                var barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars, updateViewOnly);
                 var xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
 
                 if (xBars.Count == barCounts.Count)
@@ -250,7 +250,7 @@ namespace Dash
             return barDomains.Select((b) => b as FieldModelController).ToList();
         }
 
-        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars)
+        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, bool updateViewOnly)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -285,8 +285,11 @@ namespace Dash
                     }
                 }
             }
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey, new DocumentCollectionFieldModelController(collection), true);
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
+            if (!updateViewOnly)
+            {
+                ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey, new DocumentCollectionFieldModelController(collection), true);
+                ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
+            }
             return countBars;
         }
 

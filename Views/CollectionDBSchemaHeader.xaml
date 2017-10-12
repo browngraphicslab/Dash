@@ -9,6 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <TextBlock FontSize="12" Foreground="Black" Text="{Binding}" FontWeight="{Binding Selected, Converter={StaticResource BoolToBoldConverter}, Mode=OneWay}" Width="{Binding Width}" Height="25" Tapped="SelectTap" />
+
+    <TextBlock FontSize="12" Foreground="Black" Text="{Binding}" FontWeight="{Binding Selected,Converter={StaticResource BoolToBoldConverter},Mode=OneWay}" Width="{Binding Width}" Height="25" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped"     />
 
 </UserControl>

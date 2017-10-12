@@ -48,8 +48,9 @@ namespace Dash
             Loaded   += OnLoaded;
             Unloaded += UnLoaded;
 
-            RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
+        long TextChangedCallbackToken;
 
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
@@ -127,7 +128,9 @@ namespace Dash
             {
                 string allRtfText;
                 xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\par\r\n}\r\n\0", "}\r\n\0"));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
             this.xRichEitBox.Document.Selection.SetRange(s1, s2);
         }
@@ -203,21 +206,35 @@ namespace Dash
         private void ItalicButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             this.xRichEitBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
+            UpdateDocument();
         }
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             this.xRichEitBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
+            UpdateDocument();
         }
+
 
         private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (this.xRichEitBox.Document.Selection.CharacterFormat.Underline != UnderlineType.None)
-                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Dash;
+            if (this.xRichEitBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None)
+                this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
             else
                 this.xRichEitBox.Document.Selection.CharacterFormat.Underline = UnderlineType.None;
+            UpdateDocument();
         }
 
+        void UpdateDocument()
+        {
+            string allText;
+            xRichEitBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+            string allRtfText;
+            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+            UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+            Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+        }
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 

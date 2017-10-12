@@ -11,7 +11,6 @@
     xmlns:localConverters="using:Dash.Converters"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    PointerPressed="UserControl_PointerPressed"
     Tapped="OnTapped"
     ManipulationMode="{Binding ManipulationMode}"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"

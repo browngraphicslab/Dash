@@ -438,7 +438,7 @@ namespace Dash
         }
         
 
-        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, CollectionViewModel collectionViewModel)
         {
             var docView = sender as DocumentView;
             DocumentView.DragDocumentView = docView;
@@ -447,6 +447,7 @@ namespace Dash
             if (docView != null)
                 docView.OuterGrid.BorderThickness = new Thickness(5);
 
+            args.Data.Properties.Add("CollectionViewModel", collectionViewModel);
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
                 // different sources based on whether it's a collection or a document 
             docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 

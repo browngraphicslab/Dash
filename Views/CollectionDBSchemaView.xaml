@@ -36,7 +36,9 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView x:Name="xGridView" Grid.Column="1"
-                      CanDragItems="{Binding CanDragItems}"
+                      CanDragItems="True"
+                      CanReorderItems="True"
+                      AllowDrop="True"
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
