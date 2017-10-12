@@ -22,19 +22,18 @@
         <ListView x:Name="xListView" Grid.Column="1"
             ItemsSource="{Binding RecordFields}"
             SelectionMode="None"
-            VirtualizingStackPanel.VirtualizationMode="Recycling" 
             ShowsScrollingPlaceholders="False">
-        <ListView.ItemsPanel>
-            <ItemsPanelTemplate>
-                <StackPanel CanDrag="True" Orientation="Horizontal" Padding="0" Margin="0"/>
-            </ItemsPanelTemplate>
-        </ListView.ItemsPanel>
-        <ListView.ItemTemplate>
-            <DataTemplate>
-                <local:CollectionDBSchemaRecordField DataContext="{Binding}" ManipulationMode="All" 
-                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
-                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed" />
-            </DataTemplate>
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel CanDrag="True" Orientation="Horizontal"  Margin="0"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" ManipulationMode="All" 
+                                                         ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                         PointerPressed="CollectionDBSchemaRecordField_PointerPressed" />
+                </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
     </Grid>

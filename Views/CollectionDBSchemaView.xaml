@@ -12,7 +12,7 @@
     Tapped="OnTapped"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" >
         <Grid.Resources>
             <Style TargetType="ListViewItem">
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -27,7 +27,7 @@
             </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition x:Name="xHeaderArea" Height="30"></RowDefinition>
             <RowDefinition x:Name="xDataArea" Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Border Visibility="Collapsed" x:Name="HeaderBorderThickness" BorderThickness="1" />
@@ -43,8 +43,7 @@
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" Padding="0" Margin="0">
-                        </StackPanel>
+                        <ItemsStackPanel Orientation="Horizontal" Margin="0"/>
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
@@ -57,13 +56,18 @@
             </ListView>
         </Grid>
         <ListView x:Name="xRecordsView" 
-                  VirtualizingStackPanel.VirtualizationMode="Recycling" 
                   Grid.Row="1" 
                   SelectionMode="Single"
                   ShowsScrollingPlaceholders="True" 
                   Background="Beige"
                   CanDragItems="True"
+                  Height="100"
                   >
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel  Orientation="Vertical" Margin="0"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <localView:CollectionDBSchemaRecord/>

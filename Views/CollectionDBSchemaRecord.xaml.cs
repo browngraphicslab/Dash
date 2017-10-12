@@ -30,7 +30,7 @@ namespace Dash.Views
         public CollectionDBSchemaRecord()
         {
             count++;
-            // Debug.WriteLine("Created " + count);
+            Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
 

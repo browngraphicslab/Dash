@@ -55,20 +55,19 @@ namespace Dash.Views
         {
             HeaderViewModel = headerViewModel;
             Row = row;
-            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             BorderThickness = headerBorder.BorderThickness;
+            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             Document = document;
             Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
             DataReference = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
             HeaderViewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
-           // Content = new ReferenceFieldModelController(_document.GetId(), fieldKey).DereferenceToRoot(null).ToString();
+            //Content = new ReferenceFieldModelController(document.GetId(), headerViewModel.FieldKey).DereferenceToRoot(null).ToString();
         }
 
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
         }
-
         private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
@@ -98,7 +97,7 @@ namespace Dash.Views
 
         //public string Content
         //{
-        //    get { return new ReferenceFieldModelController(_document.GetId(), _fieldKey).DereferenceToRoot(null).ToString(); }
+        //    get { return (string)GetValue(ContentProperty); }
         //    set { SetValue(ContentProperty, value); }
         //}
     }

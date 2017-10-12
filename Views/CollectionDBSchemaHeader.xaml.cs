@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash;
 using Dash.Controllers.Operators;
+using System.ComponentModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -25,24 +26,18 @@ namespace Dash.Views
         {
             public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
                 "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
-            public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(
-                "Selected", typeof(bool), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(bool)));
-            public KeyController FieldKey;
-            public bool Selected
+           
+            public KeyController          FieldKey;
+            public DocumentController     SchemaDocument;
+            public CollectionDBSchemaView SchemaView;
+            public override string ToString()
             {
-                get { return (bool)GetValue(SelectedProperty); }
-                set { SetValue(SelectedProperty, value); }
+                return FieldKey.Name;
             }
             public double Width
             {
                 get { return (double)GetValue(WidthProperty); }
                 set { SetValue(WidthProperty, value); }
-            }
-            public DocumentController SchemaDocument;
-            public CollectionDBSchemaView SchemaView;
-            public override string ToString()
-            {
-                return FieldKey.Name;
             }
 
         }
@@ -52,14 +47,29 @@ namespace Dash.Views
             ManipulationMode = ManipulationModes.All;
             ManipulationStarted += (sender, e) => e.Handled = true;
             ManipulationDelta += (sender, e) => e.Handled = true;
+            DataContextChanged += CollectionDBSchemaHeader_DataContextChanged;
+        }
+
+        private void CollectionDBSchemaHeader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var viewModel = (DataContext as HeaderViewModel);
+            if (viewModel != null)
+            {
+                viewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, VWidthChangedCallback);
+            }
+        }
+
+        private void VWidthChangedCallback(DependencyObject sender, DependencyProperty dp)
+        {
+            Width = (DataContext as HeaderViewModel)?.Width ?? Width;
         }
 
         private void SelectTap(object sender, TappedRoutedEventArgs e)
         {
+            var viewModel = (DataContext as HeaderViewModel);
             var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
             if (collection != null)
             {
-                var viewModel = (DataContext as HeaderViewModel);
                 viewModel.SchemaView.Sort(viewModel);
             }
         }

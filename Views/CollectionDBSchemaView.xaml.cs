@@ -10,6 +10,7 @@ using Dash.Views;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -193,8 +194,6 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
-            if (SchemaHeaders.Count > 0)
-                SchemaHeaders.First().Width = 150;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -238,7 +237,7 @@ namespace Dash
             {
                 var str = d.GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
-                    records.Add(str + new Guid(), d);
+                    records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
             }
             if (_lastFieldSortKey == viewModel.FieldKey)
@@ -262,7 +261,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, Selected = false,
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
                                                      FieldKey = ContentController.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
@@ -270,7 +269,7 @@ namespace Dash
                 {
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Id))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key, Selected = false });
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
@@ -387,5 +386,15 @@ namespace Dash
         }
 
         #endregion
+
+        private void xOuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
+
+        private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
     }
 }
