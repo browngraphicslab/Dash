@@ -560,6 +560,9 @@ namespace Dash
 
                 if (e != null) e.Handled = true;
                 OnSelected();
+
+                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
             }
         }
 
