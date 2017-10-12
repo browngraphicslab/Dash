@@ -339,7 +339,6 @@ namespace Dash
                 //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
                 IsHitTestVisible = false,
                 StrokeThickness = 5,
-                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHoldingEnabled = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
@@ -459,7 +458,6 @@ namespace Dash
 
             if (_connectionLine != null)
             {
-                _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
                 RefToLine.Add(ioReference.FieldReference, _connectionLine);
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
@@ -492,8 +490,14 @@ namespace Dash
             LineToConverter.Remove(line);
         }
 
+        /// <summary>
+        /// PointerMoved event. If drawing a link, updates the visual stroke line being drawn.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            // update stroke pointer for drawing links
             if (_connectionLine != null)
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
@@ -645,15 +649,24 @@ namespace Dash
 
 #endregion
 
-#region Clipping
-
-private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        #region Clipping
+        /// <summary>
+        /// SizeChanged event. Updates the clipping rect's size on canvas resize.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
         }
 
         #endregion
 
+        /// <summary>
+        /// OnLoad handler. Interfaces with DocumentView to call corresponding functions.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
@@ -661,8 +674,17 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
             _documentViews.Add((sender as DocumentView));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            // If drawing a link node and you release onto the canvas, if the handle you're drawing from
+            // is a document or a collection, this will create a new linked document/collection at the point
+            // you released the mouse
+            
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
