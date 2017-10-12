@@ -11,6 +11,10 @@ namespace Dash
 {
     public class BezierConverter : IValueConverter
     {
+        public delegate void OnPathUpdatedEventHandler(BezierConverter converter);
+
+        public OnPathUpdatedEventHandler OnPathUpdated;
+
         public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
         {
             Element1 = element1;
@@ -68,6 +72,8 @@ namespace Dash
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             UpdateLine();
+            setGradientAngle();
+            OnPathUpdated?.Invoke(this);
             return _col;
         }
 

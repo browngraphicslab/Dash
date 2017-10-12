@@ -178,7 +178,6 @@ namespace Dash
             }
         }
 
-
         public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
         {
             var docId = reference.GetDocumentId();
@@ -202,7 +201,6 @@ namespace Dash
             }
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
-            var document1 = docView1.ViewModel.DocumentController;
             var docView2 = GetDocView(referencingDoc);
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
@@ -550,30 +548,28 @@ namespace Dash
                 return;
             }
 
-            //if (!isCompoundOperator)
-            //{
-                DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
-                var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-                else
-                    inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
-                //Add the key to the inputController's list of user created links
-                if (!isLoadedLink)
+            DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
+            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
+                .GetDereferencedField(KeyStore.ThisKey, null);
+            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+                inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+            else
+                inputController.SetField(inputReference.FieldReference.FieldKey,
+                    new ReferenceFieldModelController(outputReference.FieldReference), true);
+            //Add the key to the inputController's list of user created links
+            if (!isLoadedLink)
+            {
+                if (inputController.GetField(KeyStore.UserLinksKey) == null)
                 {
-                    if (inputController.GetField(KeyStore.UserLinksKey) == null)
-                    {
-                        inputController.SetField(KeyStore.UserLinksKey,
-                            new ListFieldModelController<TextFieldModelController>(), true);
-                    }
-                    var linksList = inputController.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
-                    linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
+                    inputController.SetField(KeyStore.UserLinksKey,
+                        new ListFieldModelController<TextFieldModelController>(), true);
                 }
-                
-            //}
-
-
-
+                var linksList =
+                    inputController.GetField(KeyStore.UserLinksKey) as
+                        ListFieldModelController<TextFieldModelController>;
+                linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
+            }
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -583,13 +579,19 @@ namespace Dash
 
             if (_connectionLine != null)
             {
-                _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+                //_connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
                 RefToLine.Add(ioReference.FieldReference, _connectionLine);
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
+                _converter.OnPathUpdated += (converter) =>
+                {
+                    var line = LineToConverter.FirstOrDefault(k => k.Value.Equals(converter)).Key;
+                    if(line != null) line.Stroke = converter.GradientBrush;
+                };
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
+
         }
 
         /// <summary>
@@ -769,9 +771,9 @@ namespace Dash
 
 #endregion
 
-#region Clipping
+        #region Clipping
 
-private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
         }
