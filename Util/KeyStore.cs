@@ -27,5 +27,6 @@ namespace Dash
         public static KeyController IconTypeFieldKey = new KeyController(DashConstants.KeyStore.IconTypeFieldKey);
         public static KeyController SystemUriKey = new KeyController(DashConstants.KeyStore.SystemUriKey);
         public static KeyController ThumbnailFieldKey = new KeyController(DashConstants.KeyStore.ThumbnailFieldKey);
+        public static KeyController HeaderKey = new KeyController(DashConstants.KeyStore.HeaderKey);
     }
 }

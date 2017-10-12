@@ -350,6 +350,8 @@ namespace Dash
                 _tb.Text = (tappedSource as TextBlock).Text;
             else if (tappedSource is Image)
                 _tb.Text = (tappedSource as Image).BaseUri.AbsoluteUri;
+            else if (tappedSource is Grid)
+                return;
             else throw new NotImplementedException();
 
             //add textbox graphically and set up events 

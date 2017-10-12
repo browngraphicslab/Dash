@@ -1,39 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-using DashShared;
-using Newtonsoft.Json;
-using Windows.Storage.Pickers;
-using Windows.Storage;
-using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.Contacts;
+using Windows.ApplicationModel.Email;
+using Windows.Foundation;
+using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.UI;
-using Windows.UI.Composition;
+using Windows.UI.Popups;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using LightBuzz.SMTP;
-
+using Newtonsoft.Json;
 
 namespace Dash
 {
     // TODO: name this to something more descriptive
     public static class Util
     {
-
         public static void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
         {
-            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
-            Compositor compositor = hostVisual.Compositor;
+            var hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
+            var compositor = hostVisual.Compositor;
 
             // Create a drop shadow
             var dropShadow = compositor.CreateDropShadow();
@@ -59,7 +60,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Transforms point p to relative point in Window.Current.Content 
+        ///     Transforms point p to relative point in Window.Current.Content
         /// </summary>
         /// <param name="p"></param>
         /// <param name="to"></param>
@@ -71,16 +72,16 @@ namespace Dash
             //Rect newRect = r.TransformBounds(rect);
             //Point p = new Point(rect.Width * e.Delta.Translation.X, rect.Height * e.Delta.Translation.Y);
 
-            MatrixTransform r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
+            var r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
             //Debug.Assert(r != null);
 
             if (r == null) return new Point(0, 0);
             var m = r.Matrix;
-            return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
+            return new MatrixTransform {Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0)}.TransformPoint(p);
         }
 
         /// <summary>
-        /// Transforms point p in from-space to a point in to-space 
+        ///     Transforms point p in from-space to a point in to-space
         /// </summary>
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
@@ -89,8 +90,8 @@ namespace Dash
         }
 
         /// <summary>
-        /// Given a position relative to the MainPage, returns the transformed position corresponding 
-        /// to the given collection's freeform view.
+        ///     Given a position relative to the MainPage, returns the transformed position corresponding
+        ///     to the given collection's freeform view.
         /// </summary>
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
@@ -108,12 +109,13 @@ namespace Dash
         }
 
         /// <summary>
-        /// Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space  
+        ///     Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space
         /// </summary>
         /// <returns></returns>
-        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate, double elemScale = 1.0)
+        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate,
+            double elemScale = 1.0)
         {
-            Point p = DeltaTransformFromVisual(delta, toTranslate);
+            var p = DeltaTransformFromVisual(delta, toTranslate);
             return new TranslateTransform
             {
                 X = p.X * elemScale,
@@ -122,7 +124,8 @@ namespace Dash
         }
 
         /// <summary>
-        /// Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too stubborn
+        ///     Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too
+        ///     stubborn
         /// </summary>
         /// <param name="toBind"></param>
         public static void ForceBindHeightToParentDocumentHeight(FrameworkElement toBind)
@@ -143,108 +146,106 @@ namespace Dash
             scrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
         }
 
-        public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA, DocumentCollectionFieldModelController setB)
+        public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA,
+            DocumentCollectionFieldModelController setB)
         {
-            HashSet<DocumentController> result = new HashSet<DocumentController>();
-            foreach (DocumentController contA in setA.GetDocuments())
+            var result = new HashSet<DocumentController>();
+            foreach (var contA in setA.GetDocuments())
+            foreach (var contB in setB.GetDocuments())
             {
-                foreach (DocumentController contB in setB.GetDocuments())
-                {
-                    if (result.Contains(contB)) continue;
+                if (result.Contains(contB)) continue;
 
-                    var enumFieldsA = contA.EnumFields().ToList();
-                    var enumFieldsB = contB.EnumFields().ToList();
-                    if (enumFieldsA.Count != enumFieldsB.Count) continue;
+                var enumFieldsA = contA.EnumFields().ToList();
+                var enumFieldsB = contB.EnumFields().ToList();
+                if (enumFieldsA.Count != enumFieldsB.Count) continue;
 
-                    bool equal = true;
-                    foreach (KeyValuePair<KeyController, FieldModelController> pair in enumFieldsA)
-                    {
-                        if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
+                var equal = true;
+                foreach (var pair in enumFieldsA)
+                    if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
+                        if (pair.Value is TextFieldModelController)
                         {
-                            if (pair.Value is TextFieldModelController)
+                            var fmContA = pair.Value as TextFieldModelController;
+                            var fmContB =
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextFieldModelController;
+                            if (!fmContA.Data.Equals(fmContB?.Data))
                             {
-                                TextFieldModelController fmContA = pair.Value as TextFieldModelController;
-                                TextFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextFieldModelController;
-                                if (!fmContA.Data.Equals(fmContB?.Data))
-                                {
-                                    equal = false;
-                                    break;
-                                }
-                            }
-                            else if (pair.Value is NumberFieldModelController)
-                            {
-                                NumberFieldModelController fmContA = pair.Value as NumberFieldModelController;
-                                NumberFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberFieldModelController;
-                                if (!fmContA.Data.Equals(fmContB?.Data))
-                                {
-                                    equal = false;
-                                    break;
-                                }
-                            }
-                            else if (pair.Value is ImageFieldModelController)
-                            {
-                                ImageFieldModelController fmContA = pair.Value as ImageFieldModelController;
-                                ImageFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageFieldModelController;
-                                if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data.AbsoluteUri))
-                                {
-                                    equal = false;
-                                    break;
-                                }
-                                else throw new NotImplementedException();
-                            }
-                            else
-                            {
-                                throw new NotImplementedException();
+                                equal = false;
+                                break;
                             }
                         }
-                    }
-                    if (equal) result.Add(contB);
-                }
+                        else if (pair.Value is NumberFieldModelController)
+                        {
+                            var fmContA = pair.Value as NumberFieldModelController;
+                            var fmContB =
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberFieldModelController;
+                            if (!fmContA.Data.Equals(fmContB?.Data))
+                            {
+                                equal = false;
+                                break;
+                            }
+                        }
+                        else if (pair.Value is ImageFieldModelController)
+                        {
+                            var fmContA = pair.Value as ImageFieldModelController;
+                            var fmContB =
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageFieldModelController;
+                            if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data
+                                .AbsoluteUri))
+                            {
+                                equal = false;
+                                break;
+                            }
+                            throw new NotImplementedException();
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                if (equal) result.Add(contB);
             }
             return result;
         }
 
 
         /// <summary>
-        /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
-        /// If there is a nested collection, nests the json recursively 
+        ///     Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController
+        ///     If there is a nested collection, nests the json recursively
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
+        public static Dictionary<string, object> JsonSerializeHelper(
+            IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
         {
-            Dictionary<string, object> jsonDict = new Dictionary<string, object>();
-            foreach (KeyValuePair<KeyController, FieldModelController> pair in fields)
+            var jsonDict = new Dictionary<string, object>();
+            foreach (var pair in fields)
             {
                 object data = null;
                 if (pair.Value is TextFieldModelController)
                 {
-                    TextFieldModelController cont = pair.Value as TextFieldModelController;
+                    var cont = pair.Value as TextFieldModelController;
                     data = cont.Data;
                 }
                 else if (pair.Value is NumberFieldModelController)
                 {
-                    NumberFieldModelController cont = pair.Value as NumberFieldModelController;
+                    var cont = pair.Value as NumberFieldModelController;
                     data = cont.Data;
                 }
                 else if (pair.Value is ImageFieldModelController)
                 {
-                    ImageFieldModelController cont = pair.Value as ImageFieldModelController;
+                    var cont = pair.Value as ImageFieldModelController;
                     data = cont.ImageFieldModel.Data.AbsoluteUri;
                 }
                 else if (pair.Value is PointFieldModelController)
                 {
-                    PointFieldModelController cont = pair.Value as PointFieldModelController;
+                    var cont = pair.Value as PointFieldModelController;
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
                 else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
-                    DocumentCollectionFieldModelController collectionCont = pair.Value as DocumentCollectionFieldModelController;
-                    foreach (DocumentController cont in collectionCont.GetDocuments())
-                    {
+                    var collectionCont = pair.Value as DocumentCollectionFieldModelController;
+                    foreach (var cont in collectionCont.GetDocuments())
                         collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
-                    }
                     jsonDict[pair.Key.Name] = collectionList;
                     continue;
                 }
@@ -259,14 +260,14 @@ namespace Dash
         }
 
         /// <summary>
-        /// Exports the document's key to field as json object and saves it locally as .txt 
+        ///     Exports the document's key to field as json object and saves it locally as .txt
         /// </summary>
         public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
         {
-            Dictionary<string, object> jsonDict = JsonSerializeHelper(fields);
-            string json = JsonConvert.SerializeObject(jsonDict);
+            var jsonDict = JsonSerializeHelper(fields);
+            var json = JsonConvert.SerializeObject(jsonDict);
 
-            FolderPicker picker = new FolderPicker();
+            var picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
             picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
@@ -282,14 +283,12 @@ namespace Dash
 
         public static async void ExportAsJson(List<DocumentController> docContextList)
         {
-            List<Dictionary<string, object>> controllerList = new List<Dictionary<string, object>>();
-            foreach (DocumentController cont in docContextList)
-            {
+            var controllerList = new List<Dictionary<string, object>>();
+            foreach (var cont in docContextList)
                 controllerList.Add(JsonSerializeHelper(cont.EnumFields()));
-            }
-            string json = JsonConvert.SerializeObject(controllerList);
+            var json = JsonConvert.SerializeObject(controllerList);
 
-            FolderPicker picker = new FolderPicker();
+            var picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
             picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
@@ -304,14 +303,14 @@ namespace Dash
         }
 
         /// <summary>
-        /// Saves everything within given UIelement as .png in a specified directory 
+        ///     Saves everything within given UIelement as .png in a specified directory
         /// </summary>
         public static async void ExportAsImage(UIElement element)
         {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            var bitmap = new RenderTargetBitmap();
             await bitmap.RenderAsync(element);
 
-            FolderPicker picker = new FolderPicker();
+            var picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
             picker.FileTypeFilter.Add("*");
             StorageFolder folder = null;
@@ -323,22 +322,22 @@ namespace Dash
                 file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
 
                 var pixels = await bitmap.GetPixelsAsync();
-                byte[] byteArray = pixels.ToArray();
+                var byteArray = pixels.ToArray();
 
                 using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
                 {
                     var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
 
-                    var displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
+                    var displayInformation = DisplayInformation.GetForCurrentView();
 
                     encoder.SetPixelData(
-                            BitmapPixelFormat.Bgra8,
-                            BitmapAlphaMode.Ignore,
-                            (uint)bitmap.PixelWidth,
-                            (uint)bitmap.PixelHeight,
-                            displayInformation.RawDpiX,
-                            displayInformation.RawDpiY,
-                            pixels.ToArray());
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Ignore,
+                        (uint) bitmap.PixelWidth,
+                        (uint) bitmap.PixelHeight,
+                        displayInformation.RawDpiX,
+                        displayInformation.RawDpiY,
+                        pixels.ToArray());
 
                     await encoder.FlushAsync();
                 }
@@ -346,91 +345,88 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method that launches the Windows mail store app, shows the dialogue with selected attachment file, message body and subject 
+        ///     Method that launches the Windows mail store app, shows the dialogue with selected attachment file, message body and
+        ///     subject
         /// </summary>
-        ///             //TODO this is weird bc it requires that default app is the mail store app and if you choose anything else then it doesn't work 
+        /// //TODO this is weird bc it requires that default app is the mail store app and if you choose anything else then it doesn't work
         public static async void SendEmail()
         {
             // TODO remove these hardcoded things idk if we even need this but maybe we do in the future  
-            string recipientAddress = "help@brown.edu";
-            string subject = "send help";
-            string message = "brown cit 4th floor graphics lab";
+            var recipientAddress = "help@brown.edu";
+            var subject = "send help";
+            var message = "brown cit 4th floor graphics lab";
 
-            var email = new Windows.ApplicationModel.Contacts.ContactEmail
+            var email = new ContactEmail
             {
                 Address = recipientAddress,
-                Kind = Windows.ApplicationModel.Contacts.ContactEmailKind.Personal
+                Kind = ContactEmailKind.Personal
             };
 
-            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
+            var emailMessage = new EmailMessage
             {
                 Body = message,
                 Subject = subject
             };
 
-            FileOpenPicker picker = new FileOpenPicker();
+            var picker = new FileOpenPicker();
             picker.FileTypeFilter.Add("*");
-            StorageFile attachmentFile = await picker.PickSingleFileAsync();
+            var attachmentFile = await picker.PickSingleFileAsync();
             if (attachmentFile != null)
             {
-                var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile);
-                var attachment = new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream);
+                var stream = RandomAccessStreamReference.CreateFromFile(attachmentFile);
+                var attachment = new EmailAttachment(attachmentFile.Name, stream);
                 emailMessage.Attachments.Add(attachment);
             }
 
-            var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
+            var emailRecipient = new EmailRecipient(email.Address);
             emailMessage.To.Add(emailRecipient);
 
 
-            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
+            await EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
         /// <summary>
-        /// Method that sends email with specified fields directly instead of via an external app 
+        ///     Method that sends email with specified fields directly instead of via an external app
         /// </summary>
-        public static async void SendEmail2(string addressTo, string password, string addressFrom, string message, string subject, StorageFile attachment)
+        public static async void SendEmail2(string addressTo, string password, string addressFrom, string message,
+            string subject, StorageFile attachment)
         {
-            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, password)) // gmail
+            using (var client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, password)) // gmail
             {
-                var email = new Windows.ApplicationModel.Email.EmailMessage
+                var email = new EmailMessage
                 {
                     Subject = subject,
                     Body = message
                 };
 
-                email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
+                email.To.Add(new EmailRecipient(addressTo));
                 // TODO add CC? and BCC??  
 
                 if (attachment != null)
                 {
-                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachment);
-                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachment.Name, stream));
+                    var stream = RandomAccessStreamReference.CreateFromFile(attachment);
+                    email.Attachments.Add(new EmailAttachment(attachment.Name, stream));
                 }
-                SmtpResult result = await client.SendMailAsync(email);
+                var result = await client.SendMailAsync(email);
 
                 //Debug.WriteLine("SMPT RESULT: " + result.ToString());
 
-                string popupMsg = "D:";
+                var popupMsg = "D:";
                 if (result == SmtpResult.OK)
-                {
                     popupMsg = "Sent!";
-                }
                 else if (result == SmtpResult.AuthenticationFailed)
-                {
-                    popupMsg = "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW";
-                }
+                    popupMsg =
+                        "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW";
                 else
-                {
                     popupMsg = "Something went wrong :(";
-                }
 
-                var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
+                var popup = new MessageDialog(popupMsg);
                 await popup.ShowAsync();
             }
         }
 
         /// <summary>
-        /// Fits a line to a collection of (x,y) points.
+        ///     Fits a line to a collection of (x,y) points.
         /// </summary>
         /// <param name="xVals">The x-axis values.</param>
         /// <param name="yVals">The y-axis values.</param>
@@ -449,35 +445,66 @@ namespace Dash
             double sumOfY = 0;
             double sumOfXSq = 0;
             double sumOfYSq = 0;
-            double ssX = 0;
-            double ssY = 0;
+            double ssX;
             double sumCodeviates = 0;
-            double sCo = 0;
+            double sCo;
             double count = exclusiveEnd - inclusiveStart;
 
-            for (int ctr = inclusiveStart; ctr < exclusiveEnd; ctr++)
+            for (var ctr = inclusiveStart; ctr < exclusiveEnd; ctr++)
             {
-                double x = xVals[ctr];
-                double y = yVals[ctr];
+                var x = xVals[ctr];
+                var y = yVals[ctr];
                 sumCodeviates += x * y;
                 sumOfX += x;
                 sumOfY += y;
                 sumOfXSq += x * x;
                 sumOfYSq += y * y;
             }
-            ssX = sumOfXSq - ((sumOfX * sumOfX) / count);
-            ssY = sumOfYSq - ((sumOfY * sumOfY) / count);
-            double RNumerator = (count * sumCodeviates) - (sumOfX * sumOfY);
-            double RDenom = (count * sumOfXSq - (sumOfX * sumOfX))
-                            * (count * sumOfYSq - (sumOfY * sumOfY));
-            sCo = sumCodeviates - ((sumOfX * sumOfY) / count);
+            ssX = sumOfXSq - sumOfX * sumOfX / count;
+            var rNumerator = count * sumCodeviates - sumOfX * sumOfY;
+            var rDenom = (count * sumOfXSq - sumOfX * sumOfX)
+                         * (count * sumOfYSq - sumOfY * sumOfY);
+            sCo = sumCodeviates - sumOfX * sumOfY / count;
 
-            double meanX = sumOfX / count;
-            double meanY = sumOfY / count;
-            double dblR = RNumerator / Math.Sqrt(RDenom);
+            var meanX = sumOfX / count;
+            var meanY = sumOfY / count;
+            var dblR = rNumerator / Math.Sqrt(rDenom);
             rsquared = dblR * dblR;
-            yintercept = meanY - ((sCo / ssX) * meanX);
+            yintercept = meanY - sCo / ssX * meanX;
             slope = sCo / ssX;
+        }
+
+        /// <summary>
+        /// Converts a string to a field model controller
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static FieldModelController StringToFieldModelController(string expression)
+        {
+            // check for number field model controller
+            var num = IsNumeric(expression);
+            if (num.HasValue)
+                return new NumberFieldModelController(num.Value);
+
+            string[] imageExtensions = {"jpg", "bmp", "gif", "png"}; //  etc
+
+            if (imageExtensions.Any(expression.EndsWith))
+                return new ImageFieldModelController(new Uri(expression));
+            return new TextFieldModelController(expression);
+        }
+
+
+        /// <summary>
+        ///     Returns the double represenation of the string if possible otherwise null
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static double? IsNumeric(string expression)
+        {
+            var isNum = double.TryParse(expression, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out double ret);
+            if (isNum)
+                return ret;
+            return null;
         }
     }
 }

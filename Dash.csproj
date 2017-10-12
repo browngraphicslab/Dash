@@ -115,6 +115,10 @@
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
+    <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="Views\CSVImportHelper.xaml.cs">
+      <DependentUpon>CSVImportHelper.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
@@ -596,6 +600,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CSVImportHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FieldPreview.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -948,7 +956,6 @@
       <Name>DashShared</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="CsvHelper">
       <Version>2.16.3</Version>

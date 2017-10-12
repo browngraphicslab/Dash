@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class CollectionDBSchemaRecord : UserControl
     {
@@ -84,7 +84,7 @@ namespace Dash.Views
         public CollectionDBSchemaRecordViewModel(DocumentController document, IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
         {
             Document = document;
-            RecordFields = new ObservableCollection<Views.CollectionDBSchemaRecordFieldViewModel>(fields);
+            RecordFields = new ObservableCollection<CollectionDBSchemaRecordFieldViewModel>(fields);
         }
         public DocumentController Document;
         public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; set; }

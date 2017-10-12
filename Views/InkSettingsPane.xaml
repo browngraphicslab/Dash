@@ -5,9 +5,6 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:inking="using:Windows.UI.Input.Inking"
-    xmlns:generic="using:System.Collections.Generic"
-    xmlns:objectModel="using:System.Collections.ObjectModel"
     mc:Ignorable="d"
     d:DesignHeight="294" d:DesignWidth="309">
 

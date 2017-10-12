@@ -26,7 +26,7 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
-            xGridView.ItemsSource = SchemaHeaders;
+            xHeaderView.ItemsSource = SchemaHeaders;
             Loaded   += CollectionDBSchemaView_Loaded1;
             Unloaded += CollectionDBSchemaView_Unloaded1;
         }
