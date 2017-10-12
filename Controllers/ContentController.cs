@@ -104,19 +104,22 @@ namespace Dash
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
 
+            Debug.Assert(controllerIds.All(_controllers.ContainsKey));
+
             // get any controllers which exist and are of type TControllerType
-            var successfulControllers =
-                controllerIds
-                    .Where(controllerId => _controllers.ContainsKey(controllerId))
-                    .Select(controllerId => _controllers[controllerId])
-                    .OfType<TControllerType>().ToList();
+            var successfulControllers = controllerIds.Select(controllerId => _controllers[controllerId]);
 
             // TODO try and get missing controllers from the server
 
-            Debug.Assert(controllerIds.Count() == successfulControllers.Count, "Not all of the controllers which were passed in were of the requested type," +
+            Debug.Assert(controllerIds.Count() == successfulControllers.Count(), "Not all of the controllers which were passed in were of the requested type," +
                                                                                "Or the id was not found in the list of controllers");
 
-            return successfulControllers;
+            var typedControllers = successfulControllers.OfType<TControllerType>();
+
+            Debug.Assert(controllerIds.Count() == typedControllers.Count(), "Not all of the controllers which were passed in were of the requested type," +
+                                                                                 "Or the id was not found in the list of controllers");
+
+            return typedControllers;
         }
 
         /// <summary>

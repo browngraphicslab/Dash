@@ -19,8 +19,8 @@ namespace Dash
 
         private void AddModelsToControllers(IEnumerable<EntityBase> models)
         {
-
-            var docs = models.OfType<DocumentModel>().ToArray();
+            var entityBases = models as IList<EntityBase> ?? models.ToList();
+            var docs = entityBases.OfType<DocumentModel>().ToArray();
             foreach (var model in docs)
             {
                 if (!ContentController<DocumentModel>.HasController(model.Id))
@@ -29,7 +29,7 @@ namespace Dash
                 }
             }
 
-            foreach (var model in models.OfType<KeyModel>())
+            foreach (var model in entityBases.OfType<KeyModel>())
             {
                 if (!ContentController<KeyModel>.HasController(model.Id))
                 {
@@ -37,7 +37,19 @@ namespace Dash
                 }
             }
 
-            foreach (var model in models.OfType<FieldModel>())
+            var fields = entityBases.OfType<FieldModel>();
+            var fieldModels = fields as IList<FieldModel> ?? fields.ToList();
+            var lists = fieldModels.OfType<ListFieldModel>();
+
+            foreach (var model in fieldModels.Where(i => !( i is ListFieldModel)))
+            {
+                if (!ContentController<FieldModel>.HasController(model.Id))
+                {
+                    model.NewController();
+                }
+            }
+
+            foreach (var model in lists)
             {
                 if (!ContentController<FieldModel>.HasController(model.Id))
                 {

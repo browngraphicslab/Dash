@@ -35,6 +35,12 @@ namespace Dash
             set { TypedData = value.Cast<T>().ToList(); }
         }
 
+        public ListFieldModelController(ListFieldModel model) : base(model)
+        {
+            TypedData = ContentController<FieldModel>.GetControllers<T>(model.Data).ToList();
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+        }
+
         public ListFieldModelController() : base(new ListFieldModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
         }
@@ -122,6 +128,15 @@ namespace Dash
             foreach (var fmc in TypedData)
             {
                 fmc.UpdateOnServer();
+            }
+        }
+
+        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            base.SaveOnServer(success, error);
+            foreach (var fmc in TypedData)
+            {
+                fmc.SaveOnServer();
             }
         }
     }

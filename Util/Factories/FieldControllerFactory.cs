@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -82,22 +83,66 @@ namespace Dash
 
         private static FieldControllerBase MakeListFieldController(ListFieldModel model)
         {
-
-            //TODO
             FieldControllerBase controller = null;
+
             switch (model.SubTypeInfo)
             {
+                case TypeInfo.None:
+                    Debug.Fail("this shouldnt happen????");
+                    break;
+                case TypeInfo.Number:
+                    controller = new ListFieldModelController<NumberFieldModelController>(model);
+                    break;
+                case TypeInfo.Text:
+                    controller = new ListFieldModelController<TextFieldModelController>(model);
+                    break;
+                case TypeInfo.Image:
+                    controller = new ListFieldModelController<ImageFieldModelController>(model);
+                    break;
                 case TypeInfo.Collection:
-                    controller = new ListFieldModelController<DocumentCollectionFieldModelController>();
+                    controller = new ListFieldModelController<DocumentCollectionFieldModelController>(model);
+                    break;
+                case TypeInfo.Document:
+                    controller = new ListFieldModelController<DocumentFieldModelController>(model);
+                    break;
+                case TypeInfo.PointerReference:
+                    controller = new ListFieldModelController<PointerReferenceFieldController>(model);
+                    break;
+                case TypeInfo.DocumentReference:
+                    controller = new ListFieldModelController<DocumentReferenceFieldController>(model);
+                    break;
+                case TypeInfo.Operator:
+                    controller = new ListFieldModelController<OperatorFieldModelController>(model);
+                    break;
+                case TypeInfo.Point:
+                    controller = new ListFieldModelController<PointFieldModelController>(model);
+                    break;
+                case TypeInfo.List:
+                    Debug.Fail("idk why you got here");
+                    break;
+                case TypeInfo.Ink:
+                    controller = new ListFieldModelController<InkFieldModelController>(model);
+                    break;
+                case TypeInfo.RichTextField:
+                    controller = new ListFieldModelController<RichTextFieldModelController>(model);
+                    break;
+                case TypeInfo.Rectangle:
+                    controller = new ListFieldModelController<RectFieldModelController>(model);
+                    break;
+                case TypeInfo.Reference:
+                    controller = new ListFieldModelController<ReferenceFieldModelController>(model);
+                    break;
+                case TypeInfo.Any:
+                    Debug.Fail("idk why you got here");
+                    break;
+                default:
                     break;
             }
-
             return controller;
         }
 
         private static OperatorFieldModelController MakeOperatorController(OperatorFieldModel model)
         {
-            //TODO
             OperatorFieldModelController controller = null;
             switch (model.Type)
             {
