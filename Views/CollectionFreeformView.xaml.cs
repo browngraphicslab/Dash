@@ -45,7 +45,7 @@ namespace Dash
 
         #region LinkingVariables
 
-        public bool CanLink = true;
+        public bool CanLink = false;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
         private IOReference _currReference;
@@ -390,7 +390,6 @@ namespace Dash
 
             itemsPanelCanvas.Children.Add(_connectionLine);
         }
-
 
 
         public void CancelDrag(Pointer p)
@@ -755,7 +754,7 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             _singleTapped = false; 
             e.Handled = true;
-            ChooseLowest(e); 
+            ChooseLowest(e);
         }
 
         private void ChooseLowest(DoubleTappedRoutedEventArgs e)
