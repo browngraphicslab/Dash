@@ -77,11 +77,12 @@ namespace Dash
 
         public bool IsUnrenderedKey()
         {
-            return Equals(KeyStore.DelegatesKey) ||
-                   Equals(KeyStore.PrototypeKey) ||
-                   Equals(KeyStore.LayoutListKey) ||
-                   Equals(KeyStore.ActiveLayoutKey) ||
-                   Equals(KeyStore.IconTypeFieldKey);
+            return KeyModel.Name.StartsWith("_");
+            //return Equals(KeyStore.DelegatesKey) ||
+            //       Equals(KeyStore.PrototypeKey) ||
+            //       Equals(KeyStore.LayoutListKey) ||
+            //       Equals(KeyStore.ActiveLayoutKey) ||
+            //       Equals(KeyStore.IconTypeFieldKey);
         }
 
         public virtual void Dispose()

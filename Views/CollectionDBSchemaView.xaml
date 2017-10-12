@@ -36,10 +36,11 @@
                 <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListView x:Name="xGridView" Grid.Column="1"
+            <ListView x:Name="xHeaderView" Grid.Column="1"
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
+                      Drop="xHeaderView_Drop"
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -60,12 +61,12 @@
                   SelectionMode="Single"
                   ShowsScrollingPlaceholders="True" 
                   Background="Beige"
-                  CanDragItems="True"
+                  CanDragItems="False"
                   Height="100"
                   >
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel  Orientation="Vertical" Margin="0"/>
+                    <ItemsStackPanel Orientation="Vertical" Margin="0"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>

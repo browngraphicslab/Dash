@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Navigation;
 using Dash;
 using Dash.Controllers.Operators;
 using System.ComponentModel;
+using Windows.UI.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -83,6 +84,34 @@ namespace Dash.Views
                 viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
                 collection.SetDBView();
             }
+        }
+
+        PointerPoint _downPt;
+
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            _downPt = e.GetCurrentPoint(null);
+            e.Handled = true;
+
+        }
+
+        private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Complete();
+            StartDragAsync(_downPt);
+            e.Handled = true;
+        }
+
+        private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var viewModel = (DataContext as HeaderViewModel);
+            args.Data.Properties.Add(nameof(CollectionDBSchemaHeader.HeaderViewModel), viewModel);
+            args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
         }
     }
 }

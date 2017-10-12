@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Shapes;
 using Dash;
 using static Dash.NoteDocuments;
 using Dash.Controllers.Operators;
+using Dash.Views;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -703,7 +704,23 @@ private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             Debug.WriteLine("drop event from collection");
-            ViewModel.CollectionViewOnDrop(sender, e);
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderViewModel)))
+            {
+                var headerViewModel = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderViewModel)) == true ?
+                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderViewModel)] as CollectionDBSchemaHeader.HeaderViewModel : null;
+                
+                var droppedSrcDoc = headerViewModel.SchemaDocument;
+                var sourceViewType = CollectionView.CollectionViewType.DB;
+                
+                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetPosition(this)), sourceViewType, sourceViewType.ToString());
+                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetId(), (headerViewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey), true);
+                cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(headerViewModel.FieldKey.Name), true);
+
+                ViewModel.AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
+
+            } else
+                ViewModel.CollectionViewOnDrop(sender, e);
         }
 
         public void SetDropIndicationFill(Brush fill)

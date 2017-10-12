@@ -26,7 +26,7 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
-            xGridView.ItemsSource = SchemaHeaders;
+            xHeaderView.ItemsSource = SchemaHeaders;
             Loaded   += CollectionDBSchemaView_Loaded1;
             Unloaded += CollectionDBSchemaView_Unloaded1;
         }
@@ -395,6 +395,14 @@ namespace Dash
         private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
         {
             this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
+        
+        private void xHeaderView_Drop(object sender, DragEventArgs e)
+        {
+
+            if (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderViewModel)))
+            {
+            }
         }
     }
 }
