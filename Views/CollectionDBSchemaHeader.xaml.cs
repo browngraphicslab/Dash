@@ -19,7 +19,7 @@ using Windows.UI.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class CollectionDBSchemaHeader : UserControl
     {

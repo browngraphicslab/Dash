@@ -73,23 +73,15 @@ namespace Dash
 
         private FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
         {
-            if (jtoken.Type == JTokenType.Object)
-            {
-                // create a schema for the document we just found
-                var childSchema = parentSchema.AddChildSchemaOrReturnCurrentChild(jtoken);
-                var protoInstance = ParseObject(jtoken, childSchema);
+            if (jtoken.Type != JTokenType.Object)
+                return jtoken.Type == JTokenType.Array ? ParseArray(jtoken, parentSchema) : ParseValue(jtoken);
+            // create a schema for the document we just found
+            var childSchema = parentSchema.AddChildSchemaOrReturnCurrentChild(jtoken);
+            var protoInstance = ParseObject(jtoken, childSchema);
 
-                // wrap the document we found in a field model since it is not a root
-                var docFieldModelController = new DocumentFieldModelController(protoInstance);
-                return docFieldModelController;
-            } else if (jtoken.Type == JTokenType.Array)
-            {
-                return ParseArray(jtoken, parentSchema);
-            }
-            else
-            {
-                return ParseValue(jtoken);
-            }
+            // wrap the document we found in a field model since it is not a root
+            var docFieldModelController = new DocumentFieldModelController(protoInstance);
+            return docFieldModelController;
         }
 
         private DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
@@ -169,7 +161,7 @@ namespace Dash
             throw new NotImplementedException(" we don't support arrays of documents and values");
         }
 
-        private FieldModelController ParseValue(JToken jtoken)
+        public FieldModelController ParseValue(JToken jtoken)
         {
             try
             {
@@ -202,13 +194,10 @@ namespace Dash
 
         private FieldModelController ParseText(string text)
         {
-            string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
-            foreach (var ext in _imageExtensions)
+            string[] imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
+            if (imageExtensions.Any(text.EndsWith))
             {
-                if (text.EndsWith(ext))
-                {
-                    return new ImageFieldModelController(new Uri(text));
-                }
+                return new ImageFieldModelController(new Uri(text));
             }
             return new TextFieldModelController(text);
         }
@@ -217,11 +206,9 @@ namespace Dash
         {
             foreach (var field in fields)
             {
-                if (prototype.GetField(field.Key) == null)
-                {
-                    var defaultField = field.Value.GetDefaultController();
-                    prototype.SetField(field.Key, defaultField, true);
-                }
+                if (prototype.GetField(field.Key) != null) continue;
+                var defaultField = field.Value.GetDefaultController();
+                prototype.SetField(field.Key, defaultField, true);
             }
         }
     }
