@@ -38,11 +38,6 @@ namespace Dash
             _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
         }
 
-        public void ConfigureForMouse()
-        {
-            _searchList.List.ItemContainerStyle = this.Resources["MouseStyle"] as Style;
-        }
-
         public void MoveSelectedDown()
         {
             if (_searchList.List.SelectedIndex < 0)

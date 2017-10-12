@@ -137,7 +137,6 @@ namespace Dash
                     canvas.Children.Add(Instance);
                 }
                 if (isTouch) Instance.SearchView.ConfigureForTouch();
-                else Instance.SearchView.ConfigureForMouse();
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
                 Instance.SearchView.SetNoSelection();

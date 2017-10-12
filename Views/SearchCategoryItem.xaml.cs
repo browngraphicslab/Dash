@@ -47,11 +47,8 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-
         private Action<Func<DocumentController>> _action;
-
         public object SelectedItem;
-
         private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
         
         /// <summary>
@@ -113,7 +110,7 @@ namespace Dash
         }
         private void XList_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Util.FixListViewBaseManipulationDeltaPropagation(xList);
+            //Util.FixListViewBaseManipulationDeltaPropagation(xList);
         }
     }
 }
