@@ -77,7 +77,7 @@ namespace Dash
             dc.SetField(AgeKey, new NumberFieldModelController(88), true);
             var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(dc.GetId(), KeyStore.ThisKey),
                                                                               DBDoc, "AssignedPerson", "AssignedGame");
-            dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+            dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), KeyStore.CollectionOutputKey), true);
             dc.SetField(UmpNameLabelKey, new TextFieldModelController("Umpire : "), true);
             dc.SetField(AgeLabelKey, new TextFieldModelController("Age : "), true);
             dc.SetField(UmpPictureKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);

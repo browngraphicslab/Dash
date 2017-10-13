@@ -42,7 +42,7 @@ namespace Dash
                         var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
                             300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50);
 
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, image.Document).Document;
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, 300, 300, new List<DocumentController>(new DocumentController[] { image.Document })).Document;
                         children?.AddDocument(pageDoc);
                     }
                 return pdfDoc.Document;

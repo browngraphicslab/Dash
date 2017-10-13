@@ -26,6 +26,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -542,9 +543,7 @@ namespace Dash
 
         public static DocumentController BlankNote()
         {
-            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
-            return postitNote;
+            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
         }
     }
 }

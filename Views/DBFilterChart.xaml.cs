@@ -104,7 +104,7 @@ namespace Dash
         {
             FieldModelController barcnts, results, buckets, avg;
             if (context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.CountBarsKey), out barcnts) &&
-                context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.ResultsKey), out results) &&
+                context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), KeyStore.CollectionOutputKey), out results) &&
                 context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.BucketsKey), out buckets) &&
                 context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), out avg))
             {

@@ -76,7 +76,7 @@ namespace Dash
             if (keysToFrameworkElementsIn != null)
             {
                 keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+              //  keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
             }
 
 

@@ -46,21 +46,24 @@ namespace Dash
         protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-            Debug.Assert(refToData != null);
-            var fieldModelController = refToData.DereferenceToRoot(context);
-
-            // bcz: think this through better:
-            //   -- the idea is that we're referencing a field that doesn't exist.  Instead of throwing an error, we can
-            //      create the field with a default value.  The question is where in the 'context' should we set it?  I think
-            //      we want to follow the reference to its end, adding fields along the way ... this just follows the reference one level.
-            if (fieldModelController == null)
+            if (refToData != null)
             {
-                var parent = refToData.GetDocumentController(context);
-                Debug.Assert(parent != null);
-                parent.SetField((refToData as ReferenceFieldModelController).FieldKey, defaultFieldModelController, true);
-                fieldModelController = refToData.DereferenceToRoot(context);
+                var fieldModelController = refToData.DereferenceToRoot(context);
+
+                // bcz: think this through better:
+                //   -- the idea is that we're referencing a field that doesn't exist.  Instead of throwing an error, we can
+                //      create the field with a default value.  The question is where in the 'context' should we set it?  I think
+                //      we want to follow the reference to its end, adding fields along the way ... this just follows the reference one level.
+                if (fieldModelController == null)
+                {
+                    var parent = refToData.GetDocumentController(context);
+                    Debug.Assert(parent != null);
+                    parent.SetField((refToData as ReferenceFieldModelController).FieldKey, defaultFieldModelController, true);
+                    fieldModelController = refToData.DereferenceToRoot(context);
+                }
+                return fieldModelController;
             }
-            return fieldModelController;
+            return null;
         }
 
         /// <summary>

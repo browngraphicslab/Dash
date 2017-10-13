@@ -185,7 +185,7 @@ namespace Dash
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
                 ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
@@ -297,8 +297,7 @@ namespace Dash
                 if (SearchInDocumentForNamedField(dmc, selectedBars, visited))
                     collection.Add(dmc);
             }
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey,
-                new DocumentCollectionFieldModelController(collection), true);
+            ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
         }
 
         private static bool SearchInDocumentForNamedField(DocumentController dmc, List<string> selectedBars,
