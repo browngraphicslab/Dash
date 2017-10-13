@@ -15,7 +15,7 @@ namespace Dash
 
         public FilterOperatorBox(ReferenceFieldModelController refToOp)
         {
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
+            var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
             Document = new DocumentController(fields, DocumentType);
         }
 
@@ -37,18 +37,9 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(KeyStore.DataKey);
-            var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
-            var filterView = new FilterView();
-            opView.OperatorContent = filterView;
 
-            //add to key to framework element dictionary
-            var reference = data as ReferenceFieldModelController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = opView;
-
-            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
-            return opView;
+            return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout,
+                () => new FilterView());
         }
     }
 

@@ -33,7 +33,7 @@ namespace Dash
         private ListViewSelectionMode _itemSelectionMode;
         private static SelectionElement _previousDragEntered;
 
-        public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+        public virtual KeyController CollectionKey => KeyStore.CollectionKey;
         public KeyController OutputKey
         {
             get; set;

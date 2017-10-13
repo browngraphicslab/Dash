@@ -20,14 +20,14 @@ namespace Dash.Controllers.Operators
         static public DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
-            var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+            var searchOp = OperatorDocumentFactory.CreateOperatorDocument(searchFieldController);
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             searchOp.SetField(SearchForDocKey, new DocumentFieldModelController(searchForDoc), true);
             searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
 
 
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), KeyStore.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }
@@ -35,7 +35,7 @@ namespace Dash.Controllers.Operators
         static public DocumentController CreateSearch(FieldModelController fieldContainingSearchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
-            var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+            var searchOp = OperatorDocumentFactory.CreateOperatorDocument(searchFieldController);
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             if (fieldContainingSearchForDoc != null)
@@ -44,7 +44,7 @@ namespace Dash.Controllers.Operators
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
             searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
 
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), KeyStore.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }

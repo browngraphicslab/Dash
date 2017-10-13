@@ -66,6 +66,8 @@ namespace Dash
             get { return _width; }
             set
             {
+                Debug.Assert(double.IsNaN(value) == false);
+
                 if (SetProperty(ref _width, value))
                 {
                     var widthFieldModelController =
@@ -84,6 +86,8 @@ namespace Dash
             get { return _height; }
             set
             {
+                Debug.Assert(double.IsNaN(value) == false);
+
                 if (SetProperty(ref _height, value))
                 {
                     var heightFieldModelController =

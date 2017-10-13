@@ -56,7 +56,7 @@ namespace Dash
                 [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
             Document = new DocumentController(fields, DocumentType);
@@ -257,7 +257,7 @@ namespace Dash
 
         public static void setResults(DocumentController docController, List<DocumentController> documents)
         {
-            (docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as
+            (docController.GetField(KeyStore.CollectionKey) as
                 DocumentCollectionFieldModelController).SetDocuments(documents);
         }
 

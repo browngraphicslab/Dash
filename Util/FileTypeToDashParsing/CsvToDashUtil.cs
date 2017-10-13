@@ -80,7 +80,7 @@ namespace Dash
         {
             doc.SetActiveLayout(new DefaultLayout().Document, true, true);
             var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey,
+            defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey,
                 new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
             doc.GetActiveLayout().Data.SetFields(defaultLayoutFields, true);
         }

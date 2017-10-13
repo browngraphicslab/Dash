@@ -264,13 +264,13 @@ namespace Dash
         DocumentController lookupOperator(string opname)
         {
             if (opname == "Add")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorFieldModelController());
+                return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorFieldModelController());
             if (opname == "Subtract")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new SubtractOperatorFieldModelController());
+                return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorFieldModelController());
             if (opname == "Divide")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
+                return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorFieldModelController());
             if (opname == "Multiply")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new MultiplyOperatorFieldModelController());
+                return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorFieldModelController());
 
             return null;
         }
@@ -336,7 +336,7 @@ namespace Dash
                 else
                 {
                     var opModel = lookupOperator(strings[0]);
-                    var opFieldController = (opModel.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController);
+                    var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorFieldModelController);
                     var args = strings[1].TrimEnd(')').Split(',');
                     int count = 0;
                     foreach (var a in args)
@@ -581,7 +581,7 @@ namespace Dash
         /// <param name="field">reference field model that references the field to connect</param>
         private bool IsOperatorTypeCompatible(KeyController key, FieldModelController field)
         {
-            var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            var opCont = GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
             if (opCont == null) return true;
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
@@ -768,7 +768,7 @@ namespace Dash
 
         private List<KeyController> GetRelevantKeys(KeyController key, Context c)
         {
-            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, c) as OperatorFieldModelController;
+            var opField = GetDereferencedField(KeyStore.OperatorKey, c) as OperatorFieldModelController;
             if (opField == null)
             {
                 return new List<KeyController> { key };
@@ -836,7 +836,7 @@ namespace Dash
         public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
-            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
+            var opField = GetDereferencedField(KeyStore.OperatorKey, context) as OperatorFieldModelController;
             if (opField != null)
                 return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
             return false;
@@ -846,7 +846,7 @@ namespace Dash
         {
             var context = new Context(oldContext);
             context.AddDocumentContext(this);
-            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
+            var opField = GetDereferencedField(KeyStore.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
                 return context;
@@ -983,11 +983,11 @@ namespace Dash
             {
                 return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType == CollectionBox.DocumentType)
+            if (DocumentType == DashConstants.DocumentTypeStore.DocumentType)
             {
                 return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
-            if (DocumentType == OperatorBox.DocumentType)
+            if (DocumentType == DashConstants.DocumentTypeStore.OperatorBoxType)
             {
                 return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
@@ -1020,9 +1020,9 @@ namespace Dash
             {
                 return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType == CollectionMapOperatorBox.DocumentType)
+            if (DocumentType == DashConstants.DocumentTypeStore.MapOperatorBoxType)
             {
-                return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return CollectionMapOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
             if (DocumentType == DBFilterOperatorBox.DocumentType)
             {

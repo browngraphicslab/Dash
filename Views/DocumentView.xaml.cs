@@ -298,13 +298,11 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
+            Debug.Assert(dvm.Width != double.NaN);
+            Debug.Assert(dvm.Height != double.NaN);
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
             // should we allow documents with NaN's for width & height to be resized?
-            //if (double.IsNaN(dvm.Width))
-            //    dvm.Width = ActualWidth + dx;
-            //if (double.IsNaN(dvm.Height))
-            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 

@@ -54,7 +54,7 @@ namespace Dash
 
             opDoc.DocumentFieldUpdated += (sender, args) =>
             {
-                var opFieldModelController = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                var opFieldModelController = opDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 bool allOutputsSet = true;
                 foreach (var o in opFieldModelController.Outputs)
                     if (!args.Context.ContainsDataKey(o.Key))

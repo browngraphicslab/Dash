@@ -48,11 +48,7 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Key for collection data
-        /// TODO This might be better in a different class
-        /// </summary>
-        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+
         public override object GetValue(Context context)
         {
             return GetDocuments();
@@ -183,7 +179,7 @@ namespace Dash
         {
             var rfmc = new ReferenceFieldModelController(id, kc);
             var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
-            var viewType = container.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ??  CollectionView.CollectionViewType.Grid.ToString();
+            var viewType = container.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ??  CollectionView.CollectionViewType.Grid.ToString();
             var colView = new CollectionView(vm, (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), viewType));
             sp.Children.Add(colView);
             colView.TryBindToParentDocumentSize();

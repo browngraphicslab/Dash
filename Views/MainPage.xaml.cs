@@ -64,21 +64,22 @@ namespace Dash
 
             // create the collection document model using a request
             var fields = new Dictionary<KeyController, FieldModelController>();
-            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            fields[KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
             
             var collectionDocumentController =
-                new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), KeyStore.CollectionKey), w: MyGrid.ActualWidth, h: MyGrid.ActualHeight).Document;
             collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
             collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
+            //// set the main view's width and height to avoid NaN errors
+            //MainDocView.Width = MyGrid.ActualWidth;
+            //MainDocView.Height = MyGrid.ActualHeight;
+
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(MainDocument);
-
-            // set the main view's width and height to avoid NaN errors
-            MainDocView.Width = MyGrid.ActualWidth;
-            MainDocView.Height = MyGrid.ActualHeight;
 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
@@ -252,7 +253,7 @@ namespace Dash
             {
                 docModel.GetPositionField().Data = (Point)where;
             }
-            var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as DocumentCollectionFieldModelController;
             DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
             DBTest.DBDoc.AddChild(docModel);
@@ -430,10 +431,10 @@ namespace Dash
 
             var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+                [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(docs)
             }, DocumentType.DefaultType);
 
-            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
             DisplayDocument(doc);
         }

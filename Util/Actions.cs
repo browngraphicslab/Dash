@@ -32,16 +32,6 @@ namespace Dash
 
         public static void AddSearch(object o, DragEventArgs e)
         {
-            //if (!c.Children.Contains(_searchView))
-            //{
-            //    c.Children.Add(_searchView);
-            //    _searchView.SetPosition(p);
-            //    _searchView.IsDraggable = true;
-            //}
-            //else
-            //{
-            //    c.Children.Remove(_searchView);
-            //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionFreeFormPoint(
@@ -184,11 +174,11 @@ namespace Dash
             }
             var fields = new Dictionary<KeyController, FieldModelController>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
+                [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
             var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDocument = new CollectionBox(new ReferenceFieldModelController(collectionDocument.GetId(),  
-                DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+                KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             collectionDocument.SetActiveLayout(layoutDocument, true, true); 
 
             // Make second collection
@@ -196,13 +186,13 @@ namespace Dash
             var twoImages2 = new TwoImages(false).Document;
             var fields2 = new Dictionary<KeyController, FieldModelController>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[] {numbers2, twoImages2})
             };
             var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+                    KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             col2.SetActiveLayout(layoutDoc2, true, true); 
 
             //Display collections
@@ -232,14 +222,14 @@ namespace Dash
             var numbers2 = new Numbers().Document;
             var fields2 = new Dictionary<KeyController, FieldModelController>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2})
             };
             var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    KeyStore.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
             col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
             col2.SetField(KeyStore.LayoutListKey,

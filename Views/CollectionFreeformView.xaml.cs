@@ -196,7 +196,7 @@ namespace Dash
             if (referencedDoc == null) return;
             if (fmController == null)
             {
-                var op = referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 var type = op.Outputs[reference.FieldKey];
                 fmController = TypeInfoHelper.CreateFieldModelController(type);
             }
@@ -552,7 +552,7 @@ namespace Dash
             DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
-            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+            if (inputController.DocumentType == DashConstants.DocumentTypeStore.OperatorType &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
@@ -836,7 +836,7 @@ namespace Dash
             {
                 var droppedField   = _currReference.FieldReference;
                 var droppedSrcDoc  = droppedField.GetDocumentController(null);
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
                 cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);

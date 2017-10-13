@@ -22,7 +22,7 @@ namespace Dash.Controllers.Operators
         static public DocumentController CreateFilter(ReferenceFieldModelController inputDocs, string fieldRef)
         {
             var filterFieldController = new DBFilterOperatorFieldModelController(new DBFilterOperatorFieldModel());
-            var filterOp = OperatorDocumentModel.CreateOperatorDocumentModel(filterFieldController);
+            var filterOp = OperatorDocumentFactory.CreateOperatorDocument(filterFieldController);
             filterOp.DocumentType = DBFilterOperatorType;
             
             filterOp.SetField(InputDocsKey,    inputDocs, true);
@@ -34,7 +34,7 @@ namespace Dash.Controllers.Operators
                 new NumberFieldModelController[] { new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0) }
                 ), true);
 
-            var layoutDoc = new DBFilterOperatorBox(new ReferenceFieldModelController(filterOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBFilterOperatorBox(new ReferenceFieldModelController(filterOp.GetId(), KeyStore.OperatorKey)).Document;
             filterOp.SetActiveLayout(layoutDoc, true, true); 
             
             // this field stores the Avg so that the operator view can have something to bind to.

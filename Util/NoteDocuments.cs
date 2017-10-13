@@ -88,7 +88,7 @@ namespace Dash
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
                 docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
                 docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(300), true);
-                docLayout.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(viewtype.ToString()), true);
+                docLayout.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(viewtype.ToString()), true);
 
                 var listOfCollectedDocs = collectedDocument != null ? new List<DocumentController>(new DocumentController[] { collectedDocument }) : new List<DocumentController>();
                 dataDocument.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(listOfCollectedDocs), true);

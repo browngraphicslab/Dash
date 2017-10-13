@@ -67,7 +67,7 @@ namespace Dash
             var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
             protoInstance.SetActiveLayout(activeLayout, true, false);
             var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
+            defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
             activeLayout.SetFields(defaultLayoutFields, true);
         }
 

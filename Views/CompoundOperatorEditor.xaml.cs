@@ -21,43 +21,14 @@ namespace Dash
 {
     public sealed partial class CompoundOperatorEditor : UserControl
     {
-        private readonly DocumentController _documentController;
-        private readonly CompoundOperatorFieldController _operatorFieldModelController;
-        private ObservableCollection<OperatorBuilder> _operatorList;
+
         private SimpleCollectionViewModel _collectionViewModel;
 
         public CompoundOperatorEditor()
         {
             this.InitializeComponent();
-            Unloaded += CompoundOperatorEditor_Unloaded;
-            _operatorList = new ObservableCollection<OperatorBuilder>(OperationCreationHelper.Operators.Values);
             _collectionViewModel = new SimpleCollectionViewModel(false);
             xFreeFormEditor.DataContext = _collectionViewModel;
-        }
-
-        public CompoundOperatorEditor(DocumentController documentController, CompoundOperatorFieldController operatorFieldModelController) : this()
-        {
-            _documentController = documentController;
-            _operatorFieldModelController = operatorFieldModelController;
-        }
-
-        private void CompoundOperatorEditor_Unloaded(object sender, RoutedEventArgs e)
-        {
-        }
-
-
-        private void XOperationListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var item = e.Items.FirstOrDefault();
-
-            // item type has to be the same as ListItemSource item type
-            if (item is OperatorBuilder)
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(CompoundOperatorFieldController.OperationBarDragKey, item);
-            }
-
-           // ItemsCarrier.Instance.SourceCollection = _collectionViewModel; 
         }
         
         private void XFreeFormEditor_OnDragOver(object sender, DragEventArgs e)

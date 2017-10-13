@@ -241,7 +241,7 @@ namespace Dash
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
-                else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
+                else if (pair.Key == KeyStore.CollectionKey)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
                     var collectionCont = pair.Value as DocumentCollectionFieldModelController;
@@ -525,7 +525,7 @@ namespace Dash
         {
             var colfields = new Dictionary<KeyController, FieldModelController>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(),
                 [KeyStore.TitleKey] = new TextFieldModelController("Collection")
             };
@@ -533,10 +533,10 @@ namespace Dash
             colDoc.SetActiveLayout(
                 new CollectionBox(
                     new ReferenceFieldModelController(colDoc.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
+                        KeyStore.CollectionKey), 0, 0, 200, 200).Document, true, true);
             colDoc.SetField(KeyStore.CollectionOutputKey,
                 new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)), true);
+                    KeyStore.CollectionKey)), true);
             return colDoc;
         }
 

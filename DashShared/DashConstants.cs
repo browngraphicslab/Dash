@@ -131,6 +131,12 @@ namespace DashShared
             public static DocumentType FreeFormDocumentLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
             public static DocumentType CollectionDocument  = new DocumentType("2D4D93AE-6A88-4723-B254-7DA2959D0240", "collection");
             public static DocumentType FileLinkDocument = new DocumentType("54442257-4BF4-4EB0-B3E8-B8868951F198", "File link");
+            public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
+            public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
+            public static readonly DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
+
+            public static DocumentType OperatorBoxType =
+                new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
         }
 
 

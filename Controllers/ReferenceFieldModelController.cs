@@ -122,7 +122,7 @@ namespace Dash
         public override object GetValue(Context context)
         {
             var refDoc = FieldReference.GetDocumentController(context);
-            var opField = refDoc.GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
+            var opField = refDoc.GetDereferencedField(KeyStore.OperatorKey, context) as OperatorFieldModelController;
             if (opField != null)
             {
                 var str = "=" + (opField.FieldModel as OperatorFieldModel).Type + "(";

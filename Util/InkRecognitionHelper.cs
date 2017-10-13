@@ -342,12 +342,12 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             var documentController = Util.BlankCollection();
-            documentController.SetField(DocumentCollectionFieldModelController.CollectionKey,
+            documentController.SetField(KeyStore.CollectionKey,
                 new DocumentCollectionFieldModelController(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
                     new ReferenceFieldModelController(documentController.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
+                        KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
                     region.BoundingRect.Height).Document, true, true);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());

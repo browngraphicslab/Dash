@@ -23,7 +23,7 @@ namespace Dash
             {
                 return CreateTextSettingsLayout(layoutDocument);
             }
-            if (type == CollectionBox.DocumentType)
+            if (type == DashConstants.DocumentTypeStore.DocumentType)
             {
                 return CreateCollectionSettingsLayout(layoutDocument);
             }
