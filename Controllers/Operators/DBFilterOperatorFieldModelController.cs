@@ -65,11 +65,11 @@ namespace Dash.Controllers.Operators
         public static readonly KeyController ClassKey         = new KeyController("018E279A-119B-42E6-9AAF-00A5F76A08F1", "Filter");
 
         //Input Keys
-        public static readonly KeyController FilterFieldKey  = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "FilterField");
-        public static readonly KeyController BucketsKey      = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "Buckets");
+        public static readonly KeyController FilterFieldKey  = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
+        public static readonly KeyController BucketsKey      = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
         public static readonly KeyController SelectedKey     = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
         public static readonly KeyController InputDocsKey    = new KeyController("0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17", "Dataset");
-        public static readonly KeyController AutoFitKey      = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "AutoFit");
+        public static readonly KeyController AutoFitKey      = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "_AutoFit");
         
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {

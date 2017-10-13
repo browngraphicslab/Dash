@@ -45,6 +45,7 @@ namespace Dash
                     ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
+            CollectionDBSchemaHeader.DragModel = null;
         }
 
         //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
@@ -63,24 +64,9 @@ namespace Dash
                 if (value != null)
                 {
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.BucketsKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey,
-                            new ListFieldModelController<NumberFieldModelController>(new[]
-                            {
-                                new NumberFieldModelController(0), new NumberFieldModelController(0),
-                                new NumberFieldModelController(0), new NumberFieldModelController(0)
-                            }), true);
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
                             new TextFieldModelController(""), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.AutoFitKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.AutoFitKey,
-                            new NumberFieldModelController(3), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.SelectedKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey,
-                            new ListFieldModelController<NumberFieldModelController>(), true);
-                    ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey,
-                        new NumberFieldModelController(0), true);
                     ParentDocument.DocumentFieldUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
@@ -211,8 +197,7 @@ namespace Dash
         private void ParentDocument_DocumentFieldUpdated(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == ViewModel.CollectionKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey)
+            if (args.Reference.FieldKey == ViewModel.CollectionKey)
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -395,14 +380,6 @@ namespace Dash
         private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
         {
             this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
-        }
-        
-        private void xHeaderView_Drop(object sender, DragEventArgs e)
-        {
-
-            if (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderViewModel)))
-            {
-            }
         }
     }
 }

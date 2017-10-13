@@ -126,15 +126,15 @@ namespace Dash
                 (sender, args) =>
                 {
                     updateUI = false;
-                    if (binding.Context == null)
-                    {
-                        binding.ConvertToXaml(element, property,  args.Context);
+                if (binding.Context == null)
+                {
+                    binding.ConvertToXaml(element, property, args.Context);
 
-                    }
-                    else
-                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
-                    {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
+                }
+                else
+                if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                {
+                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !args.Context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
                     }
                     updateUI = true;

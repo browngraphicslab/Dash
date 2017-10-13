@@ -64,7 +64,7 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType());
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
             SetDefaultActiveLayout(outputDoc); // set active layout on the output doc
 
             outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);

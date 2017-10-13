@@ -16,6 +16,7 @@ using Dash;
 using Dash.Controllers.Operators;
 using System.ComponentModel;
 using Windows.UI.Input;
+using static Windows.ApplicationModel.Core.CoreApplication;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -45,10 +46,14 @@ namespace Dash
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
-            ManipulationMode = ManipulationModes.All;
-            ManipulationStarted += (sender, e) => e.Handled = true;
-            ManipulationDelta += (sender, e) => e.Handled = true;
             DataContextChanged += CollectionDBSchemaHeader_DataContextChanged;
+            MainView.CoreWindow.PointerPressed -= CoreWindow_PointerPressed;
+            MainView.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
+        }
+        
+        static void CoreWindow_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        {
+            DragModel = null;
         }
 
         private void CollectionDBSchemaHeader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -56,11 +61,11 @@ namespace Dash
             var viewModel = (DataContext as HeaderViewModel);
             if (viewModel != null)
             {
-                viewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, VWidthChangedCallback);
+                viewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
             }
         }
 
-        private void VWidthChangedCallback(DependencyObject sender, DependencyProperty dp)
+        private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             Width = (DataContext as HeaderViewModel)?.Width ?? Width;
         }
@@ -86,32 +91,25 @@ namespace Dash
             }
         }
 
-        PointerPoint _downPt;
-
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        public class HeaderDragData  
         {
-            _downPt = e.GetCurrentPoint(null);
-            e.Handled = true;
-
+            public ReferenceFieldModelController HeaderColumnReference;
+            public KeyController FieldKey;
+            public CollectionView.CollectionViewType ViewType;
         }
-
-        private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Complete();
-            StartDragAsync(_downPt);
-            e.Handled = true;
-        }
-
+        public static HeaderDragData DragModel = null;
+        
         private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            e.Handled = true;
-        }
-
-        private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
-        {
             var viewModel = (DataContext as HeaderViewModel);
-            args.Data.Properties.Add(nameof(CollectionDBSchemaHeader.HeaderViewModel), viewModel);
-            args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
+            DragModel = new HeaderDragData()
+            {
+                HeaderColumnReference = new ReferenceFieldModelController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
+                FieldKey = viewModel.FieldKey,
+                ViewType = CollectionView.CollectionViewType.DB
+            };
+            e.Handled = true;
+            e.Complete();
         }
     }
 }

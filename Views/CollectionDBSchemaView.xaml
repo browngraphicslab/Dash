@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}"
+    AllowDrop="True"
     mc:Ignorable="d"
     d:DesignHeight="300"
     Tapped="OnTapped"
@@ -32,7 +33,6 @@
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
-                      Drop="xHeaderView_Drop"
                       Style="{StaticResource xSchemaListView}"
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                       >
