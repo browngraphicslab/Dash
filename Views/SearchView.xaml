@@ -11,34 +11,24 @@
     d:DesignWidth="400">
     <UserControl.Resources>
         <Style x:Key="TouchStyle" TargetType="ListViewItem">
-            <Setter Property="Padding" Value="4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="10"/>
-            <Setter Property="MinHeight" Value="35"/>
-        </Style>
-        <Style x:Key="MouseStyle" TargetType="ListViewItem">
-            <Setter Property="Padding" Value="2"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="10"/>
-            <Setter Property="MinHeight" Value="25"/>
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Height" Value="10" />
+            <Setter Property="MinHeight" Value="35" />
         </Style>
     </UserControl.Resources>
-    <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="300" Padding="0" VerticalAlignment="Stretch" Background="{StaticResource WindowsBlue}" Opacity="1">
+    <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="200" Padding="0" VerticalAlignment="Stretch"
+          Background="{StaticResource WindowsBlue}" Opacity="1">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Border Margin="10" BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
-                <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}" 
-                                BorderBrush="Transparent"  Margin="5" Text="Search all..."></AutoSuggestBox>
+                <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
+                                BorderBrush="Transparent" Margin="5" Text="Search all..." />
             </Border>
         </Grid>
-        <Grid x:Name="ListGrid" Grid.Row="1" Background="{StaticResource WindowsBlue}">
-            <!--
-            <Pivot Background="{StaticResource DocumentBackgroundOpaque}" x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" 
-                       SelectionChanged="xRootPivot_SelectionChanged">
-            </Pivot>-->
-        </Grid>
+        <Grid x:Name="ListGrid" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}" />
     </Grid>
 </UserControl>

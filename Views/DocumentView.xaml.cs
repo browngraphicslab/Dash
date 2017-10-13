@@ -41,6 +41,7 @@ namespace Dash
 
         public static int dvCount = 0;
 
+
         public DocumentView()
         {
             InitializeComponent();
@@ -282,6 +283,8 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+
+            
         }
 
         /// <summary>
@@ -560,6 +563,9 @@ namespace Dash
 
                 if (e != null) e.Handled = true;
                 OnSelected();
+
+                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
             }
         }
 
