@@ -51,7 +51,7 @@ namespace Dash
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateChart(new Context(ParentDocument));
@@ -205,6 +205,8 @@ namespace Dash
         }
         public void setupBars(List<FieldModelController> buckets)
         {
+            var selectedBars = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ?? new List<FieldModelController>();
+            var selectedInds = selectedBars.Select((f) => (f as NumberFieldModelController)?.Data);
             this.xBarChart.Children.Clear();
             this.xBarChart.ColumnDefinitions.Clear();
             this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
@@ -212,7 +214,7 @@ namespace Dash
             {
                 this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(10, GridUnitType.Star) });
                 this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-                var g = new CollectionDBChartBar() { FilterChart = this, BucketIndex = i, MaxDomain = (buckets[i] as NumberFieldModelController).Data };
+                var g = new CollectionDBChartBar() { FilterChart = this, BucketIndex = i, MaxDomain = (buckets[i] as NumberFieldModelController).Data, IsSelected=selectedInds.Contains(i) };
                 Grid.SetColumn(g, i * 2 + 1);
                 this.xBarChart.Children.Add(g);
             }
@@ -283,11 +285,13 @@ namespace Dash
                             }
                         }
                     }
+                    else if (keepAll)
+                        collection.Add(dmc);
                 }
             }
             if (!updateViewOnly)
             {
-                ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey, new DocumentCollectionFieldModelController(collection), true);
+                ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
                 ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
             }
             return countBars;

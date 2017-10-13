@@ -55,7 +55,6 @@ namespace Dash.Controllers.Operators
         //
 
         //Output keys
-        public static readonly KeyController ResultsKey      = new KeyController("AE54F402-3B8F-4437-A71F-FF8B9B804194", "Results");
         public static readonly KeyController AvgResultKey    = new KeyController("27A7017A-170E-4E4A-8CDC-94983C2A5188", "Avg");
         public static readonly KeyController CountBarsKey    = new KeyController("539D338C-1851-4E45-A6E3-145B3659C237", "CountBars");
 
@@ -81,7 +80,7 @@ namespace Dash.Controllers.Operators
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [ResultsKey]    = TypeInfo.Collection,
+            [KeyStore.CollectionOutputKey]    = TypeInfo.Collection,
             [CountBarsKey]  = TypeInfo.Collection,
             [BucketsKey]    = TypeInfo.List,
             [AvgResultKey]  = TypeInfo.Number
@@ -166,7 +165,7 @@ namespace Dash.Controllers.Operators
                 }
             }
             outputs[CountBarsKey] = new ListFieldModelController<NumberFieldModelController>(countBars);
-            outputs[ResultsKey]   = new DocumentCollectionFieldModelController(collection);
+            outputs[KeyStore.CollectionOutputKey]   = new DocumentCollectionFieldModelController(collection);
             outputs[BucketsKey]   = new ListFieldModelController<NumberFieldModelController>(bars.Select((b) => b as NumberFieldModelController));
             outputs[AvgResultKey] = new NumberFieldModelController(sumOfFields / dbDocs.Count);
         }

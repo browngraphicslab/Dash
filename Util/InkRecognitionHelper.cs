@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -341,14 +342,7 @@ namespace Dash
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
-            var documentController = Util.BlankCollection();
-            documentController.SetField(DocumentCollectionFieldModelController.CollectionKey,
-                new DocumentCollectionFieldModelController(recognizedDocuments), true);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                    new ReferenceFieldModelController(documentController.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
-                    region.BoundingRect.Height).Document, true, true);
+            var documentController = new CollectionNote(position, CollectionView.CollectionViewType.Freeform, "<auto>", region.BoundingRect.Width, region.BoundingRect.Height, recognizedDocuments).Document;
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }

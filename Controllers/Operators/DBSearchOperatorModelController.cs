@@ -54,7 +54,6 @@ namespace Dash.Controllers.Operators
         }
 
         //Output keys
-        public static readonly KeyController ResultsKey      = new KeyController("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
         public static readonly KeyController InputDocsKey    = new KeyController("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
         public static readonly KeyController FieldPatternKey = new KeyController("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
         public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
@@ -69,7 +68,7 @@ namespace Dash.Controllers.Operators
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [ResultsKey] = TypeInfo.Collection
+            [KeyStore.CollectionOutputKey] = TypeInfo.Collection
         };
         
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
@@ -98,7 +97,7 @@ namespace Dash.Controllers.Operators
                 }
             }
             
-            outputs[ResultsKey] = new DocumentCollectionFieldModelController(documents);
+            outputs[KeyStore.CollectionOutputKey] = new DocumentCollectionFieldModelController(documents);
         }
 
         private void D_DocumentFieldUpdated()

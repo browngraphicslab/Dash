@@ -50,7 +50,7 @@ namespace Dash
             var all = new ObservableCollection<Func<DocumentController>>
             {
                 Util.BlankDoc,
-                Util.BlankCollection,
+                Util.BlankCollection, 
                 Util.BlankNote
             };
 

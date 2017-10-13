@@ -24,29 +24,23 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaHeader : UserControl
     {
-        public class HeaderViewModel : DependencyObject
+        public class HeaderViewModel : ViewModelBase
         {
-            public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
-                "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
-           
+            double _width;
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
-            public override string ToString()
-            {
-                return FieldKey.Name;
-            }
+
+            public override string ToString() { return FieldKey.Name; }
             public double Width
             {
-                get { return (double)GetValue(WidthProperty); }
-                set { SetValue(WidthProperty, value); }
+                get => _width;
+                set => SetProperty(ref _width, value); 
             }
-
         }
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
-            DataContextChanged += CollectionDBSchemaHeader_DataContextChanged;
             MainView.CoreWindow.PointerPressed -= CoreWindow_PointerPressed;
             MainView.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
         }
@@ -54,20 +48,6 @@ namespace Dash
         static void CoreWindow_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
             DragModel = null;
-        }
-
-        private void CollectionDBSchemaHeader_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            var viewModel = (DataContext as HeaderViewModel);
-            if (viewModel != null)
-            {
-                viewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
-            }
-        }
-
-        private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
-        {
-            Width = (DataContext as HeaderViewModel)?.Width ?? Width;
         }
 
         private void SelectTap(object sender, TappedRoutedEventArgs e)

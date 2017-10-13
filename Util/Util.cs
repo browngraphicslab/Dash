@@ -26,6 +26,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -523,33 +524,12 @@ namespace Dash
 
         public static DocumentController BlankCollection()
         {
-            var colfields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(),
-                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
-            };
-            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
-            colDoc.SetActiveLayout(
-                new CollectionBox(
-                    new ReferenceFieldModelController(colDoc.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
-
-            // this was causing crashes -- not sure why it's needed.  Collection view models already have an Output Key that
-            // gets set to the appropriate field depending on how the output collection is generated (eg. DBSearch) or if 
-            // the output is the same as the input (vanilla collection).
-
-            //colDoc.SetField(KeyStore.CollectionOutputKey,
-            //    new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
-            //        DocumentCollectionFieldModelController.CollectionKey)), true);
-            return colDoc;
+            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, "", 200, 200).Document;
         }
 
         public static DocumentController BlankNote()
         {
-            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
-            return postitNote;
+            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
         }
     }
 }
