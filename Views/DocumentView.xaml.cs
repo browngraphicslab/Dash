@@ -70,10 +70,7 @@ namespace Dash
             }
             OnSelected();
 
-            Debug.WriteLine("DLFADJKFLDJAFKL;ADJFKLA;DFJKAL;FJADKLF"); 
-
-            // KBTODO bring 'camera' there 
-
+            // bring document to center? 
             return null;
         }
 
@@ -96,8 +93,7 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
 
-            // KBTODO remove itself from tab menu 
-            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose);
+            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
         }
 
 
@@ -113,7 +109,7 @@ namespace Dash
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
-            // KBTODO add this to tab menu 
+            // Adds a function to tabmenu, which brings said DocumentView to focus 
             if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName); 
         }
 
@@ -518,6 +514,9 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
+            // KBTODO remove itself from tab menu 
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
+
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();

@@ -73,27 +73,38 @@ namespace Dash
             xList.Tapped += XList_Tapped;
         }
 
+
         public void AddToList(Func<DocumentController> func, string funcName = "")
         {
             string name = func.Invoke() == null ? funcName : func.Invoke().Title;
+
+            // if _titleToFuncDictionary already contains the name, it's most likely because the document/collection/operator we're adding has the same DisplayName
+            // must differentiate the key before adding to _titleToFuncDictionary or ListContent  
             if (_titleToFuncDictionary.ContainsKey(name))
             {
                 string newName = name;
                 int i = 1;
                 while (_titleToFuncDictionary.ContainsKey(newName))
-                {
-                    newName = name + i;
-                    i++; 
-                }
+                    newName = name + i++;
                 name = newName;
             }
             _titleToFuncDictionary[name] = func;
             ListContent.Add(name);
         }
 
-        public void RemoveFromList(Func<DocumentController> func)
+        public void RemoveFromList(Func<DocumentController> func, string funcName = "")
         {
-            // KBTODO 
+            string name = func.Invoke() == null ? funcName : func.Invoke().Title;
+            if (_titleToFuncDictionary[name] != func)
+            {
+                string newName = name;
+                int i = 1;
+                while (_titleToFuncDictionary[newName] != func) 
+                    newName = name + i++;
+                name = newName;
+            }
+            _titleToFuncDictionary.Remove(name); 
+            ListContent.Remove(name); 
         }
 
         private void XList_Tapped(object sender, TappedRoutedEventArgs e)
@@ -110,8 +121,6 @@ namespace Dash
             {
                 if (func.Invoke() != null)
                     Actions.AddDocFromFunction(func);
-                else
-                    func.Invoke();
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
