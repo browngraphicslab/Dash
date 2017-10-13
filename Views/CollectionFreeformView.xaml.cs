@@ -147,6 +147,29 @@ namespace Dash
             {
                 MakeInkCanvas();
             }
+
+            if (ViewModel is CollectionViewModel)
+            {
+                var vm = ViewModel as CollectionViewModel;
+                var posFMC =
+                    vm.LayoutDocument.GetField(CollectionBox.FreeformTranslateKey);
+                var scaleCtrFMC =
+                    vm.LayoutDocument.GetField(CollectionBox.FreeformScaleCtrKey);
+                var scaleAmtFMC =
+                    vm.LayoutDocument.GetField(CollectionBox.FreeformScaleAmtKey);
+                if (posFMC != null && scaleCtrFMC != null && scaleAmtFMC != null)
+                {
+                    var translation = (posFMC as PointFieldModelController)
+                        .Data;
+                    var scaleCenter = (scaleCtrFMC as PointFieldModelController)
+                        .Data;
+                    var scaleAmount = (scaleAmtFMC as PointFieldModelController)
+                        .Data;
+                    vm.GroupTransform = new TransformGroupData(translation, scaleCenter, scaleAmount);
+                    var transform = new TransformGroupDataToGroupTransformConverter().ConvertDataToXaml(vm.GroupTransform);
+                    SetBackgroundTransform(itemsPanelCanvas, transform);
+                }
+            }
         }
 
 
@@ -520,7 +543,7 @@ namespace Dash
             Debug.Assert(canvas != null);
             var delta = transformationDelta.Translate;
 
-           //Create initial translate and scale transforms
+            //Create initial translate and scale transforms
             //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
@@ -530,18 +553,34 @@ namespace Dash
 
             var scale = new ScaleTransform
             {
-            CenterX = transformationDelta.ScaleCenter.X,
-            CenterY = transformationDelta.ScaleCenter.Y,
-            ScaleX = transformationDelta.ScaleAmount.X,
-            ScaleY = transformationDelta.ScaleAmount.Y
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
+                ScaleX = transformationDelta.ScaleAmount.X,
+                ScaleY = transformationDelta.ScaleAmount.Y
             };
+
 
             //Create initial composite transform
             var composite = new TransformGroup();
             composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-            
+            SetBackgroundTransform(canvas, composite);
+
+            var vm = ViewModel as CollectionViewModel;
+            if (vm != null)
+            {
+                var translation = new Point(composite.Value.OffsetX, composite.Value.OffsetY);
+                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
+                var scaleCenter = new Point(0, 0);
+                var scaleAmount = new Point(composite.Value.M11,
+                    composite.Value.M22);
+                vm.GroupTransform = new TransformGroupData(translation, scaleCenter, scaleAmount);
+            }
+        }
+
+        private void SetBackgroundTransform(Canvas canvas, TransformGroup composite)
+        {
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             //ParentCollection.SetTransformOnBackground(composite);
             var matrix = new MatrixTransform { Matrix = composite.Value };
@@ -645,9 +684,9 @@ namespace Dash
 
 #endregion
 
-#region Clipping
+        #region Clipping
 
-private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
         }

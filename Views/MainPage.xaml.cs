@@ -52,6 +52,9 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
+        public static KeyController PreviousCollectionsKey = new KeyController("990FF38F-30C5-4EA6-9311-8287A3205028", "Previous Collections");
+        public static KeyController TopLevelCollectionKey = new KeyController("91079044-95BA-439E-A10B-49B4FA4CBE04", "Previous Collections");
+
         public MainPage()
         {
 
@@ -64,8 +67,12 @@ namespace Dash
 
             // create the collection document model using a request
             var fields = new Dictionary<KeyController, FieldModelController>();
-            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            fields[TopLevelCollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            fields[PreviousCollectionsKey] = new ListFieldModelController<DocumentFieldModelController>();
             MainDocument = new DocumentController(fields, MainDocumentType);
+
+            //because the current collections are stored as references, need to set top-level collection as a reference as well.
+            MainDocument.SetField(DocumentCollectionFieldModelController.CollectionKey, new ReferenceFieldModelController(MainDocument.GetId(), TopLevelCollectionKey), true);
             
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -96,6 +103,32 @@ namespace Dash
             //KeyUp += OnKeyUp;
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+        }
+
+        public void SetNewCollection(DocumentController newLayoutDocument)
+        {
+            var prevCollectionField =
+            MainDocument.GetField(PreviousCollectionsKey) as
+                ListFieldModelController<DocumentFieldModelController>;
+            prevCollectionField?.Add(
+                MainDocument.GetActiveLayout());
+            newLayoutDocument.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
+            newLayoutDocument.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
+            MainDocument.SetActiveLayout(newLayoutDocument, forceMask: true, addToLayoutList: true);
+        }
+
+        public void SetPrevCollection()
+        {
+            var prevCollectionField =
+            MainDocument.GetField(PreviousCollectionsKey) as
+                ListFieldModelController<DocumentFieldModelController>;
+            var length = prevCollectionField.TypedData.Count;
+            if (length>0)
+            {
+                var prevLayout = prevCollectionField.TypedData[length - 1];
+                prevCollectionField.Remove(prevLayout);
+                MainDocument.SetActiveLayout(prevLayout.Data, forceMask: true, addToLayoutList: true);
+            }
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)

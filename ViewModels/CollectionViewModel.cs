@@ -18,13 +18,22 @@ namespace Dash
     {
         private DocumentCollectionFieldModelController _collectionFieldModelController;
 
+        public DocumentCollectionFieldModelController CollectionFieldModelController => _collectionFieldModelController;
+
         public InkFieldModelController InkFieldModelController;
 
-        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentController LayoutDocument;
+
+        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null, DocumentController layoutDocument=null) : base(isInInterfaceBuilder)
         {
             if (collection == null) return;
             _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddViewModels(_collectionFieldModelController.Data, context);
+
+            if (layoutDocument != null)
+            {
+                LayoutDocument = layoutDocument;
+            }
 
             var copiedContext = new Context(context);
 
@@ -76,9 +85,53 @@ namespace Dash
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
+        private TransformGroupData _normalGroupTransform;
         public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
-    
 
+        public TransformGroupData GroupTransform
+        {
+            get { return _normalGroupTransform; }
+            set
+            {
+                if (SetProperty(ref _normalGroupTransform, value))
+                {
+                    // set position
+                    if (LayoutDocument.GetField(CollectionBox.FreeformTranslateKey) == null)
+                    {
+                        LayoutDocument.SetField(CollectionBox.FreeformTranslateKey,
+                            new PointFieldModelController(0,0), true);
+                    }
+                    if (LayoutDocument.GetField(CollectionBox.FreeformScaleCtrKey) == null)
+                    {
+                        LayoutDocument.SetField(CollectionBox.FreeformScaleCtrKey,
+                            new PointFieldModelController(0,0), true);
+                    }
+                    if (LayoutDocument.GetField(CollectionBox.FreeformScaleAmtKey) == null)
+                    {
+                        LayoutDocument.SetField(CollectionBox.FreeformScaleAmtKey,
+                            new PointFieldModelController(0,0), true);
+                    }
+                    var posFieldModelController =
+                        LayoutDocument.GetField(CollectionBox.FreeformTranslateKey) as
+                            PointFieldModelController;
+                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
+                    Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
+                    posFieldModelController.Data = value.Translate;
+                    // set scale center
+                    var scaleCenterFieldModelController =
+                        LayoutDocument.GetField(CollectionBox.FreeformScaleCtrKey) as
+                            PointFieldModelController;
+                    if (scaleCenterFieldModelController != null)
+                        scaleCenterFieldModelController.Data = value.ScaleCenter;
+                    // set scale amount
+                    var scaleAmountFieldModelController =
+                        LayoutDocument.GetField(CollectionBox.FreeformScaleAmtKey) as
+                            PointFieldModelController;
+                    if (scaleAmountFieldModelController != null)
+                        scaleAmountFieldModelController.Data = value.ScaleAmount;
+                }
+            }
+        }
 
 
         #region Event Handlers

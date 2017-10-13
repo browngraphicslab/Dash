@@ -311,6 +311,16 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
+
+        private void SetMainCollection()
+        {
+            MainPage.Instance.SetNewCollection(ViewModel.LayoutDocument);
+        }
+
+        private void SetPrevCollection()
+        {
+            MainPage.Instance.SetPrevCollection();
+        }
         
         public MenuButton ViewModes;
         
@@ -348,7 +358,15 @@ namespace Dash
 
 
             if (ParentDocument != MainPage.Instance.MainDocView)
+            {
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+                collectionButtons.Add(new MenuButton(Symbol.ZoomIn, "Enter", menuColor, SetMainCollection));
+            }
+            else
+            {
+                collectionButtons.Add(new MenuButton(Symbol.Back, "Previous", menuColor, SetPrevCollection));
+            }
+                
 
             var documentButtons = new List<MenuButton>
             {

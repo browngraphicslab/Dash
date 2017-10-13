@@ -20,6 +20,10 @@ namespace Dash
 
         public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
 
+        public static KeyController FreeformScaleCtrKey = new KeyController("E0FC6A06-8EAD-4F49-98D6-AD40DEF7E191", "Scale Center");
+        public static KeyController FreeformScaleAmtKey = new KeyController("6419B49E-C13A-4A05-AF54-49F5C99581EC", "Scale Amount");
+        public static KeyController FreeformTranslateKey = new KeyController("75A95178-EEC2-485D-8E10-5F7E264EBDD5", "Translation");
+
         public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
@@ -67,7 +71,7 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context, docController) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
             var typeString = (docController.GetField(CollectionViewTypeKey) as TextFieldModelController).Data;
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
