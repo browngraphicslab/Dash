@@ -23,7 +23,7 @@
             <Setter Property="MinHeight" Value="25"/>
         </Style>
     </UserControl.Resources>
-    <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="300" Padding="0" VerticalAlignment="Stretch" Background="{StaticResource WindowsBlue}" Opacity="1">
+    <Grid x:Name="OuterGrid" CornerRadius="0" Padding="0" VerticalAlignment="Stretch" Background="{StaticResource WindowsBlue}" Opacity="1">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>

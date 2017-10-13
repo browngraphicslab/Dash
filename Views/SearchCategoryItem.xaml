@@ -10,20 +10,34 @@
     d:DesignWidth="400">
 
     <Grid CornerRadius="10" Margin="-12,10,-12,0" Padding="0">
-        <ListView x:Name="xList" Loaded="XList_OnLoaded"  ItemsSource="{x:Bind ListContent}">
-            <ListView.ItemContainerStyle>
-                <!-- TODO: abstract this bs out-->
+        <ListView x:Name="xList" Loaded="XList_OnLoaded"  ItemsSource="{x:Bind ListContent}" Margin="10,0">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Grid Background="Transparent" HorizontalAlignment="Stretch">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Ellipse Fill="Gray" Height="10" Width="10"/>
+                        <TextBlock Text="{x:Bind}" Foreground="Black" 
+                           FontSize="15" Grid.Column="1"
+                           VerticalAlignment="Center"
+                           Padding="0,0,54,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <!--<ListView.ItemContainerStyle>
+                --><!-- TODO: abstract this bs out--><!--
                 <Style TargetType="ListViewItem">
-                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
                     <Setter Property="FontSize" Value="11"></Setter>
                     <Setter Property="Height" Value="1"></Setter>
-                    <Setter Property="Padding" Value="15,10"></Setter>
+                    <Setter Property="Padding" Value="10,10"></Setter>
                     <Setter Property="Margin" Value="0"></Setter>
                     <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
                     <Setter Property="BorderBrush" Value="#FF444444"></Setter>
                     <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
                 </Style>
-            </ListView.ItemContainerStyle>
+            </ListView.ItemContainerStyle>-->
         </ListView>
     </Grid>
 </UserControl>

@@ -48,12 +48,10 @@ namespace Dash
         /// </summary>
         public string Title { get; }
 
-        private Action<Func<DocumentController>> _action;
-
         public object SelectedItem;
 
         private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
-        
+
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
         /// </summary>
@@ -70,11 +68,32 @@ namespace Dash
             ListContent = new ObservableCollection<string>();
             foreach (var func in content)
             {
-                var name = func.Invoke().Title;
-                _titleToFuncDictionary[name] = func;
-                ListContent.Add(name);
+                AddToList(func);
             }
             xList.Tapped += XList_Tapped;
+        }
+
+        public void AddToList(Func<DocumentController> func, string funcName = "")
+        {
+            string name = func.Invoke() == null ? funcName : func.Invoke().Title;
+            if (_titleToFuncDictionary.ContainsKey(name))
+            {
+                string newName = name;
+                int i = 1;
+                while (_titleToFuncDictionary.ContainsKey(newName))
+                {
+                    newName = name + i;
+                    i++; 
+                }
+                name = newName;
+            }
+            _titleToFuncDictionary[name] = func;
+            ListContent.Add(name);
+        }
+
+        public void RemoveFromList(Func<DocumentController> func)
+        {
+            // KBTODO 
         }
 
         private void XList_Tapped(object sender, TappedRoutedEventArgs e)
@@ -89,7 +108,10 @@ namespace Dash
             var func = _titleToFuncDictionary[name];
             if (func != null)
             {
-                Actions.AddDocFromFunction(func);
+                if (func.Invoke() != null)
+                    Actions.AddDocFromFunction(func);
+                else
+                    func.Invoke();
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
