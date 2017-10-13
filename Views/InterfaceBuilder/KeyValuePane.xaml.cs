@@ -77,7 +77,7 @@ namespace Dash
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
                 {
-                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext), keys.Contains(keyFieldPair.Key.Id)));
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext), keys.Contains(keyFieldPair.Key.Id), TypeColumnWidth));
                 }
         }
 
@@ -97,7 +97,7 @@ namespace Dash
             for (int i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key == fieldKey)
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id));
+                        new BoundFieldModelController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id), TypeColumnWidth);
         }
 
         private void FocusOn(TextBox tb)
@@ -188,7 +188,7 @@ namespace Dash
             }
             var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext), keys.Contains(key.Id)));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext), keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
             return true;
@@ -250,17 +250,20 @@ namespace Dash
             public BoundFieldModelController Controller { get; set; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
+            public GridLength TypeColumnWidth { get; set; }
+            public GridLength PrimaryKeyColumnWidth { get; set; }
 
-            public KeyFieldContainer(KeyController key, BoundFieldModelController controller, bool isPrimary)
+            public KeyFieldContainer(KeyController key, BoundFieldModelController controller, bool isPrimary, GridLength typeColumnWidth)
             {
                 Key = key;
                 Controller = controller;
                 Type = (controller.FieldModelController.TypeInfo).ToString();
                 IsPrimary = isPrimary;
+                TypeColumnWidth = typeColumnWidth;
+                PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
             }
         }
-
-
+        
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
@@ -270,7 +273,6 @@ namespace Dash
                 keys.Add(new TextFieldModelController(kf.Key.Id));
                 _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(keys), false);
             }
-            
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)

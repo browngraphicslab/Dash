@@ -534,9 +534,14 @@ namespace Dash
                 new CollectionBox(
                     new ReferenceFieldModelController(colDoc.GetId(),
                         DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
-            colDoc.SetField(KeyStore.CollectionOutputKey,
-                new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)), true);
+
+            // this was causing crashes -- not sure why it's needed.  Collection view models already have an Output Key that
+            // gets set to the appropriate field depending on how the output collection is generated (eg. DBSearch) or if 
+            // the output is the same as the input (vanilla collection).
+
+            //colDoc.SetField(KeyStore.CollectionOutputKey,
+            //    new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
+            //        DocumentCollectionFieldModelController.CollectionKey)), true);
             return colDoc;
         }
 

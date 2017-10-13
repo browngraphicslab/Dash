@@ -29,12 +29,13 @@ namespace Dash
 
             ReferenceFieldModelController refToData;
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
-
+            
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
                 return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            var documentfieldModelController = fieldModelController as DocumentFieldModelController;
+            var documentfieldModelController = fieldModelController as DocumentFieldModelController ?? 
+                                         docController.GetField(KeyStore.DocumentContextKey) as DocumentFieldModelController; // use DocumentContext if no explicit reference
             Debug.Assert(documentfieldModelController != null);
 
             var border = new Border();
@@ -48,8 +49,8 @@ namespace Dash
             border.Child = docView;
 
             //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = border;
+            if (keysToFrameworkElementsIn != null && refToData != null)
+                keysToFrameworkElementsIn[refToData.FieldKey] = border;
 
             // bind the text height
             //var docheightcontroller = getheightfield(doccontroller, context);
