@@ -243,14 +243,7 @@ namespace Dash
             BindGridRowSpan(element, docController, context);
             BindGridColumnSpan(element, docController, context);
         }
-
-        [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
-        protected static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
-            FieldModelController data)
-        {
-            return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
-        }
-
+        
         public static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
         {
             // assign the default fields

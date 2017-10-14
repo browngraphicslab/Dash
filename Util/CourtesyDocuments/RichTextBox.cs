@@ -6,6 +6,7 @@ using DashShared;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using System.Collections.Generic;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -15,7 +16,7 @@ namespace Dash
 
         public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
+            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
             Document = new DocumentController(fields, DocumentType);
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)

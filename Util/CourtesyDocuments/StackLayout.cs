@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -28,7 +29,7 @@ namespace Dash
         public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false)
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModelController(docs));
+            var fields = DefaultLayoutFields(new Point(), new Size( double.NaN, double.NaN), new DocumentCollectionFieldModelController(docs));
             fields.Add(StyleKey, new TextFieldModelController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
