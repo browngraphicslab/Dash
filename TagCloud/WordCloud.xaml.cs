@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,79 +42,70 @@ namespace NewControls
         private Color[] m_Palette;
         private LayoutType m_LayoutType = LayoutType.Spiral;
 
-        private int m_MaxFontSize = 68;
+        private int m_MaxFontSize = 100;
         private int m_MinFontSize = 6;
         private ILayout m_Layout;
         private Color m_BackColor = Colors.White;
-        private LayoutItem m_ItemUderMouse;
         private int m_MinWordWeight = 1;
         private int m_MaxWordWeight = 100;
-        public static WordCloud Instance;
+        string _theText = "";
+        public string TheText
+        {
+            get { return _theText; }
+            set {
+                if (_theText != value)
+                {
+                    _theText = value;
+                     if (this.IsInVisualTree())
+                    {
+                        m_MaxFontSize = Math.Max(1, ((int)Math.Min(ActualWidth, ActualHeight)) / 8);
+                        ProcessText(TheText);
+                    }
+                }
+            }
+        }
         public WordCloud()
         {
             this.InitializeComponent();
             SizeChanged += WordCloud_SizeChanged;
-            graphicEngine = new GdiGraphicEngine(FontFamily.XamlAutoFontFamily, Windows.UI.Text.FontStyle.Normal, m_DefaultPalette, m_MinFontSize, m_MaxFontSize, m_MinWordWeight, m_MaxWordWeight);
-            Instance = this;
         }
 
         private void ProcessText(string text)
         {
-            IBlacklist blacklist = ComponentFactory.CreateBlacklist(false); //  checkBoxExcludeEnglishCommonWords.Checked);
-            IBlacklist customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
+            var blacklist       = ComponentFactory.CreateBlacklist(true); //  checkBoxExcludeEnglishCommonWords.Checked);
+            var customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
 
             var inputType = ComponentFactory.DetectInputType(text);
-            // IProgressIndicator progress = ComponentFactory.CreateProgressBar(inputType, progressBar);
-            IEnumerable<string> terms = ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
-            IWordStemmer stemmer = ComponentFactory.CreateWordStemmer(false); //  checkBoxGroupSameStemWords.Checked);
+            // var progress = ComponentFactory.CreateProgressBar(inputType, progressBar);
+            var terms   = ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
+            var stemmer = ComponentFactory.CreateWordStemmer(true); //  checkBoxGroupSameStemWords.Checked);
 
-            IEnumerable<IWord> words = terms
-                .Filter(blacklist)
-                .Filter(customBlacklist)
-                .CountOccurences();
+            var words   = terms .Filter(blacklist)  .Filter(customBlacklist)  .CountOccurences();
 
-            WordCloud.Instance.WeightedWords =
-                words
-                    .GroupByStem(stemmer)
-                    .SortByOccurences()
-                    .Cast<IWord>();
+            WeightedWords =  words .GroupByStem(stemmer) .SortByOccurences() .Cast<IWord>();
         }
         private void WordCloud_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            graphicEngine = new GdiGraphicEngine(FontFamily.XamlAutoFontFamily, Windows.UI.Text.FontStyle.Normal, m_DefaultPalette, m_MinFontSize, m_MaxFontSize, m_MinWordWeight, m_MaxWordWeight);
-
-            var text = "hello bye hello more than hello and bye and there are hello more bye what wonderful stuff";
-            ProcessText(text);
+            m_MaxFontSize = Math.Max(1, ((int)Math.Min(ActualWidth, ActualHeight)) / 8);
             BuildLayout();
-            Redraw();
-        }
-        GdiGraphicEngine graphicEngine;
-        protected void Redraw()
-        {
-            if (m_Words == null) { return; }
-            if (m_Layout == null) { return; }
-
-           var wordsToRedraw = m_Layout.GetWordsInArea(new Rect(0, 0, ActualWidth, ActualHeight));
-
-            foreach (var currentItem in wordsToRedraw)
-            {
-                if (m_ItemUderMouse == currentItem)
-                {
-                    graphicEngine.DrawEmphasized(currentItem);
-                }
-                else
-                {
-                    graphicEngine.Draw(currentItem);
-                }
-            }
         }
 
         private void BuildLayout()
         {
-            if (m_Words == null) { return; }
-            
-            m_Layout = LayoutFactory.CrateLayout(m_LayoutType, new Size(ActualWidth, ActualHeight));
-            m_Layout.Arrange(m_Words, graphicEngine);
+            if (m_Words != null)
+            {
+                xLayoutGrid.Children.Clear();
+                var graphicEngine = new GdiGraphicEngine(FontFamily.XamlAutoFontFamily, Windows.UI.Text.FontStyle.Normal, m_DefaultPalette, m_MinFontSize, m_MaxFontSize, m_MinWordWeight, m_MaxWordWeight);
+                m_Layout = LayoutFactory.CrateLayout(m_LayoutType, new Size(ActualWidth, ActualHeight));
+                m_Layout.Arrange(m_Words, graphicEngine);
+
+                var wordsToRedraw = m_Layout.GetWordsInArea(new Rect(0, 0, ActualWidth, ActualHeight));
+
+                foreach (var currentItem in wordsToRedraw)
+                {
+                    graphicEngine.Draw(xLayoutGrid, currentItem);
+                }
+            }
         }
 
         public LayoutType LayoutType
@@ -131,51 +123,6 @@ namespace NewControls
             }
         }
 
-        //protected override void OnMouseMove(MouseEventArgs e)
-        //{
-        //    LayoutItem nextItemUnderMouse;
-        //    Point mousePositionRelativeToControl = this.PointToClient(new Point(MousePosition.X, MousePosition.Y));
-        //    this.TryGetItemAtLocation(mousePositionRelativeToControl, out nextItemUnderMouse);
-        //    if (nextItemUnderMouse != m_ItemUderMouse)
-        //    {
-        //        if (nextItemUnderMouse != null)
-        //        {
-        //            Rectangle newRectangleToInvalidate = RectangleGrow(nextItemUnderMouse.Rectangle, 6);
-        //            this.Invalidate(newRectangleToInvalidate);
-        //        }
-        //        if (m_ItemUderMouse != null)
-        //        {
-        //            Rectangle prevRectangleToInvalidate = RectangleGrow(m_ItemUderMouse.Rectangle, 6);
-        //            this.Invalidate(prevRectangleToInvalidate);
-        //        }
-        //        m_ItemUderMouse = nextItemUnderMouse;
-        //    }
-        //    base.OnMouseMove(e);
-        //}
-
-        private static Rect RectangleGrow(Rect original, int growByPixels)
-        {
-            return new Rect(
-                (int)(original.X - growByPixels),
-                (int)(original.Y - growByPixels),
-                (int)(original.Width + growByPixels + 1),
-                (int)(original.Height + growByPixels + 1));
-        }
-
-
-        public Color BackColor
-        {
-            get
-            {
-                return m_BackColor;
-            }
-            set
-            {
-                if (m_BackColor != value)
-                    m_BackColor = value;
-            }
-        }
-
         public int MaxFontSize
         {
             get { return m_MaxFontSize; }
@@ -183,7 +130,6 @@ namespace NewControls
             {
                 m_MaxFontSize = value;
                 BuildLayout();
-                Redraw();
             }
         }
 
@@ -194,7 +140,6 @@ namespace NewControls
             {
                 m_MinFontSize = value;
                 BuildLayout();
-                Redraw();
             }
         }
 
@@ -205,7 +150,6 @@ namespace NewControls
             {
                 m_Palette = value;
                 BuildLayout();
-                Redraw();
             }
         }
 
@@ -225,30 +169,7 @@ namespace NewControls
                 }
 
                 BuildLayout();
-                Redraw();
             }
-        }
-
-        public IEnumerable<LayoutItem> GetItemsInArea(Rect area)
-        {
-            if (m_Layout == null)
-            {
-                return new LayoutItem[] { };
-            }
-
-            return m_Layout.GetWordsInArea(area);
-        }
-
-        public bool TryGetItemAtLocation(Point location, out LayoutItem foundItem)
-        {
-            foundItem = null;
-            IEnumerable<LayoutItem> itemsInArea = GetItemsInArea(new Rect(location, new Size(0, 0)));
-            foreach (LayoutItem item in itemsInArea)
-            {
-                foundItem = item;
-                return true;
-            }
-            return false;
         }
     }
 }

@@ -172,8 +172,9 @@ namespace Dash
                     }
                 }
 
-                var barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars, updateViewOnly);
-                var xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
+                string rawText = "";
+                var barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars, updateViewOnly, ref rawText);
+                var xBars     = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
 
                 if (xBars.Count == barCounts.Count)
                 {
@@ -200,6 +201,12 @@ namespace Dash
                 {
                     var b = barCounts[i];
                     xBars[i].xBar.Height /= Math.Max(1, barSum);
+                }
+                if (barSum == 0 &&  dbDocs.Count > 0)
+                {
+                    this.xTagCloud.TheText = rawText;
+                    this.xNumberContent.Visibility = Visibility.Collapsed;
+                    this.xTextContent.Visibility = Visibility.Visible;
                 }
             }
         }
@@ -252,7 +259,8 @@ namespace Dash
             return barDomains.Select((b) => b as FieldModelController).ToList();
         }
 
-        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, bool updateViewOnly)
+        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern,
+            List<FieldModelController> selectedBars, bool updateViewOnly, ref string rawText)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -270,13 +278,15 @@ namespace Dash
                     visited.Add(dmc);
 
                     var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
-                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, new Context(dmc));
-                    if (field != null)
+                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField(refField.FieldKey, new Context(dmc));
+                    rawText += " " + field.GetValue(new Context(dmc)).ToString();
+                    var numberField = field as NumberFieldModelController;
+                    if (numberField != null)
                     {
-                        sumOfFields += field.Data;
+                        sumOfFields += numberField.Data;
                         foreach (var b in bars)
                         {
-                            if (field.Data <= (b as NumberFieldModelController).Data)
+                            if (numberField.Data <= (b as NumberFieldModelController).Data)
                             {
                                 countBars[bars.IndexOf(b)]++;
                                 if (keepAll || selectedBars.Select((fm) => (fm as NumberFieldModelController).Data).ToList().Contains(bars.IndexOf(b)))

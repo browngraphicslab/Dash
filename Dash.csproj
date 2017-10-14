@@ -115,6 +115,40 @@
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
+    <Compile Include="TagCloud\ComponentFactory.cs" />
+    <Compile Include="TagCloud\Geometry\BaseLayout.cs" />
+    <Compile Include="TagCloud\Geometry\DataStructures\QuadTree.cs" />
+    <Compile Include="TagCloud\Geometry\DataStructures\QuadTreeNode.cs" />
+    <Compile Include="TagCloud\Geometry\GeomExtensions.cs" />
+    <Compile Include="TagCloud\Geometry\IGraphicEgine.cs" />
+    <Compile Include="TagCloud\Geometry\ILayout.cs" />
+    <Compile Include="TagCloud\Geometry\LayoutItem.cs" />
+    <Compile Include="TagCloud\Geometry\SpiralLayout.cs" />
+    <Compile Include="TagCloud\Geometry\TypewriterLayout.cs" />
+    <Compile Include="TagCloud\GraphicEngine.cs" />
+    <Compile Include="TagCloud\InputType.cs" />
+    <Compile Include="TagCloud\LayoutFactory.cs" />
+    <Compile Include="TagCloud\LayoutType.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Blacklist\CommonBlacklist.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Blacklist\En\CommonWords.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Blacklist\IBlacklist.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Blacklist\NullBlacklist.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Extractors\BaseExtractor.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Extractors\FileExtractor.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Extractors\IProgressIndicator.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Extractors\StringExtractor.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Extractors\UriExtractor.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Processing\IWord.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Processing\Word.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Processing\WordExtensions.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Processing\WordGroup.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Stemmers\En\PorterStem.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Stemmers\En\PorterStemmer.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Stemmers\IWordStemmer.cs" />
+    <Compile Include="TagCloud\TextAnalyses\Stemmers\NullStemmer.cs" />
+    <Compile Include="TagCloud\WordCloud.xaml.cs">
+      <DependentUpon>WordCloud.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
@@ -600,6 +634,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="TagCloud\WordCloud.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\CSVImportHelper.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -990,6 +1028,7 @@
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -9,6 +9,7 @@ using Gma.CodeCloud.Controls.Geometry;
 using NewControls.Geometry;
 using Windows.UI.Xaml.Controls;
 using NewControls;
+using System.Diagnostics;
 
 namespace Gma.CodeCloud.Controls
 {
@@ -50,41 +51,35 @@ namespace Gma.CodeCloud.Controls
             return tb.DesiredSize;
         }
 
-        public void Draw(LayoutItem layoutItem)
+        public void Draw(Panel xLayoutGrid, LayoutItem layoutItem)
         {
             var font = GetFont(layoutItem.Word.Occurrences);
-            Color color = GetPresudoRandomColorFromPalette(layoutItem);
+            var color = GetPresudoRandomColorFromPalette(layoutItem);
             var point = new Point((int)layoutItem.Rectangle.X, (int)layoutItem.Rectangle.Y);
             var tb = new TextBlock();
+
+            tb.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Left;
+            tb.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Top;
             tb.Text = layoutItem.Word.Text;
             tb.FontFamily = font.FontFamily;
             tb.FontSize = font.Size;
             tb.FontStyle = font.FontStyle;
             tb.Foreground = new SolidColorBrush(color);
+            tb.Tapped += (sender, e) =>
+            {
+                Debug.WriteLine(tb.Text);
+            };
+            tb.PointerEntered += (sender, e) =>
+            {
+                tb.FontWeight = FontWeights.ExtraBold;
+            };
+            tb.PointerExited += (sender, e) =>
+            {
+                tb.FontWeight = FontWeights.Normal;
+            };
+            //tb.Margin = new Windows.UI.Xaml.Thickness(point.X, point.Y, 0, 0);
             tb.RenderTransform = new TranslateTransform() { X = point.X, Y = point.Y };
-            WordCloud.Instance.xLayoutGrid.Children.Add(tb);
-        }
-
-        public void DrawEmphasized(LayoutItem layoutItem)
-        {
-            var font = GetFont(layoutItem.Word.Occurrences);
-            Color color = GetPresudoRandomColorFromPalette(layoutItem);
-            //m_Graphics.DrawString(layoutItem.Word, font, brush, layoutItem.Rectangle);
-            Point point = new Point((int)layoutItem.Rectangle.X, (int)layoutItem.Rectangle.Y);
-
-
-            //TextRenderer.DrawText(layoutItem.Word.Text, font, point, Colors.LightGray);
-            //int offset = (int)(5 *font.Size / MaxFontSize)+1;
-            //point.Offset(-offset, -offset);
-            //TextRenderer.DrawText(layoutItem.Word.Text, font, point, color);
-            var tb = new TextBlock();
-            tb.Text = layoutItem.Word.Text;
-            tb.FontFamily = font.FontFamily;
-            tb.FontSize = font.Size;
-            tb.FontStyle = font.FontStyle;
-            tb.Foreground = new SolidColorBrush(color);
-            tb.RenderTransform = new TranslateTransform() { X = point.X, Y = point.Y };
-            WordCloud.Instance.xLayoutGrid.Children.Add(tb);
+            xLayoutGrid.Children.Add(tb);
         }
         public class Font {
             public FontFamily FontFamily;
@@ -98,7 +93,7 @@ namespace Gma.CodeCloud.Controls
             }
         }
 
-        private Font GetFont(int weight)
+        private Font GetFont(double weight)
         {
             var fontSize = (weight - m_MinWordWeight) / (m_MaxWordWeight - m_MinWordWeight) * (MaxFontSize - MinFontSize) + MinFontSize;
             if (m_LastUsedFont.Size != fontSize)
@@ -110,12 +105,7 @@ namespace Gma.CodeCloud.Controls
 
         private Color GetPresudoRandomColorFromPalette(LayoutItem layoutItem)
         {
-            Color color = Palette[layoutItem.Word.Occurrences * layoutItem.Word.Text.Length % Palette.Length];
-            return color;
-        }
-
-        public void Dispose()
-        {
+            return Palette[layoutItem.Word.Occurrences * layoutItem.Word.Text.Length % Palette.Length];
         }
     }
 }
