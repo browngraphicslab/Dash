@@ -34,7 +34,7 @@ namespace Dash.Converters
 
         public override object ConvertXamlToData(string xaml, object parameter = null)
         {
-            return null;
+            return xaml;
         }
     }
 }
