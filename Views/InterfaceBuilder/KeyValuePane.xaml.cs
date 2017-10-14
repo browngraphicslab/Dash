@@ -51,6 +51,8 @@ namespace Dash
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
         {
+            var dataContext = documentToDisplay.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null);
+            documentToDisplay = dataContext?.Data ?? documentToDisplay;
             if (_documentControllerDataContext != null)
                 _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
             _documentControllerDataContext = documentToDisplay;

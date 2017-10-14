@@ -96,6 +96,8 @@ namespace Gma.CodeCloud.Controls
         private Font GetFont(double weight)
         {
             var fontSize = (weight - m_MinWordWeight) / (m_MaxWordWeight - m_MinWordWeight) * (MaxFontSize - MinFontSize) + MinFontSize;
+            if (double.IsNaN(fontSize))
+                fontSize = 10;
             if (m_LastUsedFont.Size != fontSize)
             {
                 m_LastUsedFont = new Font(this.FontFamily, fontSize, this.FontStyle);

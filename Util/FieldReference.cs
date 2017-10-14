@@ -42,24 +42,28 @@ namespace Dash
                     return controller;
                 }
             }
-            DocumentController doc = GetDocumentController(context);
-            context = context ?? new Context();
-            var newContext = context;
-            if (doc.ShouldExecute(context, FieldKey))
+            var doc = GetDocumentController(context);
+            if (doc != null)
             {
+                context = context ?? new Context();
+                var newContext = context;
+                if (doc.ShouldExecute(context, FieldKey))
                 {
-
-                    newContext = doc.Execute(context, false);
-                    if (newContext.TryDereferenceToRoot(this, out controller))
                     {
-                        return controller;
+
+                        newContext = doc.Execute(context, false);
+                        if (newContext.TryDereferenceToRoot(this, out controller))
+                        {
+                            return controller;
+                        }
                     }
                 }
+
+                var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
+
+                return fmc;
             }
-
-            var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
-
-            return fmc;
+            return null;
         }
 
         public FieldModelController DereferenceToRoot(Context context)

@@ -17,7 +17,7 @@ namespace Dash
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
             var docController = reference.GetDocumentController(null);
-            docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            docController?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         public void ChangeFieldDoc(string docId)
@@ -109,7 +109,7 @@ namespace Dash
             Binding textBinding = new Binding
             {
                 Source = this,
-                Converter = new BoundReferenceToStringConverter(context),
+                Converter = new ObjectToStringConverter(context),
                 Mode = BindingMode.OneWay
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
