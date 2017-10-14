@@ -108,9 +108,7 @@ namespace Dash
         {
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            if (field is TextFieldModelController)
-                xEditTextBox.Text = (field as TextFieldModelController).Data;
-            else xEditTextBox.Text = field.ToString();
+            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
