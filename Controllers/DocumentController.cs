@@ -687,7 +687,7 @@ namespace Dash
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
+                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Update, reference,
                         args.FieldArgs, c, false), true);
             }
         }
