@@ -29,7 +29,8 @@ namespace Dash.Converters
             {
                 return new DocumentCollectionToStringConverter(_context).ConvertDataToXaml(fieldData as List<DocumentController>);
             }
-            return fieldData == null ? "<null>" : fieldData.ToString();
+
+            return fieldData == null || fieldData is ReferenceFieldModelController ? "<null>" : fieldData.ToString();
          }
 
         public override object ConvertXamlToData(string xaml, object parameter = null)
