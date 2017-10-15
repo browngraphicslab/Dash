@@ -82,7 +82,7 @@ namespace Dash
 
             xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
         }
-        
+
 
         public DocumentController BlankDoc()
         {

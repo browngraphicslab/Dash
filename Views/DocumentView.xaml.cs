@@ -71,6 +71,15 @@ namespace Dash
             OnSelected();
 
             // bring document to center? 
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            if (mainView != null)
+            {
+                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
+                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
+                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
+            }
+
+
             return null;
         }
 
@@ -110,7 +119,7 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
-            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName); 
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
         }
 
 
