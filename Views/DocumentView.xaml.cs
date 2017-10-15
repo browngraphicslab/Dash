@@ -61,6 +61,29 @@ namespace Dash
             this.Drop += OnDrop;
         }
 
+        private DocumentController Choose()
+        {
+            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            if (ParentCollection != null)
+            {
+                ParentCollection.MaxZ += 1;
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+            }
+            OnSelected();
+
+            // bring document to center? 
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            if (mainView != null)
+            {
+                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
+                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
+                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
+            }
+
+
+            return null;
+        }
+
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
@@ -79,8 +102,8 @@ namespace Dash
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            //Loaded -= This_Loaded;
-            //Unloaded -= This_Unloaded;
+
+            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
         }
 
 
@@ -95,15 +118,9 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            if (ViewModel != null)
-            {
-                //if (Parent == null)
-                //    ViewModel.Width = ActualWidth;
-                //else ViewModel.Width = double.NaN;
-                //if (Parent == null)
-                //    ViewModel.Height = ActualHeight;
-                //else ViewModel.Height = double.NaN;
-            }
+
+            // Adds a function to tabmenu, which brings said DocumentView to focus 
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
         }
 
 
@@ -124,7 +141,7 @@ namespace Dash
             xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
         }
 
-#endregion
+        #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
@@ -158,7 +175,7 @@ namespace Dash
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
@@ -504,11 +521,14 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
         private void FadeOut_Completed(object sender, object e)
         {
+            // KBTODO remove itself from tab menu 
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
+
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();
@@ -547,8 +567,8 @@ namespace Dash
         #endregion
 
         #region Activation
-        
-        public Rect ClipRect { get { return xClipRect.Rect;  } }
+
+        public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -565,7 +585,7 @@ namespace Dash
                 OnSelected();
 
                 // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
             }
         }
 

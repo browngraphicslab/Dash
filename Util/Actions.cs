@@ -58,21 +58,19 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
+        public static void AddDocFromFunction(DocumentController opController)
         {
             var freeForm = TabMenu.AddsToThisCollection;
 
             if (freeForm == null)
-            {
                 return;
-            }
             
             var searchView = TabMenu.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
 
-            var opController = documentCreationFunc?.Invoke();
+            //var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)

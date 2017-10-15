@@ -22,6 +22,7 @@ namespace Dash
     public sealed partial class SearchView : UserControl
     {
         private SearchCategoryItem _searchList;
+        public SearchCategoryItem SearchList { get { return _searchList; } }
         public SearchView(SearchCategoryItem categories)
         {
             this.InitializeComponent();
@@ -85,6 +86,10 @@ namespace Dash
         private void MakeCategories(SearchCategoryItem categories)
         {
             _searchList = categories;
+
+            RowDefinition r1 = new RowDefinition(); 
+            
+
             ListGrid.Children.Add(categories);
             categories.Margin=new Thickness(0);
             OuterGrid.Width = categories.List.Width;

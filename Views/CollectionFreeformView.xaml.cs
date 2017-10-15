@@ -648,6 +648,16 @@ namespace Dash
         #endregion
 
         #region Manipulation
+        public void Move(TranslateTransform translate)
+        {
+            var composite = new TransformGroup();
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        }
+
+        public Rect ClipRect { get { return xClippingRect.Rect; } }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
