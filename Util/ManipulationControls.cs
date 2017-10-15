@@ -178,9 +178,8 @@ namespace Dash
             var point = e.GetCurrentPoint(_element);
 
             // get the scale amount
-            float scaleAmount = (float)Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+            float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+            //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
