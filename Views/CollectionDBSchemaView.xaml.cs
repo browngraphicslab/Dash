@@ -378,5 +378,10 @@ namespace Dash
         {
             this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
         }
+
+        private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xRecordsView);
+        }
     }
 }
