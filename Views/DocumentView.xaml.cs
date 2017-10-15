@@ -61,6 +61,11 @@ namespace Dash
             this.Drop += OnDrop;
         }
 
+        /// <summary>
+        /// Navigates the main collection view to show this DocumentView in the center of the screen,
+        /// then selects this document
+        /// </summary>
+        /// <returns></returns>
         private DocumentController Choose()
         {
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
@@ -120,7 +125,13 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
-            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+            // this gets the hierarchical view of the document, clicking on this will shimmy over to this
+            if (!IsMainCollection)
+            {
+                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+
+                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+            }
         }
 
 
