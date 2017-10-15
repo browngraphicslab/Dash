@@ -59,25 +59,21 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<Func<DocumentController>> content)
+        public SearchCategoryItem(string icon, string title, Dictionary<string, Func<DocumentController>> content)
         {
             this.InitializeComponent();
-            //Icon = icon;
-            //Title = title;
             _titleToFuncDictionary = new Dictionary<string, Func<DocumentController>>();
             ListContent = new ObservableCollection<string>();
-            foreach (var func in content)
+            foreach (KeyValuePair<string, Func<DocumentController>> kvp in content)
             {
-                AddToList(func);
+                AddToList(kvp.Value, kvp.Key);
             }
             xList.Tapped += XList_Tapped;
         }
 
 
-        public void AddToList(Func<DocumentController> func, string funcName = "")
+        public void AddToList(Func<DocumentController> func, string name = "")
         {
-            string name = func.Invoke() == null ? funcName : func.Invoke().Title;
-
             // if _titleToFuncDictionary already contains the name, it's most likely because the document/collection/operator we're adding has the same DisplayName
             // must differentiate the key before adding to _titleToFuncDictionary or ListContent  
             if (_titleToFuncDictionary.ContainsKey(name))
@@ -92,9 +88,8 @@ namespace Dash
             ListContent.Add(name);
         }
 
-        public void RemoveFromList(Func<DocumentController> func, string funcName = "")
+        public void RemoveFromList(Func<DocumentController> func, string name = "")
         {
-            string name = func.Invoke() == null ? funcName : func.Invoke().Title;
             if (_titleToFuncDictionary[name] != func)
             {
                 string newName = name;
@@ -119,8 +114,9 @@ namespace Dash
             var func = _titleToFuncDictionary[name];
             if (func != null)
             {
-                if (func.Invoke() != null)
-                    Actions.AddDocFromFunction(func);
+                var docCont = func.Invoke(); 
+                if (docCont != null)
+                    Actions.AddDocFromFunction(docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
@@ -137,7 +133,9 @@ namespace Dash
             var func = _titleToFuncDictionary[name];
             if (func != null)
             {
-                Actions.AddDocFromFunction(func);
+                var docCont = func.Invoke();
+                if (docCont != null)
+                    Actions.AddDocFromFunction(docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);

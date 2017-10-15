@@ -42,43 +42,19 @@ namespace Dash
 
         private void MakeView()
         {
-            var add = OperationCreationHelper.Operators["Add"].OperationDocumentConstructor;
-            var subtract = OperationCreationHelper.Operators["Subtract"].OperationDocumentConstructor;
-            var multiply = OperationCreationHelper.Operators["Multiply"].OperationDocumentConstructor;
-            var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor;
-            var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor;
-            var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor;
-            var zip = OperationCreationHelper.Operators["Zip"].OperationDocumentConstructor;
-            var uriToImage = OperationCreationHelper.Operators["UriToImage"].OperationDocumentConstructor;
-            var map = OperationCreationHelper.Operators["Map"].OperationDocumentConstructor;
-            var api = OperationCreationHelper.Operators["Api"].OperationDocumentConstructor;
-            var concat = OperationCreationHelper.Operators["Concat"].OperationDocumentConstructor;
-            var docAppend = OperationCreationHelper.Operators["Append"].OperationDocumentConstructor;
-            var filter = OperationCreationHelper.Operators["Filter"].OperationDocumentConstructor;
-            var compound = OperationCreationHelper.Operators["Compound"].OperationDocumentConstructor;
-            Func<DocumentController> createBlankDocument = BlankDoc;
-            Func<DocumentController> createBlankCollection = BlankCollection;
-            Func<DocumentController> createBlankPostitNote = BlankNote;
+            var categories = new List<string> {
+                "Add", "Subtract", "Multiply",
+                "Divide", "Union", "Intersection",
+                "Zip", "UriToImage", "Map", "Api",
+                "Concat", "Append", "Filter", "Compound"
+            }; 
 
-            var all = new ObservableCollection<Func<DocumentController>>
-            {
-                createBlankDocument,
-                createBlankPostitNote,
-                createBlankCollection,
-                add,
-                subtract,
-                multiply,
-                divide,
-                union,
-                intersection,
-                zip,
-                filter,
-                api,
-                concat,
-                docAppend,
-                compound,
-                map,
-            };
+            var all = new Dictionary<string, Func<DocumentController>>();
+            all["Document"] = BlankDoc;
+            all["Collection"] = BlankCollection;
+            all["Note"] = BlankNote;
+            foreach (string s in categories)
+                all[s] = OperationCreationHelper.Operators[s].OperationDocumentConstructor; 
 
             xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
         }
