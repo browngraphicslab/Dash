@@ -58,6 +58,14 @@ namespace Dash
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
+            this.Holding += OperatorHolding;
+
+        }
+
+        public void OperatorHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            var opview = sender as DocumentView;
+            //opview.IsHitTestVisible = false;
         }
 
         private void OnDrop(object sender, DragEventArgs e)

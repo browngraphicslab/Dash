@@ -355,7 +355,8 @@ namespace Dash
                 var green = _converter.GradientBrush;
                 //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
                 line.IsHoldingEnabled = !line.IsHoldingEnabled;
-            };
+            };         
+
 
             _connectionLine.Holding += (s, e) =>
             {
@@ -368,6 +369,7 @@ namespace Dash
                 if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
                 ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
             };
+
 
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);

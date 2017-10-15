@@ -34,7 +34,10 @@ namespace Dash
         {
             this.InitializeComponent();
             this.Loaded += OperatorView_Loaded;
+            
         }
+
+     
 
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -114,6 +117,11 @@ namespace Dash
             }
 
         }
+
+        
+
+       
+
 
         /// <summary>
         /// Envokes handler for starting a link by dragging on a link ellipse handle.
