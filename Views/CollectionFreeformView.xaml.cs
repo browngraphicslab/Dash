@@ -37,7 +37,6 @@ namespace Dash
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
-
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
@@ -669,16 +668,17 @@ namespace Dash
 
             var scale = new ScaleTransform
             {
-            CenterX = transformationDelta.ScaleCenter.X,
-            CenterY = transformationDelta.ScaleCenter.Y,
-            ScaleX = transformationDelta.ScaleAmount.X,
-            ScaleY = transformationDelta.ScaleAmount.Y
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
+                ScaleX = transformationDelta.ScaleAmount.X,
+                ScaleY = transformationDelta.ScaleAmount.Y
             };
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(scale);
+
             composite.Children.Add(translate);
             
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };

@@ -51,8 +51,7 @@ namespace Dash
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
                 var colView = _element as CollectionFreeformView;
-                if (colView != null) return colView.IsLowestSelected;
-                return true;
+                return colView == null || colView.IsLowestSelected;
             }
         }
 
