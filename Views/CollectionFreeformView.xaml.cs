@@ -148,28 +148,30 @@ namespace Dash
                 MakeInkCanvas();
             }
 
-            if (ViewModel is CollectionViewModel)
+            var vm = ViewModel as CollectionViewModel;
+            if (vm == null) return;
+            var posFMC =
+                vm.LayoutDocument.GetField(CollectionBox.FreeformTranslateKey);
+            var scaleCtrFMC =
+                vm.LayoutDocument.GetField(CollectionBox.FreeformScaleCtrKey);
+            var scaleAmtFMC =
+                vm.LayoutDocument.GetField(CollectionBox.FreeformScaleAmtKey);
+            var translation = new Point(0,0);
+            var scaleCenter = new Point(0,0);
+            var scaleAmount = new Point(1,1);
+            if (posFMC != null && scaleCtrFMC != null && scaleAmtFMC != null)
             {
-                var vm = ViewModel as CollectionViewModel;
-                var posFMC =
-                    vm.LayoutDocument.GetField(CollectionBox.FreeformTranslateKey);
-                var scaleCtrFMC =
-                    vm.LayoutDocument.GetField(CollectionBox.FreeformScaleCtrKey);
-                var scaleAmtFMC =
-                    vm.LayoutDocument.GetField(CollectionBox.FreeformScaleAmtKey);
-                if (posFMC != null && scaleCtrFMC != null && scaleAmtFMC != null)
-                {
-                    var translation = (posFMC as PointFieldModelController)
-                        .Data;
-                    var scaleCenter = (scaleCtrFMC as PointFieldModelController)
-                        .Data;
-                    var scaleAmount = (scaleAmtFMC as PointFieldModelController)
-                        .Data;
-                    vm.GroupTransform = new TransformGroupData(translation, scaleCenter, scaleAmount);
-                    var transform = new TransformGroupDataToGroupTransformConverter().ConvertDataToXaml(vm.GroupTransform);
-                    SetBackgroundTransform(itemsPanelCanvas, transform);
-                }
+                translation = (posFMC as PointFieldModelController)
+                    .Data;
+                scaleCenter = (scaleCtrFMC as PointFieldModelController)
+                    .Data;
+                scaleAmount = (scaleAmtFMC as PointFieldModelController)
+                    .Data;
             }
+            vm.GroupTransform = new TransformGroupData(translation, scaleCenter, scaleAmount);
+            var transform = new TransformGroupDataToGroupTransformConverter().ConvertDataToXaml(vm.GroupTransform);
+            SetCanvasTransform(transform);
+            ManipulationControls.ElementScale = (scaleAmount.X + scaleAmount.Y) / 2;
         }
 
 
@@ -539,8 +541,8 @@ namespace Dash
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
+            //var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(itemsPanelCanvas != null);
             var delta = transformationDelta.Translate;
 
             //Create initial translate and scale transforms
@@ -563,9 +565,9 @@ namespace Dash
             //Create initial composite transform
             var composite = new TransformGroup();
             composite.Children.Add(scale);
-            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(itemsPanelCanvas.RenderTransform);
             composite.Children.Add(translate);
-            SetBackgroundTransform(canvas, composite);
+            SetCanvasTransform(composite);
 
             var vm = ViewModel as CollectionViewModel;
             if (vm != null)
@@ -579,15 +581,19 @@ namespace Dash
             }
         }
 
-        private void SetBackgroundTransform(Canvas canvas, TransformGroup composite)
+        private void SetCanvasTransform(TransformGroup composite)
         {
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            //itemsPanelCanvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             //ParentCollection.SetTransformOnBackground(composite);
             var matrix = new MatrixTransform { Matrix = composite.Value };
 
+            var matrixTransform = itemsPanelCanvas.RenderTransform as MatrixTransform;
+            bool scaleChanged =
+                matrixTransform != null && (matrixTransform.Matrix.M11 != composite.Value.M11);
+
             itemsPanelCanvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(composite, scaleChanged);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
@@ -617,9 +623,12 @@ namespace Dash
             }
             return currentScale;
         }
-        private void SetTransformOnBackground(TransformGroup composite)
+        private void SetTransformOnBackground(TransformGroup composite, bool scaleChanged)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+            double aliasSafeScale;
+            if (scaleChanged) aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+            else if (_bgBrush != null) aliasSafeScale = _bgBrush.Transform.M11;
+            else aliasSafeScale = 1;
 
             if (_resourcesLoaded)
             {
@@ -645,7 +654,7 @@ namespace Dash
             };
 
             composite.Children.Add(scale);
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(composite, true);
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
