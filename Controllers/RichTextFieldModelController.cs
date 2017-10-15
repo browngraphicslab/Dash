@@ -72,17 +72,18 @@ namespace Dash
             }
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            var richTextView = new RichTextView()
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                TargetRTFController = this
-            };
+        // bcz: just want the basic behavior of converting the field into a string.. no need to override.
+        //public override FrameworkElement GetTableCellView(Context context)
+        //{
+        //    var richTextView = new RichTextView()
+        //    {
+        //        HorizontalAlignment = HorizontalAlignment.Stretch,
+        //        VerticalAlignment = VerticalAlignment.Stretch,
+        //        TargetRTFController = this
+        //    };
 
-            return richTextView;
-        }
+        //    return richTextView;
+        //}
 
         public override FieldModelController GetDefaultController()
         {

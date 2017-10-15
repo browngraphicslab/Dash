@@ -34,67 +34,59 @@ namespace Dash
                 FieldTappedEvent(this);
         }
     }
-    public class CollectionDBSchemaRecordFieldViewModel: DependencyObject
+    public class CollectionDBSchemaRecordFieldViewModel: ViewModelBase
     {
         //public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
         //    "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
-        public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register(
-            "Selected", typeof(bool), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(bool)));
-        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register(
-            "Width", typeof(double), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(double)));
-        public static readonly DependencyProperty BorderThicknessProperty = DependencyProperty.Register(
-            "BorderThickness", typeof(Thickness), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(Thickness)));
-        public static readonly DependencyProperty DataReferenceProperty = DependencyProperty.Register(
-            "DataReference", typeof(ReferenceFieldModelController), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(ReferenceFieldModelController)));
-
+         
+        double    _width;
+        bool      _isSelected;
+        Thickness _borderThickness;
+        ReferenceFieldModelController _dataReference;
+        
+        public bool Selected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
+        public Thickness BorderThickness
+        {
+            get => _borderThickness;
+            set => SetProperty(ref _borderThickness, value);
+        }
+        public double Width
+        {
+            get => _width;
+            set => SetProperty(ref _width, value);
+        }
+        public ReferenceFieldModelController DataReference
+        {
+            get => _dataReference;
+            set => SetProperty(ref _dataReference, value);
+        }
 
         public DocumentController Document;
         public int                Row;
         public CollectionDBSchemaHeader.HeaderViewModel HeaderViewModel;
         public CollectionDBSchemaRecordFieldViewModel(DocumentController document, CollectionDBSchemaHeader.HeaderViewModel headerViewModel, Border headerBorder, int row)
         {
+            Document        = document;
             HeaderViewModel = headerViewModel;
-            Row = row;
-            BorderThickness = headerBorder.BorderThickness;
-            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
-            Document = document;
+            Row             = row;
+            DataReference   = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
+            BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
+            Width           = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
+            HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
-            DataReference = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
-            HeaderViewModel.RegisterPropertyChangedCallback(CollectionDBSchemaHeader.HeaderViewModel.WidthProperty, WidthChangedCallback);
             //Content = new ReferenceFieldModelController(document.GetId(), headerViewModel.FieldKey).DereferenceToRoot(null).ToString();
         }
 
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
+            _dataReference = null; // forces the property change to fire-- otherwise, the old and new field references are the same
             DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
         }
-        private void WidthChangedCallback(DependencyObject sender, DependencyProperty dp)
-        {
-            Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
-        }
-
-        public ReferenceFieldModelController DataReference
-        {
-            get { return (ReferenceFieldModelController) GetValue(DataReferenceProperty); }
-            set { SetValue(DataReferenceProperty, value); }
-        }
-        public Thickness BorderThickness
-        {
-            get { return (Thickness)GetValue(BorderThicknessProperty); }
-            set { SetValue(BorderThicknessProperty, value); }
-        }
-        public double Width
-        {
-            get { return (double)GetValue(WidthProperty);  }
-            set { SetValue(WidthProperty, value); }
-        }
-
-        public bool Selected
-        {
-            get { return (bool)GetValue(SelectedProperty); }
-            set { SetValue(SelectedProperty, value); }
-        }
-
+        
         //public string Content
         //{
         //    get { return (string)GetValue(ContentProperty); }

@@ -36,7 +36,7 @@ namespace Dash
     {
         public override FrameworkElement ConvertDataToXaml(ReferenceFieldModelController data, object parameter = null)
         {
-            return data.GetTableCellView(null);
+            return data?.GetTableCellView(null) ?? new Grid();
         }
 
         public override ReferenceFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)

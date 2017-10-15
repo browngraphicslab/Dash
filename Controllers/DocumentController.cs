@@ -305,7 +305,7 @@ namespace Dash
             //if (searchAllDocsIfFail)
             //{
             //    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
-            //    return new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey); // return  {AllDocs}.<FieldName=a> = this
+            //    return new ReferenceFieldModelController(searchDoc.GetId(), KeyStore.CollectionOutputKey); // return  {AllDocs}.<FieldName=a> = this
             //}
             return null;
         }
@@ -687,7 +687,7 @@ namespace Dash
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference,
+                    new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Update, reference,
                         args.FieldArgs, c, false), true);
             }
         }
@@ -949,7 +949,7 @@ namespace Dash
             return sp;
         }
 
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
         {
             context = new Context(context);
             context.AddDocumentContext(this);
@@ -961,63 +961,64 @@ namespace Dash
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context, isInterfaceBuilder, true);
+                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder, true); //
             }
             if (DocumentType == ImageBox.DocumentType)
             {
-                return ImageBox.MakeView(this, context, isInterfaceBuilder);
+                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == DocumentBox.DocumentType)
             {
-                return DocumentBox.MakeView(this, context, isInterfaceBuilder);
+                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == KeyValueDocumentBox.DocumentType)
             {
-                return KeyValueDocumentBox.MakeView(this, context, isInterfaceBuilder);
+                return KeyValueDocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == StackLayout.DocumentType)
             {
-                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
             if (DocumentType == WebBox.DocumentType)
             {
-                return WebBox.MakeView(this, context, isInterfaceBuilder);
+                return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
-                return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType == OperatorBox.DocumentType)
             {
-                return OperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
-                return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType == InkBox.DocumentType)
+            //TODO: Do we even want ink fields on documents other than in collections?
+            //if (DocumentType == InkBox.DocumentType)
+            //{
+            //    return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //unsure about this one
+            //}
+            if (DocumentType == GridViewLayout.DocumentType) //
             {
-                return InkBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
-            }
-            if (DocumentType == GridViewLayout.DocumentType)
-            {
-                return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == ListViewLayout.DocumentType)
             {
-                return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == RichTextBox.DocumentType)
             {
-                return RichTextBox.MakeView(this, context, isInterfaceBuilder);
+                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == GridLayout.GridPanelDocumentType)
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {
-                return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType == CollectionMapOperatorBox.DocumentType)
             {
@@ -1033,7 +1034,7 @@ namespace Dash
             }
             if (DocumentType == ApiOperatorBox.DocumentType)
             {
-                return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
             }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
@@ -1052,7 +1053,7 @@ namespace Dash
                 }
                 Debug.Assert(doc != null);
 
-                return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
+                return doc.Data.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
             }
             if (isInterfaceBuilder)
             {

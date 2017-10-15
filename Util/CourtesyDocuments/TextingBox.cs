@@ -89,7 +89,7 @@ namespace Dash
         /// </summary>
         /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -103,6 +103,8 @@ namespace Dash
                 TargetDocContext = context
             };
             SetupBindings(tb, docController, context);
+
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
 
             // add bindings to work with operators
             if (referenceToText != null) // only bind operation interactions if text is a reference
@@ -138,15 +140,7 @@ namespace Dash
 
         protected static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
         {
-            if (fieldModelController is TextFieldModelController)
-            {
-                return new StringToStringConverter();
-            }
-            else if (fieldModelController is NumberFieldModelController)
-            {
-               return new StringToDoubleConverter(0);
-            }
-            else if (fieldModelController is DocumentFieldModelController)
+            if (fieldModelController is DocumentFieldModelController)
             {
                 return new DocumentControllerToStringConverter();
             }
@@ -154,7 +148,16 @@ namespace Dash
             {
                 return new DocumentCollectionToStringConverter();
             }
-            return null;
+            else if (fieldModelController is NumberFieldModelController)
+            {
+                return new StringToDoubleConverter(0);
+            }
+            else if (fieldModelController is ReferenceFieldModelController)
+            {
+                return null;
+            }
+
+            return new ObjectToStringConverter(null);
         }
         
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)

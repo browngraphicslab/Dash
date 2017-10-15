@@ -42,81 +42,32 @@ namespace Dash
 
         private void MakeView()
         {
-            var add = OperationCreationHelper.Operators["Add"].OperationDocumentConstructor;
-            var subtract = OperationCreationHelper.Operators["Subtract"].OperationDocumentConstructor;
-            var multiply = OperationCreationHelper.Operators["Multiply"].OperationDocumentConstructor;
-            var divide = OperationCreationHelper.Operators["Divide"].OperationDocumentConstructor;
-            var union = OperationCreationHelper.Operators["Union"].OperationDocumentConstructor;
-            var intersection = OperationCreationHelper.Operators["Intersection"].OperationDocumentConstructor;
-            var zip = OperationCreationHelper.Operators["Zip"].OperationDocumentConstructor;
-            var uriToImage = OperationCreationHelper.Operators["UriToImage"].OperationDocumentConstructor;
-            var map = OperationCreationHelper.Operators["Map"].OperationDocumentConstructor;
-            var api = OperationCreationHelper.Operators["Api"].OperationDocumentConstructor;
-            var concat = OperationCreationHelper.Operators["Concat"].OperationDocumentConstructor;
-            var docAppend = OperationCreationHelper.Operators["Append"].OperationDocumentConstructor;
-            var filter = OperationCreationHelper.Operators["Filter"].OperationDocumentConstructor;
-            var compound = OperationCreationHelper.Operators["Compound"].OperationDocumentConstructor;
-            Func<DocumentController> createBlankDocument = BlankDoc;
-            Func<DocumentController> createBlankCollection = BlankCollection;
-            Func<DocumentController> createBlankPostitNote = BlankNote;
+            xMainGrid.Children.Add(SearchView = new SearchView(GetSearchCategories()));
+        }
 
+        private static SearchCategoryItem GetSearchCategories()
+        {
             var all = new ObservableCollection<Func<DocumentController>>
             {
-                createBlankDocument,
-                createBlankPostitNote,
-                createBlankCollection,
-                add,
-                subtract,
-                multiply,
-                divide,
-                union,
-                intersection,
-                zip,
-                filter,
-                api,
-                concat,
-                docAppend,
-                compound,
-                map,
+                Util.BlankDoc,
+                Util.BlankCollection, 
+                Util.BlankNote
             };
 
-            xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
-        }
-
-        public DocumentController BlankDoc()
-        {
-            var docfields = new Dictionary<KeyController, FieldModelController>()
+            foreach (var op in OperationCreationHelper.Operators)
             {
-                [KeyStore.TitleKey] = new TextFieldModelController("Document")
-            };
-            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
-            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
-            blankDocument.SetActiveLayout(layout, true, true);
-            return blankDocument;
+                all.Add(op.Value.OperationDocumentConstructor);
+            }
+
+            //foreach (var doc in ContentController.GetControllers<DocumentController>())
+            //{
+            //    all.Add(() => doc.GetCopy());
+            //}
+
+            return new SearchCategoryItem("", "", all);
         }
 
-        public DocumentController BlankCollection()
-        {
-            var colfields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(),
-                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
-            };
-            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
-            colDoc.SetActiveLayout(
-                new CollectionBox(
-                    new ReferenceFieldModelController(colDoc.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), 0, 0, 200, 200).Document, true, true);
-            return colDoc;
-        }
-
-        public DocumentController BlankNote()
-        {
-            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            postitNote.SetField(KeyStore.TitleKey, new TextFieldModelController("Note"), true);
-            return postitNote;
-        }
+        
 
         public void SetTextBoxFocus()
         {
@@ -136,6 +87,7 @@ namespace Dash
                 {
                     canvas.Children.Add(Instance);
                 }
+                //Instance.SearchView.UpdateCategories(GetSearchCategories());
                 if (isTouch) Instance.SearchView.ConfigureForTouch();
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);

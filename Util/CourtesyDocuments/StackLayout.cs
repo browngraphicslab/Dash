@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -28,7 +29,7 @@ namespace Dash
         public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false)
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModelController(docs));
+            var fields = DefaultLayoutFields(new Point(), new Size( double.NaN, double.NaN), new DocumentCollectionFieldModelController(docs));
             fields.Add(StyleKey, new TextFieldModelController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
@@ -56,7 +57,7 @@ namespace Dash
         /// <param name="isInterfaceBuilderLayout"></param>
         /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             var stack = new RelativePanel();
             var stackFieldData =
@@ -71,7 +72,7 @@ namespace Dash
                 FrameworkElement prev = null;
                 foreach (var stackDoc in stackFieldData.GetDocuments())
                 {
-                    var item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout);
+                    var item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                     if (item != null)
                     {
                         stack.Children.Add(item);

@@ -45,6 +45,7 @@ namespace Dash
                     ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
+            CollectionDBSchemaHeader.DragModel = null;
         }
 
         //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
@@ -63,24 +64,9 @@ namespace Dash
                 if (value != null)
                 {
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.BucketsKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey,
-                            new ListFieldModelController<NumberFieldModelController>(new[]
-                            {
-                                new NumberFieldModelController(0), new NumberFieldModelController(0),
-                                new NumberFieldModelController(0), new NumberFieldModelController(0)
-                            }), true);
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
                             new TextFieldModelController(""), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.AutoFitKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.AutoFitKey,
-                            new NumberFieldModelController(3), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.SelectedKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey,
-                            new ListFieldModelController<NumberFieldModelController>(), true);
-                    ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey,
-                        new NumberFieldModelController(0), true);
                     ParentDocument.DocumentFieldUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
@@ -122,9 +108,7 @@ namespace Dash
         {
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            if (field is TextFieldModelController)
-                xEditTextBox.Text = (field as TextFieldModelController).Data;
-            else xEditTextBox.Text = field.ToString();
+            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
@@ -199,7 +183,7 @@ namespace Dash
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
                 ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
@@ -211,8 +195,7 @@ namespace Dash
         private void ParentDocument_DocumentFieldUpdated(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == ViewModel.CollectionKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey)
+            if (args.Reference.FieldKey == ViewModel.CollectionKey)
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -312,8 +295,7 @@ namespace Dash
                 if (SearchInDocumentForNamedField(dmc, selectedBars, visited))
                     collection.Add(dmc);
             }
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey,
-                new DocumentCollectionFieldModelController(collection), true);
+            ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
         }
 
         private static bool SearchInDocumentForNamedField(DocumentController dmc, List<string> selectedBars,
@@ -395,14 +377,6 @@ namespace Dash
         private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
         {
             this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
-        }
-        
-        private void xHeaderView_Drop(object sender, DragEventArgs e)
-        {
-
-            if (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderViewModel)))
-            {
-            }
         }
     }
 }
