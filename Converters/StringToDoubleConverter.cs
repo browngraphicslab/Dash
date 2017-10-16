@@ -32,21 +32,4 @@ namespace Dash.Converters
             return _number;
         }
     }
-    public class StringToStringConverter : SafeDataToXamlConverter<string, string>
-    {
-
-        public StringToStringConverter()
-        {
-        }
-
-        public override string ConvertDataToXaml(string data, object parameter = null)
-        {
-            return data;
-        }
-
-        public override string ConvertXamlToData(string xaml, object parameter = null)
-        {
-            return xaml;
-        }
-    }
 }

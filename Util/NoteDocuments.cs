@@ -75,7 +75,7 @@ namespace Dash
             }
             public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
             public DocumentController DataDocument { get; set; }
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "", DocumentController collectedDocument = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "", double width=200, double height = 300, List<DocumentController> collectedDocument = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
 
@@ -86,11 +86,11 @@ namespace Dash
                     _prototypeLayout = CreatePrototypeLayout();
                 var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
-                docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
-                docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(300), true);
+                docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+                docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
                 docLayout.SetField(CollectionBox.CollectionViewTypeKey, new TextFieldModelController(viewtype.ToString()), true);
 
-                var listOfCollectedDocs = collectedDocument != null ? new List<DocumentController>(new DocumentController[] { collectedDocument }) : new List<DocumentController>();
+                var listOfCollectedDocs = collectedDocument != null ? collectedDocument : new List<DocumentController>();
                 dataDocument.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(listOfCollectedDocs), true);
                 
                 if (true)
@@ -142,12 +142,12 @@ namespace Dash
                 return prototpeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title?") : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(TitleKey, new TextFieldModelController("Title?"), true);
+                dataDocument.SetField(TitleKey, new TextFieldModelController(title), true);
                 dataDocument.SetField(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Something to fill this space?")), true);
                 dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDocument), true);
 

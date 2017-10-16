@@ -117,7 +117,7 @@ namespace Dash
             activeLayout?.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
             return doc;
         }
-        public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
+        public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null, bool create=false)
         {
             var activeLayout = doc.GetActiveLayout()?.Data;
             var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
@@ -135,8 +135,19 @@ namespace Dash
                 newDoc = docContext;
                 activeLayout = copiedLayout;
             }
+            else
+            {
+                activeLayout = new KeyValueDocumentBox(null).Document;
+                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(doc), true);
+                activeLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), false);
+                if (where != null)
+                {
+                    activeLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController((Point)where), true);
+                }
+                newDoc = activeLayout;
+            }
             var oldPosition = doc.GetPositionField();
-            if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
+            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointFieldModelController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),

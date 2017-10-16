@@ -51,7 +51,7 @@ namespace Dash
         }
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -62,17 +62,17 @@ namespace Dash
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
 
             if (fieldModelController is ImageFieldModelController)
-                return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
+                return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
-                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout, true);
+                return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout, true);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 
             //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
             //var docView = new KeyValuePane();
             //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
-                //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
-            
+            //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+
             var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
 
             var border = new Border();
@@ -80,15 +80,19 @@ namespace Dash
 
             SetupDocumentBinding(docView, docController, context);
 
+            //Add to key to framework element dictionary
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = border; 
+
             // bind the text height
             //var docheightController = GetHeightField(docController, context);
             //if (docheightController != null)
-                //BindHeight(docView, docheightController);
+            //BindHeight(docView, docheightController);
 
             // bind the text width
             //var docwidthController = GetWidthField(docController, context);
             //if (docwidthController != null)
-                //BindWidth(docView, docwidthController);
+            //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

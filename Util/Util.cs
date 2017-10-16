@@ -23,8 +23,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -86,7 +88,7 @@ namespace Dash
         public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
             if (to == null) to = Window.Current.Content;
-            return from.TransformToVisual(to).TransformPoint(p);
+            return @from.TransformToVisual(to).TransformPoint(p);
         }
 
         /// <summary>
@@ -474,6 +476,7 @@ namespace Dash
             slope = sCo / ssX;
         }
 
+
         /// <summary>
         /// Converts a string to a field model controller
         /// </summary>
@@ -505,6 +508,28 @@ namespace Dash
             if (isNum)
                 return ret;
             return null;
+        }
+
+        public static DocumentController BlankDoc()
+        {
+            var docfields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.TitleKey] = new TextFieldModelController("Document")
+            };
+            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
+            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
+            blankDocument.SetActiveLayout(layout, true, true);
+            return blankDocument;
+        }
+
+        public static DocumentController BlankCollection()
+        {
+            return new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, "", 200, 200).Document;
+        }
+
+        public static DocumentController BlankNote()
+        {
+            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
         }
     }
 }

@@ -73,6 +73,7 @@ namespace Dash
                 };
             }
             CellSize = 250; // TODO figure out where this should be set
+          //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view

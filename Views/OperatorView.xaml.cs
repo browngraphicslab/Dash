@@ -28,11 +28,13 @@ namespace Dash
         private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
         private IOReference _currOutputRef;
+        private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
         private DocumentView documentView;
 
-        public OperatorView()
+        public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             this.InitializeComponent();
+            _keysToFrameworkElements = keysToFrameworkElements;
             this.Loaded += OperatorView_Loaded;
             
         }
@@ -137,7 +139,7 @@ namespace Dash
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+            var ioRef = new IOReference(null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
             view.CanLink = true;
             view.StartDrag(ioRef);
         }
@@ -161,20 +163,22 @@ namespace Dash
         }
 
         /// <summary>
-        /// Envokes code to handle pointer released events on the link handle.
+        /// Invokes code to handle pointer released events on the link handle.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
-            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var docRef = DataContext as DocumentFieldReference;
+            var docId = docRef.DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             bool isCompound = false;
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (isCompound = view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+            var ioRef = new IOReference(null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+
             view.EndDrag(ioRef, isCompound);
         }
 
@@ -262,6 +266,10 @@ namespace Dash
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
+            var el = sender as FrameworkElement;
+            var key = ((DictionaryEntry) el.DataContext).Key as KeyController;
+            if(key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
+
             if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             var ioRef = view.GetCurrentReference();
@@ -273,6 +281,10 @@ namespace Dash
 
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
+            var el = sender as FrameworkElement;
+            var key = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            if (key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
+
             if (!_isCompound || _currOutputRef == null) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             EndDraggedLink(sender, null, true, view);

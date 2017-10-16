@@ -177,16 +177,21 @@ namespace Dash
                 var collectionViewModel = e.DataView.Properties.ContainsKey("CollectionViewModel") == true ?
                           e.DataView.Properties["CollectionViewModel"] as CollectionViewModel : null;
 
-                var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?                  
+                var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
-                
-                var payloadLayoutDelegates = items.Select((p) => e.DataView.Properties.ContainsKey("View")        ? p.GetViewCopy(where) :
-                                                                 e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) : 
-                                                                 e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where));
+
+                var payloadLayoutDelegates = items.Select((p) =>
+                {
+                    if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
+                        p.SetActiveLayout(new DefaultLayout().Document, true, true);
+                    return e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
+                                                                     e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where);
+                });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
                 {

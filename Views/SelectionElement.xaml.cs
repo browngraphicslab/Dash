@@ -78,7 +78,7 @@ namespace Dash
         /// <param name="isLowestSelected"></param>
         protected abstract void OnLowestActivated(bool isLowestSelected);
 
-        protected void OnSelected()
+        public void OnSelected()
         {
             // if we don't already get the clicks tell our parent we want them
             if (!IsLowestSelected)

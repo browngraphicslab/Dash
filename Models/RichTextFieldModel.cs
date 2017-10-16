@@ -17,14 +17,12 @@ namespace Dash
             public string ReadableString;
             public RTD(string readableString) { ReadableString = readableString; RtfFormatString = readableString;  }
             public RTD(string readableString, string rtfstring) { ReadableString = readableString; RtfFormatString = rtfstring;  }
+            public override string ToString() { return ReadableString; }
         }
 
         public RTD Data;
 
-        public RichTextFieldModel()
-        {
-            
-        }
+        public RichTextFieldModel() { }
 
         public RichTextFieldModel(RTD data)
         {

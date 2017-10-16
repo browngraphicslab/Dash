@@ -54,15 +54,32 @@ namespace Dash
             }
         }
 
-        public bool IsSelected { get; set; }
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
+            "IsSelected", typeof(bool), typeof(CollectionDBChartBar), new PropertyMetadata(default(bool)));
+        public bool IsSelected
+        {
+            get { return (bool)GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
+        }
 
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if ((xBar.Background as SolidColorBrush)?.Color == Colors.SteelBlue)
-                xBar.Background = new SolidColorBrush(Colors.Salmon);
-            else xBar.Background = new SolidColorBrush(Colors.SteelBlue);
-            IsSelected = ((xBar.Background as SolidColorBrush)?.Color == Colors.Salmon);
+            IsSelected = !IsSelected;
             FilterChart.UpdateSelection(BucketIndex, IsSelected);
+        }
+    }
+    //bcz: temporary hack --- need to just convert bool to Bold for use anywhere, not just SchemaHeaders
+    public class BoolToHighlightConverter : SafeDataToXamlConverter<bool, Brush>
+    {
+        public override Brush ConvertDataToXaml(bool data, object parameter = null)
+        {
+            return data ? new SolidColorBrush(Colors.Salmon) : new SolidColorBrush(Colors.Blue);
+        }
+
+        public override bool ConvertXamlToData(Brush xaml, object parameter = null)
+        {
+            throw new System.Exception();
+            //return xaml.Equals(FontWeights.ExtraBold);
         }
     }
 }

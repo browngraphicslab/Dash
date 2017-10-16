@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -21,7 +22,7 @@ namespace Dash
         public XampleFields(int numFields, TypeInfo fieldType, int id = 0)
         {
             // create a document with two images
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
 
             fields[IdKey] = new NumberFieldModelController(id);
             fields[KeyStore.WidthFieldKey] = new NumberFieldModelController(300);

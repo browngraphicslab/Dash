@@ -37,7 +37,11 @@ namespace Dash
 
             // set up a prototype document that models each of the rows
             var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
-            var protoFieldDict = new Dictionary<KeyController, FieldModelController>(); // dictionary of fields to set on the prototype document
+            var protoFieldDict = new Dictionary<KeyController, FieldModelController>()
+            { // dictionary of fields to set on the prototype document
+                [KeyStore.AbstractInterfaceKey] = new TextFieldModelController(protoDoc.DocumentType.Id),
+                [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>()
+            };
             var headerToFieldMap = new Dictionary<string, FieldModelController>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
             // generate a default field model controller for each of the fields
@@ -64,7 +68,7 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType());
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
             SetDefaultActiveLayout(outputDoc); // set active layout on the output doc
 
             outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);

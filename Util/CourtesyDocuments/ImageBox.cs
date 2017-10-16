@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash;
 using DashShared;
-
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -60,19 +60,24 @@ namespace Dash
 
         private static EditableImage _editableImage;
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
             _editableImage = new EditableImage(docController, context);
             var image = _editableImage.Image;
 
+
             SetupBindings(image, docController, context);
+
 
             // set up interactions with operations
             var imageFMController = docController.GetDereferencedField(KeyStore.DataKey, context) as ImageFieldModelController;
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), reference.FieldKey, imageFMController);
+
+          
+            if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = image;
 
             if (isInterfaceBuilderLayout)
             {

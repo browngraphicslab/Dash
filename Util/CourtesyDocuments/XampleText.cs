@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -22,7 +23,7 @@ namespace Dash
         public XampleText()
         {
             // create a document with two images
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
             fields.Add(Text1FieldKey, new TextFieldModelController("Test1"));
             fields.Add(Text2FieldKey, new TextFieldModelController("Test2"));
             fields.Add(Text3FieldKey, new TextFieldModelController("Test3"));
