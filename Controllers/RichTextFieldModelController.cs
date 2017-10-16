@@ -23,10 +23,9 @@ namespace Dash
 
         }
 
-        public static RichTextFieldModelController CreateFromServer(RichTextFieldModel richTextFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<RichTextFieldModelController>(richTextFieldModel.Id) ??
-                    new RichTextFieldModelController(richTextFieldModel);
+            
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ namespace Dash
 {
     public class DBTest
     {
+        /*
         public static DocumentType UmpType  = new DocumentType("3CC1574C-A361-4543-9898-8E6435EF6930", "Umpire");
         public static DocumentType GameType = new DocumentType("6830665B-8300-430D-9854-4DD13488A6CF", "Game");
         public static DocumentType AssignmentType = new DocumentType("FBAD8901-2453-4ADC-9076-D5ED83F46B9B", "Assignment");
@@ -419,6 +420,6 @@ namespace Dash
                 }
             BeenThere.Add(new SeenIt(sender, args));
            // DBDoc.SetField(KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
-        }
+        }*/
     }
 }

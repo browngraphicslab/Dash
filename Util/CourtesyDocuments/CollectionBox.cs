@@ -25,6 +25,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[CollectionViewTypeKey] = new TextFieldModelController(viewType.ToString());
             fields[InkBox.InkDataKey] = new InkFieldModelController();
+            fields[InkBox.InkDataKey].SaveOnServer();
 
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);

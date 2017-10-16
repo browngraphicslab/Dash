@@ -94,6 +94,8 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public event EventHandler DocumentDeleted;
+
         public string Title
         {
             get
@@ -147,8 +149,6 @@ namespace Dash
 
         public DocumentController(DocumentModel model, bool setFields = true, bool saveOnServer = true) : base(model)
         {
-            LayoutName = Model.DocumentType.Type;
-
             if (setFields)
             {
                 LoadFields();
@@ -158,6 +158,11 @@ namespace Dash
             {
                 SaveOnServer();
             }
+        }
+
+        public override void Init()
+        {
+            LoadFields();
         }
 
         public void LoadFields()
@@ -175,12 +180,11 @@ namespace Dash
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model), type, id))
         {
-            LayoutName = Model.DocumentType.Type;
-            SetFields(fields, true);
             if (saveOnServer)
             {
                 SaveOnServer();
             }
+            Init();
         }
 
         /*
@@ -248,7 +252,7 @@ namespace Dash
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
 
-        public string LayoutName { get; set; }
+        public string LayoutName { get { return Model.DocumentType.Type; } }
         /// <summary>
         ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
         ///     to the server and across the client
@@ -1116,6 +1120,26 @@ namespace Dash
             {
                 PrototypeFieldUpdated?.Invoke(sender, args);
             }
+        }
+
+        public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
+        {
+            if (_fields.ContainsKey(KeyStore.DelegatesKey))
+            {
+                var delegates = (DocumentCollectionFieldModelController) _fields[KeyStore.DelegatesKey];
+                foreach (var del in delegates.Data)
+                {
+                    del.DeleteOnServer();
+                }
+            }
+
+            foreach (var field in _fields)
+            {
+                field.Value.DeleteOnServer();
+            }
+            base.DeleteOnServer(success, error);
+
+            DocumentDeleted?.Invoke(this, EventArgs.Empty);
         }
     }
 }

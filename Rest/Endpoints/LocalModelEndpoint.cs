@@ -101,15 +101,26 @@ namespace Dash
         public virtual void AddDocument(T newDocument, Action<T> success, Action<Exception> error)
         {
             var json = newDocument.Serialize();
+            if (typeof(T) != typeof(KeyModel) && !_modelDictionary.ContainsKey(newDocument.Id))
+            {
+                
+            }
             _modelDictionary[newDocument.Id] = json;
             success?.Invoke(json.CreateObject<T>());
         }
 
         public virtual void UpdateDocument(T documentToUpdate, Action<T> success, Action<Exception> error)
         {
-            var json = documentToUpdate.Serialize();
-            _modelDictionary[documentToUpdate.Id] = json;
-            success?.Invoke(json.CreateObject<T>());
+            if (_modelDictionary.ContainsKey(documentToUpdate.Id) || true)
+            {
+                var json = documentToUpdate.Serialize();
+                _modelDictionary[documentToUpdate.Id] = json;
+                success?.Invoke(json.CreateObject<T>());
+            }
+            else
+            {
+                //error?.Invoke(new Exception("The document didn't exist!"));
+            }
         }
 
         public virtual async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)

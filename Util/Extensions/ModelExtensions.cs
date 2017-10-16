@@ -28,5 +28,20 @@ namespace Dash
             var controller = KeyControllerFactory.CreateFromModel(model);
             return controller;
         }
+
+        public static DocumentController GetController(this DocumentModel model)
+        {
+            return ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
+        }
+
+        public static FieldControllerBase GetController(this FieldModel model)
+        {
+            return ContentController<FieldModel>.GetController<FieldControllerBase>(model.Id);
+        }
+
+        public static KeyController GetController(this KeyModel model)
+        {
+            return ContentController<KeyModel>.GetController<KeyController>(model.Id);
+        }
     }
 }

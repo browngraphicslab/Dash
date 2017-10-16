@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash.Controllers
 {
-    class DocumentReferenceFieldController : ReferenceFieldModelController
+    public class DocumentReferenceFieldController : ReferenceFieldModelController
     {
         public string DocumentId
         {
@@ -20,6 +20,7 @@ namespace Dash.Controllers
         {
             Debug.Assert(docId != null);
             //DocumentId = docId;
+            Init();
         }
 
         public DocumentReferenceFieldController(DocumentReferenceFieldModel documentReferenceFieldModel) : base(documentReferenceFieldModel, ContentController<KeyModel>.GetController<KeyController>(documentReferenceFieldModel.KeyId))

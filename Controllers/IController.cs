@@ -17,7 +17,14 @@ namespace Dash
             Model = model;
             ContentController<T>.AddController(this);
         }
-        
+
+        /// <summary>
+        /// Method which should store all the initlization methods for the controller. 
+        /// Anything that gets other controllers' references should be put in here instead of the constructor
+        /// </summary>
+        public abstract void Init();
+
+
         /// <summary>
         /// the model that this controller controls
         /// </summary>

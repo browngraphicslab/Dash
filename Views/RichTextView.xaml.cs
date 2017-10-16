@@ -141,11 +141,11 @@ namespace Dash
             {
                 if (refText.StartsWith("http"))
                 {
-                    theDoc = DBTest.CreateWebPage(refText);
+                    //theDoc = DBTest.CreateWebPage(refText);
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
-                    theDoc = DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
+                    //theDoc = DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {
@@ -252,6 +252,7 @@ namespace Dash
                 {
                     var target = this.xRichEitBox.Document.Selection.Link.Split('\"')[1];
                     var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
+                    /*
                     if (theDoc != null && theDoc != DBTest.DBNull)
                     {
                         var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
@@ -278,7 +279,7 @@ namespace Dash
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(WebDoc, pt);
                         }
-                    }
+                    }*/
                 }
             }
             LastS1 = s1;

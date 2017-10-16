@@ -78,8 +78,8 @@ namespace Dash.Controllers.Operators
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
             var returnPath   = new List<string>(retPathString.Split('.'));
             var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
-            if (searchForDoc == DBTest.DBNull)
-                searchForDoc = null;
+            //if (searchForDoc == DBTest.DBNull)
+            //    searchForDoc = null;
             var dbDocs       = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
             if (dbDocs == null)
                 return;

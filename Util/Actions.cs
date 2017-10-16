@@ -43,7 +43,7 @@ namespace Dash
             //{
             //    c.Children.Remove(_searchView);
             //}
-            var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
+           // var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
 
             var where = Util.GetCollectionFreeFormPoint(
@@ -51,7 +51,7 @@ namespace Dash
 
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
-            MainPage.Instance.DisplayDocument(opModel, where);
+            //MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
 
@@ -99,7 +99,7 @@ namespace Dash
 
             collection.ViewModel.AddDocument(newDoc, null);
 
-            DBTest.DBDoc.AddChild(newDoc);
+            //DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
@@ -112,7 +112,7 @@ namespace Dash
             var newDoc = cnote.Document;
             
             collection.ViewModel.AddDocument(newDoc, null);
-            DBTest.DBDoc.AddChild(newDoc);
+            //DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static async void ImportFields(ICollectionView collection, DragEventArgs e)
@@ -226,7 +226,7 @@ namespace Dash
                 docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -258,13 +258,13 @@ namespace Dash
 
             DisplayDocument(collectionView, new XampleText().Document, where);
 
-
+            /*
             var ndb = new DBTest();
             for (int i = 0; i < ndb.Documents.Count; i++)
             {
                 DisplayDocument(collectionView, ndb.Documents[i], where);
                 MainPage.Instance.UpdateLayout();
-            }
+            }*/
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)

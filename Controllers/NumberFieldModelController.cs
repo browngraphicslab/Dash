@@ -20,11 +20,9 @@ namespace Dash
             
         }
 
-
-        public static NumberFieldModelController CreateFromServer(NumberFieldModel numberFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<NumberFieldModelController>(numberFieldModel.Id) ??
-                     new NumberFieldModelController(numberFieldModel);
+
         }
 
         /// <summary>

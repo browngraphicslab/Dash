@@ -52,6 +52,11 @@ namespace Dash
             }
         }
 
+        public override void Init()
+        {
+
+        }
+
         public override string ToString()
         {
             return this.Name;
@@ -92,5 +97,22 @@ namespace Dash
         {
 
         }
+
+        /*
+
+        public static Dictionary<staticKey, Tuple<string, string>> _dict = new Dictionary<staticKey, Tuple<string, string>>()
+        {
+            {staticKey.Layout, new Tuple<string, string>("collection","id")}
+        };
+
+        public static KeyController Get(staticKey key)
+        {
+            return ContentController<KeyModel>.GetController<KeyController>(_dict[key]);
+        }
+
+        public enum staticKey
+        {
+            Layout
+        }*/
     }
 }

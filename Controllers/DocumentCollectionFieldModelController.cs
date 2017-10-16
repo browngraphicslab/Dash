@@ -20,8 +20,18 @@ namespace Dash
         ///     Key for collection data
         ///     TODO This might be better in a different class
         /// </summary>
-        public static KeyController CollectionKey =
-            new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+       public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+
+            /*
+        private static KeyController _collectionKey;
+        public static KeyController Collection2Key
+        {
+            get
+            {
+                return KeyController.Get(KeyController.staticKey.Layout);
+            }
+        }
+        */
 
         public override object GetValue(Context context)
         {
@@ -63,22 +73,26 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        private List<DocumentController> _documents;
+        private List<DocumentController> _documents = new List<DocumentController>();
 
         public DocumentCollectionFieldModelController() : this(new List<DocumentController>())
         {
+            
         }
 
         public DocumentCollectionFieldModelController(DocumentCollectionFieldModel model) : base(model)
         {
-            Data = model.Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i))
-                .ToList();
+            
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : this(
-            new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.Model.Id)))
         {
+            Init();
+        }
 
+        public override void Init()
+        {
+            AddDocuments((Model as DocumentCollectionFieldModel).Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i)).ToList());
         }
 
         /// <summary>
@@ -124,7 +138,9 @@ namespace Dash
         public void AddDocuments(IEnumerable<DocumentController> docControllers)
         {
             foreach (var docController in docControllers)
+            {
                 AddDocument(docController);
+            }
         }
 
         /// <summary>
@@ -141,6 +157,8 @@ namespace Dash
             }
 
             docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
+            docController.DocumentDeleted += DocController_DocumentDeleted;
+
             _documents.Add(docController); // update the controller
 
             // update the model
@@ -151,9 +169,15 @@ namespace Dash
                 UpdateOnServer();
             }
 
+            //TODO only fire this once for add documents
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
                 CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
                 new List<DocumentController> {docController}));
+        }
+
+        private void DocController_DocumentDeleted(object sender, EventArgs e)
+        {
+            this.RemoveDocument(sender as DocumentController);
         }
 
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
@@ -168,6 +192,8 @@ namespace Dash
         public void RemoveDocument(DocumentController doc)
         {
             doc.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+            doc.DocumentDeleted -= DocController_DocumentDeleted;
+
             var isDocInList = _documents.Remove(doc);
             DocumentCollectionFieldModel.Data.Remove(doc.GetId());
             if (isDocInList)
@@ -180,14 +206,20 @@ namespace Dash
         {
             //TODO make sure the server is getting notified here or at a lower level
             foreach (var docController in Data)
+            {
                 docController.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;
+                docController.DocumentDeleted -= DocController_DocumentDeleted;
+            }
 
             _documents = new List<DocumentController>(docControllers);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId()).ToList();
 
 
             foreach (var docController in Data)
+            {
                 docController.DocumentFieldUpdated += ContainedDocumentFieldUpdated;
+                docController.DocumentDeleted += DocController_DocumentDeleted;
+            }
 
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
                 CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace,

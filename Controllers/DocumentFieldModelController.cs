@@ -18,17 +18,22 @@ namespace Dash
 
         public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document.GetId()))
         {
-            Data = document;
+           Init();
         }
 
         private DocumentFieldModelController(DocumentController document, DocumentFieldModel model) : base(model)
         {
-            Data = document;
+            
         }
 
         public DocumentFieldModelController(DocumentFieldModel model) : base(model)
         {
-            Data = ContentController<DocumentModel>.GetController<DocumentController>(model.Data);
+           
+        }
+
+        public override void Init()
+        {
+            Data = ContentController<DocumentModel>.GetController<DocumentController>((Model as DocumentFieldModel).Data);
         }
 
         /*

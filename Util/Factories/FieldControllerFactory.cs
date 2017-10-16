@@ -76,7 +76,21 @@ namespace Dash
                 case TypeInfo.RichTextField:
                     controller = new RichTextFieldModelController(model as RichTextFieldModel);
                     break;
+                case TypeInfo.Image:
+                    controller = new ImageFieldModelController(model as ImageFieldModel);
+                    break;
+                case TypeInfo.None:
+                    throw new Exception("Shoudlnt get here");
+                    break;
+                case TypeInfo.Reference:
+                    throw new Exception("Shoudlnt get here");
+                    break;
+                case TypeInfo.Any:
+                    throw new Exception("Shoudlnt get here");
+                    break;
             }
+
+            Debug.Assert(controller !=null);
 
             return controller;
         }

@@ -51,11 +51,9 @@ namespace Dash
             _undoStack.Push(inkFieldModel.Data);
             SetState(inkFieldModel.Data, null);
         }
-
-        public static InkFieldModelController CreateFromServer(InkFieldModel inkFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<InkFieldModelController>(inkFieldModel.Id) ??
-                   new InkFieldModelController(inkFieldModel);
+
         }
 
         /// <summary>

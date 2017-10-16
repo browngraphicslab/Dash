@@ -19,7 +19,7 @@ namespace Dash
             AddOperator<IntersectionOperatorModelController>("Intersection", "∩");
             AddOperator<UnionOperatorFieldModelController>("Union", "∪");
             AddOperator<ZipOperatorFieldController>("Zip");
-            AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentModel.CreateDBFilterDocumentController, "⊇");
+            //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentModel.CreateDBFilterDocumentController, "⊇");
             AddOperator<ConcatOperator>("Concat");
             AddOperator<DocumentAppendOperatorController>("Append");
             AddOperator<ImageOperatorFieldModelController>("UriToImage", "◑");

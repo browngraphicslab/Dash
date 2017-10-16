@@ -23,12 +23,10 @@ namespace Dash
 
         }
 
-        public static RectFieldModelController CreateFromServer(RectFieldModel rectFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<RectFieldModelController>(rectFieldModel.Id) ??
-                    new RectFieldModelController(rectFieldModel);
-        }
 
+        }
 
 
         /// <summary>

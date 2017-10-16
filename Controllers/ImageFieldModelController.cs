@@ -23,15 +23,14 @@ namespace Dash
 
         public ImageFieldModelController(Uri path, string data = null) : base(new ImageFieldModel(path, data)) { }
 
-        private ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
+        public ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
         {
 
         }
 
-        public static ImageFieldModelController CreateFromServer(ImageFieldModel imageFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<ImageFieldModelController>(imageFieldModel.Id) ??
-                   new ImageFieldModelController(imageFieldModel);
+
         }
 
         /// <summary>

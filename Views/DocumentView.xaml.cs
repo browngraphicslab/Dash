@@ -438,9 +438,7 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            throw new NotImplementedException();
-            //(ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
-            //FadeOut.Begin();
+            (DataContext as DocumentViewModel).DocumentController.DeleteOnServer();
         }
 
         private void CopyDocument()
@@ -519,7 +517,7 @@ namespace Dash
                             break;
                         }
 
-                    DBTest.ResetCycleDetection();
+                    //DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
         }

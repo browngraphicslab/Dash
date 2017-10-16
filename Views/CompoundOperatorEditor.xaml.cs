@@ -24,18 +24,18 @@ namespace Dash
         private readonly DocumentController _documentController;
         private readonly CompoundOperatorFieldController _operatorFieldModelController;
         private ObservableCollection<OperatorBuilder> _operatorList;
-        private SimpleCollectionViewModel _collectionViewModel;
+        private CollectionViewModel _collectionViewModel;
 
-        public CompoundOperatorEditor()
+        public CompoundOperatorEditor(FieldControllerBase collectionField, Context context = null)
         {
             this.InitializeComponent();
             Unloaded += CompoundOperatorEditor_Unloaded;
             _operatorList = new ObservableCollection<OperatorBuilder>(OperationCreationHelper.Operators.Values);
-            _collectionViewModel = new SimpleCollectionViewModel(false);
+            _collectionViewModel = new CollectionViewModel(collectionField, context: context);
             xFreeFormEditor.DataContext = _collectionViewModel;
         }
 
-        public CompoundOperatorEditor(DocumentController documentController, CompoundOperatorFieldController operatorFieldModelController) : this()
+        public CompoundOperatorEditor(DocumentController documentController, CompoundOperatorFieldController operatorFieldModelController, FieldControllerBase collectionField , Context context = null) : this(collectionField, context)
         {
             _documentController = documentController;
             _operatorFieldModelController = operatorFieldModelController;

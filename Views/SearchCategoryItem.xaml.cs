@@ -75,7 +75,9 @@ namespace Dash
             ListContent = new ObservableCollection<string>();
             foreach (var func in content)
             {
-                var name = func.Invoke().Title;
+                var doc = func.Invoke();
+                var name = doc.Title;
+                doc.DeleteOnServer();
                 _titleToFuncDictionary[name] = func;
                 ListContent.Add(name);
             }

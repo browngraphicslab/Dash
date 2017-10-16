@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash.Controllers
 {
@@ -13,11 +14,18 @@ namespace Dash.Controllers
 
         public PointerReferenceFieldController(ReferenceFieldModelController documentReference, KeyController key) : base(new PointerReferenceFieldModel(documentReference.Id, key.Id), key)
         {
-            DocumentReference = documentReference;
+            Init();
         }
 
         public PointerReferenceFieldController(PointerReferenceFieldModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel, ContentController<KeyModel>.GetController<KeyController>(pointerReferenceFieldModel.KeyId))
         {
+        }
+
+        public override void Init()
+        {
+            DocumentReference =
+                ContentController<FieldModel>.GetController<ReferenceFieldModelController>(
+                    (Model as PointerReferenceFieldModel).ReferenceFieldModelId);
         }
 
         public override FieldModelController<ReferenceFieldModel> Copy()

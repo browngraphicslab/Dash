@@ -161,7 +161,7 @@ namespace Dash.Converters
                 _doc = doc;
                 return _doc;
             }
-            return DBTest.DBNull;
+            return null;
         }
     }
     public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentFieldModelController, string>

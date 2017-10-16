@@ -204,7 +204,8 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
-                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
+                    return null;
+                    //return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
             }

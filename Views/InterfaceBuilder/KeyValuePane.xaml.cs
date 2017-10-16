@@ -340,7 +340,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        DBTest.ResetCycleDetection();
+                        //DBTest.ResetCycleDetection();
                         _selectedKV.Key.Name = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
@@ -353,7 +353,7 @@ namespace Dash
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    DBTest.ResetCycleDetection();
+                    //DBTest.ResetCycleDetection();
                     var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(_selectedKV.Key, new Context(_documentControllerDataContext));
                     this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();

@@ -51,7 +51,7 @@ namespace Dash
             returnBox.VerticalAlignment = VerticalAlignment.Top;
             returnBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.ReturnDocKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
@@ -64,7 +64,7 @@ namespace Dash
             searchBox.VerticalAlignment = VerticalAlignment.Top;
             searchBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.FieldPatternKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);

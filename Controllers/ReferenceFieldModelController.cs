@@ -18,6 +18,10 @@ namespace Dash
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
             FieldKey = fieldKey;
+
+        }
+        public override void Init()
+        {
             var docController = GetDocumentController(null);
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }

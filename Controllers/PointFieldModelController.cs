@@ -18,10 +18,9 @@ namespace Dash
 
         }
 
-        public static PointFieldModelController CreateFromServer(PointFieldModel pointFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<PointFieldModelController>(pointFieldModel.Id) ??
-                    new PointFieldModelController(pointFieldModel);
+
         }
 
         /// <summary>

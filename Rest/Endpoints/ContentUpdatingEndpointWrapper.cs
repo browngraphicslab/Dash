@@ -21,6 +21,7 @@ namespace Dash
         {
             var entityBases = models as IList<EntityBase> ?? models.ToList();
             var docs = entityBases.OfType<DocumentModel>().ToArray();
+
             foreach (var model in docs)
             {
                 if (!ContentController<DocumentModel>.HasController(model.Id))
@@ -40,8 +41,18 @@ namespace Dash
             var fields = entityBases.OfType<FieldModel>();
             var fieldModels = fields as IList<FieldModel> ?? fields.ToList();
             var lists = fieldModels.OfType<ListFieldModel>();
+            var collections = fieldModels.OfType<DocumentCollectionFieldModel>();
 
-            foreach (var model in fieldModels.Where(i => !( i is ListFieldModel)))
+            foreach (var model in fieldModels.Where(i => !( i is ListFieldModel) && !(i is DocumentCollectionFieldModel)))
+            {
+                if (!ContentController<FieldModel>.HasController(model.Id))
+                {
+                    model.NewController();
+                }
+            }
+
+
+            foreach (var model in collections)
             {
                 if (!ContentController<FieldModel>.HasController(model.Id))
                 {
@@ -57,11 +68,12 @@ namespace Dash
                 }
             }
 
-            foreach (var model in docs)
-            {
-                ContentController<DocumentModel>.GetController<DocumentController>(model.Id).LoadFields();
-            }
+            var modelList = models.ToList();
 
+
+            modelList.OfType<KeyModel>().ToList().ForEach(i => i.GetController().Init());
+            modelList.OfType<FieldModel>().ToList().ForEach(i => i.GetController().Init());
+            modelList.OfType<DocumentModel>().ToList().ForEach(i => i.GetController().Init());
         }
 
         private Func<RestRequestReturnArgs, Task> GetSuccessFunc(Func<RestRequestReturnArgs, Task> success)

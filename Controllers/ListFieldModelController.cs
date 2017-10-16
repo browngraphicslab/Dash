@@ -29,6 +29,9 @@ namespace Dash
             }
             return false;
         }
+
+        public ListFieldModel ListModel { get { return Model as ListFieldModel; } }
+
         public override List<FieldControllerBase> Data
         {
             get { return TypedData.Cast<FieldControllerBase>().ToList(); }
@@ -37,17 +40,24 @@ namespace Dash
 
         public ListFieldModelController(ListFieldModel model) : base(model)
         {
-            TypedData = ContentController<FieldModel>.GetControllers<T>(model.Data).ToList();
-            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == model.SubTypeInfo);
+            
         }
 
         public ListFieldModelController() : base(new ListFieldModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            Init();
         }
 
         public ListFieldModelController(IEnumerable<T> list) : base(new ListFieldModel(list.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
-            TypedData = list.ToList();
+            Init();
+        }
+
+        public override void Init()
+        {
+            TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
+            UpdateOnServer();
+            Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
         public void Add(T element)
@@ -128,6 +138,19 @@ namespace Dash
             foreach (var fmc in TypedData)
             {
                 fmc.UpdateOnServer();
+            }
+
+            foreach (var fmc in TypedData)
+            {
+                RESTClient.Instance.GetEndpoint<FieldModel>().GetDocument(fmc.Id,
+                    async args =>
+                    {
+                        Debug.Assert(args.ReturnedObjects.Count() > 0);
+                    },
+                    exception =>
+                    {
+                        
+                    });
             }
         }
 

@@ -29,10 +29,10 @@ namespace Dash
             return doc;
         }
 
-        public static DocumentController CreateDBFilterDocumentController()
-        {
-            return DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
-        }
+        //public static DocumentController CreateDBFilterDocumentController()
+        //{
+        //    return DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
+        //}
         public static DocumentController CreateFilterDocumentController()
         {
             Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();

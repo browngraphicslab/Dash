@@ -16,10 +16,9 @@ namespace Dash
         {
         }
 
-        public static TextFieldModelController CreateFromServer(TextFieldModel textFieldModel)
+        public override void Init()
         {
-            return ContentController<FieldModel>.GetController<TextFieldModelController>(textFieldModel.Id) ??
-                    new TextFieldModelController(textFieldModel);
+
         }
 
         /// <summary>

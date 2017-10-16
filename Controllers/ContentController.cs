@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -17,6 +18,12 @@ namespace Dash
 
 
         #endregion
+
+        static ContentController()
+        {
+            var t = typeof(T);
+            Debug.Assert(t == typeof(FieldModel) || t == typeof(DocumentModel) || t == typeof(KeyModel));
+        }
 
         #region Controllers
 

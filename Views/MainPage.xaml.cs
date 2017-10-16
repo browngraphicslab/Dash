@@ -51,7 +51,6 @@ namespace Dash
 
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-        public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()
         {
@@ -241,7 +240,7 @@ namespace Dash
                 docModel.GetPositionField().Data = (Point)where;
             }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
-            DBTest.ResetCycleDetection();
+            //DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
             //DBTest.DBDoc.AddChild(docModel);
         }

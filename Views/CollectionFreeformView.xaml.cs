@@ -651,9 +651,9 @@ namespace Dash
                 if (_currReference.FieldReference.FieldKey == DBFilterOperatorFieldModelController.ResultsKey)
                 {
                     var dropSourceDoc = _currReference.FieldReference.GetDocumentController(null);
-                    var droppedRef = doc == null ? new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey) : 
-                        new DocumentReferenceFieldController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
-                    cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
+                    //var droppedRef = doc == null ? new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey) : 
+                        //new DocumentReferenceFieldController(dropSourceDoc.GetId(), _currReference.FieldReference.FieldKey);
+                    //cnote.Document.SetField(CollectionNote.CollectedDocsKey, droppedRef, true);
                     var field = dropSourceDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null);
                     cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field.Data), true);
                     cnote.Document.GetPositionField().Data = pos;
@@ -663,7 +663,7 @@ namespace Dash
                     cnote.Document.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(), true);
                 }
                 ViewModel.AddDocument(cnote.Document, null);
-                DBTest.DBDoc.AddChild(cnote.Document);
+                //DBTest.DBDoc.AddChild(cnote.Document);
             }
             CancelDrag(e.Pointer);
         }

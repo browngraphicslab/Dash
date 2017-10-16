@@ -6,7 +6,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class IOInfo
+    public class IOInfo : ISerializable
     {
         public TypeInfo Type { get; set; }
 
@@ -44,6 +44,10 @@ namespace Dash
         protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
+        }
+
+        public override void Init()
+        {
         }
 
         /// <summary>
