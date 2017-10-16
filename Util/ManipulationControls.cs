@@ -90,7 +90,7 @@ namespace Dash
             if (docView != null)
             {
                 //TODO this check is not working for documents, which come up as collection boxes
-                var docType = docView.ViewModel.DocumentController.GetActiveLayout().Data.DocumentType;
+                var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
                 if (docType.Equals(CollectionBox.DocumentType) || docType.Equals(OperatorBox.DocumentType))
                 {
                     var ttv = docView.TransformToVisual(Window.Current.Content);
@@ -117,18 +117,18 @@ namespace Dash
 
                             // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                             // the link is outside the document.
-                            if (!(slope < 0 && (intersectionTopX < screenCoords.X || intersectionBottomX > (screenCoords.X + docView.ActualWidth))))
+                            if (slope < 0 && !(intersectionTopX < screenCoords.X || intersectionBottomX > (screenCoords.X + docView.ActualWidth)))
                             {
                                 var x = 0;
                             }
-
-
+                            if ((slope > 0 && !(intersectionTopX > screenCoords.X || intersectionBottomX < (screenCoords.X + docView.ActualWidth))))
+                            {
+                                var x = 0;
+                            }
                         }
                     }
                 }
-                
             }            
-            
         }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
