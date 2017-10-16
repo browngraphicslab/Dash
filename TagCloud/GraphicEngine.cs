@@ -26,8 +26,10 @@ namespace Gma.CodeCloud.Controls
         public double MinFontSize { get; set; }
         public double MaxFontSize { get; set; }
 
-        public GdiGraphicEngine( FontFamily fontFamily, FontStyle fontStyle, Color[] palette, double minFontSize, double maxFontSize, int minWordWeight, int maxWordWeight)
+        WordCloud _cloud;
+        public GdiGraphicEngine(WordCloud cloud, FontFamily fontFamily, FontStyle fontStyle, Color[] palette, double minFontSize, double maxFontSize, int minWordWeight, int maxWordWeight)
         {
+            _cloud = cloud;
             m_MinWordWeight = minWordWeight;
             m_MaxWordWeight = maxWordWeight;
             FontFamily = fontFamily;
@@ -53,34 +55,32 @@ namespace Gma.CodeCloud.Controls
 
         public void Draw(Panel xLayoutGrid, LayoutItem layoutItem)
         {
-            var font = GetFont(layoutItem.Word.Occurrences);
+            var font  = GetFont(layoutItem.Word.Occurrences);
             var color = GetPresudoRandomColorFromPalette(layoutItem);
             var point = new Point((int)layoutItem.Rectangle.X, (int)layoutItem.Rectangle.Y);
-            var tb = new TextBlock();
+            var tb    = new TextBlock();
 
             tb.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Left;
-            tb.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Top;
-            tb.Text = layoutItem.Word.Text;
-            tb.FontFamily = font.FontFamily;
-            tb.FontSize = font.Size;
-            tb.FontStyle = font.FontStyle;
-            tb.Foreground = new SolidColorBrush(color);
-            tb.Tapped += (sender, e) =>
-            {
-                Debug.WriteLine(tb.Text);
-            };
-            tb.PointerEntered += (sender, e) =>
-            {
-                tb.FontWeight = FontWeights.ExtraBold;
-            };
-            tb.PointerExited += (sender, e) =>
-            {
-                tb.FontWeight = FontWeights.Normal;
-            };
+            tb.VerticalAlignment   = Windows.UI.Xaml.VerticalAlignment.Top;
+            tb.Text                = layoutItem.Word.Text;
+            tb.FontFamily          = font.FontFamily;
+            tb.FontSize            = font.Size;
+            tb.FontStyle           = font.FontStyle;
+            tb.Padding = new Windows.UI.Xaml.Thickness();
+            tb.Foreground          = new SolidColorBrush(color);
+            tb.CanDrag             = true;
+            tb.ManipulationMode    = Windows.UI.Xaml.Input.ManipulationModes.All;
+            tb.DragStarting        += (sender, e) => _cloud.TriggerDragStarting(tb.Text, e);
+            tb.ManipulationStarted += (sender, e) => { e.Handled = true; e.Complete(); };
+            tb.ManipulationDelta   += (sender, e) => e.Handled = true;
+            tb.Tapped              += (sender, e) => Debug.WriteLine(tb.Text); 
+            tb.PointerEntered      += (sender, e) => tb.FontWeight = FontWeights.ExtraBold; 
+            tb.PointerExited       += (sender, e) =>  tb.FontWeight = FontWeights.Normal;
             //tb.Margin = new Windows.UI.Xaml.Thickness(point.X, point.Y, 0, 0);
             tb.RenderTransform = new TranslateTransform() { X = point.X, Y = point.Y };
             xLayoutGrid.Children.Add(tb);
         }
+
         public class Font {
             public FontFamily FontFamily;
             public double Size;

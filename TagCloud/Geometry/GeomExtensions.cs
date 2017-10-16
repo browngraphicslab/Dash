@@ -26,16 +26,16 @@ namespace NewControls.Geometry
         public static bool Contains(this Rect r, Rect r2)
         {
 
-            if (r.Left < r2.Left && r.Right > r2.Right && r.Top < r2.Top && r.Bottom > r2.Bottom)
+            if (r.Left <= r2.Left && r.Right >= r2.Right && r.Top <= r2.Top && r.Bottom >= r2.Bottom)
                 return true;
             return false;
         }
         public static bool IntersectsWith(this Rect r1, Rect r2)
         {
-            return !(r2.Left > r1.Right
-                   || r2.Right < r1.Left
-                   || r2.Top > r1.Bottom
-                   || r2.Bottom < r1.Top
+            return !(r2.Left >= r1.Right
+                   || r2.Right <= r1.Left
+                   || r2.Top >= r1.Bottom
+                   || r2.Bottom <= r1.Top
                    );
         }
 

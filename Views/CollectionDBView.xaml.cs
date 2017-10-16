@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static Dash.NoteDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,10 +29,23 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += CollectionDBView_DataContextChanged;
-            Loaded += CollectionDBView_Loaded;
-            SizeChanged += CollectionDBView_SizeChanged;
+            Loaded             += CollectionDBView_Loaded;
+            SizeChanged        += CollectionDBView_SizeChanged;
             xParameter.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
+            xTagCloud.TermDragStarting += XTagCloud_TermDragStarting;
+        }
+
+        private void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
+        {
+            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null).Data;
+            var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
+            if (dbDocs != null)
+            {
+                var collection = findDocuments(dbDocs, pattern.ToList(), term);
+                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, term, 200, 300, collection).Document;
+                args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
+            }
         }
 
         private void CollectionDBView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -259,6 +273,26 @@ namespace Dash
             return barDomains.Select((b) => b as FieldModelController).ToList();
         }
 
+        public List<DocumentController> findDocuments(List<DocumentController> dbDocs, List<string> pattern, string term)
+        {
+            var collection = new List<DocumentController>();
+            
+            if (dbDocs != null && pattern.Count() != 0)
+            {
+                foreach (var dmc in dbDocs.ToArray())
+                {
+                    var visited = new List<DocumentController>();
+                    visited.Add(dmc);
+
+                    var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
+                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField(refField.FieldKey, new Context(dmc));
+                    var fieldText =  field.GetValue(new Context(dmc)).ToString();
+                    if (fieldText.Contains(term))
+                        collection.Add(dmc);
+                }
+            }
+            return collection;
+        }
         public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern,
             List<FieldModelController> selectedBars, bool updateViewOnly, ref string rawText)
         {
