@@ -80,6 +80,10 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
+                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
+                    {
+                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
+                    }
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.BucketsKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(new NumberFieldModelController[] {
