@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Dash;
@@ -33,15 +34,15 @@ namespace Dash
         public override FrameworkElement makeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null, bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetField(KeyStore.DataKey) ?? null;
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
+            OperatorView opView = new OperatorView(keysToFrameworkElements) {DataContext = opfmc.FieldReference};
             SetupBindings(opView, docController, context);
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
             return opView;

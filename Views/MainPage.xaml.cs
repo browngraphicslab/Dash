@@ -178,6 +178,8 @@ namespace Dash
                     TabMenu.Instance.SearchView.ActivateItem();
                 }
             }
+
+            
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

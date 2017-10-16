@@ -156,13 +156,16 @@ namespace Dash
         public bool DeleteIntersectingConnections(Point point1, Point point2)
         {
             bool lineDeleted = false;
-            var toBeDeleted = new List<FieldReference>();
             //Calculate line 1
             var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
             var yInt1 = point1.Y - point1.X * slope1;
             var view = FreeformInkControl.FreeformView;
-
+            var refsToLines = new Dictionary<FieldReference, Path>();
             foreach (var pair in view.RefToLine)
+            {
+                refsToLines[pair.Key] = pair.Value;
+            }
+            foreach (var pair in refsToLines)
             {
                 //Calculate line 2
                 var line = pair.Value;
@@ -183,30 +186,31 @@ namespace Dash
                 if (PointBetween(intersectionPoint, point1, point2) &&
                     PointBetween(intersectionPoint, curvePoint1, curvePoint2))
                 {
-                    toBeDeleted.Add(pair.Key);
+                    var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                     var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                     var doc2 = view2.ViewModel.DocumentController;
-                    var fields = doc2.EnumFields().ToImmutableList();
+                    var userLinks =
+                        (doc2.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>)
+                        .TypedData.Select(txtfmc => txtfmc.Data);
+                    var fields = doc2.EnumFields().Where(kvp => userLinks.Contains(kvp.Key.Id)).ToImmutableList();
                     foreach (var field in fields)
                     {
                         var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
                         if (referenceFieldModelController != null)
                         {
-                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
-                                .Equals(pair.Key.DereferenceToRoot(null));
-                            if (referencesEqual)
+                            var referencesEqual =
+                                view1.ViewModel.KeysToFrameworkElements[referenceFieldModelController.FieldKey].Equals(converter.Element1) &&
+                             view2.ViewModel.KeysToFrameworkElements[pair.Key.FieldKey].Equals(converter.Element2);
+                            if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
                             {
-                                doc2.SetField(field.Key,
-                                    referenceFieldModelController.DereferenceToRoot(null).Copy(), true);
+                                view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
+                                var fmc = referenceFieldModelController.DereferenceToRoot(null).Copy();
+                                doc2.SetField(field.Key, fmc, true);
                             }
                         }
                     }
                     lineDeleted = true;
                 }
-            }
-            foreach (var key in toBeDeleted)
-            {
-                view.DeleteLine(key, view.RefToLine[key]);
             }
             return lineDeleted;
         }
@@ -325,14 +329,17 @@ namespace Dash
                     _shapeRegions.Remove(child);
                 }
             }
+            //Get coordinates
+            var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
+            var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
+                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+            //Get the already extant documents within the ellipse
             var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
                 .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
                     FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
             var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(lassoPoints);
-            var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
-            var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
-                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
             recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
+            //Add recognized documents to new collection and adjust position 
             foreach (var doc in recognizedDocuments)
             {
                 var ogPos = doc.GetPositionField().Data;
@@ -340,20 +347,21 @@ namespace Dash
                     FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
+                FreeformInkControl.FreeformView.VisualDeleteConnections(FreeformInkControl.FreeformView.GetDocView(doc));
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
-            var fields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(recognizedDocuments)
-            };
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            //Make collection and add documents
+            var documentController = Util.BlankCollection();
+            documentController.SetField(DocumentCollectionFieldModelController.CollectionKey,
+                new DocumentCollectionFieldModelController(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
                     new ReferenceFieldModelController(documentController.GetId(),
                         DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
                     region.BoundingRect.Height).Document, true, true);
+            //Add collection to container
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
+            //Delete strokes used to make collection
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
 

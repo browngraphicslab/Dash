@@ -5,6 +5,7 @@ using Dash;
 using DashShared;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -34,7 +35,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             RichTextView rtv = null;
             var refToRichText =
@@ -67,6 +68,10 @@ namespace Dash
             // bind the rich text width
             var widthController = GetWidthField(docController, context);
             BindWidth(rtv, widthController);
+
+            //add to key to framework element dictionary
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = rtv;
 
             if (isInterfaceBuilderLayout)
             {

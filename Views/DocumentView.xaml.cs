@@ -41,6 +41,7 @@ namespace Dash
 
         public static int dvCount = 0;
 
+
         public DocumentView()
         {
             InitializeComponent();
@@ -282,6 +283,8 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+
+            
         }
 
         /// <summary>
