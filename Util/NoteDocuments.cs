@@ -56,9 +56,13 @@ namespace Dash
             public override DocumentController CreatePrototype()
             {
 
-                var fields = new Dictionary<KeyController, FieldModelController>();
-                fields.Add(CollectedDocsKey, new DocumentCollectionFieldModelController());
-                fields.Add(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Collected Docs Note Data API"));
+                var fields = new Dictionary<KeyController, FieldModelController>()
+                {
+                    [CollectedDocsKey] = new DocumentCollectionFieldModelController(),
+                    [KeyStore.AbstractInterfaceKey] = new TextFieldModelController("Collected Docs Note Data API"),
+                    [KeyStore.TitleKey] = new TextFieldModelController("Collection Note"),
+                    [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(KeyStore.TitleKey.Id) })
+                };
                 return new DocumentController(fields, Type, _prototypeID);
             }
 
@@ -81,6 +85,7 @@ namespace Dash
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
                 dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDocument), true);
+                dataDocument.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
 
                 if (_prototypeLayout == null)
                     _prototypeLayout = CreatePrototypeLayout();
@@ -93,7 +98,7 @@ namespace Dash
                 var listOfCollectedDocs = collectedDocument != null ? collectedDocument : new List<DocumentController>();
                 dataDocument.SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(listOfCollectedDocs), true);
                 
-                if (true)
+                if (false)
                 {
                     dataDocument.AddLayoutToLayoutList(docLayout);
                     dataDocument.SetActiveLayout(docLayout, true, true);
@@ -104,9 +109,7 @@ namespace Dash
                     docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(dataDocument), true);
                     Document = docLayout;
                 }
-                Document.SetField(KeyStore.PrimaryKeyKey,       new DocumentCollectionFieldModelController(listOfCollectedDocs), true);
-                Document.SetField(AnnotatedImage.TitleFieldKey, new TextFieldModelController(title), true);
-                Document.SetField(KeyStore.ThumbnailFieldKey,   new DocumentFieldModelController(listOfCollectedDocs.FirstOrDefault()), true);
+                Document.SetField(KeyStore.ThumbnailFieldKey,  new DocumentFieldModelController(listOfCollectedDocs.FirstOrDefault()), true);
                 DataDocument = dataDocument;
             }
         }
