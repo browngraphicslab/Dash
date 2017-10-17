@@ -248,7 +248,8 @@ namespace Dash
             { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
                 var currentTranslate = ViewModel.GroupTransform.Translate;
                 var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                ViewModel.GroupTransform = new TransformGroupData(ViewModel.DocumentController.GetActiveLayout().Data.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
             }
         }
 

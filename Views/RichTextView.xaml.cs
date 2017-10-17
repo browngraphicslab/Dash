@@ -256,6 +256,47 @@ namespace Dash
             xFormatCol.Width = new GridLength(0);
         }
 
+        private void xRichEitBox_DragOver(object sender, DragEventArgs e)
+        {
+        }
+
+        private void xRichEitBox_Drop(object sender, DragEventArgs e)
+        {
+            DocumentController theDoc = null;
+            if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
+            {
+                var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
+                theDoc = docCtrls.First();
+            }
+
+            string allText;
+            xRichEitBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+
+            var startPt = new Point();
+            var s1 = this.xRichEitBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEitBox.Document.Selection.EndPosition;
+            this.xRichEitBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+
+            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false);
+
+            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
+            {
+                string allRtfText;
+                xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            }
+            this.xRichEitBox.Document.Selection.SetRange(s1, s2);
+            e.Handled = true;
+            if (DocumentView.DragDocumentView != null)
+            {
+                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
+                DocumentView.DragDocumentView.IsHitTestVisible = true;
+                DocumentView.DragDocumentView = null;
+            }
+        }
+
         void xRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;

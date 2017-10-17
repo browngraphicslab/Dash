@@ -211,7 +211,10 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
-
+        public DocumentController GetDataDocument(Context context)
+        {
+            return GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context)?.Data ?? this;
+        }
         public override int GetHashCode()
         {
             return GetId().GetHashCode();
