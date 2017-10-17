@@ -1,0 +1,57 @@
+﻿<UserControl
+    x:Class="Dash.Views.Document_Menu.TreeMenuNode"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views.Document_Menu"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="350">
+    <Grid Width="200" Background="{StaticResource DocumentBackgroundOpaque}">
+        <Grid.Resources>
+            <local:MenuTypeToIcon x:Key="IconConverter"/>
+        </Grid.Resources>
+        <StackPanel Orientation="Vertical">
+            <!-- header -->
+            <Grid x:Name="xHeader" Tapped="xHeader_Tapped" Style="{StaticResource xMenuItemHeaderContainer}" >
+                <TextBlock x:Name="xLeftIcon" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{x:Bind HeaderIcon, Mode=OneWay}" />
+                <TextBlock x:Name="xCollapsedArrow"  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
+                <TextBlock x:Name="xHeaderLabel" Text="{x:Bind HeaderLabel, Mode=OneWay}" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+            </Grid>
+            <!-- leafs / content -->
+        <Grid x:Name="xItemContainer">
+            <StackPanel Orientation="Vertical">
+                <!-- leafs / end nodes -->
+                <ListView x:Name="xItemsList" Width="200" Margin="0">
+                <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:AddMenuItem">
+                    <Grid MinWidth="{Binding ElementName=xItemsList, Path=Width}" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
+                        <TextBlock Style="{StaticResource xMenuItem}" Text="{Binding DocType}"></TextBlock>
+                        <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Margin="0,0,20,0" 
+                                    Text="{Binding Type, Converter={StaticResource IconConverter}}" />
+                    </Grid>
+                </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemContainerStyle>
+                <!-- TODO: abstract this bs out-->
+
+                <Style TargetType="ListViewItem">
+                    <Setter Property="FontSize" Value="11"></Setter>
+                    <Setter Property="Height" Value="1"></Setter>
+                    <Setter Property="Padding" Value="10,10"></Setter>
+                    <Setter Property="Margin" Value="0"></Setter>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
+                    <Setter Property="BorderBrush" Value="#FF444444"></Setter>
+                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                </Style>
+                </ListView.ItemContainerStyle>
+                </ListView>
+                
+                <!-- nested branches, always below leafs for clarity-->
+                <StackPanel x:Name="xChildrenList" Orientation="Vertical"></StackPanel>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

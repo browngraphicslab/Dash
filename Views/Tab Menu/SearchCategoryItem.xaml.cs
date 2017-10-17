@@ -119,7 +119,7 @@ namespace Dash
             {
                 var docCont = func.Invoke(); 
                 if (docCont != null)
-                    Actions.AddDocFromFunction(docCont);
+                    Actions.AddDocFromFunction(TabMenu.Instance,docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
@@ -138,7 +138,7 @@ namespace Dash
             {
                 var docCont = func.Invoke();
                 if (docCont != null)
-                    Actions.AddDocFromFunction(docCont);
+                    Actions.AddDocFromFunction(TabMenu.Instance, docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);

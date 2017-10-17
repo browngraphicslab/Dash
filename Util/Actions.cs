@@ -58,14 +58,20 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddDocFromFunction(DocumentController opController)
+        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
         {
-            var freeForm = TabMenu.AddsToThisCollection;
+            // default to MainPage collection view
+            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            if (sender == TabMenu.Instance)
+            {
+                freeForm = TabMenu.AddsToThisCollection;
 
-            if (freeForm == null)
-                return;
-            
-            var searchView = TabMenu.Instance.SearchView;
+                if (freeForm == null)
+                    return;
+            }
+
+            // fetch the coordinates of the caller on canvas
+            var searchView = sender;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());

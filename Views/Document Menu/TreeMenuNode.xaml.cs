@@ -1,0 +1,216 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
+
+// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
+
+namespace Dash.Views.Document_Menu
+{
+    /// <summary>
+    /// Represents the type of Add Menu Node: ie. Document, Operator, etc.
+    /// </summary>
+    public enum AddMenuTypes
+    {
+        Document,
+        Operator,
+        Collection,
+        Source
+    }
+
+    /// <summary>
+    /// Represents a draggable item in the item creation menu. Includes type, icon, and other
+    /// display options.
+    /// </summary>
+    public class AddMenuItem
+    {
+        // == MEMBERS ==
+        public String DocType { get; set; }
+        public String IconText { get; set; }
+        public AddMenuTypes Type { get; set; }
+        public TappedEventHandler TapAction { get; set; }
+
+        // == CONSTRUCTORS ==
+        public AddMenuItem(String label, AddMenuTypes icon)
+        {
+            this.DocType = label;
+            Type = icon;
+        }
+        public AddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action)
+        {
+            this.DocType = label;
+            Type = icon;
+
+            TappedEventHandler tapped = (sender, e) => {
+                if (action != null)
+                {
+                    DocumentController docCont = action.Invoke();
+                    if (docCont != null)
+                        Actions.AddDocFromFunction(MainPage.Instance.AddMenu, docCont);
+                }
+            };
+
+            TapAction = tapped;
+        }
+
+        public AddMenuItem(String label, String icon)
+        {
+            this.DocType = label;
+            this.IconText = icon;
+        }
+        public AddMenuItem()
+        {
+        }
+
+    }
+    
+    /// <summary>
+    /// Converts a type enum into the corresponding document icon.
+    /// </summary>
+    public class MenuTypeToIcon : IValueConverter
+    {
+        public object Convert(object value, Type targetType,
+            object parameter, string language)
+        {
+            // given the enum, returns the corresponding icon as defined in App.xaml
+            AddMenuTypes v = (AddMenuTypes) value;
+            switch (v) {
+                case AddMenuTypes.Collection: return App.Current.Resources["CollectionIcon"] as String;
+                case AddMenuTypes.Document: return App.Current.Resources["DocumentPlainIcon"] as String;
+                case AddMenuTypes.Operator: return App.Current.Resources["OperatorIcon"] as String;
+                case AddMenuTypes.Source: return App.Current.Resources["DragOutIcon"] as String;
+
+            }
+            return "";
+        }
+
+        // No need to implement converting back on a one-way binding 
+        public object ConvertBack(object value, Type targetType,
+            object parameter, string language)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Implements a hierarchical display of a single tree-style menu node, including a:
+    /// - header (or subheader)
+    /// - items (stored in a list view)
+    /// </summary>
+    public sealed partial class TreeMenuNode : UserControl
+    {
+        // == MEMBERS ==
+        // two levels of headers for add menu: either top-level blue or subheader green
+        private bool isSubHeader = false;
+        //public ListView ItemsList { get { return xItemsList; } set { xItemsList = value; } } uncomment if use case arises
+
+        public string HeaderLabel
+        {
+            get { return (string)GetValue(HeaderLabelProperty); }
+            set { SetValue(HeaderLabelProperty, value); }
+        }
+        // optional: the icon on the header
+        public string HeaderIcon
+        {
+            get { return (string)GetValue(HeaderIconProperty); }
+            set { SetValue(HeaderIconProperty, value); }
+        }
+        
+        #region Bindings
+        // the text labelling the header
+        // Using a DependencyProperty as the backing store for HeaderLabel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HeaderLabelProperty =
+            DependencyProperty.Register("HeaderLabel", typeof(string), typeof(TreeMenuNode), new PropertyMetadata(0));
+
+        // Using a DependencyProperty as the backing store for HeaderLabel.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HeaderIconProperty =
+            DependencyProperty.Register("HeaderIcon", typeof(string), typeof(TreeMenuNode), new PropertyMetadata(0));
+        #endregion
+        
+        // == CONSTRUCTORS ==
+        public TreeMenuNode()
+        {
+            this.InitializeComponent();
+
+            // default values for testing
+            HeaderLabel = "Document";
+            HeaderIcon = App.Current.Resources["OperatorIcon"] as String;
+        }
+
+        public TreeMenuNode(bool isSubHeader)
+        {
+            this.InitializeComponent();
+
+            // default values for testing
+            HeaderLabel = "Document";
+            HeaderIcon = App.Current.Resources["OperatorIcon"] as String; 
+
+            this.isSubHeader = isSubHeader;
+            if (isSubHeader) {
+                xHeader.Background = App.Current.Resources["AccentGreen"] as SolidColorBrush;
+                xLeftIcon.Visibility = Visibility.Collapsed;
+                xHeaderLabel.Style = App.Current.Resources["xMenuItem"] as Style;
+            }
+        }
+
+        // == METHODS ==
+        /// <summary>
+        /// Adds a menu item to the bottom of the item list. Adds the tapped event handler to
+        /// the corresponding list view item.
+        /// </summary>
+        /// <param name="item"></param>
+        public void Add(AddMenuItem item) {
+            xItemsList.Items.Insert(0, item);
+        }
+
+        /// <summary>
+        /// Adds a tree menu node in place of menu items.
+        /// </summary>
+        /// <param name="item"></param>
+        public void Add(TreeMenuNode item)
+        {
+            xChildrenList.Children.Add(item);
+        }
+        
+        // == EVENT HANDLERS ==
+        /// <summary>
+        /// Tapped event handler. Collapses/uncollapses list items and updates corresponding icons.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xHeader_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            // TODO: change these to converters
+            // TODO: this would be prettier with an animation
+            if (xItemContainer.Visibility == Visibility.Visible)
+            {
+                xItemContainer.Visibility = Visibility.Collapsed;
+                xCollapsedArrow.Text = App.Current.Resources["ContractArrowIcon"] as String;
+            }
+            else
+            {
+                xItemContainer.Visibility = Visibility.Visible;
+                xCollapsedArrow.Text = App.Current.Resources["ExpandArrowIcon"] as String;
+            }
+
+            e.Handled = true;
+        }
+
+        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var item = (sender as Grid).DataContext as AddMenuItem;
+            item.TapAction(sender, e);
+        }
+    }
+}

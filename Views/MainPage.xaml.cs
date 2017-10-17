@@ -31,6 +31,7 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Dash.Views.Document_Menu;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -51,7 +52,7 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
-
+        public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public MainPage()
         {
 

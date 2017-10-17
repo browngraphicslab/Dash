@@ -28,7 +28,8 @@
        
             <!--local1:MainMenu></-->
         </StackPanel>
-        
+        <local1:AddMenu x:Name="xAddMenu" HorizontalAlignment="Left" VerticalAlignment="Center"></local1:AddMenu>
+
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
         <Grid Margin="0,0,-5,0" HorizontalAlignment="Right">
             <Grid.RenderTransform>
