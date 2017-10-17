@@ -171,22 +171,22 @@
     <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
-    <Compile Include="Views\CollectionDBChartBar.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBChartBar.xaml.cs">
       <DependentUpon>CollectionDBChartBar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionDBSchemaHeader.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBSchemaHeader.xaml.cs">
       <DependentUpon>CollectionDBSchemaHeader.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionDBSchemaRecord.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBSchemaRecord.xaml.cs">
       <DependentUpon>CollectionDBSchemaRecord.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionDBSchemaRecordField.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBSchemaRecordField.xaml.cs">
       <DependentUpon>CollectionDBSchemaRecordField.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionDBSchemaView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBSchemaView.xaml.cs">
       <DependentUpon>CollectionDBSchemaView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionDBView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionDBView.xaml.cs">
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DBFilterChart.xaml.cs">
@@ -198,13 +198,13 @@
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\RadialColorPicker.xaml.cs">
+    <Compile Include="Views\Radial Menu\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\RadialMenuSlider.xaml.cs">
+    <Compile Include="Views\Radial Menu\RadialMenuSlider.xaml.cs">
       <DependentUpon>RadialMenuSlider.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InkSettingsPane.xaml.cs">
+    <Compile Include="Views\Ink\InkSettingsPane.xaml.cs">
       <DependentUpon>InkSettingsPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
@@ -222,10 +222,10 @@
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Helper.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GridSplitter.Options.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Controls\GridSplitter\GripperHoverWrapper.cs" />
-    <Compile Include="Views\CollectionPageView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionPageView.xaml.cs">
       <DependentUpon>CollectionPageView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionTextView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionTextView.xaml.cs">
       <DependentUpon>CollectionTextView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
@@ -277,7 +277,7 @@
     <Compile Include="Views\ApiView.xaml.cs">
       <DependentUpon>ApiView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionMapView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
@@ -300,7 +300,7 @@
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Util\InkRecognitionHelper.cs" />
-    <Compile Include="Views\InkSelectionRect.xaml.cs">
+    <Compile Include="Views\Ink\InkSelectionRect.xaml.cs">
       <DependentUpon>InkSelectionRect.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
@@ -331,7 +331,7 @@
     </Compile>
     <Compile Include="Views\IOReference.cs" />
     <Compile Include="Util\OperationCreationHelper.cs" />
-    <Compile Include="Views\MenuButtonList.xaml.cs">
+    <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SelectionElement.xaml.cs">
@@ -340,13 +340,13 @@
     <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
       <DependentUpon>FreeformSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\GenericSearchView.xaml.cs">
+    <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="Views\SearchView.xaml.cs">
+    <Compile Include="Views\Tab Menu\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
@@ -371,7 +371,7 @@
     <Compile Include="Util\DocumentPointerFieldReference.cs" />
     <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
-    <Compile Include="Views\RichTextSettings.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\RichTextFieldModel.cs" />
@@ -407,13 +407,13 @@
     <Compile Include="Util\Context.cs" />
     <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
-    <Compile Include="Views\CollectionFreeformView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionGridView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionGridView.xaml.cs">
       <DependentUpon>CollectionGridView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionListView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionListView.xaml.cs">
       <DependentUpon>CollectionListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
@@ -510,7 +510,7 @@
     <Compile Include="Views\InterfaceBuilder\CollectionSettings.xaml.cs">
       <DependentUpon>CollectionSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionView.xaml.cs">
+    <Compile Include="Views\Collection\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\DocumentSettings.xaml.cs">
@@ -528,7 +528,7 @@
     <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InkCanvasControl.xaml.cs">
+    <Compile Include="Views\Ink\InkCanvasControl.xaml.cs">
       <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
@@ -547,7 +547,7 @@
     <Compile Include="Views\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MenuButton.xaml.cs">
+    <Compile Include="Views\Document Menu\MenuButton.xaml.cs">
       <DependentUpon>MenuButton.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OperatorView.xaml.cs">
@@ -559,7 +559,7 @@
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\RadialMenuView.xaml.cs">
+    <Compile Include="Views\Radial Menu\RadialMenuView.xaml.cs">
       <DependentUpon>RadialMenuView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\PositionSettings.xaml.cs">
@@ -574,10 +574,10 @@
     <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SearchCategoryItem.xaml.cs">
+    <Compile Include="Views\Tab Menu\SearchCategoryItem.xaml.cs">
       <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TabMenu.xaml.cs">
+    <Compile Include="Views\Tab Menu\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
@@ -660,27 +660,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\CollectionDBChartBar.xaml">
+    <Page Include="Views\Collection\CollectionDBChartBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionDBSchemaHeader.xaml">
+    <Page Include="Views\Collection\CollectionDBSchemaHeader.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionDBSchemaRecord.xaml">
+    <Page Include="Views\Collection\CollectionDBSchemaRecord.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionDBSchemaRecordField.xaml">
+    <Page Include="Views\Collection\CollectionDBSchemaRecordField.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionDBSchemaView.xaml">
+    <Page Include="Views\Collection\CollectionDBSchemaView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionDBView.xaml">
+    <Page Include="Views\Collection\CollectionDBView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -696,15 +696,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\RadialColorPicker.xaml">
+    <Page Include="Views\Radial Menu\RadialColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\RadialMenuSlider.xaml">
+    <Page Include="Views\Radial Menu\RadialMenuSlider.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InkSettingsPane.xaml">
+    <Page Include="Views\Ink\InkSettingsPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -712,11 +712,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\CollectionPageView.xaml">
+    <Page Include="Views\Collection\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionTextView.xaml">
+    <Page Include="Views\Collection\CollectionTextView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -760,7 +760,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionMapView.xaml">
+    <Page Include="Views\Collection\CollectionMapView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -788,7 +788,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InkSelectionRect.xaml">
+    <Page Include="Views\Ink\InkSelectionRect.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -804,7 +804,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MenuButtonList.xaml">
+    <Page Include="Views\Document Menu\MenuButtonList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -820,11 +820,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\GenericSearchView.xaml">
+    <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\SearchView.xaml">
+    <Page Include="Views\Tab Menu\SearchView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -864,7 +864,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\RichTextSettings.xaml">
+    <Page Include="Views\InterfaceBuilder\RichTextSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -872,15 +872,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionFreeformView.xaml">
+    <Page Include="Views\Collection\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionGridView.xaml">
+    <Page Include="Views\Collection\CollectionGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionListView.xaml">
+    <Page Include="Views\Collection\CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -904,7 +904,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionView.xaml">
+    <Page Include="Views\Collection\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -928,7 +928,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InkCanvasControl.xaml">
+    <Page Include="Views\Ink\InkCanvasControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -952,7 +952,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\MenuButton.xaml">
+    <Page Include="Views\Document Menu\MenuButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -968,7 +968,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\RadialMenuView.xaml">
+    <Page Include="Views\Radial Menu\RadialMenuView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -987,11 +987,11 @@
     <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\SearchCategoryItem.xaml">
+    <Page Include="Views\Tab Menu\SearchCategoryItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\TabMenu.xaml">
+    <Page Include="Views\Tab Menu\TabMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1042,7 +1042,9 @@
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Views\Operator\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -26,7 +26,7 @@
                 <ListView x:Name="xItemsList" Width="200" Margin="0">
                 <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:AddMenuItem">
-                    <Grid MinWidth="{Binding ElementName=xItemsList, Path=Width}" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
+                    <Grid MinWidth="{Binding ElementName=xItemsList, Path=Width}" Padding="0,15,0,16" Background="Transparent" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
                         <TextBlock Style="{StaticResource xMenuItem}" Text="{Binding DocType}"></TextBlock>
                         <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Margin="0,0,20,0" 
                                     Text="{Binding Type, Converter={StaticResource IconConverter}}" />
@@ -38,14 +38,15 @@
 
                 <Style TargetType="ListViewItem">
                     <Setter Property="FontSize" Value="11"></Setter>
-                    <Setter Property="Height" Value="1"></Setter>
-                    <Setter Property="Padding" Value="10,10"></Setter>
+                    <Setter Property="Height" Value="Auto"></Setter>
+                    <Setter Property="Padding" Value="0"></Setter>
                     <Setter Property="Margin" Value="0"></Setter>
                     <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
                     <Setter Property="BorderBrush" Value="#FF444444"></Setter>
                     <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
                 </Style>
                 </ListView.ItemContainerStyle>
+                        <local:AddMenuItem DocType="document1"></local:AddMenuItem>
                 </ListView>
                 
                 <!-- nested branches, always below leafs for clarity-->

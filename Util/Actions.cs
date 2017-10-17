@@ -58,14 +58,20 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
+        /// <summary>
+        /// Given a function that produces a document controller, visually displays t he documents
+        /// on the selected FreeFormView, defaulting to the main canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="opController"></param>
         public static void AddDocFromFunction(UserControl sender, DocumentController opController)
         {
             // default to MainPage collection view
             CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+
             if (sender == TabMenu.Instance)
             {
                 freeForm = TabMenu.AddsToThisCollection;
-
                 if (freeForm == null)
                     return;
             }
@@ -75,6 +81,7 @@ namespace Dash
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
+            translate = new Point(translate.X + 300, translate.Y + 100);
 
             //var opController = documentCreationFunc?.Invoke();
 

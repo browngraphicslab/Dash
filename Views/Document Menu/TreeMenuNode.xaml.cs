@@ -211,6 +211,7 @@ namespace Dash.Views.Document_Menu
         {
             var item = (sender as Grid).DataContext as AddMenuItem;
             item.TapAction(sender, e);
+            e.Handled = true;
         }
     }
 }
