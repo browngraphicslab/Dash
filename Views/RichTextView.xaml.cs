@@ -152,7 +152,7 @@ namespace Dash
                 else
                 {
                     theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                    theDoc.SetField(NoteDocuments.RichTextNote.TitleKey, new TextFieldModelController(refText), true);
+                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextFieldModelController(refText), true);
                 }
             }
 
