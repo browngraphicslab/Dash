@@ -62,7 +62,7 @@ namespace Dash
             var result = await ocrEngine.RecognizeAsync(softwareBitmap);
             var pageImgDoc = pageImg.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? pageImg;
             pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
-            pageDoc.SetField(KeyStore.DocumentTextKey, new ReferenceFieldModelController(pageImg.GetId(), KeyStore.DocumentTextKey), true);
+            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new ReferenceFieldModelController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
         async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {

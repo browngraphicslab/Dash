@@ -82,9 +82,9 @@ namespace NewControls
                 var blacklist = ComponentFactory.CreateBlacklist(ExcludeEnglishCommonWords); 
                 var customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
 
-                var inputType = ComponentFactory.DetectInputType(text);
+               // var inputType = ComponentFactory.DetectInputType(text);
                 // var progress = ComponentFactory.CreateProgressBar(inputType, progressBar);
-                var terms = ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
+                var terms = new StringExtractor(text, new NullProgressIndicator()); //  ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
                 var stemmer = ComponentFactory.CreateWordStemmer(m_wordStemmer);  
                 var words = terms.Filter(blacklist).Filter(customBlacklist).CountOccurences();
 #pragma warning disable CS4014
