@@ -44,7 +44,7 @@ namespace NewControls
         private IEnumerable<IWord> m_Words;
         readonly Color[] m_DefaultPalette = new[] { Colors.DarkRed, Colors.DarkBlue, Colors.DarkGreen, Colors.Navy, Colors.DarkCyan, Colors.DarkOrange, Colors.DarkGoldenrod, Colors.DarkKhaki, Colors.Blue, Colors.Red, Colors.Green };
         private Color[] m_Palette;
-        private LayoutType m_LayoutType = LayoutType.Typewriter;
+        private LayoutType m_LayoutType = LayoutType.Spiral;
 
         private int m_MaxFontSize = 100;
         private int m_MinFontSize = 9;
