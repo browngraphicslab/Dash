@@ -83,6 +83,7 @@ namespace Dash
 
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
+            _dataReference = null; // forces the property change to fire-- otherwise, the old and new field references are the same
             DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
         }
         

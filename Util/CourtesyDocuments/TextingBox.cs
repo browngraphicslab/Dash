@@ -140,15 +140,7 @@ namespace Dash
 
         protected static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
         {
-            if (fieldModelController is TextFieldModelController)
-            {
-                return new StringToStringConverter();
-            }
-            else if (fieldModelController is NumberFieldModelController)
-            {
-               return new StringToDoubleConverter(0);
-            }
-            else if (fieldModelController is DocumentFieldModelController)
+            if (fieldModelController is DocumentFieldModelController)
             {
                 return new DocumentControllerToStringConverter();
             }
@@ -156,7 +148,16 @@ namespace Dash
             {
                 return new DocumentCollectionToStringConverter();
             }
-            return null;
+            else if (fieldModelController is NumberFieldModelController)
+            {
+                return new StringToDoubleConverter(0);
+            }
+            else if (fieldModelController is ReferenceFieldModelController)
+            {
+                return null;
+            }
+
+            return new ObjectToStringConverter(null);
         }
         
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)

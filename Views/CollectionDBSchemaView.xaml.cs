@@ -63,6 +63,10 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
+                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
+                    {
+                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
+                    }
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
@@ -108,9 +112,7 @@ namespace Dash
         {
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            if (field is TextFieldModelController)
-                xEditTextBox.Text = (field as TextFieldModelController).Data;
-            else xEditTextBox.Text = field.ToString();
+            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
@@ -379,6 +381,11 @@ namespace Dash
         private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
         {
             this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
+
+        private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xRecordsView);
         }
     }
 }

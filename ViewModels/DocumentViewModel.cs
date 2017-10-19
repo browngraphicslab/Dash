@@ -215,14 +215,15 @@ namespace Dash
 
         private void updateDisplayName()
         {
-            var keyList = DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
+            var dataDoc = DocumentController.GetDataDocument(Context);
+            var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
                 var docString = "";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
+                    var keyField = dataDoc.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                 }

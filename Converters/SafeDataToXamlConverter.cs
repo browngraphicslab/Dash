@@ -40,7 +40,8 @@ namespace Dash
         /// <returns>The data equivalent to the xaml</returns>
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            Debug.Assert(value is TXaml, "You are trying to convert xaml into data, but the xaml is of the wrong type");
+            Debug.Assert(value is TXaml, "You are trying to convert xaml of type " + value?.GetType() + " into data type " + targetType + ", but the types don't match");
+            
             Debug.Assert(targetType.IsAssignableFrom(typeof(TData)),
                 "You are trying to get a data type which this converter does not produce");
             return ConvertXamlToData((TXaml) value, parameter);
