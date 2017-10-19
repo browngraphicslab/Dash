@@ -32,18 +32,31 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public int MaxZ { get; set; }
+
         public SelectionElement CurrentView { get; set; }
+
         private OverlayMenu _collectionMenu;
+
         public CollectionViewModel ViewModel
         {
-            get { return DataContext as CollectionViewModel; }
-            set { DataContext = value; }
+            get => DataContext as CollectionViewModel;
+            set => DataContext = value;
         }
-        public CollectionView ParentCollection { get; set; }
 
-        public CompoundOperatorEditor CompoundFreeform { get; set; }
+        /// <summary>
+        /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
+        /// </summary>
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
-        public DocumentView ParentDocument { get; set; }
+        /// <summary>
+        /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
+        /// </summary>
+        public CompoundOperatorEditor CompoundFreeform => this.GetFirstAncestorOfType<CompoundOperatorEditor>();
+
+        /// <summary>
+        /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
+        /// </summary>
+        public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
         public enum CollectionViewType
         {
@@ -71,18 +84,6 @@ namespace Dash
         private float _backgroundOpacity = .95f;
         #endregion
         
-        public static CollectionView GetParentCollectionView(DependencyObject sender)
-        {
-            var item = VisualTreeHelper.GetParent(sender);
-            var cv = item as CollectionView;
-            while (item != null && !(item is CollectionView))
-            {
-                item = VisualTreeHelper.GetParent(item);
-                if (item is CollectionView)
-                    cv = item as CollectionView;
-            }
-            return cv;
-        }
 
         public void TryBindToParentDocumentSize()
         {
@@ -100,10 +101,6 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
-            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
-
             if (_collectionMenu == null)
                 MakeMenu();
             // set the top-level viewtype to be freeform by default
@@ -161,12 +158,14 @@ namespace Dash
         private void ConnectionEllipseOutput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
-            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = (sender as Grid).Children[0] as Ellipse;
-            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
+            // containing documents docId
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            // the ellipse which the link should attatch to
+            var el = (sender as Grid)?.Children[0] as Ellipse;
+            var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
-            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
             freeform.CanLink = true;
             freeform.StartDrag(ioRef);
@@ -175,12 +174,12 @@ namespace Dash
         private void ConnectionEllipseOutput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
-            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = (sender as Grid).Children[0] as Ellipse;
-            KeyController outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            var el = (sender as Grid).Children[0] as Ellipse;
+            var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
-            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
             freeform.EndDrag(ioRef, false);
         }
@@ -188,20 +187,16 @@ namespace Dash
         #endregion
 
         #region Operator connection input
-        private void ConnectionEllipseInput_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Complete();
-        }
 
         private void ConnectionEllipseInput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
-            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = ConnectionEllipseInput;
-            KeyController outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            var el = ConnectionEllipseInput;
+            var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
+            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
-            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
             freeform.CanLink = true;
             freeform.StartDrag(ioRef);
@@ -210,12 +205,12 @@ namespace Dash
         private void ConnectionEllipseInput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
-            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = ConnectionEllipseInput;
-            KeyController outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            var el = ConnectionEllipseInput;
+            var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
+            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
-            CollectionFreeformView freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
             freeform.EndDrag(ioRef, false);
         }
@@ -226,7 +221,7 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView(this) { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView = new CollectionFreeformView() { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
             ViewModes?.HighlightAction(SetFreeformView);
@@ -528,7 +523,7 @@ namespace Dash
         private void xContentControl_Loaded(object sender, RoutedEventArgs e)         
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-            DocumentViewModel datacontext = docView?.DataContext as DocumentViewModel;
+            var datacontext = docView?.DataContext as DocumentViewModel;
 
             if (datacontext == null) return;
             var visibilityBinding = new Binding

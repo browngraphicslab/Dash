@@ -241,7 +241,8 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move)
             {
-                var coll = CollectionView.GetParentCollectionView(this);
+                var coll = this.GetFirstAncestorOfType<CollectionView>();
+                Debug.Assert(coll != null);
                 coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
             }
             else

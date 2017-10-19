@@ -25,7 +25,7 @@
             </Grid.ColumnDefinitions>
 
             <!--Inner Content-->
-            <Border Grid.Column="1" Background="Red">
+            <Border Grid.Column="1">
                 <ContentPresenter x:Name="xOpContentPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
             </Border>
 

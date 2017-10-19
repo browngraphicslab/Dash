@@ -22,7 +22,7 @@ namespace Dash
 
         public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            if (collection == null) return;
+            Debug.Assert(collection != null);
             _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddViewModels(_collectionFieldModelController.Data, context);
 

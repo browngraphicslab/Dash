@@ -238,11 +238,8 @@ namespace Dash
         {
             Debug.WriteLine("CollectionViewOnDragLeave Base");
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = CollectionView.GetParentCollectionView(CollectionView.GetParentCollectionView(sender as DependencyObject));
-            if (parentCollection != null)
-            {
-                parentCollection.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
-            }
+            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as SelectionElement;
             if (element != null)

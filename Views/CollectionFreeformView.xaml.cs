@@ -52,8 +52,6 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        //public Dictionary<FieldReference, LinePackage> LineDict = new Dictionary<FieldReference, LinePackage>();
-
         public Dictionary<FieldReference, Path> RefToLine = new Dictionary<FieldReference, Path>();
         public Dictionary<Path, BezierConverter> LineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
@@ -70,7 +68,6 @@ namespace Dash
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private CollectionView ParentCollection;
         private float _backgroundOpacity = .95f;
         #endregion
 
@@ -83,7 +80,6 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            ParentCollection = null;
             DragLeave += Collection_DragLeave;
             //DragEnter += Collection_DragEnter;
         }
@@ -95,17 +91,7 @@ namespace Dash
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         }
 
-        public CollectionFreeformView(CollectionView parentCollection)
-        {
-            InitializeComponent();
-            Loaded += Freeform_Loaded;
-            Unloaded += Freeform_Unloaded;
-            DataContextChanged += OnDataContextChanged;
 
-            DragLeave += Collection_DragLeave;
-            //DragEnter += Collection_DragEnter;
-            ParentCollection = parentCollection;
-        }
 
         public IOReference GetCurrentReference()
         {
@@ -286,14 +272,6 @@ namespace Dash
                 var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
                 DeleteLine(fieldRef, line);
             }
-            //var refs = linesToBeDeleted.Keys.ToList();
-            //for (int i = linesToBeDeleted.Count - 1; i >= 0; i--)
-            //{
-            //    var package = linesToBeDeleted[refs[i]];
-            //    itemsPanelCanvas.Children.Remove(package.Line);
-            //    LineDict.Remove(refs[i]);
-            //}
-            //linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
         }
 
         public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
@@ -309,6 +287,8 @@ namespace Dash
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
+
+
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
         /// </summary>
@@ -530,8 +510,10 @@ namespace Dash
 
         public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink=false)
         {
-            IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
-            IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
+            // called when we release on a link, thus if the ioReference is output the _currReference
+            // is the input since the _currReference must have been dragged from an input
+            var inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            var outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
             // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
@@ -608,18 +590,6 @@ namespace Dash
             var line = LineToConverter.FirstOrDefault(k => k.Value.Equals(converter)).Key;
             if (line != null) line.Stroke = converter.GradientBrush;
         }
-
-        /// <summary>
-        /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
-        /// </summary>
-        //public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
-        //{
-        //    if (_currReference != null)
-        //    {
-        //        cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
-        //        EndDrag(ioReference);
-        //    }
-        //}
 
         /// <summary>
         /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
