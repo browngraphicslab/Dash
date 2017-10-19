@@ -846,7 +846,7 @@ namespace Dash
 
                 if (_currReference.FieldReference.FieldKey == KeyStore.CollectionOutputKey)
                 {
-                    var field = droppedSrcDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
+                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
                     cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
                 }
             }
