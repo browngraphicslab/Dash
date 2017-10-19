@@ -15,6 +15,10 @@ namespace Dash
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
             var type = layoutDocument.DocumentType;
+            if (type == DashConstants.DocumentTypeStore.DefaultType)
+            {
+                return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
+            }
             if (type == ImageBox.DocumentType)
             {
                 return CreateImageSettingsLayout(layoutDocument);

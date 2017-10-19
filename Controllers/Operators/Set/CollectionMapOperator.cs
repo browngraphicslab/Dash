@@ -103,7 +103,7 @@ namespace Dash
 
             List<DocumentController> documents = new List<DocumentController>();
 
-            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DashConstants.DocumentTypeStore.DefaultType);
 
             for (int i = 0; i < numDocuments; i++)
             {

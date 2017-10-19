@@ -121,7 +121,7 @@ namespace Dash
             var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
             Color c = brush.Color;
             c.A = 204;
-            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
+            //xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
         }
 
 #endregion
@@ -635,6 +635,14 @@ namespace Dash
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
             Debug.WriteLine(query);
+        }
+
+        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
+            var deepestPrototype = prototypes.First.Value;
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
+            var same = deepestPrototype.Equals(ViewModel.DocumentController);
         }
     }
 }

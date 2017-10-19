@@ -1042,7 +1042,7 @@ namespace Dash
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
 
-                if (doc.Data.DocumentType == DefaultLayout.DocumentType)
+                if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultType)
                 {
                     if (isInterfaceBuilder)
                     {

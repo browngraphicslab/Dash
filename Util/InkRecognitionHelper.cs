@@ -370,7 +370,7 @@ namespace Dash
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
                 FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
             var fields = new Dictionary<KeyController, FieldModelController>();
-            var doc = new DocumentController(fields, DocumentType.DefaultType);
+            var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.DefaultType);
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
             foreach (var rect in TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r)))
