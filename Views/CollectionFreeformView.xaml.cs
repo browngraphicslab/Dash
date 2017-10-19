@@ -205,8 +205,8 @@ namespace Dash
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
 
-            IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
-            IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
+            IOReference outputtingReference = new IOReference(reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
+            IOReference inputtingReference = new IOReference(new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
 
             StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
             _currReference = outputtingReference;
@@ -422,15 +422,24 @@ namespace Dash
 
         public void StartDrag(IOReference ioReference)
         {
-            if (_currReference != null) return;
+            if (_currReference != null)
+                return;
+
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
-            if (ioReference.PointerArgs == null) return;
-            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
+            if (ioReference.PointerArgs == null)
+            {
+                return;
+            }
+
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
+            {
+                return;
+            }
 
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
             //itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
@@ -822,7 +831,6 @@ namespace Dash
             
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
-                //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
                 var pos = e.GetCurrentPoint(this).Position;
                 var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
                 {
@@ -844,7 +852,7 @@ namespace Dash
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
-                if (_currReference.FieldReference.FieldKey == KeyStore.CollectionOutputKey)
+                if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
                     var field = droppedSrcDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
                     cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);

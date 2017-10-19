@@ -781,15 +781,17 @@ namespace Dash
             return new List<KeyController>(opField.Inputs.Keys);
         }
 
-
+        /// <summary>
+        /// Returns true if the document with the passed in id is a prototype 
+        /// of this document. Searches up the entire hierarchy recursively
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public bool IsDelegateOf(string id)
         {
             var proto = GetPrototype();
-            if (proto != null)
-                if (proto.GetId() == id)
-                    return true;
-                else return proto.IsDelegateOf(id);
-            return false;
+            if (proto == null) return false;
+            return proto.GetId() == id || proto.IsDelegateOf(id);
         }
 
 

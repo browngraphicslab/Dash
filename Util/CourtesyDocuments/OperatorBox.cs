@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Dash;
@@ -48,8 +49,11 @@ namespace Dash
         public static FrameworkElement MakeOperatorView(DocumentController docController,
             Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements, bool isInterfaceBuilderLayout, Func<FrameworkElement> customLayout = null)
         {
+
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = data as ReferenceFieldModelController;
+            Debug.Assert(opfmc != null, "We assume that documents containing operators contain a reference to the required operator doc in the data key");
+            Debug.Assert(opfmc.FieldReference is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
             var opView = new OperatorView(keysToFrameworkElements)
             {
                 DataContext = opfmc.FieldReference,

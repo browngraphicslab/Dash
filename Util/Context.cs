@@ -14,8 +14,11 @@ namespace Dash
 
         private readonly Dictionary<FieldReference, FieldModelController> _data;
 
-        public HashSet<DocumentController> DocContextList { get { return _documentContextList; } }
+        public HashSet<DocumentController> DocContextList => _documentContextList;
 
+        /// <summary>
+        /// Create a new context with no initial values
+        /// </summary>
         public Context()
         {
             _documentContextList = new HashSet<DocumentController>();
@@ -117,15 +120,28 @@ namespace Dash
             return false;
         }
 
+        /// <summary>
+        /// Returns the id of the deepest delegate of the document associated with the passed in id.
+        /// Returns the passed in id if there is no deeper delegate
+        /// </summary>
+        /// <param name="referenceDocId"></param>
+        /// <returns></returns>
         public string GetDeepestDelegateOf(string referenceDocId)
         {
-            var found = false;
-            foreach (var doc in _documentContextList.Reverse())
+            Debug.Assert(ContentController.GetController<DocumentController>(referenceDocId) != null, "the passed in documentId is not actually associated with any document in the system!");
+
+            // flag to say if we found a delegate
+            var found = false;    
+            foreach (var doc in _documentContextList)
+            {
+                // set the flag if we find a delegate or the document with the passed in id
                 if (doc.GetId() == referenceDocId || doc.IsDelegateOf(referenceDocId))
                 {
                     found = true;
                     referenceDocId = doc.GetId();
                 }
+            }
+
             return found ? referenceDocId : null;
         }
 
