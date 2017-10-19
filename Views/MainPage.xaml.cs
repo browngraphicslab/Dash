@@ -431,7 +431,7 @@ namespace Dash
             var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
-            }, DocumentType.DefaultType);
+            }, DashConstants.DocumentTypeStore.DefaultType);
 
             var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
@@ -530,12 +530,12 @@ namespace Dash
             {
                 [textKey] = new TextFieldModelController("Prototype text")
             };
-            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
+            DocumentController innerProto = new DocumentController(innerDict, DashConstants.DocumentTypeStore.DefaultType);
             var dict = new Dictionary<KeyController, FieldModelController>
             {
                 [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
             };
-            var proto = new DocumentController(dict, DocumentType.DefaultType);
+            var proto = new DocumentController(dict, DashConstants.DocumentTypeStore.DefaultType);
 
             var freeform = new FreeFormDocument(new List<DocumentController>{new TextingBox(new ReferenceFieldModelController(
                 new DocumentFieldReference(proto.GetId(), KeyStore.DataKey), textKey)).Document}, new Point(0, 0), new Size(400, 400)).Document;
@@ -550,7 +550,7 @@ namespace Dash
             {
                 [textKey] = new TextFieldModelController("Delegate 1 text")
             };
-            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
+            var innerDel1 = new DocumentController(innerDelDict, DashConstants.DocumentTypeStore.DefaultType);
             del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
 
             DisplayDocument(proto);

@@ -186,7 +186,7 @@ namespace Dash
                     [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
                 };
 
-                fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
+                fmController = new DocumentFieldModelController(new DocumentController(fields, DashConstants.DocumentTypeStore.DefaultType)); 
             }
             var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
 

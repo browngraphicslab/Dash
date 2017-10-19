@@ -516,7 +516,7 @@ namespace Dash
             {
                 [KeyStore.TitleKey] = new TextFieldModelController("Document")
             };
-            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
+            var blankDocument = new DocumentController(docfields, DashConstants.DocumentTypeStore.DefaultType);
             var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
             blankDocument.SetActiveLayout(layout, true, true);
             return blankDocument;

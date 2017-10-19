@@ -91,8 +91,10 @@ namespace Dash
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
             
-            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DashConstants.DocumentTypeStore.DefaultType);
             newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
+            newDocProto.SetActiveLayout(new DefaultLayout(where.X, where.Y, 400, 400).Document, true, true);
+
             var newDoc = newDocProto.MakeDelegate();
             newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
@@ -130,7 +132,7 @@ namespace Dash
                     new DocumentFieldModelController(
                         new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
                 };
-                var doc = new DocumentController(fields, DocumentType.DefaultType);
+                var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.DefaultType);
                 var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
                 var layout = doc.GetActiveLayout();
                 var data =

@@ -827,7 +827,7 @@ namespace Dash
                 var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
                 {
                     [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
-                }, DocumentType.DefaultType);
+                }, DashConstants.DocumentTypeStore.DefaultType);
                 var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);

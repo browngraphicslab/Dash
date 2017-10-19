@@ -62,7 +62,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldModelController>();
                 AddFields(fields, aDoc);
                 AddFields(fields, bDoc);
-                var newDoc = new DocumentController(fields, DocumentType.DefaultType);
+                var newDoc = new DocumentController(fields, DashConstants.DocumentTypeStore.DefaultType);
                 newDocs.Add(newDoc);
             }
 
