@@ -73,6 +73,8 @@ namespace Dash
         
         public static CollectionView GetParentCollectionView(DependencyObject sender)
         {
+            if (sender == null)
+                return null;
             var item = VisualTreeHelper.GetParent(sender);
             var cv = item as CollectionView;
             while (item != null && !(item is CollectionView))

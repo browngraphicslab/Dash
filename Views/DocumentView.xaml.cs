@@ -161,14 +161,16 @@ namespace Dash
             copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
+            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 moveButton,
                 copyButton,
                // delegateButton,
-                copyDataButton,
+               // copyDataButton
+                instanceDataButton,
                 copyViewButton,
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
@@ -204,6 +206,16 @@ namespace Dash
             copyDataButton.ManipulationDelta += (s, e) => e.Handled = true;
             copyDataButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyDataButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
+            };
+            var instanceDataButtonView = instanceDataButton.View;
+            instanceDataButtonView.CanDrag = true;
+            instanceDataButtonView.ManipulationMode = ManipulationModes.All;
+            instanceDataButtonView.ManipulationDelta += (s, e) => e.Handled = true;
+            instanceDataButtonView.ManipulationStarted += (s, e) => e.Handled = true;
+            instanceDataButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
@@ -493,6 +505,10 @@ namespace Dash
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
+        private void InstanceDataDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
+        }
         public void ScreenCap()
         {
             Util.ExportAsImage(OuterGrid);

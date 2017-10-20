@@ -314,7 +314,7 @@ namespace Dash
                         var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
                         pt.X -= 150;
                         pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt, true));
+                        MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
                     }
                     else if (target.StartsWith("http"))
                     {
