@@ -36,7 +36,7 @@
                 <Grid HorizontalAlignment="Right" Width="70" >
                     <CheckBox x:Name="xAutoFit" FontSize="10">Auto Fit</CheckBox>
                 </Grid>
-                <Line StrokeThickness="3" Stroke="Black" X1="0" Y1="0" X2="{Binding ElementName=LineGrid,Path=ActualWidth}" Y2="0"></Line>
+                <Line StrokeThickness="3" Stroke="Black" X1="0" Y1="0" X2="2000" Y2="0"/>
             </Grid>
         </Grid>
         <Grid x:Name="xTextContent" Visibility="Collapsed">

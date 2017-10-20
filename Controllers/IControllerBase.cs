@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public class IControllerBase
+    public class IControllerBase : ViewModelBase
     {
     }
 }

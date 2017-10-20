@@ -73,23 +73,28 @@ namespace Dash
             // X, Y, Width, and Height etc....
 
             ///* 
-            ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
+                new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out ReferenceFieldModelController refToData);
 
             var textfieldModelController = fieldModelController as TextFieldModelController;
             Debug.Assert(textfieldModelController != null);
 
-            var grid = new Grid();
-            grid.Background = new SolidColorBrush(Colors.Blue);
-            var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-            var web = new WebView();
-            web.Source = new Uri(textfieldModelController.Data);
-            web.IsHitTestVisible = false;
+            var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
+            var web = new WebView
+            {
+                Source = new Uri(textfieldModelController.Data),
+                IsHitTestVisible = false,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
             grid.Children.Add(web);
-            var overgrid = new Grid();
-            overgrid.HorizontalAlignment = HorizontalAlignment.Stretch;
-            overgrid.VerticalAlignment = VerticalAlignment.Stretch;
-            overgrid.Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff));
+            var overgrid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+                Name="overgrid"
+            };
             grid.Children.Add(overgrid);
 
             SetupBindings(web, docController, context);

@@ -59,12 +59,11 @@ namespace Dash
 
         public double Data
         {
-            get { return NumberFieldModel.Data; }
+            get => NumberFieldModel.Data;
             set
             {
-                if (NumberFieldModel.Data != value)
+                if (SetProperty(ref NumberFieldModel.Data, value))
                 {
-                    NumberFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                 }
             }
