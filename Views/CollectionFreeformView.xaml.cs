@@ -11,6 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Devices.HumanInterfaceDevice;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -43,6 +44,7 @@ namespace Dash
         #endregion
 
 
+        
         #region LinkingVariables
 
         public bool CanLink = false;
@@ -60,7 +62,7 @@ namespace Dash
         private Canvas itemsPanelCanvas;
 
         #endregion
-
+        
 
         public ManipulationControls ManipulationControls;
 
@@ -199,6 +201,11 @@ namespace Dash
                 var type = op.Outputs[reference.FieldKey];
                 fmController = TypeInfoHelper.CreateFieldModelController(type);
             }
+            MakeLine(reference, referencingDoc, referencingFieldKey, referencedFieldKey, fmController, referencedDoc);
+        }
+
+        private void MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc)
+        {
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
             var docView2 = GetDocView(referencingDoc);
@@ -208,7 +215,7 @@ namespace Dash
             IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
             IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
 
-            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
+            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5, 5), frameworkElement1, itemsPanelCanvas));
             _currReference = outputtingReference;
             EndDrag(inputtingReference, false, true);
         }
@@ -245,13 +252,17 @@ namespace Dash
                     var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
                     if (referenceFieldModelController != null)
                     {
-                        var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
-                            .Equals(reff.DereferenceToRoot(null));
-                        if (referencesEqual)
+                        var dereferenced = referenceFieldModelController.DereferenceToRoot(null);
+                        if (dereferenced != null)
                         {
-                            var keyId = field.Key.Id;
-                            var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
-                            if (textFMC != null) linksList.Remove(textFMC);
+                            var referencesEqual = dereferenced.Equals(reff.DereferenceToRoot(null));
+
+                            if (referencesEqual)
+                            {
+                                var keyId = field.Key.Id;
+                                var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
+                                if (textFMC != null) linksList.Remove(textFMC);
+                            }
                         }
                     }
                 }

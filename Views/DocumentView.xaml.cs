@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -60,8 +61,68 @@ namespace Dash
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
             this.Holding += OperatorHolding;
-
+            this.ManipulationCompleted += DocumentView_ManipulationCompleted; ;
         }
+
+        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            if (docView != null)
+            {
+                var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
+                if (docType.Equals(CollectionBox.DocumentType) || docType.Equals(OperatorBox.DocumentType))
+                {
+                    //Get the coordinates of the view
+                    Point screenCoords = docView.TransformToVisual(Window.Current.Content)
+                        .TransformPoint(new Point(0, 0));
+                    var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
+                    if (freeformView?.RefToLine != null)
+                    {
+                        foreach (var link in freeformView.RefToLine)
+                        {
+                            //Get the slope of the line through the endpoints of the link
+                            var converter = freeformView.LineToConverter[link.Value];
+                            var curvePoint1 = converter.Element1
+                                .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
+                                .TransformPoint(new Point(converter.Element1.ActualWidth / 2,
+                                    converter.Element1.ActualHeight / 2));
+                            var curvePoint2 = converter.Element2
+                                .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
+                                .TransformPoint(new Point(converter.Element2.ActualWidth / 2,
+                                    converter.Element2.ActualHeight / 2));
+                            var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
+
+                            // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
+                            var intersectionTopX = curvePoint1.X + (1 / slope) * (screenCoords.Y - curvePoint1.Y);
+                            var intersectionBottomX =
+                                curvePoint1.X + (1 / slope) * (screenCoords.Y + docView.ActualHeight - curvePoint1.Y);
+
+                            // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
+                            // the link is outside the document.
+                            if (slope < 0 && !(intersectionTopX < screenCoords.X ||
+                                               intersectionBottomX > screenCoords.X + docView.ActualWidth)
+                                || slope > 0 && !(intersectionTopX > screenCoords.X ||
+                                                  intersectionBottomX < screenCoords.X + docView.ActualWidth))
+                            {
+                                ChangeConnections(freeformView, link);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ChangeConnections(CollectionFreeformView ffView, KeyValuePair<FieldReference, Path> link)
+        {
+            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
+        }
+
+        //private void ChangeConnections(DocumentView view, )
+        //{
+        //    
+        //}
+
 
         public void OperatorHolding(object sender, HoldingRoutedEventArgs e)
         {
