@@ -8,12 +8,10 @@ namespace Dash
 {
     public class CollectionMapOperatorBox : CourtesyDocument
     {
-        public static readonly DocumentType DocumentType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
-
         public CollectionMapOperatorBox(ReferenceFieldModelController refToOp)
         {
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
-            Document = new DocumentController(fields, DocumentType);
+            var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
+            Document = new DocumentController(fields, DashConstants.DocumentTypeStore.MapOperatorBoxType);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -28,19 +26,14 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(KeyStore.DataKey);
-            var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
-            var mapView = new CollectionMapView();
-            opView.OperatorContent = mapView;
-            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
-            return opView;
+            return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn,
+                isInterfaceBuilderLayout, () => new CollectionMapView());
         }
     }
 }

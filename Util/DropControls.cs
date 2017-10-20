@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -42,11 +43,11 @@ namespace Dash
             CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                box = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key));
+                box = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                box = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key));
+                box = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key));
             }
 
             // safety check
@@ -56,7 +57,7 @@ namespace Dash
             }
 
             // drop factory???
-            if (_layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            if (_layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
             {
                 box.Document.SetField(KeyStore.PositionFieldKey, dropPointFMC, forceMask: true);
             }

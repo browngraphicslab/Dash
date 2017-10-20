@@ -1,16 +1,22 @@
 ﻿using System;
 using DashShared;
 using Windows.Foundation;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelTypeAttribute(TypeInfo.Point)]
     public class PointFieldModel : FieldModel
-    {
-        public PointFieldModel() { }
+    { 
 
-        public PointFieldModel(Point data) : this()
+        public PointFieldModel(Point data, string id = null) : base(id)
         {
             Data = data;
+        }
+
+        public PointFieldModel():this(0,0)
+        {
+            
         }
 
         public PointFieldModel(double x, double y) : this(new Point(x, y))
@@ -22,11 +28,6 @@ namespace Dash
         public override string ToString()
         {
             return $"PointFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Reference, Data);
         }
     }
 }

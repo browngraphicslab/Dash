@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Windows.Foundation;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -14,7 +15,7 @@ namespace Dash
 
         static DocumentController CreatePrototypeDoc()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(KeyStore.TitleKey.ToString() ) } )
             };
@@ -32,10 +33,14 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 20);
-            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
+            var prototypeTextLayout = new TextingBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 20);
+            var prototypeImage1Layout = new ImageBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
 
-            var prototypeLayout = new StackLayout(new DocumentController[] { prototypeTextLayout.Document, prototypeImage1Layout.Document}, false);
+            var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, false);
+
+            //prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            //prototypeImage1Layout.Document.SetField(KeyStore.WidthFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            //prototypeImage1Layout.Document.SetField(KeyStore.HeightFieldKey, new DocumentReferenceFieldController(prototypeLayout.Document.GetId(), KeyStore.HeightFieldKey), true);
 
             return prototypeLayout.Document;
         }
@@ -43,8 +48,9 @@ namespace Dash
         {
             Document = _prototypeDoc.MakeDelegate();
             Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
+
             Document.SetField(KeyStore.TitleKey, new TextFieldModelController(imageUri.AbsolutePath), true);
-            var docLayout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document;
+            var docLayout = new ImageBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document;
 
             docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(x, y)), true);
             docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);

@@ -4,12 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    class ListFieldModel : FieldModel
+    [FieldModelTypeAttribute(TypeInfo.List)]
+    public class ListFieldModel : FieldModel
     {
-        public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo)
+        public ListFieldModel() : base(null)
+        {
+        }
+
+        public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo, string id = null) : base(id)
         {
             Data = new List<string>(l);
             SubTypeInfo = subTypeInfo;
@@ -18,10 +24,5 @@ namespace Dash
         public List<string> Data;
 
         public TypeInfo SubTypeInfo;
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Reference, Data);
-        }
     }
 }

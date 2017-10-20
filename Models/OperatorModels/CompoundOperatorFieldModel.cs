@@ -1,14 +1,18 @@
 ﻿using System.Collections.Generic;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
     public class CompoundOperatorFieldModel : OperatorFieldModel
     {
-        public Dictionary<KeyController, List<FieldReference>> InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>();
-        public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
+        public Dictionary<string, List<string>> InputFieldReferences = new Dictionary<string, List<string>>();
+        public Dictionary<string, string> OutputFieldReferences = new Dictionary<string, string>();
 
-        public CompoundOperatorFieldModel(string type) : base(type)
+        public Dictionary<string, IOInfo> Inputs = new Dictionary<string, IOInfo>();
+        public Dictionary<string, TypeInfo> Outputs = new Dictionary<string, TypeInfo>();
+
+        public CompoundOperatorFieldModel() : base(OperatorType.Compound)
         {
             IsCompound = true;
         }

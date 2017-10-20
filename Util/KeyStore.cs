@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    class KeyStore
+    public class KeyStore
     {
         public static KeyController DocumentContextKey = new KeyController(DashConstants.KeyStore.DocumentContextKey);
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
@@ -31,5 +31,14 @@ namespace Dash
         public static KeyController HeaderKey = new KeyController(DashConstants.KeyStore.HeaderKey);
         public static KeyController UserLinksKey = new KeyController(DashConstants.KeyStore.UserLinksKey);
         public static KeyController CollectionOutputKey = new KeyController(DashConstants.KeyStore.CollectionOutputKey);
+        public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
+        public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
+        public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
+
+        /// <summary>
+        /// Key for collection data
+        /// TODO This might be better in a different class
+        /// </summary>
+        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
     }
 }

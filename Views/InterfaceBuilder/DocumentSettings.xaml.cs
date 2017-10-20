@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -105,7 +106,7 @@ namespace Dash
             xActiveLayoutComboBox.ItemsSource = documents;
         }
 
-        private void LayoutList_OnDocumentsChanged(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void LayoutList_OnDocumentsChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             SetActiveLayoutComboBoxItems((sender as DocumentCollectionFieldModelController).GetDocuments());
         }
@@ -144,7 +145,7 @@ namespace Dash
             {
                 if (_dataDocument.GetField(KeyStore.ThisKey) == null)
                     _dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(_dataDocument), true);
-                newLayout = new KeyValueDocumentBox(new ReferenceFieldModelController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
+                newLayout = new KeyValueDocumentBox(new DocumentReferenceFieldController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
             }
             else
             {

@@ -1,4 +1,6 @@
-﻿namespace Dash.Sources {
+﻿using DashShared;
+
+namespace Dash.Sources {
     /// <summary>
     /// This class abstracts default functionality for a "Source", an
     /// object that is used to generate document data from either user

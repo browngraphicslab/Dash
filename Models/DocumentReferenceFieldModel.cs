@@ -4,16 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelType(TypeInfo.DocumentReference)]
     public class DocumentReferenceFieldModel : ReferenceFieldModel
     {
-        public string DocId;
+        public string DocumentId { get; set; }
 
-        public DocumentReferenceFieldModel(string docId, Key fieldKey) : base(fieldKey)
+        public DocumentReferenceFieldModel(string docId, string keyId, string id = null) : base(keyId, id)
         {
-            DocId = docId;
+            DocumentId = docId;
         }
 
         public override bool Equals(object obj)
@@ -24,17 +26,12 @@ namespace Dash
                 return false;
             }
 
-            return base.Equals(refFieldModel) && refFieldModel.DocId.Equals(DocId);
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Reference, new KeyValuePair<Key, string>(FieldKey, DocId));
+            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(DocumentId);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ DocId.GetHashCode();
+            return base.GetHashCode() ^ DocumentId.GetHashCode();
         }
     }
 }

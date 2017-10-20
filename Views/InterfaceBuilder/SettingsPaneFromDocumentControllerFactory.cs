@@ -23,7 +23,7 @@ namespace Dash
             {
                 return CreateTextSettingsLayout(layoutDocument);
             }
-            if (type == CollectionBox.DocumentType)
+            if (type == DashConstants.DocumentTypeStore.DocumentType)
             {
                 return CreateCollectionSettingsLayout(layoutDocument);
             }
@@ -31,7 +31,7 @@ namespace Dash
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            if (type == DashConstants.TypeStore.FreeFormDocumentLayout)
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }

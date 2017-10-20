@@ -5,14 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelTypeAttribute(TypeInfo.Rectangle)]
     public class RectFieldModel : FieldModel
     {
-        public RectFieldModel() { }
 
-        public RectFieldModel(Rect data) : this()
+        public RectFieldModel()
+        {
+            
+        }
+
+        public RectFieldModel(Rect data, string id = null) : base(id)
         {
             Data = data;
         }
@@ -26,11 +32,6 @@ namespace Dash
         public override string ToString()
         {
             return $"RectFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            throw new NotImplementedException();
         }
     }
 }

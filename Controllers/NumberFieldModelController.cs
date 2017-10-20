@@ -1,38 +1,38 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Security.Authentication.Web.Provider;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class NumberFieldModelController : FieldModelController
+    public class NumberFieldModelController : FieldModelController<NumberFieldModel>
     {
         public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data))
         {
         }
 
-        /// <summary>
-        ///     Create a new <see cref="NumberFieldModelController"/> associated with the passed in <see cref="Dash.NumberFieldModel" />
-        /// </summary>
-        /// <param name="numberFieldModel">The model which this controller will be operating over</param>
-        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
+        public NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
-            Data = numberFieldModel.Data;
+            
+        }
+
+        public override void Init()
+        {
+
         }
 
         /// <summary>
         ///     The <see cref="NumberFieldModel" /> associated with this <see cref="NumberFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public NumberFieldModel NumberFieldModel => FieldModel as NumberFieldModel;
+        public NumberFieldModel NumberFieldModel => Model as NumberFieldModel;
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Data = (fieldModel as NumberFieldModelController).Data;
-        }
-        public override FieldModelController GetDefaultController()
+
+        public override FieldControllerBase GetDefaultController()
         {
             return new NumberFieldModelController(0);
         }
@@ -59,14 +59,12 @@ namespace Dash
 
         public double Data
         {
-            get { return NumberFieldModel.Data; }
+            get => NumberFieldModel.Data;
             set
             {
                 if (SetProperty(ref NumberFieldModel.Data, value))
                 {
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
         }
@@ -77,7 +75,7 @@ namespace Dash
             return Data.ToString();
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<NumberFieldModel> Copy()
         {
             return new NumberFieldModelController(Data);
         }

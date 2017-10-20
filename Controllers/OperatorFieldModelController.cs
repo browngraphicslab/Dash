@@ -6,7 +6,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class IOInfo
+    public class IOInfo : ISerializable
     {
         public TypeInfo Type { get; set; }
 
@@ -19,7 +19,7 @@ namespace Dash
         }
     }
 
-    public abstract class OperatorFieldModelController : FieldModelController
+    public abstract class OperatorFieldModelController : FieldModelController<OperatorFieldModel>
     {
         /// <summary>
         /// Keys of all inputs to the operator Document 
@@ -35,7 +35,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
@@ -44,6 +44,10 @@ namespace Dash
         protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
+        }
+
+        public override void Init()
+        {
         }
 
         /// <summary>
@@ -56,7 +60,7 @@ namespace Dash
         /// Returns the string-representation name of the operator's type.
         /// </summary>
         /// <returns></returns>
-        public string GetOperatorType() { return OperatorFieldModel.Type; }
+        public string GetOperatorType() { return OperatorFieldModel.Type.ToString(); }
 
         public override TypeInfo TypeInfo => TypeInfo.Operator;
 
@@ -70,7 +74,7 @@ namespace Dash
             textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
         }

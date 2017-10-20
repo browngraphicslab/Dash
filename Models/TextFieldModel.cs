@@ -1,11 +1,13 @@
 ﻿using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
     /// <summary>
     /// A Field Model which holds text data
     /// </summary>
+   [FieldModelTypeAttribute(TypeInfo.Text)]
     public class TextFieldModel : FieldModel
     {
 
@@ -13,7 +15,7 @@ namespace Dash
         /// Create a new text field model with the passed in string as data
         /// </summary>
         /// <param name="data">The data whcih the field model will encapsulate</param>
-        public TextFieldModel(string data)
+        public TextFieldModel(string data, string id = null) : base(id)
         {
             Data = data;
         }
@@ -23,9 +25,5 @@ namespace Dash
         /// </summary>
         public string Data;
 
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Text, Data);
-        }
     }
 }

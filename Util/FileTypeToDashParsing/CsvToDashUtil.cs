@@ -36,13 +36,13 @@ namespace Dash
             csv.Read();
 
             // set up a prototype document that models each of the rows
-            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
-            var protoFieldDict = new Dictionary<KeyController, FieldModelController>()
+            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
+            var protoFieldDict = new Dictionary<KeyController, FieldControllerBase>()
             { // dictionary of fields to set on the prototype document
                 [KeyStore.AbstractInterfaceKey] = new TextFieldModelController(protoDoc.DocumentType.Id),
                 [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>()
             };
-            var headerToFieldMap = new Dictionary<string, FieldModelController>();
+            var headerToFieldMap = new Dictionary<string, FieldControllerBase>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
             // generate a default field model controller for each of the fields
             foreach (var header in headers)
@@ -54,6 +54,8 @@ namespace Dash
                 headerToKeyMap.Add(header, key);
             }
             protoDoc.SetFields(protoFieldDict.ToList(), true);
+            SetDefaultActiveLayout(protoDoc); // set active layout on the output doc
+
 
             // go through the entire csv generating a delegate of the prototype document to represent each row
             // and set the fields on that delegate to the values found in the cell of the row
@@ -68,8 +70,8 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
-            SetDefaultActiveLayout(outputDoc); // set active layout on the output doc
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
+            SetDefaultActiveLayout(outputDoc, hasCollection: true); // set active layout on the output doc
 
             outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);
 
@@ -77,15 +79,20 @@ namespace Dash
         }
 
         /// <summaryl>
-        /// Set the active layout on the output doc
+        /// Set the active layout on the passed in document
         /// </summary>
         /// <param name="doc"></param>
-        private static void SetDefaultActiveLayout(DocumentController doc)
+        private static void SetDefaultActiveLayout(DocumentController doc, bool hasCollection = false)
         {
             doc.SetActiveLayout(new DefaultLayout().Document, true, true);
             var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(CollectionBox.CollectionViewTypeKey,
-                new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
+
+            // if the doc has a collection then set the collection view type key
+            if (hasCollection)
+            {
+                defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey,
+                    new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
+            }
             doc.GetActiveLayout().Data.SetFields(defaultLayoutFields, true);
         }
 

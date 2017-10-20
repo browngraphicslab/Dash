@@ -14,13 +14,13 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
 
-        public ConcatOperator() : base(new OperatorFieldModel("concat")) { }
+        public ConcatOperator() : base(new OperatorFieldModel(OperatorType.Concat)) { }
 
         public ConcatOperator(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ConcatOperator();
         }
@@ -44,7 +44,7 @@ namespace Dash
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var a = (inputs[AKey] as TextFieldModelController).Data;
             var b = (inputs[BKey] as TextFieldModelController).Data;

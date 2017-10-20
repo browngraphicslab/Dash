@@ -1,27 +1,41 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using DashShared;
-using System.Diagnostics;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Dash.Rest.Endpoints;
+using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class FieldEndpoint
+    /*
+    public class FieldEndpoint : Endpoint<FieldModel, FieldModelDTO>, IFieldEndpoint
     {
-        private ServerEndpoint _connection;
+        private static readonly object l = new object();
+        private static int count;
+        private readonly ServerEndpoint _connection;
 
         public FieldEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+            AddBatchHandler(AddFields);
         }
 
         /// <summary>
-        /// Adds a new field to the DashWebServer.
+        ///     Adds a fieldModel to the server
         /// </summary>
         /// <param name="newField"></param>
-        /// <returns></returns>
-        public async Task<Result<FieldModelController>> AddField(FieldModel newField)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
+<<<<<<< HEAD
+            Task.Run(() =>
+=======
             try
             {
                 //Debug.WriteLine(newField.Id);
@@ -35,80 +49,112 @@ namespace Dash
                 return new Result<FieldModelController>(true, controller);
             }
             catch (ApiException e)
+>>>>>>> origin/master
             {
-                // return the error message
-                return new Result<FieldModelController>(false, string.Join("\n", e.Errors));
-            }
+                AddRequest(AddFields, new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
+            });
         }
 
-        /// <summary>
-        /// Updates an existing field in the DashWebServer
-        /// </summary>
-        /// <param name="FieldToUpdate"></param>
-        /// <returns></returns>
-        public async Task<Result<FieldModelController>> UpdateField(FieldModel FieldToUpdate)
+        private async void AddFields(List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batch)
         {
             try
+<<<<<<< HEAD
+             {
+                // convert from field models to DTOs
+                var dtos = batch.Select(x => x.Item1.GetFieldDTO()).ToList();
+                var result = await _connection.Post("api/Field/batch", dtos);
+                var resultDtos = await result.Content.ReadAsAsync<List<FieldModelDTO>>();
+=======
             {
                 //Debug.WriteLine(FieldToUpdate.Id);
                 FieldModelDTO dto = FieldToUpdate.GetFieldDTO();
                 HttpResponseMessage result = _connection.Put("api/Field", dto);
                 FieldModelDTO resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
+>>>>>>> origin/master
 
-                // convert from server dto back to field model controller
-                FieldModelController controller = TypeInfoHelper.CreateFieldModelController(resultDto);
-                return new Result<FieldModelController>(true, controller);
+                var successHandlers = batch.Select(x => x.Item2);
+                successHandlers.Zip(resultDtos, (success, dto) =>
+                {
+                    success(dto);
+                    return true;
+                });
+                 lock (l)
+                 {
+                     Debug.WriteLine(count++);
+                 }
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<FieldModelController>(false, string.Join("\n", e.Errors));
+                batch.ForEach(x => x.Item3(e));
             }
         }
 
-        public async Task<Result<FieldModelController>> GetField(string id)
+        /// <summary>
+        ///     Updates a field model on the server.
+        /// </summary>
+        /// <param name="fieldToUpdate"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            Task.Run(async () =>
             {
-                Debug.WriteLine(id);
-                FieldModelDTO FieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
-                FieldModelController fmc = TypeInfoHelper.CreateFieldModelController(FieldModelDTO);
-                return new Result<FieldModelController>(true, fmc);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<FieldModelController>(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var dto = fieldToUpdate.GetFieldDTO();
+                    var result = await _connection.Put("api/Field", dto);
+                    var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
+
+                    success(resultDto);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
-        public Result DeleteField(FieldModel fieldToDelete)
+        public async Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error)
         {
+<<<<<<< HEAD
+            await Task.Run(async () =>
+=======
             string id = fieldToDelete.Id;
             //Debug.WriteLine(id);
             try
+>>>>>>> origin/master
             {
-                _connection.Delete($"api/Field/{id}");
-                return new Result(true);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
+                    await success(fieldModelDTO);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
-        public Result<IDictionary<KeyController, FieldModelController>>  GetFieldsDictionary(Dictionary<KeyController, string> fields)
+        public async Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)
         {
-            var controllersMap = new Dictionary<KeyController, FieldModelController>();
-
-            foreach(var kv in fields)
+            await Task.Run(async () =>
             {
-                var controller = GetField(kv.Value).Result.Content;
-                controllersMap[kv.Key] = controller;
-            }
-
-            return new Result<IDictionary<KeyController, FieldModelController>>(true, controllersMap);
+                var id = fieldToDelete.Id;
+                try
+                {
+                    await _connection.Delete($"api/Field/{id}");
+                    success();
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
-    }
+    }*/
 }

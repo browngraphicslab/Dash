@@ -9,7 +9,7 @@ namespace Dash
         public SubtractOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public SubtractOperatorFieldModelController() : base(new OperatorFieldModel("Subtract"))
+        public SubtractOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Subtract))
         {
         }
 
@@ -30,7 +30,7 @@ namespace Dash
             [DifferenceKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var numberA = (NumberFieldModelController)inputs[AKey];
             var numberB = (NumberFieldModelController)inputs[BKey];
@@ -41,7 +41,7 @@ namespace Dash
             outputs[DifferenceKey] = new NumberFieldModelController(a - b);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new SubtractOperatorFieldModelController(OperatorFieldModel);
         }
