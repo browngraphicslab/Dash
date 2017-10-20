@@ -36,7 +36,7 @@ namespace Dash
 
         public ApiDocumentModel()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [BaseUrlKey] = new TextFieldModelController(""),
                 [HttpMethodKey] = new NumberFieldModelController(0),
@@ -86,7 +86,7 @@ namespace Dash
             double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
 
             // generate new doc with information to add
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [ValueTextKey] = new TextFieldModelController(key.Text),
                 [DisplayKey] = new NumberFieldModelController(displayDouble),
@@ -196,7 +196,7 @@ namespace Dash
         /// <summary>
         /// Binds a textbox to a fieldModelController.
         /// </summary>
-        private static void bindToTextBox(TextBox tb, FieldModelController field)
+        private static void bindToTextBox(TextBox tb, FieldControllerBase field)
         {
 
             // bind URL
@@ -215,7 +215,7 @@ namespace Dash
         /// <summary>
         /// Binds a textbox to a fieldModelController.
         /// </summary>
-        private static void bindToCheckBox(CheckBox cb, FieldModelController field)
+        private static void bindToCheckBox(CheckBox cb, FieldControllerBase field)
         {
 
             // bind URL

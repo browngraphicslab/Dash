@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Dash.NoteDocuments;
+using Dash.Controllers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -231,9 +232,9 @@ namespace Dash
                 }
             }
         }
-        public void setupBars(List<FieldModelController> buckets)
+        public void setupBars(List<FieldControllerBase> buckets)
         {
-            var selectedBars = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ?? new List<FieldModelController>();
+            var selectedBars = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ?? new List<FieldControllerBase>();
             var selectedInds = selectedBars.Select((f) => (f as NumberFieldModelController)?.Data);
             this.xBarChart.Children.Clear();
             this.xBarChart.ColumnDefinitions.Clear();
@@ -249,7 +250,7 @@ namespace Dash
             this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
         }
 
-        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
+        static List<FieldControllerBase> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
         {
             double minValue = double.MaxValue;
             double maxValue = double.MinValue;
@@ -277,7 +278,7 @@ namespace Dash
                 barStart += barDomain;
             }
 
-            return barDomains.Select((b) => b as FieldModelController).ToList();
+            return barDomains.Select((b) => b as FieldControllerBase).ToList();
         }
 
         private static bool TestPatternMatch(DocumentController dmc, string[] pattern, string term)
@@ -311,8 +312,8 @@ namespace Dash
             }
             return false;
         }
-        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern,
-            List<FieldModelController> selectedBars, bool updateViewOnly, ref string rawText)
+        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldControllerBase> bars, List<string> pattern,
+            List<FieldControllerBase> selectedBars, bool updateViewOnly, ref string rawText)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -333,7 +334,7 @@ namespace Dash
                         var dataDoc = dmc.GetDataDocument(null);
                         foreach (var f in dataDoc.EnumFields().Where((f) => !f.Key.IsUnrenderedKey()))
                         {
-                            var refField = new ReferenceFieldModelController(dataDoc.GetId(), f.Key);
+                            var refField = new DocumentReferenceFieldController(dataDoc.GetId(), f.Key);
                             InspectField(bars, refField, selectedBars, updateViewOnly, ref rawText, keepAll, collection, countBars, ref sumOfFields, dmc, visited);
                         }
                     }
@@ -353,7 +354,7 @@ namespace Dash
             return countBars;
         }
 
-        private void InspectField(List<FieldModelController> bars, ReferenceFieldModelController refField, List<FieldModelController> selectedBars, bool updateViewOnly, ref string rawText, bool keepAll, List<DocumentController> collection, List<double> countBars, ref double sumOfFields, DocumentController dmc, List<DocumentController> visited)
+        private void InspectField(List<FieldControllerBase> bars, ReferenceFieldModelController refField, List<FieldControllerBase> selectedBars, bool updateViewOnly, ref string rawText, bool keepAll, List<DocumentController> collection, List<double> countBars, ref double sumOfFields, DocumentController dmc, List<DocumentController> visited)
         {
             var dataDoc = dmc.GetDataDocument(null);
             var field = refField?.GetDocumentController(new Context(dataDoc)).GetDereferencedField(refField.FieldKey, new Context(dataDoc));
@@ -409,7 +410,7 @@ namespace Dash
                 }
                 else if (pattern != null && pattern.Count == 1)
                 {
-                    return new ReferenceFieldModelController(dmc.GetId(), pfield.Key);
+                    return new DocumentReferenceFieldController(dmc.GetId(), pfield.Key);
                 }
             }
             return null;

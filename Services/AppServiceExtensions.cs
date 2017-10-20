@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using DashShared;
+using DashShared.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -27,13 +31,12 @@ namespace Dash
             serviceCollection.AddSingleton<ServerEndpoint, ServerEndpoint>();
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
-            serviceCollection.AddTransient<ShapeEndpoint, ShapeEndpoint>();
-            serviceCollection.AddSingleton<DocumentEndpoint, DocumentEndpoint>(); //TODO change to transient
-            serviceCollection.AddSingleton<TypeEndpoint, TypeEndpoint>(); //TODO change to transient
-            serviceCollection.AddSingleton<KeyEndpoint, KeyEndpoint>(); //TODO change to transient
+            serviceCollection.AddSingleton<IModelEndpoint<DocumentModel>, LocalDocumentEndpoint>();
+            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalModelEndpoint<FieldModel>>();
+            serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, LocalModelEndpoint<KeyModel>>();
 
-            // Examples to be removed
-            serviceCollection.AddSingleton<PricePerSquareFootApi, PricePerSquareFootApi>(); //TODO remove this its an example
+
+            serviceCollection.AddTransient<IController<DocumentModel>, DocumentController>();
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors
@@ -45,4 +48,6 @@ namespace Dash
         }
 
     }
+
+    
 }

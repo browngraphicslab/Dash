@@ -6,82 +6,60 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class ReferenceFieldModelController : FieldModelController
+    public abstract class ReferenceFieldModelController : FieldModelController<ReferenceFieldModel>
     {
-        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
+        public ReferenceFieldModelController(ReferenceFieldModel model) : base(model)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-            var docController = reference.GetDocumentController(null);
-            docController?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-        }
 
-        public void ChangeFieldDoc(string docId)
+        }
+        public override void Init()
         {
-            var docController = ReferenceFieldModel.Reference.GetDocumentController(null);
-            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            if (ReferenceFieldModel.Reference is DocumentFieldReference)
-                (ReferenceFieldModel.Reference as DocumentFieldReference).DocumentId = docId;
-            var docController2 = ReferenceFieldModel.Reference.GetDocumentController(null);
-            docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            FieldKey = ContentController<KeyModel>.GetController<KeyController>(((ReferenceFieldModel)Model).KeyId);
+            var docController = GetDocumentController(null);
+            docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            
         }
 
-        public ReferenceFieldModelController(string documentId, KeyController fieldKey) : this(
-            new DocumentFieldReference(documentId, fieldKey))
-        { }
-
-        public ReferenceFieldModelController(FieldReference documentReference, KeyController fieldKey) : this(
-            new DocumentPointerFieldReference(documentReference, fieldKey))
-        {
-        }
-
-        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             OnFieldModelUpdated(args.FieldArgs, args.Context);
         }
 
-        public override void Dispose()
+        public override void DisposeField()
         {
-            var docController = FieldReference.GetDocumentController(null);
+            var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public FieldReference FieldReference
-        {
-            get { return ReferenceFieldModel.Reference; }
-            set { ReferenceFieldModel.Reference = value; }
-        }
+        public KeyController FieldKey { get; set; }
 
-        public KeyController FieldKey => FieldReference.FieldKey;
-
-        public DocumentController GetDocumentController(Context context)
-        {
-            return FieldReference.GetDocumentController(context);
-        }
+        public abstract DocumentController GetDocumentController(Context context);
 
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return GetDocumentController(null);
         }
 
-        public override FieldModelController Dereference(Context context)
+        public override FieldControllerBase Dereference(Context context)
         {
-            return FieldReference.Dereference(context);
+            return GetFieldReference().Dereference(context);
         }
 
-        public override FieldModelController DereferenceToRoot(Context context)
+        public override FieldControllerBase DereferenceToRoot(Context context)
         {
-            return FieldReference.DereferenceToRoot(context);
+            return GetFieldReference().DereferenceToRoot(context);
         }
 
-        public string GetDocumentId(Context context)
-        {
-            return FieldReference.GetDocumentId(context);
-        }
+        public abstract FieldReference GetFieldReference();
+
+        public abstract string GetDocumentId(Context context);
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
@@ -89,14 +67,14 @@ namespace Dash
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
+        public ReferenceFieldModel ReferenceFieldModel => Model as ReferenceFieldModel;
 
         public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText((tb) => BindTextOrSetOnce(tb, context));
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
         }
@@ -115,17 +93,13 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
-        public override FieldModelController Copy()
-        {
-            return new ReferenceFieldModelController(FieldReference.Copy());
-        }
         public override object GetValue(Context context)
         {
-            var refDoc = FieldReference.GetDocumentController(context);
+            var refDoc = GetDocumentController(context);
             var opField = refDoc.GetDereferencedField(KeyStore.OperatorKey, context) as OperatorFieldModelController;
             if (opField != null)
             {
-                var str = "=" + (opField.FieldModel as OperatorFieldModel).Type + "(";
+                var str = "=" + (opField.Model as OperatorFieldModel).Type + "(";
                 foreach (var input in opField.Inputs)
                     str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
                 str = str.TrimEnd(',') + ")";
@@ -137,7 +111,7 @@ namespace Dash
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
-            var field = doc.GetDereferencedField<FieldModelController>(FieldKey, refValue.Item1);
+            var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
             if (refValue.Item2 is string)
                 return doc.ParseDocField(FieldKey, refValue.Item2 as string, field);
             else if (refValue.Item2 is RichTextFieldModel.RTD)
@@ -145,6 +119,21 @@ namespace Dash
             else
                 ;
             return false;
+        }
+
+
+        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            base.SaveOnServer(success, error);
+            var controller = GetDocumentController(null);
+            controller.SaveOnServer();
+        }
+
+        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            base.UpdateOnServer(success, error);
+            var controller = GetDocumentController(null);
+            controller.UpdateOnServer();
         }
     }
 }

@@ -20,7 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
+using Dash.Controllers;
 using static Dash.NoteDocuments;
 using Dash.Controllers.Operators;
 using Dash.Views;
@@ -156,7 +156,7 @@ namespace Dash
                         var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
                         if (keyValuePair.Key != null)
                         {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
+                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), doc, keyValuePair.Key);
                         }
                         
                     }
@@ -183,7 +183,8 @@ namespace Dash
             {
                 var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 var type = op.Outputs[reference.FieldKey];
-                fmController = TypeInfoHelper.CreateFieldModelController(type);
+                throw new NotImplementedException();
+                fmController = null; //TypeInfoHelper.CreateFieldModelController(type);
             }
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
@@ -547,7 +548,7 @@ namespace Dash
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
-                    new ReferenceFieldModelController(outputReference.FieldReference), true);
+                    new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             //Add the key to the inputController's list of user created links
             if (!isLoadedLink)
             {
@@ -802,11 +803,11 @@ namespace Dash
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 var pos = e.GetCurrentPoint(this).Position;
-                var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+                var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
+                    [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
                 }, DocumentType.DefaultType);
-                var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                var layout = new DocumentBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
             }
@@ -817,7 +818,7 @@ namespace Dash
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
                
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);

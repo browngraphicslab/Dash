@@ -15,6 +15,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -154,7 +155,7 @@ namespace Dash
                     return;
 
                 // apply position if we are dropping on a freeform
-                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
@@ -199,38 +200,38 @@ namespace Dash
             }
         }
 
-        private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
+        private static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentFieldModelController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is InkFieldModelController)
             {
-                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new InkBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }
@@ -263,7 +264,7 @@ namespace Dash
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
+            return layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout ||
                    layoutDocument.DocumentType == GridViewLayout.DocumentType ||
                    layoutDocument.DocumentType == ListViewLayout.DocumentType;
         }

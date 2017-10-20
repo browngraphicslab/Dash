@@ -24,7 +24,7 @@ namespace Dash
 
         private SimpleCollectionViewModel _collectionViewModel;
 
-        public CompoundOperatorEditor()
+        public CompoundOperatorEditor(FieldControllerBase collectionField = null, Context context = null)
         {
             this.InitializeComponent();
             _collectionViewModel = new SimpleCollectionViewModel(false);

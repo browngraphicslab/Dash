@@ -9,7 +9,7 @@ using DashShared;
 
 namespace Dash
 {
-    class FilterOperatorFieldModelController : OperatorFieldModelController
+    public class FilterOperatorFieldModelController : OperatorFieldModelController
     {
         public static readonly DocumentType FilterType = new DocumentType("B82CEB25-47C1-4575-83A7-B527F8C0E7FD", "Filter");
         public static readonly DocumentType FilterParams = new DocumentType("62BADA87-D54D-42B8-9F4C-8A33B776C6C7", "Filter Params");
@@ -23,7 +23,10 @@ namespace Dash
         //Output Keys
         public static readonly KeyController OutputCollection = new KeyController("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
 
-        public FilterOperatorFieldModelController() : base(new OperatorFieldModel("Filter"))
+        public FilterOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Filter))
+        {
+        }
+        public FilterOperatorFieldModelController(OperatorFieldModel model) : base(model)
         {
         }
 
@@ -40,7 +43,7 @@ namespace Dash
             [OutputCollection] = TypeInfo.Collection
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var docs = (inputs[InputCollection] as DocumentCollectionFieldModelController).GetDocuments();
 
@@ -60,7 +63,7 @@ namespace Dash
             outputs[OutputCollection] = new DocumentCollectionFieldModelController(filteredDocs);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new FilterOperatorFieldModelController();
         }

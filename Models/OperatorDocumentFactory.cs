@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Dash.Controllers;
 using DashShared;
 using Dash.Controllers.Operators;
 
@@ -19,7 +20,7 @@ namespace Dash
         public static DocumentController CreateOperatorDocument(OperatorFieldModelController opController, string title=null, Func<ReferenceFieldModelController, CourtesyDocument> layoutFunc = null)
         {
             // set the operator and title field
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.OperatorKey] = opController,
                 [KeyStore.TitleKey] = new TextFieldModelController(title ?? "")
@@ -37,7 +38,7 @@ namespace Dash
         // TODO fix DB special case
         public static DocumentController CreateDBFilterDocumentController()
         {
-            return DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
+            return DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Dash
         /// <param name="docContainingOp"></param>
         public static void SetOperatorLayout(Func<ReferenceFieldModelController, CourtesyDocument> layoutFunc, DocumentController docContainingOp)
         {
-            var layoutDoc = layoutFunc(new ReferenceFieldModelController(docContainingOp.GetId(), KeyStore.OperatorKey)).Document;
+            var layoutDoc = layoutFunc(new DocumentReferenceFieldController(docContainingOp.GetId(), KeyStore.OperatorKey)).Document;
             docContainingOp.SetActiveLayout(layoutDoc, true, true);
 
         }

@@ -214,11 +214,10 @@ namespace Dash
         ///     If there is a nested collection, nests the json recursively
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<string, object> JsonSerializeHelper(
-            IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
+        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
-            var jsonDict = new Dictionary<string, object>();
-            foreach (var pair in fields)
+            Dictionary<string, object> jsonDict = new Dictionary<string, object>();
+            foreach (KeyValuePair<KeyController, FieldControllerBase> pair in fields)
             {
                 object data = null;
                 if (pair.Value is TextFieldModelController)
@@ -264,7 +263,7 @@ namespace Dash
         /// <summary>
         ///     Exports the document's key to field as json object and saves it locally as .txt
         /// </summary>
-        public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
+        public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
             var jsonDict = JsonSerializeHelper(fields);
             var json = JsonConvert.SerializeObject(jsonDict);
@@ -482,7 +481,7 @@ namespace Dash
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static FieldModelController StringToFieldModelController(string expression)
+        public static FieldControllerBase StringToFieldModelController(string expression)
         {
             // check for number field model controller
             var num = IsNumeric(expression);
@@ -512,7 +511,7 @@ namespace Dash
 
         public static DocumentController BlankDoc()
         {
-            var docfields = new Dictionary<KeyController, FieldModelController>()
+            var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextFieldModelController("Document")
             };
@@ -524,7 +523,7 @@ namespace Dash
 
         public static DocumentController BlankCollection()
         {
-            var colfields = new Dictionary<KeyController, FieldModelController>
+            var colfields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(),
@@ -533,11 +532,9 @@ namespace Dash
             var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
             colDoc.SetActiveLayout(
                 new CollectionBox(
-                    new ReferenceFieldModelController(colDoc.GetId(),
+                    new DocumentReferenceFieldController(colDoc.GetId(),
                         KeyStore.CollectionKey), 0, 0, 200, 200).Document, true, true);
-            colDoc.SetField(KeyStore.CollectionOutputKey,
-                new ReferenceFieldModelController(new DocumentFieldReference(colDoc.GetId(),
-                    KeyStore.CollectionKey)), true);
+            colDoc.SetField(KeyStore.CollectionOutputKey, new DocumentReferenceFieldController(colDoc.GetId(), KeyStore.CollectionKey), true);
             return colDoc;
         }
 

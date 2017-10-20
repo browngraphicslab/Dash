@@ -39,8 +39,8 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
-            var opDoc = opfmc.FieldReference.GetDocumentController(null);
+            OperatorView opView = new OperatorView { DataContext = opfmc.GetFieldReference()};
+            var opDoc = opfmc.GetDocumentController(null);
             var stack = new Windows.UI.Xaml.Controls.StackPanel();
             stack.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
             var returnBox = new Windows.UI.Xaml.Controls.TextBox();
@@ -51,7 +51,7 @@ namespace Dash
             returnBox.VerticalAlignment = VerticalAlignment.Top;
             returnBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.ReturnDocKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
@@ -64,7 +64,7 @@ namespace Dash
             searchBox.VerticalAlignment = VerticalAlignment.Top;
             searchBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.FieldPatternKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);

@@ -1,4 +1,11 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Dash.Controllers;
+using DashShared;
 
 namespace Dash
 {
@@ -42,7 +49,7 @@ namespace Dash
             {
                 docId = context.GetDeepestDelegateOf(docId) ?? docId;
             }
-            return ContentController.GetController<DocumentController>(docId);
+            return ContentController<DocumentModel>.GetController<DocumentController>(docId);
         }
 
         public override FieldReference Copy()
@@ -70,6 +77,11 @@ namespace Dash
         public override int GetHashCode()
         {
             return base.GetHashCode() ^ DocumentId.GetHashCode();
+        }
+
+        public override ReferenceFieldModelController GetReferenceController()
+        {
+            return new DocumentReferenceFieldController(DocumentId, FieldKey);
         }
     }
 }

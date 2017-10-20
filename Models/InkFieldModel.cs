@@ -5,12 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
     /// <summary>
     /// A Field Model which holds ink data
     /// </summary>
+    [FieldModelTypeAttribute(TypeInfo.Ink)]
     public class InkFieldModel : FieldModel
     {
         /// <summary>
@@ -19,24 +21,12 @@ namespace Dash
         public string Data;
 
         /// <summary>
-        /// Create a new Ink Field Model that does not represent an image
-        /// </summary>
-        public InkFieldModel()
-        {
-        }
-
-        /// <summary>
         /// Create a new Image Field Model which represents the ink pointed to by the <paramref name="data"/>
         /// </summary>
         /// <param name="data">The serialized data that the ink this field model encapsulates is drawn from</param>
-        public InkFieldModel(string data)
+        public InkFieldModel(string data = null, string id = null) : base(id)
         {
-            Data = data;
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            throw new NotImplementedException();
+            Data = data ?? "";
         }
     }
 }

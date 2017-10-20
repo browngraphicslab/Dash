@@ -18,6 +18,11 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200,100), refToOp);
             Document = new DocumentController(fields, DashConstants.DocumentTypeStore.OperatorBoxType);
+            if (refToOp.DereferenceToRoot<OperatorFieldModelController>(null).IsCompound())
+            {
+                DocumentController controller = refToOp.GetDocumentController(null);
+                controller.SetField(DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController(), true);
+            }
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -53,12 +58,13 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = data as ReferenceFieldModelController;
             Debug.Assert(opfmc != null, "We assume that documents containing operators contain a reference to the required operator doc in the data key");
-            Debug.Assert(opfmc.FieldReference is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
+            Debug.Assert(opfmc.GetFieldReference() is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
             var opView = new OperatorView(keysToFrameworkElements)
             {
-                DataContext = opfmc.FieldReference,
+                DataContext = opfmc.GetFieldReference(),
                 OperatorContent = customLayout?.Invoke()
             };
+
 
             SetupBindings(opView, docController, context);
 

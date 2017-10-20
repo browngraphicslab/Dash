@@ -32,7 +32,7 @@ namespace Dash
             AddOperator(() => new CompoundOperatorFieldController(), "Compound");
 
             //TODO fix DB special case
-            AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
+            //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
 
         }
 

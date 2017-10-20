@@ -62,7 +62,7 @@ namespace Dash
             var result = await ocrEngine.RecognizeAsync(softwareBitmap);
             var pageImgDoc = pageImg.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? pageImg;
             pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
-            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new ReferenceFieldModelController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
+            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceFieldController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
         async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {
@@ -108,9 +108,9 @@ namespace Dash
             HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
 
             var renderTargetBitmap = new RenderTargetBitmap();
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
             await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
 
             return renderTargetBitmap;
         }

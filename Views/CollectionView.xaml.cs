@@ -104,7 +104,7 @@ namespace Dash
             if (_collectionMenu == null)
                 MakeMenu();
             // set the top-level viewtype to be freeform by default
-            if (ParentDocument == MainPage.Instance.MainDocView)
+            if (ParentDocument == MainPage.Instance.xMainDocView)
             {
                 _viewType = CollectionViewType.Freeform;
             }
@@ -133,9 +133,10 @@ namespace Dash
                     break;
             }
 
+
             // use a fully dark gridbg for the parent-level, nested collectionviews
             // use a lighter background
-            if (ParentDocument == MainPage.Instance.MainDocView)
+            if (ParentDocument == MainPage.Instance.xMainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
@@ -346,19 +347,6 @@ namespace Dash
         
         private void MakeMenu()
         {
-            var multipleSelection = new Action(MakeSelectionModeMultiple);
-            var deleteSelection = new Action(DeleteSelection);
-            var singleSelection = new Action(MakeSelectionModeSingle);
-            var noSelection = new Action(MakeSelectionModeNone);
-            var selectAll = new Action(SelectAllItems);
-            var setGrid = new Action(SetGridView);
-            var setBrowse = new Action(SetBrowseView);
-            var setList = new Action(SetListView);
-            var setSchema = new Action(SetSchemaView);
-            var setDB = new Action(SetDBView);
-            var setFreeform = new Action(SetFreeformView);
-            var deleteCollection = new Action(DeleteCollection);
-
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
@@ -368,16 +356,14 @@ namespace Dash
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
-                    new List<Action> { SetGridView, setBrowse, SetListView, SetDBView, SetSchemaView, SetFreeformView})),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
+                    new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Action> { SetGridView, SetListView, SetDBView, SetSchemaView, SetFreeformView})),
+                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
 
-                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
+
             };
 
-
-
-            if (ParentDocument != MainPage.Instance.MainDocView)
+            if (ParentDocument.IsMainCollection == false)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
 
             var documentButtons = new List<MenuButton>
@@ -410,6 +396,14 @@ namespace Dash
         private void ScreenCap()
         {
             Util.ExportAsImage(xOuterGrid);
+        }
+
+        private void EnterCollection()
+        {
+            var rootFrame = Window.Current.Content as Frame;
+            Debug.Assert(rootFrame != null);
+            rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
+
         }
 
         #endregion
@@ -533,6 +527,5 @@ namespace Dash
             };
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
         }
-       
     }
 }

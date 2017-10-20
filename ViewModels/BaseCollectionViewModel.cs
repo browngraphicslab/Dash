@@ -130,6 +130,8 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+
+            // first check for things we don't want to allow dropped onto the collection
             //restore previous conditions 
             if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
@@ -148,6 +150,7 @@ namespace Dash
             // from now on we are handling this event!
             e.Handled = true;
 
+            // if we are dragging and dropping from the radial menu
             // if we drag from radial menu
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -157,7 +160,6 @@ namespace Dash
                         Action<ICollectionView, DragEventArgs>;
                 action?.Invoke(sender as ICollectionView, e);
             }
-
             // if we drag from the file system
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
             if (sourceIsFileSystem)
@@ -198,7 +200,8 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
                 }
             }
-            
+
+            // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 

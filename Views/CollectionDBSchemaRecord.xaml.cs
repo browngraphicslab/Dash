@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -63,7 +64,7 @@ namespace Dash
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
                     dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);
-                var layoutDoc = new KeyValueDocumentBox(new ReferenceFieldModelController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);

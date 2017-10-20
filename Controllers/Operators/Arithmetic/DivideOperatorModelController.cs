@@ -2,13 +2,14 @@
 using System.Diagnostics;
 using Windows.Foundation.Metadata;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
     public class DivideOperatorFieldModelController : OperatorFieldModelController
     {
 
-        public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
+        public DivideOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Divide))
         {
         }
 
@@ -37,7 +38,7 @@ namespace Dash
 
         public static int numExecutions = 0;
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var numberA = (NumberFieldModelController)inputs[AKey];
             var numberB = (NumberFieldModelController)inputs[BKey];
@@ -50,7 +51,7 @@ namespace Dash
             outputs[RemainderKey] = new NumberFieldModelController(a % b);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new DivideOperatorFieldModelController();
         }

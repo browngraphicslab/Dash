@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
@@ -15,24 +16,49 @@ using System.Diagnostics;
 
 namespace Dash
 {
-    public class ImageFieldModelController : FieldModelController
+    public class ImageFieldModelController : FieldModelController<ImageFieldModel>
     {
+
         public ImageFieldModelController() : base(new ImageFieldModel()) { }
 
         public ImageFieldModelController(Uri path, string data = null) : base(new ImageFieldModel(path, data)) { }
+
+        public ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
+        {
+
+        }
+
+        public override void Init()
+        {
+
+        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ImageFieldModel ImageFieldModel => FieldModel as ImageFieldModel;
+        public ImageFieldModel ImageFieldModel => Model as ImageFieldModel;
 
-        
-
-        protected override void UpdateValue(FieldModelController fieldModel)
+        /// <summary>
+        ///     The uri which this image is sourced from. This is a wrapper for <see cref="ImageFieldModel.Data" />
+        /// </summary>
+        public Uri ImageSource
         {
-            Data = (fieldModel as ImageFieldModelController).Data;
+            get { return ImageFieldModel.Data; }
+            set
+            {
+                if (ImageFieldModel.Data != value)
+                {
+                    ImageFieldModel.Data = value;
+                    // Update the server
+                    UpdateOnServer();
+                    OnFieldModelUpdated(null);
+                    // update local
+                    // update server    
+                }
+            }
         }
+
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -53,7 +79,7 @@ namespace Dash
             return image;
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
@@ -107,11 +133,11 @@ namespace Dash
             }   //TODO We shouldn't create a new BitmapImage every time Data is accessed
             set {
                 _cacheSource = null;
-                if (value is BitmapImage && SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage)))
+
+                if (value is BitmapImage)
                 {
+                    ImageFieldModel.Data = UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage);
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
         }
@@ -144,7 +170,7 @@ namespace Dash
             return ImageFieldModel.Data.AbsolutePath;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<ImageFieldModel> Copy()
         {
             return new ImageFieldModelController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }

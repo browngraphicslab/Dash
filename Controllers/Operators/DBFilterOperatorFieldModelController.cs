@@ -10,7 +10,7 @@ namespace Dash.Controllers.Operators
 {
     public class DBFilterOperatorFieldModel : OperatorFieldModel
     {
-        public DBFilterOperatorFieldModel() : base("DBfilter")
+        public DBFilterOperatorFieldModel() : base(OperatorType.DBfilter)
         {
         }
     }
@@ -34,11 +34,13 @@ namespace Dash.Controllers.Operators
                 new NumberFieldModelController[] { new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0) }
                 ), true);
 
-            var layoutDoc = new DBFilterOperatorBox(new ReferenceFieldModelController(filterOp.GetId(), KeyStore.OperatorKey)).Document;
+
+            var layoutDoc = new DBFilterOperatorBox(new DocumentReferenceFieldController(filterOp.GetId(), KeyStore.OperatorKey)).Document;
+
             filterOp.SetActiveLayout(layoutDoc, true, true); 
             
             // this field stores the Avg so that the operator view can have something to bind to.
-            filterOp.SetField(SelfAvgResultKey, new ReferenceFieldModelController(filterOp.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), true);
+            filterOp.SetField(SelfAvgResultKey, new DocumentReferenceFieldController(filterOp.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), true);
             filterOp.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(ClassKey.Id), new TextFieldModelController(FilterFieldKey.Id) }), true);
 
             return filterOp;
@@ -86,7 +88,7 @@ namespace Dash.Controllers.Operators
             [AvgResultKey]  = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var idocs        = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey]);
             var dbDocs       = (idocs as DocumentCollectionFieldModelController)?.Data ?? (idocs as DocumentFieldModelController)?.Data.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null).Data;
@@ -100,7 +102,7 @@ namespace Dash.Controllers.Operators
         }
         
 
-        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
+        static List<FieldControllerBase> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
         {
             double minValue = double.MaxValue;
             double maxValue = double.MinValue;
@@ -126,10 +128,10 @@ namespace Dash.Controllers.Operators
                 barStart += barDomain;
             }
 
-            return barDomains.Select((b) => b as FieldModelController).ToList();
+            return barDomains.Select((b) => b as FieldControllerBase).ToList();
         }
 
-        public void filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, Dictionary<KeyController, FieldModelController> outputs)
+        public void filterDocuments(List<DocumentController> dbDocs, List<FieldControllerBase> bars, List<string> pattern, List<FieldControllerBase> selectedBars, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -190,13 +192,13 @@ namespace Dash.Controllers.Operators
                 }
                 else if (pattern.Count == 1)
                 {
-                    return new ReferenceFieldModelController(srcDoc.GetId(), pfield.Key);
+                    return new DocumentReferenceFieldController(srcDoc.GetId(), pfield.Key);
                 }
             }
             return null;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new DBFilterOperatorFieldModelController(OperatorFieldModel as DBFilterOperatorFieldModel);
         }

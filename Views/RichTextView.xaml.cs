@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -149,11 +150,11 @@ namespace Dash
             {
                 if (refText.StartsWith("http"))
                 {
-                    theDoc = DBTest.CreateWebPage(refText);
+                    //theDoc = DBTest.CreateWebPage(refText);
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
-                    theDoc = DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
+                    //theDoc = DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {
@@ -331,7 +332,7 @@ namespace Dash
                 if (this.xRichEditBox.Document.Selection.Link.Length > 1)
                 {
                     var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                    var theDoc = ContentController.GetController<DocumentController>(target);
+                    var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
                     if (theDoc != null && theDoc != DBTest.DBNull)
                     {
                         var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());

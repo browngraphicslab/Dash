@@ -36,13 +36,13 @@ namespace Dash
             csv.Read();
 
             // set up a prototype document that models each of the rows
-            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
-            var protoFieldDict = new Dictionary<KeyController, FieldModelController>()
+            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
+            var protoFieldDict = new Dictionary<KeyController, FieldControllerBase>()
             { // dictionary of fields to set on the prototype document
                 [KeyStore.AbstractInterfaceKey] = new TextFieldModelController(protoDoc.DocumentType.Id),
                 [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>()
             };
-            var headerToFieldMap = new Dictionary<string, FieldModelController>();
+            var headerToFieldMap = new Dictionary<string, FieldControllerBase>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
             // generate a default field model controller for each of the fields
             foreach (var header in headers)
@@ -70,7 +70,7 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
             SetDefaultActiveLayout(outputDoc, hasCollection: true); // set active layout on the output doc
 
             outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);

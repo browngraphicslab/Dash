@@ -44,10 +44,10 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            var opDoc = opfmc.FieldReference.GetDocumentController(null);
+            var opDoc = opfmc.GetDocumentController(null);
 
             var stack = new StackPanel() { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top };
-            var opView = new OperatorView { DataContext = opfmc.FieldReference, OperatorContent = stack };
+            var opView = new OperatorView { DataContext = opfmc.GetFieldReference(), OperatorContent = stack };
             var chart = new Dash.DBFilterChart() { Width = 250, Height = 250, OpDoc = opDoc };
             stack.Children.Add(chart);
            

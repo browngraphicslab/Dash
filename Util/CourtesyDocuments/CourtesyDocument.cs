@@ -43,7 +43,7 @@ namespace Dash
         /// //TODO explain default field model controller idea here once it is written
         /// </summary>
         /// <returns></returns>
-        protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
+        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             if (refToData != null)
@@ -243,11 +243,18 @@ namespace Dash
             BindGridRowSpan(element, docController, context);
             BindGridColumnSpan(element, docController, context);
         }
-        
-        public static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+
+        [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
+        protected static Dictionary<KeyController, FieldControllerBase> DefaultLayoutFields(double x, double y, double w, double h,
+            FieldControllerBase data)
+        {
+            return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
+        }
+
+        public static Dictionary<KeyController, FieldControllerBase> DefaultLayoutFields(Point pos, Size size, FieldControllerBase data = null)
         {
             // assign the default fields
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
@@ -255,7 +262,7 @@ namespace Dash
                 [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
                 [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
                 [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
-                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Top.ToString())
+                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Stretch.ToString())
             };
 
             if (data != null)
@@ -274,7 +281,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldControllerBase fmController)
         {
             //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;

@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    class KeyStore
+    public class KeyStore
     {
         public static KeyController DocumentContextKey = new KeyController(DashConstants.KeyStore.DocumentContextKey);
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);

@@ -49,9 +49,9 @@ namespace Dash
         public abstract FieldReference Resolve(Context context);
 
 
-        public FieldModelController Dereference(Context context)
+        public FieldControllerBase Dereference(Context context)
         {
-            FieldModelController controller;
+            FieldControllerBase controller;
             if (context != null)
             {
                 if (context.TryDereferenceToRoot(this, out controller))
@@ -83,9 +83,9 @@ namespace Dash
             return null;
         }
 
-        public FieldModelController DereferenceToRoot(Context context)
+        public FieldControllerBase DereferenceToRoot(Context context)
         {
-            FieldModelController reference = Dereference(context);
+            FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceFieldModelController)
             {
                 reference = reference.Dereference(context);
@@ -94,7 +94,7 @@ namespace Dash
             return reference;
         }
 
-        public T DereferenceToRoot<T>(Context context) where T : FieldModelController
+        public T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
         {
             return DereferenceToRoot(context) as T;
         }
@@ -114,5 +114,7 @@ namespace Dash
         {
             return FieldKey.GetHashCode();
         }
+
+        public abstract ReferenceFieldModelController GetReferenceController();
     }
 }

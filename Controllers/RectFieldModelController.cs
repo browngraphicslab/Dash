@@ -9,25 +9,31 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class RectFieldModelController : FieldModelController
+    public class RectFieldModelController : FieldModelController<RectFieldModel>
     {
         public RectFieldModelController(Rect data) :base(new RectFieldModel(data)) { }
         public RectFieldModelController(double x, double y, double width, double height) : base(new RectFieldModel(x, y, width, height)) { }
+
+        public RectFieldModelController(RectFieldModel rectFieldModel) : base(rectFieldModel)
+        {
+
+        }
+
+        public override void Init()
+        {
+
+        }
+
 
         /// <summary>
         ///     The <see cref="Dash.PointFieldModel" /> associated with this <see cref="PointFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public RectFieldModel RectFieldModel => FieldModel as RectFieldModel;
-
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Debug.Assert(fieldModel is RectFieldModelController);
-            Data = ((RectFieldModelController)fieldModel).Data;
-        }
+        public RectFieldModel RectFieldModel => Model as RectFieldModel;
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -45,7 +51,7 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RectFieldModelController(0, 0, 1, 1);
         }
@@ -68,8 +74,11 @@ namespace Dash
             get { return RectFieldModel.Data; }
             set
             {
-                if (SetProperty(ref RectFieldModel.Data, value))
+                if (RectFieldModel.Data != value)
                 {
+                    RectFieldModel.Data = value;
+                    // Update the server
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                     // update local
                     // update server
@@ -83,7 +92,7 @@ namespace Dash
             return $"({Data})";
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<RectFieldModel> Copy()
         {
             return new RectFieldModelController(Data);
         }

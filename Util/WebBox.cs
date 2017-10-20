@@ -19,7 +19,7 @@ namespace Dash
     {
         public static DocumentType DocumentType =
             new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
-        public WebBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+        public WebBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
@@ -74,7 +74,7 @@ namespace Dash
 
             ///* 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
 
             var textfieldModelController = fieldModelController as TextFieldModelController;
             Debug.Assert(textfieldModelController != null);

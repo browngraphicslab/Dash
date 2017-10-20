@@ -37,7 +37,6 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
-
             return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout,
                 () => new FilterView());
         }

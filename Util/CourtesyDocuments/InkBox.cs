@@ -18,7 +18,7 @@ namespace Dash
 
         private static string PrototypeId = "29BD18A0-8236-4305-B063-B77BA4192C59";
 
-        public InkBox(FieldModelController refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
+        public InkBox(FieldControllerBase refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -56,7 +56,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();

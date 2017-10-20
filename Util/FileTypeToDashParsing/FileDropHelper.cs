@@ -7,6 +7,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -83,7 +84,7 @@ namespace Dash
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     case ".rtf":
-                        t = TypeInfo.RichText;
+                        t = TypeInfo.RichTextField;
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     default:
@@ -134,7 +135,7 @@ namespace Dash
                     return new DocumentBox(reference, x, y, w, h).Document;
                 case TypeInfo.Point:
                     return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichText:
+                case TypeInfo.RichTextField:
                     return new RichTextBox(reference, x, y, w, h).Document;
                 default:
                     return null;
@@ -144,11 +145,10 @@ namespace Dash
         public static DocumentController AddFieldFromData(object data, DocumentController document, KeyController key,
             Point position, TypeInfo type, DocumentCollectionFieldModelController activeLayout)
         {
-            var dto = new FieldModelDTO(type, data);
-            var fmc = TypeInfoHelper.CreateFieldModelControllerHelper(dto);
+            var fmc = FieldControllerFactory.CreateFromModel(TypeInfoHelper.CreateFieldModelHelper(type, data));
             document.SetField(key, fmc, true);
             var layoutDoc =
-                CreateFieldLayoutDocumentFromReference(new ReferenceFieldModelController(document.GetId(), key),
+                CreateFieldLayoutDocumentFromReference(new DocumentReferenceFieldController(document.GetId(), key),
                     position.X, position.Y);
             activeLayout?.AddDocument(layoutDoc);
             return layoutDoc;
@@ -204,7 +204,8 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
-                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
+                    return null;
+                    //return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
             }
@@ -254,12 +255,12 @@ namespace Dash
                 foreach (var item in items)
                 {
                     var storageFile = item as StorageFile;
-                    var fields = new Dictionary<KeyController, FieldModelController>
+                    var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
                         [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
                     };
                     var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
-                    var tb = new TextingBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.SystemUriKey))
+                    var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey))
                         .Document;
                     doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document,
                         false, true);
@@ -277,12 +278,12 @@ namespace Dash
         {
             foreach (var storageFile in files)
             {
-                var fields = new Dictionary<KeyController, FieldModelController>
+                var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
                 };
                 var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
-                var tb = new TextingBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.SystemUriKey)).Document;
+                var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey)).Document;
                 doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document, false,
                     true);
                 await AddFileAsField(doc, new Point(0, tb.GetHeightField().Data), storageFile);

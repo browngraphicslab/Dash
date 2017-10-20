@@ -68,7 +68,7 @@ namespace Dash
             {
                 _lastDataContext = args.NewValue;
             }
-            _operator = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
+            _operator = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
             _isCompound = _operator.IsCompound();
 
             var inputsBinding = new Binding
@@ -98,8 +98,7 @@ namespace Dash
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
                     KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
-                    compoundFMCont.Inputs.Add(newInput, new IOInfo(ioRef.Type, true));
-                    compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
+                    compoundFMCont.AddInputreference(newInput, ioRef);
                 };
 
                 OutputListView.PointerReleased += (s, e) =>
@@ -109,8 +108,7 @@ namespace Dash
                     if (ioRef == null) return;
                     if (!ioRef.IsOutput) return;
                     KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
-                    compoundFMCont.Outputs.Add(newOutput, ioRef.Type);
-                    compoundFMCont.AddOutputreference(newOutput, ioRef.FieldReference);
+                    compoundFMCont.AddOutputreference(newOutput, ioRef);
                     _currOutputRef = ioRef;
                 };
             }
@@ -185,7 +183,7 @@ namespace Dash
                 StartNewLink(sender, ioref.PointerArgs, false, view);
                 view.EndDrag(ioref, true);
                 var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
-                (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref.FieldReference);
+                (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref);
             }
             else
             {
@@ -245,11 +243,11 @@ namespace Dash
             xOpContentPresenter.Content = _compoundOpEditor;
         }
 
-        private void MakeCompoundEditor()
+        private void MakeCompoundEditor(FieldControllerBase collectionField = null)
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
-            var documentController = ContentController.GetController<DocumentController>(docId);
+            var documentController = ContentController<DocumentModel>.GetController<DocumentController>(docId);
             var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor();

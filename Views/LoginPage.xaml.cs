@@ -35,7 +35,7 @@ namespace Dash
 
             if (result.IsSuccess)
             {
-                this.Frame.Navigate(typeof(HomePage));
+                this.Frame.Navigate(typeof(MainPage));
             }
             else
             {
@@ -54,7 +54,7 @@ namespace Dash
 
             if (result.IsSuccess)
             {
-                this.Frame.Navigate(typeof(HomePage));
+                this.Frame.Navigate(typeof(MainPage));
             }
             else
             {
