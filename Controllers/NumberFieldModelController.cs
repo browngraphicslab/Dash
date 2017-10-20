@@ -62,8 +62,9 @@ namespace Dash
             get => NumberFieldModel.Data;
             set
             {
-                if (SetProperty(ref NumberFieldModel.Data, value))
+                if (value.Equals(NumberFieldModel.Data))
                 {
+                    NumberFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                 }
             }

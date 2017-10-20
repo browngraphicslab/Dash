@@ -62,8 +62,11 @@ namespace Dash
             if (sourceBinding != null)
                 element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
+
+
         protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
+            CourtesyDocument.SetupBindings(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController,FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
@@ -88,26 +91,16 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch
             };
             grid.Children.Add(web);
-            var overgrid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-                Name="overgrid"
-            };
-            grid.Children.Add(overgrid);
+            //var overgrid = new Grid
+            //{
+            //    HorizontalAlignment = HorizontalAlignment.Stretch,
+            //    VerticalAlignment = VerticalAlignment.Stretch,
+            //    Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+            //    Name="overgrid"
+            //};
+            //grid.Children.Add(overgrid);
 
             SetupBindings(web, docController, context);
-
-            // bind the text height
-            var docheightController = GetHeightField(docController, context);
-            if (docheightController != null)
-                BindHeight(grid, docheightController);
-
-            // bind the text width
-            var docwidthController = GetWidthField(docController, context);
-            if (docwidthController != null)
-                BindWidth(grid, docwidthController);
 
             //add to key to framework element dictionary
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
@@ -118,9 +111,6 @@ namespace Dash
                 return new SelectableContainer(grid, docController);
             }
             return grid;
-            //*/ 
-
-            //return new TextBox();
         }
 
         protected override DocumentController GetLayoutPrototype()
