@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
     /// <summary>
     /// A field model which encapsulates a list of Documents
     /// </summary>
+    [FieldModelTypeAttribute(TypeInfo.Collection)]
     public class DocumentCollectionFieldModel : FieldModel
     {
         /// <summary>
@@ -16,14 +18,23 @@ namespace Dash
         /// </summary>
         public List<string> Data;
 
+        public DocumentCollectionFieldModel() : this(new List<string>())
+        {
+            
+        }
+
+        public DocumentCollectionFieldModel(IEnumerable<string> documentIds, string id = null) : base(id)
+        {
+            Data = documentIds.ToList();
+        }
+
         /// <summary>
         /// Creates a new DocumentCollectionFieldModel using the passed in list of <see cref="DocumentModel"/>
         /// </summary>
         /// <param name="documents"></param>
-        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents)
+        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents, string id = null) : this(documents.Select(document => document.Id), id)
         {
-            Debug.Assert(documents != null);
-            Data = documents.Select(document => document.Id).ToList();
+            
         }
 
         /// <summary>
@@ -35,10 +46,5 @@ namespace Dash
             Debug.Assert(documents != null);
             Data = documents.ToList();
         }
-
-        protected override FieldModelDTO GetFieldDTOHelper() 
-        {
-            return new FieldModelDTO(TypeInfo.Collection, Data);
-        }  
     }
 }

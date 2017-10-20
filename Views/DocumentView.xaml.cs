@@ -24,7 +24,9 @@ namespace Dash
     public sealed partial class DocumentView : SelectionElement
     {
         public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
+
         public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
+
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -253,7 +255,8 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move)
             {
-                var coll = CollectionView.GetParentCollectionView(this);
+                var coll = this.GetFirstAncestorOfType<CollectionView>();
+                Debug.Assert(coll != null);
                 coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
             }
             else
@@ -311,13 +314,11 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
+            Debug.Assert(dvm.Width != double.NaN);
+            Debug.Assert(dvm.Height != double.NaN);
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
             // should we allow documents with NaN's for width & height to be resized?
-            //if (double.IsNaN(dvm.Width))
-            //    dvm.Width = ActualWidth + dx;
-            //if (double.IsNaN(dvm.Height))
-            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -389,7 +390,7 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            var docType = ViewModel.DocumentController.Model.DocumentType;
             if (docType.Type != null)
             {
 
@@ -397,14 +398,14 @@ namespace Dash
             else
             {
 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Source = ViewModel.DocumentController.Model.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -485,7 +486,6 @@ namespace Dash
 
             if (useFixedMenu)
                 MainPage.Instance.HideDocumentMenu();
-
         }
 
         private void CopyDocument()
@@ -557,7 +557,7 @@ namespace Dash
                             break;
                         }
 
-                    DBTest.ResetCycleDetection();
+                    //DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
         }
@@ -609,7 +609,7 @@ namespace Dash
                     if (useFixedMenu)
                     {
                         MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.MainDocView != this)
+                        if (MainPage.Instance.xMainDocView != this)
                             MainPage.Instance.ShowDocumentMenu();
                     }
                 }
@@ -637,6 +637,7 @@ namespace Dash
 
         #endregion
 
+
         private void DocumentView_OnDragOver(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -652,6 +653,7 @@ namespace Dash
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
             Debug.WriteLine(query);
+
         }
     }
 }

@@ -14,14 +14,14 @@ namespace Dash
 
         public static readonly KeyController OutputDocumentKey = new KeyController("114C5C68-7A02-491D-8B52-43A27EC63BE4", "OutputDocument");
 
-        public DocumentAppendOperatorController() : base(new OperatorFieldModel("DocumentConcat"))
+        public DocumentAppendOperatorController() : base(new OperatorFieldModel(OperatorType.DocumentAppend))
         {
         }
         public DocumentAppendOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new DocumentAppendOperatorController();
         }
@@ -45,10 +45,10 @@ namespace Dash
             [OutputDocumentKey] = TypeInfo.Document
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             DocumentController doc = ((DocumentFieldModelController) inputs[InputDocumentKey]).Data;
-            FieldModelController field = inputs[FieldKey];
+            FieldControllerBase field = inputs[FieldKey];
 
             var del = doc.MakeDelegate();
             del.SetField(new KeyController(Guid.NewGuid().ToString(), "Concat output"), field, true);

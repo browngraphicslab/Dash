@@ -124,7 +124,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
@@ -160,7 +160,7 @@ namespace Dash.Converters
                 _doc = doc;
                 return _doc;
             }
-            return DBTest.DBNull;
+            return null;
         }
     }
     public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentFieldModelController, string>
@@ -218,7 +218,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;

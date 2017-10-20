@@ -1,21 +1,29 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public static class ContentController
+    public static class ContentController<T> where T: EntityBase
     {
         #region Caches
 
-        private static ConcurrentDictionary<string, IController> _controllers = new ConcurrentDictionary<string, IController>();
+        private static ConcurrentDictionary<string, IController<T>> _controllers = new ConcurrentDictionary<string, IController<T>>();
 
-        private static ConcurrentDictionary<string, EntityBase> _models = new ConcurrentDictionary<string, EntityBase>();
+        private static ConcurrentDictionary<string, T> _models = new ConcurrentDictionary<string, T>();
 
 
         #endregion
+
+        static ContentController()
+        {
+            var t = typeof(T);
+            Debug.Assert(t == typeof(FieldModel) || t == typeof(DocumentModel) || t == typeof(KeyModel));
+        }
 
         #region Controllers
 
@@ -23,7 +31,7 @@ namespace Dash
         /// Adds a controller to the current list of 
         /// </summary>
         /// <param name="newController"></param>
-        public static void AddController(IController newController)
+        public static void AddController(IController<T> newController)
         {
             // get the newController's id and make sure it isn't null
             var newControllerId = newController.GetId();
@@ -41,13 +49,13 @@ namespace Dash
                 // otherwise add the new controller to the saved controllers
                 _controllers[newControllerId] = newController;
             }
-
+            AddModel(newController.Model);
         }
 
         /// <summary>
         /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
         /// </summary>
-        public static TControllerType GetController<TControllerType>(string controllerId) where TControllerType : class, IController
+        public static TControllerType GetController<TControllerType>(string controllerId) where TControllerType : IController<T>
         {
             if (_controllers.ContainsKey(controllerId))
             {
@@ -66,7 +74,7 @@ namespace Dash
         /// <summary>
         /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
         /// </summary>
-        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType :  IController<T>
         {
             List< string > ids = new List<string>();
             foreach (var c in _controllers)
@@ -82,7 +90,7 @@ namespace Dash
         /// </summary>
         /// <param name="controllerId"></param>
         /// <returns></returns>
-        public static IController GetController(string controllerId)
+        public static IController<T> GetController(string controllerId)
         {
             if (_controllers.ContainsKey(controllerId))
             {
@@ -98,24 +106,27 @@ namespace Dash
         /// <typeparam name="TControllerType"></typeparam>
         /// <param name="controllerIds"></param>
         /// <returns></returns>
-        public static IEnumerable<TControllerType> GetControllers<TControllerType>(IEnumerable<string> controllerIds) where TControllerType : class, IController
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>(IEnumerable<string> controllerIds) where TControllerType :  IController<T>
         {
             // convert controller id's to a list to avoid multiple enumeration
             controllerIds = controllerIds.ToList();
 
+            Debug.Assert(controllerIds.All(_controllers.ContainsKey));
+
             // get any controllers which exist and are of type TControllerType
-            var successfulControllers =
-                controllerIds
-                    .Where(controllerId => _controllers.ContainsKey(controllerId))
-                    .Select(controllerId => _controllers[controllerId])
-                    .OfType<TControllerType>().ToList();
+            var successfulControllers = controllerIds.Select(controllerId => _controllers[controllerId]);
 
             // TODO try and get missing controllers from the server
 
-            Debug.Assert(controllerIds.Count() == successfulControllers.Count, "Not all of the controllers which were passed in were of the requested type," +
+            Debug.Assert(controllerIds.Count() == successfulControllers.Count(), "Not all of the controllers which were passed in were of the requested type," +
                                                                                "Or the id was not found in the list of controllers");
 
-            return successfulControllers;
+            var typedControllers = successfulControllers.OfType<TControllerType>();
+
+            Debug.Assert(controllerIds.Count() == typedControllers.Count(), "Not all of the controllers which were passed in were of the requested type," +
+                                                                                 "Or the id was not found in the list of controllers");
+
+            return typedControllers;
         }
 
         /// <summary>
@@ -136,7 +147,7 @@ namespace Dash
         /// Adds a model to the current list of models
         /// </summary>
         /// <param name="newModel"></param>
-        public static void AddModel(EntityBase newModel)
+        private static void AddModel(T newModel)
         {
             // get the new Model's id and make sure it isn't null
             var newModelId = newModel.Id;
@@ -181,7 +192,7 @@ namespace Dash
         /// </summary>
         /// <param name="modelId"></param>
         /// <returns></returns>
-        public static EntityBase GetModel(string modelId)
+        public static T GetModel(string modelId)
         {
             if (_models.ContainsKey(modelId))
             {
@@ -199,6 +210,29 @@ namespace Dash
         public static bool HasModel(string modelId)
         {
             return _models.ContainsKey(modelId);
+        }
+
+        /// <summary>
+        /// to remove a contorller from this content controller
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        public static bool RemoveController(string Id)
+        {
+            IController<T> outC;
+            T outM;
+            _controllers.TryRemove(Id, out outC);
+            _models.TryRemove(Id, out outM);
+            return outC != null && outM != null;
+        }
+
+        /// <summary>
+        /// method to delete all controllers and models.  Should really almost never be called
+        /// </summary>
+        public static void ClearAllControllersAndModels()
+        {
+            _controllers = new ConcurrentDictionary<string, IController<T>>();
+            _models = new ConcurrentDictionary<string, T>();
         }
 
         /// <summary>

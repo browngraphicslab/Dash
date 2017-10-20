@@ -45,7 +45,7 @@ namespace Dash
             var content = new FormUrlEncodedContent(pairs);
 
             // request the token from the serrver
-            var result = _connection.Post(DashConstants.TokenEndpoint, content, false);
+            var result = await _connection.Post(DashConstants.TokenEndpoint, content, false);
             return await result.Content.ReadAsAsync<AuthenticationTokenModel>();
         }
 

@@ -6,7 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{x:Bind Background, Mode=OneWay}">
+    <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
+    <Grid Background="{StaticResource DocumentBackground}">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"
                    Text="{x:Bind Text, Mode=OneWay}"

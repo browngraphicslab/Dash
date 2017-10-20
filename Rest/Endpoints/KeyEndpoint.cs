@@ -1,89 +1,110 @@
-﻿using System.Collections.Generic;
-using DashShared;
-using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
+using Dash.Rest.Endpoints;
+using DashShared;
 
 namespace Dash
 {
-    public class KeyEndpoint
+    public class KeyEndpoint : Endpoint<KeyModel, KeyModel>, IKeyEndpoint
     {
-        private ServerEndpoint _connection;
+        private readonly ServerEndpoint _connection;
 
         public KeyEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+            AddBatchHandler(AddKeys);
         }
 
         /// <summary>
-        /// Adds a new Key to the DashWebServer.
         /// </summary>
         /// <param name="newKey"></param>
-        /// <returns></returns>
-        public async Task<Result<KeyController>> AddKey(KeyController newKey)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
+        {
+            Task.Run(() =>
+            {
+                AddRequest(AddKeys, new Tuple<KeyModel, Action<KeyModel>, Action<Exception>>(newKey, success, error));
+            });
+        }
+
+        private async void AddKeys(List<Tuple<KeyModel, Action<KeyModel>, Action<Exception>>> batch)
         {
             try
             {
-                HttpResponseMessage result = _connection.Post("api/Key", newKey);
-                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
+                // convert from field models to DTOs
+                var keys = batch.Select(x => x.Item1).ToList();
+                var result = await _connection.Post("api/Key/batch", keys);
+                var resultKeys = await result.Content.ReadAsAsync<List<KeyModel>>();
 
-                // convert from server dto back to Key model controller
-                return new Result<KeyController>(true, resultk);
+                var successHandlers = batch.Select(x => x.Item2);
+                successHandlers.Zip(resultKeys, (success, key) =>
+                {
+                    success(key);
+                    return true;
+                });
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
+                batch.ForEach(x => x.Item3(e));
             }
         }
 
         /// <summary>
-        /// Updates an existing Key in the DashWebServer
         /// </summary>
-        /// <param name="KeyToUpdate"></param>
-        /// <returns></returns>
-        public async Task<Result<KeyController>> UpdateKey(KeyController KeyToUpdate)
+        /// <param name="keyToUpdate"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
             try
             {
-                HttpResponseMessage result = _connection.Put("api/Key", KeyToUpdate);
-                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
+                var result = await _connection.Put("api/Key", keyToUpdate);
+                var resultK = await result.Content.ReadAsAsync<KeyModel>();
 
-                return new Result<KeyController>(true, resultk);
+                success(resultK);
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
+                error(e);
             }
         }
 
-        public async Task<Result<KeyController>> GetKey(string id)
+        public async Task GetKey(string id, Func<KeyModel, Task> success, Action<Exception> error)
         {
             try
             {
-                KeyController Key = await _connection.GetItem<KeyController>($"api/Key/{id}");
-                return new Result<KeyController>(true, Key);
+                var key = await _connection.GetItem<KeyModel>($"api/Key/{id}");
+
+                await success(key);
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
+                error(e);
             }
         }
 
-        public Result DeleteKey(KeyController KeyToDelete)
+        public async void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
-            string id = KeyToDelete.GetId();
             try
             {
-                _connection.Delete($"api/Key/{id}");
-                return new Result(true);
+                var response = await _connection.Delete($"api/Key/{keyToDelete.Id}");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result(false, string.Join("\n", e.Errors));
+                error(e);
             }
         }
     }

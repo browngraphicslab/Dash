@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,39 +28,58 @@ namespace DashWebServer.Controllers
         
         /// GET api/Field/5, returns the Field with the given ID
         [HttpGet("{id}")]
-        public async Task<FieldModelDTO> Get(string id)
+        public async Task<FieldModel> Get(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<FieldModelDTO>(id);
+            return await _documentRepository.GetItemByIdAsync<FieldModel>(id);
         }
 
         // POST api/Field, adds a Field with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FieldModelDTO FieldModelDTO)
+        public async Task<IActionResult> Post([FromBody]FieldModel fieldModel)
         {
             try
             {
-                FieldModelDTO = await _documentRepository.AddItemAsync(FieldModelDTO);
+                fieldModel = await _documentRepository.AddItemAsync(fieldModel);
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
+
             }
-            return Ok(FieldModelDTO);
+            return Ok(fieldModel);
+        }
+
+        // POST api/Field/batch, adds the complete list of fields
+        [HttpPost("batch")]
+        public async Task<IActionResult> Post([FromBody]IEnumerable<FieldModel> fieldModelDtOs)
+        {
+            try
+            {
+                fieldModelDtOs = await _documentRepository.AddItemsAsync(fieldModelDtOs);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
+            }
+            return Ok(fieldModelDtOs);
         }
 
         // PUT api/field/5, updates a given Field field
-        [HttpPut()]
-        public async Task<IActionResult> Put([FromBody]FieldModelDTO fieldModelDTO)
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody]FieldModel fieldModel)
         {
             try
             {
-                fieldModelDTO = await _documentRepository.UpdateItemAsync(fieldModelDTO);
+                fieldModel = await _documentRepository.UpdateItemAsync(fieldModel);
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
-            return Ok(fieldModelDTO);
+            return Ok(fieldModel);
         }
 
         // DELETE api/field/5, sends OK on success
@@ -68,11 +88,12 @@ namespace DashWebServer.Controllers
         {
             try
             {
-                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<FieldModelDTO>(id));
+                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<FieldModel>(id));
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
             return Ok();
         }

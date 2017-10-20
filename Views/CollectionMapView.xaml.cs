@@ -61,7 +61,7 @@ namespace Dash
             var refToOp = args.NewValue as FieldReference;
             var doc = refToOp.GetDocumentController(null);
             _operatorDoc = doc;
-            _operator = doc.GetField(OperatorDocumentModel.OperatorKey) as CollectionMapOperator;
+            _operator = doc.GetField(KeyStore.OperatorKey) as CollectionMapOperator;
 
             doc.AddFieldUpdatedListener(CollectionMapOperator.InputOperatorKey, InputOperatorChanged);
         }

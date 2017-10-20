@@ -17,8 +17,8 @@ namespace DashShared
             
         }
 
-        [Required] // cannot be null
-        public string UserId { get; set; }
+        //[Required] // cannot be null
+        //public string UserId { get; set; }
 
     }
 }

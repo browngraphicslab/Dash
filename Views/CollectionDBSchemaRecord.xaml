@@ -26,7 +26,7 @@
             ShowsScrollingPlaceholders="False">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel CanDrag="True" Orientation="Horizontal"  Margin="0"/>
+                    <ItemsStackPanel CanDrag="True" Orientation="Horizontal"  Margin="0"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>

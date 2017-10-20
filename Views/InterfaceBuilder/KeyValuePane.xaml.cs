@@ -92,7 +92,7 @@ namespace Dash
             else SetListItemSourceToCurrentDataContext();
         }
 
-        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
             var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
 
@@ -152,7 +152,7 @@ namespace Dash
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
-            FieldModelController fmController = new TextFieldModelController("something went wrong");
+            FieldControllerBase fmController = new TextFieldModelController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
             //fmController = _documentControllerDataContext.GetField(key);
@@ -181,7 +181,7 @@ namespace Dash
             }
             else if (item == TypeInfo.Document)
             {
-                var fields = new Dictionary<KeyController, FieldModelController>()
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
                 };
@@ -413,7 +413,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        DBTest.ResetCycleDetection();
+                        //DBTest.ResetCycleDetection();
                         _selectedKV.Key.Name = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
@@ -426,8 +426,8 @@ namespace Dash
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    DBTest.ResetCycleDetection();
-                    var field = _documentControllerDataContext.GetDereferencedField<FieldModelController>(_selectedKV.Key, new Context(_documentControllerDataContext));
+                    //DBTest.ResetCycleDetection();
+                    var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(_selectedKV.Key, new Context(_documentControllerDataContext));
                     this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();
                 }

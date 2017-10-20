@@ -11,6 +11,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -162,7 +163,7 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             dc.Document.ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, new Context(dc.Document)));
-            dc.DataReference = new ReferenceFieldModelController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
+            dc.DataReference = new DocumentReferenceFieldController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -241,7 +242,7 @@ namespace Dash
             var dbDocs = ParentDocument
                 .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
             var headerList = ParentDocument
-                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldModelController>();
+                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
             {
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
@@ -249,7 +250,7 @@ namespace Dash
                 foreach (var h in headerList)
                 { 
                     SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
-                                                     FieldKey = ContentController.GetController<KeyController>((h as TextFieldModelController).Data)  });
+                                                     FieldKey = ContentController<KeyModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)

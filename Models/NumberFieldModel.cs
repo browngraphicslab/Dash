@@ -1,13 +1,14 @@
 using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelTypeAttribute(TypeInfo.Number)]
     public class NumberFieldModel : FieldModel
     {
-        public NumberFieldModel() { }
 
-        public NumberFieldModel(double data)
+        public NumberFieldModel(double data, string id = null) : base(id)
         {
             Data = data;
         }
@@ -17,11 +18,6 @@ namespace Dash
         public override string ToString()
         {
             return $"NumberFieldModel: {Data}";
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Reference, Data);
         }
     }
 }
