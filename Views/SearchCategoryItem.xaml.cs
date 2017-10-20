@@ -69,7 +69,7 @@ namespace Dash
             {
                 var doc = func.Invoke();
                 var name = doc.Title;
-                doc.DeleteOnServer();
+                //doc.DeleteOnServer();
                 _titleToFuncDictionary[name] = func;
                 ListContent.Add(name);
             }

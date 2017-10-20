@@ -66,7 +66,7 @@ namespace Dash
             get { return _width; }
             set
             {
-                Debug.Assert(double.IsNaN(value) == false);
+                //Debug.Assert(double.IsNaN(value) == false);
 
                 if (SetProperty(ref _width, value))
                 {
@@ -86,7 +86,7 @@ namespace Dash
             get { return _height; }
             set
             {
-                Debug.Assert(double.IsNaN(value) == false);
+                //Debug.Assert(double.IsNaN(value) == false);
 
                 if (SetProperty(ref _height, value))
                 {
