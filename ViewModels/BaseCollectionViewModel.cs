@@ -192,7 +192,7 @@ namespace Dash
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
                     return e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where);
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)

@@ -83,7 +83,6 @@ namespace Dash
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
-        
 
         public void TryBindToParentDocumentSize()
         {
