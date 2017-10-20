@@ -129,10 +129,12 @@ namespace Dash
             image.Seek(0);
 
             var bmp = new WriteableBitmap((int)decoder.PixelHeight, (int)decoder.PixelWidth);
-            MainPage.Instance.Dispatcher.RunIdleAsync(async (args) =>
+#pragma warning disable CS4014
+            MainPage.Instance.Dispatcher.RunIdleAsync((args) =>
             {
                 bmp.SetSourceAsync(image);
             });
+#pragma warning restore CS4014
             return bmp;
         }
         public override TypeInfo TypeInfo => TypeInfo.Image;

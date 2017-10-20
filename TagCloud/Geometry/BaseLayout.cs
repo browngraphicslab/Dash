@@ -14,9 +14,9 @@ namespace Gma.CodeCloud.Controls.Geometry
 
         protected BaseLayout(Size size)
         {
-            Surface = new Rect(new Point(0, 0), size);
+            Surface  = new Rect(new Point(0, 0), size);
             QuadTree = new QuadTree<LayoutItem>(Surface);
-            Center = new Point(Surface.X + size.Width / 2, Surface.Y + size.Height / 2);
+            Center   = new Point(Surface.X + size.Width / 2, Surface.Y + size.Height / 2);
         }
 
         public void Arrange(IEnumerable<IWord> words, IGraphicEngine graphicEngine)
@@ -28,13 +28,13 @@ namespace Gma.CodeCloud.Controls.Geometry
 
             foreach (IWord word in words)
             {
-                Size size = graphicEngine.Measure(word.Text, word.Occurrences);
+                var size = graphicEngine.Measure(word.Text, word.Occurrences);
                 Rect freeRectangle;
                 if (!TryFindFreeRectangle(size, out freeRectangle))
                 {
                     return;
                 }
-                LayoutItem item = new LayoutItem(freeRectangle, word);
+                var item = new LayoutItem(freeRectangle, word);
                 QuadTree.Insert(item);
             }
         }

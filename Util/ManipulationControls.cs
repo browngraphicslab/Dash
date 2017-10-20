@@ -208,14 +208,14 @@ namespace Dash
             }
             if (r != Rect.Empty)
             {
-                var trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top);
+                var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
                 else
-                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) / 2);
+                    trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left+r.Width/2, r.Top), scaleAmt));
             }
         }
 

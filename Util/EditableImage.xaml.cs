@@ -105,8 +105,8 @@ namespace Dash
                 if (value)
                 {
                     ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
-                    SetLeft(xEditStackPanel, (GetLeft(xClipRectangle) + (xClipRectangle.Width - xEditStackPanel.Width)/2));
-                    SetTop(xEditStackPanel, GetTop(xClipRectangle) + xClipRectangle.Height + 10);
+                    Canvas.SetLeft(xEditStackPanel, (Canvas.GetLeft(xClipRectangle) + (xClipRectangle.Width - xEditStackPanel.Width)/2));
+                    Canvas.SetTop(xEditStackPanel, Canvas.GetTop(xClipRectangle) + xClipRectangle.Height + 10);
                 }
             }
         }

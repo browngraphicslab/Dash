@@ -44,7 +44,6 @@ namespace Dash
         #endregion
 
 
-        
         #region LinkingVariables
 
         public bool CanLink = false;
@@ -62,7 +61,7 @@ namespace Dash
         private Canvas itemsPanelCanvas;
 
         #endregion
-        
+
 
         public ManipulationControls ManipulationControls;
 
@@ -144,6 +143,7 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
 
+            //If there is inkdata, make the ink canvas
             if (InkFieldModelController != null)
             {
                 MakeInkCanvas();
@@ -152,59 +152,76 @@ namespace Dash
             LoadLines();
         }
 
-
         #endregion
 
         #region DraggingLinesAround
 
+
+        /// <summary>
+        /// Loads all of the links that should be shown in the collection by iterating through the list of user created links on each 
+        /// document in the collection. The UserLinksKey corresponds to a list of keyIDs of fields on that document that reference fields 
+        /// on other documents and were created by the user. We then check if the corresponding referenced document is in the collection 
+        /// for each linked field, and if it is, we construct the link using 
+        /// </summary>
         public void LoadLines()
         {
+            //iterate through documents and get user links fields
             foreach (var docVM in ViewModel.DocumentViewModels)
             {
-                var doc = docVM.DocumentController;
-                var linksListFMC =
-                    doc.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
-                if (linksListFMC != null)
+                TryLoadLinks(docVM);
+            }
+        }
+
+        private void TryLoadLinks(DocumentViewModel docVM)
+        {
+            var doc = docVM.DocumentController;
+            var linksListFMC =
+                doc.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+            if (linksListFMC != null)
+            {
+                foreach (var textFMC in linksListFMC.TypedData)
                 {
-                    foreach (var textFMC in linksListFMC.TypedData)
+                    var keyID = textFMC.Data;
+                    var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
+                    if (keyValuePair.Key != null)
                     {
-                        var keyID = textFMC.Data;
-                        var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
-                        if (keyValuePair.Key != null)
-                        {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
-                        }
-                        
+                        //Try to add a line from the referencing field to the referenced field.
+                        AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
                     }
+
                 }
             }
         }
 
+        /// <summary>
+        /// Adds a visual link between two fields A and B in which B is a reference to A, and both fields are in the collection.
+        /// Gets the document views on both ends of the link and the framework elements corresponding to the linked fields, then programatically
+        /// starts and ends a drag between those two fields
+        /// </summary>
+        /// <param name="reference">The field reference on the document on the recieving end of the link</param>
+        /// <param name="referencingDoc">The document on the recieving end of the link</param>
+        /// <param name="referencingFieldKey">The key corresponding to the field on the recieving end of the link</param>
         public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
         {
             var docId = reference.GetDocumentId();
             var referencedFieldKey = reference.FieldKey;
-            var fmController = reference.DereferenceToRoot(null);
-            DocumentController referencedDoc = null;
-            foreach (var document in ViewModel.DocumentViewModels.Select(vm => vm.DocumentController))
-            {
-                if (document.GetId() == docId)
-                {
-                    referencedDoc = document;
-                    break;
-                }
-            }
+            //find the document containing the referenced field, if it is in this collection
+            DocumentController referencedDoc = ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
             if (referencedDoc == null) return;
+            //get the type of the referenced field (needed for the IOReference) 
+            TypeInfo fieldTypeInfo;
+            var fmController = reference.DereferenceToRoot(null);
             if (fmController == null)
             {
-                var op = referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                var type = op.Outputs[reference.FieldKey];
-                fmController = TypeInfoHelper.CreateFieldModelController(type);
+                fieldTypeInfo = (referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController).Outputs[reference.FieldKey];
+            } else
+            {
+                fieldTypeInfo = fmController.TypeInfo;
             }
-            MakeLine(reference, referencingDoc, referencingFieldKey, referencedFieldKey, fmController, referencedDoc);
+            MakeLine(reference, referencingDoc, referencingFieldKey, referencedFieldKey, fmController, referencedDoc, fieldTypeInfo);
         }
 
-        private void MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc)
+        private void MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc, TypeInfo fieldTypeInfo)
         {
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
@@ -212,30 +229,22 @@ namespace Dash
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
 
-            IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
-            IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
+            IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fieldTypeInfo, null, frameworkElement1, docView1);
+            IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fieldTypeInfo, null, frameworkElement2, docView2);
 
-            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5, 5), frameworkElement1, itemsPanelCanvas));
+
+            //Programmatically start the connection line
+            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(frameworkElement1.ActualWidth/2,frameworkElement1.ActualHeight/2), frameworkElement1, itemsPanelCanvas));
+            //Set the current reference to the outputting reference (the IOReference coming from the referenced field)
+
             _currReference = outputtingReference;
+            //End the drag, passing in the IOReference that would be generated by the recieving field if the user actually dropped a link on it.
             EndDrag(inputtingReference, false, true);
         }
 
         private DocumentView GetDocView(DocumentController doc)
         {
-            foreach (var docVm in ViewModel.DocumentViewModels)
-            {
-                if (docVm.DocumentController.Equals(doc))
-                {
-                    if (xItemsControl.ItemContainerGenerator != null && xItemsControl
-                            .ContainerFromItem(docVm) is ContentPresenter contentPresenter)
-                    {
-                        var docView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                        return docView;
-                    }
-
-                }
-            }
-            return null;
+            return _documentViews.FirstOrDefault(view => view.ViewModel.DocumentController.Equals(doc));
         }
 
         public void DeleteLine(FieldReference reff, Path line)
@@ -268,6 +277,7 @@ namespace Dash
                 }
             }
 
+            //Remove the line visually and remove all references to it
             itemsPanelCanvas.Children.Remove(line);
             RefToLine.Remove(reff);
             LineToConverter[line].OnPathUpdated -= UpdateGradient;
@@ -320,6 +330,7 @@ namespace Dash
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
+
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
         /// </summary>
@@ -431,6 +442,14 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Sets the state of the collection to having a drag started, but not yet completed. 
+        /// We keep track of the current IOReference with _currReference because when we end the drag we need to use the 
+        /// IOReference from the inputting field *and* (usually) the IOReference from the field on the recieving end of the link.
+        /// Sometimes this can be the other way around, if we drag from an input node to an output node, but the same general logic applies.
+        /// We also keep track of the pointer so that when the pointer is moved, the link moves as well.
+        /// </summary>
+        /// <param name="ioReference">The IOReference generated by the field from which we are dragging</param>
         public void StartDrag(IOReference ioReference)
         {
             if (_currReference != null) return;
@@ -451,6 +470,11 @@ namespace Dash
             StartConnectionLine(ioReference, ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position);
         }
 
+        /// <summary>
+        /// Creates the visual link and stores the reference to it in _connectionLine, so that it can be used when the drag is ended.
+        /// </summary>
+        /// <param name="ioReference">The IOReference generated by the field outputting to the link</param>
+        /// <param name="pos2">The second position on the link bezier curve</param>
         private void StartConnectionLine(IOReference ioReference, Point pos2)
         {
             _connectionLine = new Path
@@ -532,8 +556,17 @@ namespace Dash
             _currReference = null;
         }
 
+        /// <summary>
+        /// Drops the _connectionLine on a field (or ends the drag and undos the line). If the link is not being reloaded 
+        /// programatically, makes the corresponding field reference on the recieving document.
+        /// Takes in the IOReference generated by the field being dropped on.
+        /// </summary>
+        /// <param name="ioReference"></param>
+        /// <param name="isCompoundOperator"></param>
+        /// <param name="isLoadedLink"></param>
         public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink=false)
         {
+            //If _currReference is from the outputting field, set the inputReference to the IORef passed in, or vice versa.
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
@@ -541,21 +574,12 @@ namespace Dash
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
-            // only allow input-output pairs to be connected 
-            if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
-            {
-                UndoLine();
-                return;
-            }
-
-            if ((inputReference.Type & outputReference.Type) == 0)
-            {
-                UndoLine();
-                return;
-            }
-
-            // undo line if connecting the same fields 
-            if (inputReference.FieldReference.Equals(outputReference.FieldReference) || _currReference.FieldReference == null)
+            // checking conditions: only input-output pairs can be linked, can't link null or same fields, can't link if the field type is none.
+            if (_currReference == null 
+                || _currReference.IsOutput == ioReference.IsOutput 
+                || (inputReference.Type & outputReference.Type) == 0 
+                || inputReference.FieldReference.Equals(outputReference.FieldReference) 
+                || _currReference.FieldReference == null)
             {
                 UndoLine();
                 return;
@@ -570,19 +594,9 @@ namespace Dash
             else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
+
             //Add the key to the inputController's list of user created links
-            if (!isLoadedLink)
-            {
-                if (inputController.GetField(KeyStore.UserLinksKey) == null)
-                {
-                    inputController.SetField(KeyStore.UserLinksKey,
-                        new ListFieldModelController<TextFieldModelController>(), true);
-                }
-                var linksList =
-                    inputController.GetField(KeyStore.UserLinksKey) as
-                        ListFieldModelController<TextFieldModelController>;
-                linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-            }
+            if (!isLoadedLink) AddLinkToList(inputReference.FieldReference.FieldKey, inputController);
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -590,6 +604,7 @@ namespace Dash
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
 
+            //Add the link to the dictionaries mapping it to its converter and its field reference to the path.
             if (_connectionLine != null)
             {
                 CheckLinePresence(ioReference.FieldReference);
@@ -599,7 +614,19 @@ namespace Dash
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
+        }
 
+        private static void AddLinkToList(KeyController key, DocumentController document)
+        {
+            if (document.GetField(KeyStore.UserLinksKey) == null)
+            {
+                document.SetField(KeyStore.UserLinksKey,
+                    new ListFieldModelController<TextFieldModelController>(), true);
+            }
+            var linksList =
+                document.GetField(KeyStore.UserLinksKey) as
+                    ListFieldModelController<TextFieldModelController>;
+            linksList.Add(new TextFieldModelController(key.Id));
         }
 
         /// <summary>
@@ -820,6 +847,7 @@ namespace Dash
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
             (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
             _documentViews.Add((sender as DocumentView));
+            TryLoadLinks((sender as DocumentView).ViewModel);
         }
 
         /// <summary>
@@ -832,7 +860,6 @@ namespace Dash
             // If drawing a link node and you release onto the canvas, if the handle you're drawing from
             // is a document or a collection, this will create a new linked document/collection at the point
             // you released the mouse
-            
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
@@ -852,16 +879,18 @@ namespace Dash
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
                
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
                 if (_currReference.FieldReference.FieldKey == KeyStore.CollectionOutputKey)
                 {
-                    var field = droppedSrcDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
-                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
                 }
+
+                AddLinkToList(CollectionNote.CollectedDocsKey, cnote.Document.GetActiveLayout().Data);
             }
             CancelDrag(e.Pointer);
         }
@@ -881,8 +910,8 @@ namespace Dash
                           e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
                 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetPosition(this)), dragData.ViewType);
-                cnote.Document.SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);

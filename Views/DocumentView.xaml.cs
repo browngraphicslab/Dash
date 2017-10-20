@@ -70,58 +70,63 @@ namespace Dash
             if (docView != null)
             {
                 var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
-                if (docType.Equals(CollectionBox.DocumentType) || docType.Equals(OperatorBox.DocumentType))
+                if (docType != null)
                 {
-                    //Get the coordinates of the view
-                    Point screenCoords = docView.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(0, 0));
-                    var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
-                    if (freeformView?.RefToLine != null)
+                    if (docType.Equals(CollectionBox.DocumentType) || docType.Equals(OperatorBox.DocumentType))
                     {
-                        foreach (var link in freeformView.RefToLine)
+                        //Get the coordinates of the view
+                        Point screenCoords = docView.TransformToVisual(Window.Current.Content)
+                            .TransformPoint(new Point(0, 0));
+                        var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
+                        if (freeformView?.RefToLine != null)
                         {
-                            //Get the slope of the line through the endpoints of the link
-                            var converter = freeformView.LineToConverter[link.Value];
-                            var curvePoint1 = converter.Element1
-                                .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
-                                .TransformPoint(new Point(converter.Element1.ActualWidth / 2,
-                                    converter.Element1.ActualHeight / 2));
-                            var curvePoint2 = converter.Element2
-                                .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
-                                .TransformPoint(new Point(converter.Element2.ActualWidth / 2,
-                                    converter.Element2.ActualHeight / 2));
-                            var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
-
-                            // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
-                            var intersectionTopX = curvePoint1.X + (1 / slope) * (screenCoords.Y - curvePoint1.Y);
-                            var intersectionBottomX =
-                                curvePoint1.X + (1 / slope) * (screenCoords.Y + docView.ActualHeight - curvePoint1.Y);
-
-                            // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
-                            // the link is outside the document.
-                            if (slope < 0 && !(intersectionTopX < screenCoords.X ||
-                                               intersectionBottomX > screenCoords.X + docView.ActualWidth)
-                                || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                  intersectionBottomX < screenCoords.X + docView.ActualWidth))
+                            foreach (var link in freeformView.RefToLine)
                             {
-                                ChangeConnections(freeformView, link);
-                                break;
+                                //Get the slope of the line through the endpoints of the link
+                                var converter = freeformView.LineToConverter[link.Value];
+                                var curvePoint1 = converter.Element1
+                                    .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
+                                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2,
+                                        converter.Element1.ActualHeight / 2));
+                                var curvePoint2 = converter.Element2
+                                    .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
+                                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2,
+                                        converter.Element2.ActualHeight / 2));
+                                var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
+
+                                // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
+                                var intersectionTopX = curvePoint1.X + (1 / slope) * (screenCoords.Y - curvePoint1.Y);
+                                var intersectionBottomX =
+                                    curvePoint1.X + (1 / slope) * (screenCoords.Y + docView.ActualHeight - curvePoint1.Y);
+
+                                // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
+                                // the link is outside the document.
+                                if (slope < 0 && !(intersectionTopX < screenCoords.X ||
+                                                   intersectionBottomX > screenCoords.X + docView.ActualWidth)
+                                    || slope > 0 && !(intersectionTopX > screenCoords.X ||
+                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth))
+                                {
+                                    ChangeConnections(freeformView, link);
+                                    break;
+                                }
+                                
                             }
                         }
                     }
                 }
+                
             }
         }
 
         private void ChangeConnections(CollectionFreeformView ffView, KeyValuePair<FieldReference, Path> link)
         {
             ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
+            //var i = link.Value.Data;
+            //ffView.MakeLine(ffView.RefToLine[link.Key],)
+            //MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc, TypeInfo fieldTypeInfo)
         }
 
-        //private void ChangeConnections(DocumentView view, )
-        //{
-        //    
-        //}
+       
 
 
         public void OperatorHolding(object sender, HoldingRoutedEventArgs e)
@@ -317,7 +322,8 @@ namespace Dash
             { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
                 var currentTranslate = ViewModel.GroupTransform.Translate;
                 var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                ViewModel.GroupTransform = new TransformGroupData(ViewModel.DocumentController.GetActiveLayout().Data.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
             }
         }
 

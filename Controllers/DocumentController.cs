@@ -39,7 +39,7 @@ namespace Dash
         private bool _hasPrototypes;
         public bool HasPrototype {
             get {
-                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey);
+                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey) && (_fields[KeyStore.PrototypeKey] as DocumentFieldModelController)?.Data?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
             }
             set
             {
@@ -211,7 +211,10 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
-
+        public DocumentController GetDataDocument(Context context)
+        {
+            return GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context)?.Data ?? this;
+        }
         public override int GetHashCode()
         {
             return GetId().GetHashCode();
@@ -550,10 +553,12 @@ namespace Dash
             {
                 shouldExecute = ShouldExecute(context, key);
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                if (key.Equals(KeyStore.PrototypeKey) &&
-                    // also, make sure the prototype is not just an abstract interface .. if it is, then don't mark this as having a prototype
-                    (field as DocumentFieldModelController)?.Data.GetField(KeyStore.AbstractInterfaceKey,true) == null)
-                    HasPrototype = true; 
+                //if (key.Equals(KeyStore.PrototypeKey) &&
+                //    // also, make sure the prototype is not just an abstract interface .. if it is, then don't mark this as having a prototype
+                //    (field as DocumentFieldModelController)?.Data.GetField(KeyStore.AbstractInterfaceKey,true) == null)
+                //    HasPrototype = true;
+                //else if (key.Equals(KeyStore.AbstractInterfaceKey))
+                //     HasPrototype = false;
             }
             if (shouldExecute)
             {
