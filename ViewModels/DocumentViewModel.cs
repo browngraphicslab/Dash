@@ -178,7 +178,7 @@ namespace Dash
         public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
 
 
-        string _displayName = "<doc>";
+        string _displayName = "Document";
         private bool _isDraggerVisible = true;
 
         public string DisplayName
@@ -202,31 +202,13 @@ namespace Dash
         {
             var context = args.Context;
             var primKeys = sender.GetDereferencedField(KeyStore.PrimaryKeyKey, context)?.GetValue(context) as List<FieldModelController>;
-
-            if (primKeys != null && primKeys.Select((k) => (k as TextFieldModelController).Data).Contains(args.Reference.FieldKey.KeyModel.Id))
-            {
-                updateDisplayName();
-            }
+            
         }
-
-        private void updateDisplayName()
-        {
-            var keyList = DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
-            var keys = keyList as ListFieldModelController<TextFieldModelController>;
-            if (keys != null)
-            {
-                var docString = "";
-                foreach (var k in keys.Data)
-                {
-                    var keyField = DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
-                    if (keyField is TextFieldModelController)
-                        docString += (keyField as TextFieldModelController).Data + " ";
-                }
-                DisplayName = docString.TrimEnd(' ');
-            }
-        }
+        
 
         public Context Context { get; set; }
+
+        // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;
@@ -242,7 +224,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
-            updateDisplayName();
+            _displayName = documentController.DocumentType.Type;
         }
 
         private void SetUpSmallIcon()

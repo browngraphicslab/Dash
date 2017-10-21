@@ -23,6 +23,7 @@ using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using static Dash.NoteDocuments;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {
@@ -59,7 +60,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Given a function that produces a document controller, visually displays t he documents
+        /// Given a function that produces a document controller, visually displays the documents
         /// on the selected FreeFormView, defaulting to the main canvas.
         /// </summary>
         /// <param name="sender"></param>
@@ -95,8 +96,14 @@ namespace Dash
             {
                 freeForm.ViewModel.AddDocument(opController, null);
             }
+            
         }
 
+        /// <summary>
+        /// Adds a document at the mouse's point in the given collection freeform view.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="e"></param>
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,

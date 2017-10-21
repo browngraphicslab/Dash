@@ -10,63 +10,57 @@
     d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped"
     x:Name="OpView">
 
-    <Grid>
-        <!-- Makes the blue background shape-->
-
-        <Border VerticalAlignment="Top" Grid.ColumnSpan="3" BorderThickness="0,0,0,1" >
-            <TextBlock x:Name="xTitle" Style="{StaticResource xTitleStyle}" Padding="10,10,5,0" HorizontalAlignment="Center">Operator</TextBlock>
-        </Border>
+    <Grid Margin="0,0,0,0">
         <!-- Content containing grid -->
-        <Grid x:Name="XGrid" Margin="0,10,0,0">
+        <Grid x:Name="XGrid" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" ></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" ></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
             <!--Inner Content-->
             <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 
             <!-- Input Operator Handles & Labels-->
-            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center">
+            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" 
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,-5"/>
+                        <Setter Property="MinWidth" Value="0"/>
+                        <Setter Property="Margin" Value="0,-7"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="5,0" VerticalAlignment="Center" Background="Transparent">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" 
-                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
+                        <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
+
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
-                        </Grid>
+                            <local:EditableTextBlock Grid.Column="1"  Margin="0,0,0,0" 
+                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" />
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
 
             <!-- Output link handles and labels -->
-            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50" 
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" >
+            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled"  
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50">
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,-5"/>
+                        <Setter Property="MinWidth" Value="0"/>
+                        <Setter Property="Margin" Value="0,-7"/>
                         <Setter Property="HorizontalContentAlignment" Value="Right"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Foreground="White" Margin="0,0,-10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
+                        <StackPanel Orientation="Horizontal" Padding="0,0,0,0" VerticalAlignment="Center">
+                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,0,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse x:Name="OutputEllipse" Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
                                 <ToolTipService.ToolTip>

@@ -10,11 +10,11 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
-       
-        <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
+        
+        <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" />
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
-        <StackPanel Width="200" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
+        <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
@@ -28,8 +28,9 @@
        
             <!--local1:MainMenu></-->
         </StackPanel>
-        <local1:AddMenu x:Name="xAddMenu" HorizontalAlignment="Left" VerticalAlignment="Center"></local1:AddMenu>
-
+        <Grid HorizontalAlignment="Left"  Margin="-10,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}" Background="{StaticResource DocumentBackgroundOpaque}">
+            <local1:AddMenu x:Name="xAddMenu" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>
+        </Grid>
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
         <Grid Margin="0,0,-5,0" HorizontalAlignment="Right">
             <Grid.RenderTransform>

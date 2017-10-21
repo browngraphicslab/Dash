@@ -108,6 +108,7 @@ namespace Dash
                 // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
+            
             return grid;
         }
 

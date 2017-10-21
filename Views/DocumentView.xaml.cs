@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Views.Document_Menu;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -41,6 +42,11 @@ namespace Dash
 
         public static int dvCount = 0;
 
+        // == CONSTRUCTORs ==
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+        }
 
         public DocumentView()
         {
@@ -66,7 +72,7 @@ namespace Dash
         /// then selects this document
         /// </summary>
         /// <returns></returns>
-        private DocumentController Choose()
+        public DocumentController Choose()
         {
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
             if (ParentCollection != null)
@@ -84,8 +90,6 @@ namespace Dash
                 var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
                 mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
             }
-
-
             return null;
         }
 
@@ -94,11 +98,6 @@ namespace Dash
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-        }
-
-        public DocumentView(DocumentViewModel documentViewModel) : this()
-        {
-            DataContext = documentViewModel;
         }
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
@@ -110,8 +109,8 @@ namespace Dash
 
             //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
         }
-
-
+        
+        private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -126,53 +125,85 @@ namespace Dash
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
+            IsMainCollection = (this == MainPage.Instance.MainDocView);
+
+            // add corresponding instance of this to hierarchical view
             if (!IsMainCollection)
             {
                 TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
-
-                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+                if (ViewModel.DisplayName != "operator")
+                {
+                    if (ParentCollection != null)
+                    {
+                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                        {
+                            treeMenuItem = new AddMenuItem(ViewModel.DisplayName, AddMenuTypes.Document, Choose);
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                                    treeMenuItem);
+                        }
+                    }
+                }
             }
         }
 
-
-        #region Xaml Styling Methods (used by operator view)
+        #region Xaml Styling Methods (used by operator/colelction view)
         private bool isOperator = false;
+        private bool addItem = false;
         /// <summary>
-        /// Applies custom override styles to the operator view
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        public void StyleOperator(double borderRadiusAmount)
+        public void StyleOperator(double width, string title)
         {
             isOperator = true;
-            xShadowTarget.RadiusX = borderRadiusAmount;
-            xShadowTarget.RadiusY = borderRadiusAmount;
+            xShadowTarget.Margin = new Thickness(width,0,width,0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            xTitle.Text = title;
+            xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                new AddMenuItem(title, AddMenuTypes.Operator, Choose)); // adds op view to menu
 
-            var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
-            Color c = brush.Color;
-            c.A = 204;
-            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
+        }
+
+        /// <summary>
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
+        public void StyleCollection(CollectionView view)
+        {
+            addItem = false;
+            xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+            xTitle.Text = "Collection";
+
+            // add item to menu
+            if (ParentCollection != null)
+                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
+            
+            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
+            {
+
+                TreeMenuNode tree = new TreeMenuNode(true);
+                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
+                tree.HeaderLabel = "Collection";
+
+                // if nested, add to parent collection, otherwise add to main collection
+                if (ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                {
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
+                } else
+                {
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
+                }
+            }
+            
+
         }
 
         #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
-        /// <summary>
-        /// When a field is dragged onto documentview, adds that field to the document 
-        /// </summary>
-        //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
-        //{
-
-        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-        //if (view == null) return; // we can't always assume we're on a collection		
-
-        //view.CanLink = false;
-        //args.Handled = true;
-
-        //view.CancelDrag(args.Pointer); 
-
-        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-
-        //}
 
         DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
@@ -328,11 +359,6 @@ namespace Dash
             Debug.Assert(dvm != null, "dvm != null");
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
-            // should we allow documents with NaN's for width & height to be resized?
-            //if (double.IsNaN(dvm.Width))
-            //    dvm.Width = ActualWidth + dx;
-            //if (double.IsNaN(dvm.Height))
-            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 

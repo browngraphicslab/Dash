@@ -47,6 +47,7 @@ namespace Dash.Views.Document_Menu
             this.DocType = label;
             Type = icon;
         }
+
         public AddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action)
         {
             this.DocType = label;
@@ -126,6 +127,9 @@ namespace Dash.Views.Document_Menu
             get { return (string)GetValue(HeaderIconProperty); }
             set { SetValue(HeaderIconProperty, value); }
         }
+
+        // containing parent
+        public TreeMenuNode TreeParent {get ; set; }
         
         #region Bindings
         // the text labelling the header
@@ -162,6 +166,7 @@ namespace Dash.Views.Document_Menu
                 xLeftIcon.Visibility = Visibility.Collapsed;
                 xHeaderLabel.Style = App.Current.Resources["xMenuItem"] as Style;
             }
+            
         }
 
         // == METHODS ==
@@ -173,6 +178,10 @@ namespace Dash.Views.Document_Menu
         public void Add(AddMenuItem item) {
             xItemsList.Items.Insert(0, item);
         }
+        public void Remove(AddMenuItem item)
+        {
+            xItemsList.Items.Remove(item);
+        }
 
         /// <summary>
         /// Adds a tree menu node in place of menu items.
@@ -180,6 +189,7 @@ namespace Dash.Views.Document_Menu
         /// <param name="item"></param>
         public void Add(TreeMenuNode item)
         {
+            item.TreeParent = this;
             xChildrenList.Children.Add(item);
         }
         
@@ -210,8 +220,12 @@ namespace Dash.Views.Document_Menu
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var item = (sender as Grid).DataContext as AddMenuItem;
-            item.TapAction(sender, e);
-            e.Handled = true;
+            if (item.TapAction != null)
+            {
+                item.TapAction(sender, e);
+                e.Handled = true;
+            }
+            xItemsList.SelectedItem = null;
         }
     }
 }

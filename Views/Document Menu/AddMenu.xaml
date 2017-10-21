@@ -7,9 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
-
-        <ScrollViewer Height="700">
+    d:DesignWidth="400"
+    Width="200">
+        <ScrollViewer  VerticalScrollBarVisibility="Hidden">
         <StackPanel x:Name="xAddMenuContainer" Orientation="Vertical">
             <local:TreeMenuNode HeaderIcon="{StaticResource FavoriteIcon}" HeaderLabel="Favourites"></local:TreeMenuNode>
             <local:TreeMenuNode x:Name="xOperatorTree" HeaderIcon="{StaticResource OperatorIcon}" HeaderLabel="Operators"></local:TreeMenuNode>

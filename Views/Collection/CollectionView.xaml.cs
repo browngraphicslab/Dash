@@ -101,6 +101,8 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ParentDocument.StyleCollection(this);
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
 

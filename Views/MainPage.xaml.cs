@@ -443,33 +443,12 @@ namespace Dash
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            //var sp = new StackPanel
-            //{
-            //    Orientation = Orientation.Vertical,
-            //    Width = 400,
-            //    Height = 1000
-            //};
             Grid g = new Grid
             {
                 Name = "XTestGrid",
                 ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
                 Height = 900
             };
-            //List<FrameworkElement> elements = new List<FrameworkElement>();
-            //GridView gv = new GridView();
-            //Canvas.SetLeft(g, 200);
-            //Grid.SetColumn(gv, 0);
-            //for (int i = 0; i < 50; ++i)
-            //{
-            //    var tb = new EditableTextBlock();
-            //    TextingBox.SetupBindings(tb, new TextingBox(new TextFieldModelController("Test " + i)).Document, new Context());
-            //    //sp.Children.Add(tb);
-            //    elements.Add(tb);
-            //}
-            //gv.ItemsSource = elements;
-            //g.Children.Add(gv);
-            //sw.Stop();
-            //Debug.WriteLine($"Phase 1 took {sw.ElapsedMilliseconds} ms");
             var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
             Grid.SetColumn(documentView, 1);
             g.Children.Add(documentView);

@@ -19,16 +19,24 @@ namespace Dash.Views.Document_Menu
 {
     public sealed partial class AddMenu : UserControl
     {
+        // == MEMBERS ==
+        public static AddMenu Instance;
+
         // when you create new compound operators, add them to this tree in the appropriate subheading
         private TreeMenuNode OperatorTree;
         private TreeMenuNode DocumentTree;
 
+        // mapping of collection view => menu items
+        public Dictionary<CollectionView,TreeMenuNode> ViewToMenuItem;
+
+        // == CONSTRUCTOR ==
         public AddMenu()
         {
             this.InitializeComponent();
             DocumentTree = xDocumentTree;
             OperatorTree = xOperatorTree;
             InitOperatorTree(xOperatorTree);
+            ViewToMenuItem = new Dictionary<CollectionView, TreeMenuNode>();
 
             // fetch functions
             List<string> categories = new List<string> {
@@ -42,12 +50,39 @@ namespace Dash.Views.Document_Menu
             all["Document"] = Util.BlankDoc;
             all["Collection"] = Util.BlankCollection;
             all["Note"] = Util.BlankNote;
+
             foreach (string s in categories)
                 all[s] = OperationCreationHelper.Operators[s].OperationDocumentConstructor;
+            
+            Instance = this;
+        }
 
+        /// <summary>
+        /// Adds a subnode to the 
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="tree"></param>
+        public void AddNodeFromCollection(CollectionView col, TreeMenuNode tree, TreeMenuNode parent) {
+            ViewToMenuItem.Add(col, tree); // put into dictionary for later access
+            if (parent == null) // root case
+                xAddMenuContainer.Children.Add(tree); // add to relevant parent
+            else
+                parent.Add(tree);
 
         }
 
+        /// <summary>
+        /// Adds an item to the existing static instance of this menu.
+        /// </summary>
+        public void AddToMenu(TreeMenuNode tree, AddMenuItem item) {
+            tree.Add(item);
+        }
+        public void RemoveFromMenu(TreeMenuNode tree, AddMenuItem item)
+        {
+            tree.Remove(item);
+        }
+
+        // == METHODS ==
         /// <summary>
         /// Makes the OperatorTree subsection of the menu.
         /// </summary>
@@ -62,10 +97,12 @@ namespace Dash.Views.Document_Menu
 
             // set ops subheaders
             TreeMenuNode setOpsTree = new TreeMenuNode(true);
+            setOpsTree.HeaderLabel = "Set";
             SetOperatorMenuActions(setOpsTree,new List<string> { "Union", "Intersection", "Map", "Filter" });
            
             // set ops subheaders
             TreeMenuNode mathOpsTree = new TreeMenuNode(true);
+            mathOpsTree.HeaderLabel = "Math";
             SetOperatorMenuActions(mathOpsTree, new List<string> { "Add","Multiply","Divide","Subtract" });
 
             // return final tree
