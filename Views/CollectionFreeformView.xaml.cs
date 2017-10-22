@@ -148,6 +148,7 @@ namespace Dash
                 MakeInkCanvas();
             }
 
+            //TODO: super duper hacky way to wait for operators (and operator ellipses) to load before trying to make links between them. Should fix!!!
             DispatcherTimer loadAlert = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(250)};
             loadAlert.Tick += LoadAlertOnTick;
             loadAlert.Start();
