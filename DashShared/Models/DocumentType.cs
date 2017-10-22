@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace DashShared
@@ -50,6 +51,29 @@ namespace DashShared
         public override string ToString()
         {
             return Type;
+        }
+
+
+        /// <summary>
+        /// If you get an exception here, you are trying to compare 2 types with ==.
+        /// This causes problems with data persistence so you should always use .Equals to compare types
+        /// </summary>
+        public static bool operator ==(DocumentType t1, DocumentType t2)
+        {
+            if (ReferenceEquals(t1, null))
+            {
+                return ReferenceEquals(t2, null);
+            }
+            if (ReferenceEquals(t2, null))
+            {
+                return false;
+            }
+            throw new NotImplementedException();
+        }
+        
+        public static bool operator !=(DocumentType t1, DocumentType t2)
+        {
+            return !(t1 == t2);
         }
     }
 }
