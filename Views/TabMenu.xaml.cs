@@ -22,14 +22,19 @@ namespace Dash
 {
     public sealed partial class TabMenu : UserControl
     {
+        #region STATIC VARIABLES 
         private static TabMenu _instance;
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
-
-
-        //public SearchView SearchView { get; private set; }
+        
         public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+        public static Point WhereToAdd;
+        #endregion
 
-        public Point AddHere { get; set; }
+        public static void Configure(CollectionFreeformView col, Point p)
+        {
+            AddsToThisCollection = col;
+            WhereToAdd = p;
+        }
 
         private List<TabItemViewModel> _tabItems;
         private SearchCategoryItem _searchList;
@@ -43,7 +48,7 @@ namespace Dash
             //_tabItems = ??? 
 
 
-            _searchList = GetSearchCategories(); 
+            _searchList = GetSearchCategories();                                            //TODO remove this shite 
             ListGrid.Children.Add(_searchList);
             _searchList.Margin = new Thickness(0);
             OuterGrid.Width = _searchList.List.Width;
@@ -132,17 +137,16 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        public static void ShowAt(Canvas canvas, Point position, bool isTouch = false)
+        public static void ShowAt(Canvas canvas, bool isTouch = false)
         {
             if (Instance != null)
             {
                 if (!canvas.Children.Contains(Instance))
-                {
                     canvas.Children.Add(Instance);
-                }
+
                 if (isTouch) Instance.ConfigureForTouch();
-                Canvas.SetLeft(Instance, position.X);
-                Canvas.SetTop(Instance, position.Y);
+                Canvas.SetLeft(Instance, WhereToAdd.X);
+                Canvas.SetTop(Instance, WhereToAdd.Y);
                 Instance.SetNoSelection();
             }
         }

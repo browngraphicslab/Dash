@@ -156,8 +156,8 @@ namespace Dash
                 var pos = new Point(x, y);
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                     .FirstOrDefault();
-                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
-                TabMenu.ShowAt(xCanvas, pos);
+                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
+                TabMenu.ShowAt(xCanvas);
                 TabMenu.Instance.SetTextBoxFocus();
             }
 
@@ -184,8 +184,9 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
-            TabMenu.ShowAt(xCanvas, pos, true);
+            TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
+            //TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
+            TabMenu.ShowAt(xCanvas, true);
             TabMenu.Instance.SetTextBoxFocus();
             e.Handled = true;
         }
