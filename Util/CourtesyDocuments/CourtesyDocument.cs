@@ -229,7 +229,7 @@ namespace Dash
             //Set width and height
             BindWidth(element, docController, context);
             BindHeight(element, docController, context);
-
+                
             //Set alignments
             BindHorizontalAlignment(element, docController, context);
             BindVerticalAlignment(element, docController, context);
@@ -331,57 +331,6 @@ namespace Dash
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="NumberFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="NumberFieldModelController"/> is null</exception>
-        /// </summary>
-        protected static void BindHeight(FrameworkElement renderElement,
-            NumberFieldModelController heightController)
-        {
-            if (heightController == null) throw new ArgumentNullException(nameof(heightController));
-            var heightBinding = new Binding
-            {
-                Source = heightController,
-                Path = new PropertyPath(nameof(heightController.Data)),
-                Mode = BindingMode.TwoWay
-            };
-            renderElement.SetBinding(FrameworkElement.HeightProperty, heightBinding);
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="NumberFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="NumberFieldModelController"/> is null</exception>
-        /// </summary>
-        protected static void BindWidth(FrameworkElement renderElement, NumberFieldModelController widthController)
-        {
-            if (widthController == null) throw new ArgumentNullException(nameof(widthController));
-            var widthBinding = new Binding
-            {
-                Source = widthController,
-                Path = new PropertyPath(nameof(widthController.Data)),
-                Mode = BindingMode.TwoWay
-            };
-            renderElement.SetBinding(FrameworkElement.WidthProperty, widthBinding);
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="PointFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="PointFieldModelController"/> is null</exception>
-        /// </summary>
-        public static void BindTranslation(FrameworkElement renderElement,
-            PointFieldModelController translateController)
-        {
-            if (translateController == null) throw new ArgumentNullException(nameof(translateController));
-            var translateBinding = new Binding
-            {
-                Source = translateController,
-                Path = new PropertyPath(nameof(translateController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = new PointToTranslateTransformConverter()
-            };
-            renderElement.SetBinding(UIElement.RenderTransformProperty, translateBinding);
         }
 
         #endregion
