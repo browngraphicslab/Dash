@@ -46,7 +46,7 @@
                             <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" 
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
-                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
+                                     PointerReleased="InputEllipse_OnPointerReleased" Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

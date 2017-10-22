@@ -734,6 +734,7 @@
         <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"></local:ReferenceFieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
+        <local:TypeToFillConverter x:Key="TypeToFillConverter"></local:TypeToFillConverter>
         <!--local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></-->
 
         <!-- MISC. STYLES-->
