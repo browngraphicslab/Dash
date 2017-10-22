@@ -636,7 +636,7 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key == KeyStore.PrototypeKey) HasPrototype = true;
+                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true;
             }
             if (shouldExecute)
             {
