@@ -24,9 +24,6 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
-        public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
-        public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
-
         public static readonly KeyController GridRowKey = new KeyController("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
         public static readonly KeyController GridColumnKey = new KeyController("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
         public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
@@ -152,7 +149,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = HorizontalAlignmentKey,
+                Key = KeyStore.HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
                 Context = context
             };
@@ -167,7 +164,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = VerticalAlignmentKey,
+                Key = KeyStore.VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
                 Context = context
             };
@@ -261,8 +258,8 @@ namespace Dash
                 [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
                 [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
-                [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
-                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Stretch.ToString())
+                [KeyStore.HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Stretch.ToString())
             };
 
             if (data != null)
@@ -419,14 +416,14 @@ namespace Dash
     {
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
 
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
             var horizontalAlignmentController =
-                document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.HorizontalAlignmentKey) as TextFieldModelController;
             if (horizontalAlignmentController == null)
             {
                 return HorizontalAlignment.Stretch;
@@ -437,14 +434,14 @@ namespace Dash
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             var currentHeight = document.GetHeightField().Data;
-            document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
             document.SetHeight(currentHeight);
         }
 
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
             var verticalAlignmentController =
-                document.GetField(CourtesyDocument.VerticalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.VerticalAlignmentKey) as TextFieldModelController;
             if (verticalAlignmentController == null)
             {
                 return VerticalAlignment.Stretch;
