@@ -103,7 +103,6 @@ namespace Dash
                 
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
-                // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
             return grid;
@@ -137,10 +136,8 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-
                 BindPosition(layoutView, layoutDocument, context);
-                //if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
-
+                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
                 grid.Children.Add(layoutView);
             }
         }
