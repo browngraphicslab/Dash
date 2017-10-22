@@ -55,9 +55,10 @@ namespace Dash
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,
             Context context)
-        {
-            var rowTypes =
-                docController.GetDereferencedField(GridRowsTypeKey, context) as ListFieldModelController<NumberFieldModelController>;
+        { 
+            var rowTypesAA =
+                docController.GetDereferencedField(GridRowsTypeKey, context);
+            var rowTypes = rowTypesAA as ListFieldModelController<NumberFieldModelController>;
             var rowValues =
                 docController.GetDereferencedField(GridRowsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
             if (rowTypes == null || rowValues == null) return;

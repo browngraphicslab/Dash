@@ -78,5 +78,11 @@ namespace DashWebServer
         /// <param name="document">The document that is going to be deleted</param>
         /// <returns>The document which was deleted from the database</returns>
         Task DeleteItemAsync<T>(T document) where T : EntityBase;
+
+        /// <summary>
+        /// Deletes every single document from the database
+        /// </summary>
+        /// <returns></returns>
+        Task DeleteAllAsync();
     }
 }

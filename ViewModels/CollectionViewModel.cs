@@ -20,9 +20,9 @@ namespace Dash
 
         public InkFieldModelController InkFieldModelController;
 
-        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            if (collection == null) return;
+            Debug.Assert(collection != null);
             _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddViewModels(_collectionFieldModelController.Data, context);
 
@@ -66,7 +66,7 @@ namespace Dash
             }
             else
             {
-                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
+                collection.FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
                     UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs,
                         copiedContext);
@@ -154,7 +154,7 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
-            if (doc.DocumentType == DashConstants.DocumentTypeStore.CollectionDocument)
+            if (doc.DocumentType == DashConstants.TypeStore.CollectionDocument)
             {
                 var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
                 if (coll.Data.Contains(doc))

@@ -9,7 +9,8 @@ namespace Dash
         public AddOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public AddOperatorFieldModelController() : base(new OperatorFieldModel("Add"))
+
+        public AddOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Add))
         {
         }
 
@@ -30,7 +31,7 @@ namespace Dash
             [SumKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             double sum = 0;
             foreach (var value in inputs.Values)
@@ -42,7 +43,7 @@ namespace Dash
             outputs[SumKey] = new NumberFieldModelController(sum);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new AddOperatorFieldModelController(OperatorFieldModel);
         }

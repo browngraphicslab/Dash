@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -44,6 +45,11 @@ namespace Dash
         public override int GetHashCode()
         {
             return base.GetHashCode() ^ DocumentReference.GetHashCode();
+        }
+
+        public override ReferenceFieldModelController GetReferenceController()
+        {
+            return new PointerReferenceFieldController(DocumentReference.GetReferenceController(), FieldKey);
         }
     }
 }

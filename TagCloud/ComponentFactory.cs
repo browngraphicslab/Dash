@@ -61,9 +61,15 @@ namespace TagCloud
                 {
                     return InputType.Uri;
                 }
-                if (File.Exists(input))
+                try
                 {
-                    return InputType.File;
+                    if (File.Exists(input))
+                    {
+                        return InputType.File;
+                    }
+                } catch (Exception)
+                {
+
                 }
             }
             return InputType.String;

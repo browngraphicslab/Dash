@@ -5,7 +5,7 @@ using DashShared;
 namespace Dash
 {
 
-    class UnionOperatorFieldModelController : OperatorFieldModelController
+    public class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
         public static readonly KeyController AKey = new KeyController("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
@@ -30,11 +30,11 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public UnionOperatorFieldModelController() : base(new OperatorFieldModel("Union"))
+        public UnionOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Union))
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
             DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController)inputs[BKey];
@@ -54,7 +54,7 @@ namespace Dash
 
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             //return new UnionOperatorFieldModelController(OperatorFieldModel);
             return new UnionOperatorFieldModelController();

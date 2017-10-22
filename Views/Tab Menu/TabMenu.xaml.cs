@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -42,23 +43,32 @@ namespace Dash
 
         private void MakeView()
         {
-            var categories = new List<string> {
-                "Add", "Subtract", "Multiply",
-                "Divide", "Union", "Intersection",
-                "Zip", "UriToImage", "Map", "Api",
-                "Concat", "Append", "Filter", "Compound"
-            }; 
-
-            var all = new Dictionary<string, Func<DocumentController>>();
-            all["Document"] = Util.BlankDoc;
-            all["Collection"] = Util.BlankCollection;
-            all["Note"] = Util.BlankNote;
-            foreach (string s in categories)
-                all[s] = OperationCreationHelper.Operators[s].OperationDocumentConstructor; 
-
-            xMainGrid.Children.Add(SearchView = new SearchView(new SearchCategoryItem("∀", "ALL", all)));
+            xMainGrid.Children.Add(SearchView = new SearchView(GetSearchCategories()));
         }
-        
+
+        private static SearchCategoryItem GetSearchCategories()
+        {
+            var all = new ObservableCollection<Func<DocumentController>>
+            {
+                Util.BlankDoc,
+                Util.BlankCollection,
+                Util.BlankNote
+            };
+
+            foreach (var op in OperationCreationHelper.Operators)
+            {
+                all.Add(op.Value.OperationDocumentConstructor);
+            }
+
+            //foreach (var doc in ContentController.GetControllers<DocumentController>())
+            //{
+            //    all.Add(() => doc.GetCopy());
+            //}
+
+            return new SearchCategoryItem("", "", all);
+        }
+
+
 
         public void SetTextBoxFocus()
         {

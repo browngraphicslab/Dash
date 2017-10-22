@@ -16,17 +16,19 @@ using Dash.Converters;
 using Dash.Models;
 using Dash.Views;
 using DashShared;
+using DashShared.Models;
 using Newtonsoft.Json;
 
 namespace Dash
 {
     
-    public class InkFieldModelController : FieldModelController
+    public class InkFieldModelController : FieldModelController<InkFieldModel>
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
         private Stack<string> _undoStack = new Stack<string>();
         private Stack<string> _redoStack = new Stack<string>();
         private Image _icon = new Image();
+
 
         public delegate void InkUpdatedHandler(InkCanvas sender, FieldUpdatedEventArgs args);
         public event InkUpdatedHandler InkUpdated;
@@ -43,11 +45,22 @@ namespace Dash
             SetState(data, null);
         }
 
+        public InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel)
+        {
+            InkData = inkFieldModel.Data;
+            _undoStack.Push(inkFieldModel.Data);
+            SetState(inkFieldModel.Data, null);
+        }
+        public override void Init()
+        {
+
+        }
+
         /// <summary>
         ///     The <see cref="InkFieldModel" /> associated with this <see cref="InkFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public InkFieldModel InkFieldModel => FieldModel as InkFieldModel;
+        public InkFieldModel InkFieldModel => Model as InkFieldModel;
 
         
         public string InkData
@@ -55,18 +68,13 @@ namespace Dash
             get { return InkFieldModel.Data; }
             set
             {
-                if (SetProperty(ref InkFieldModel.Data, value))
+                if (InkFieldModel.Data != value)
                 {
-                    // update local
-                    // update server    
+                    InkFieldModel.Data = value;
+                    // Update the server
+                    UpdateOnServer();
                 }
             }
-        }
-
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            var inkFieldModelController = fieldModel as InkFieldModelController;
-            if (inkFieldModelController != null) InkData = inkFieldModelController.InkData;
         }
 
         //TODO needs work
@@ -83,12 +91,12 @@ namespace Dash
             return false;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<InkFieldModel> Copy()
         {
             return new InkFieldModelController(InkData);
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new InkFieldModelController();
         }

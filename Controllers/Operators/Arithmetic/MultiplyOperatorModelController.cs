@@ -8,7 +8,7 @@ namespace Dash
     public class MultiplyOperatorFieldModelController : OperatorFieldModelController
     {
 
-        public MultiplyOperatorFieldModelController() : base(new OperatorFieldModel("Multiply"))
+        public MultiplyOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Multiply))
         {
 
         }
@@ -36,7 +36,7 @@ namespace Dash
 
         public static int numExecutions = 0;
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var numberA = (NumberFieldModelController)inputs[AKey];
             var numberB = (NumberFieldModelController)inputs[BKey];
@@ -48,7 +48,7 @@ namespace Dash
             outputs[ProductKey] = new NumberFieldModelController(a * b);
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new MultiplyOperatorFieldModelController();
         }

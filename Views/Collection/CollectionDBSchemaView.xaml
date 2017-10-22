@@ -12,7 +12,7 @@
     Tapped="OnTapped"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="Beige" >
+    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CC303030" >
         <Grid.Resources>
             <Flyout x:Name="xEditField" Closing="xEditField_Closing">
                 <TextBox x:Name="xEditTextBox" Width="200" Height="50" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="False"> </TextBox>
@@ -26,7 +26,7 @@
         <!--grid wrapping the headers for formatting-->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="30" />
+                <!--<ColumnDefinition Width="30" />-->
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView x:Name="xHeaderView" Grid.Column="1"
@@ -55,10 +55,10 @@
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
                   SelectionMode="Single"
-                  Background="Beige"
+                  Background="#CC303030"
                   CanDragItems="False"
                   Height="100"
-                  >
+                  Loaded="XRecordsView_OnLoaded">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Orientation="Vertical" Margin="0"/>

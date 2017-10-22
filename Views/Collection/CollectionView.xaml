@@ -53,7 +53,7 @@
                 <Grid HorizontalAlignment="Left" 
                         PointerPressed="ConnectionEllipseInput_OnPointerPressed"
                         PointerReleased="ConnectionEllipseInput_OnPointerReleased"
-                        ManipulationStarted="ConnectionEllipseInput_OnManipulationStarted"
+                        ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
                         Width="50" Height="50" Background="Transparent"
                         ManipulationMode="None">
                     <Ellipse x:Name="ConnectionEllipseInput"

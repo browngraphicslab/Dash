@@ -57,14 +57,20 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, Dictionary<string, Func<DocumentController>> content)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<Func<DocumentController>> content)
         {
             this.InitializeComponent();
+            //Icon = icon;
+            //Title = title;
             _titleToFuncDictionary = new Dictionary<string, Func<DocumentController>>();
             ListContent = new ObservableCollection<string>();
-            foreach (KeyValuePair<string, Func<DocumentController>> kvp in content)
+            foreach (var func in content)
             {
-                AddToList(kvp.Value, kvp.Key);
+                var doc = func.Invoke();
+                var name = doc.Title;
+                //doc.DeleteOnServer();
+                _titleToFuncDictionary[name] = func;
+                ListContent.Add(name);
             }
             xList.Tapped += XList_Tapped;
         }

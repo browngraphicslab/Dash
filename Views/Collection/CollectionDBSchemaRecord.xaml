@@ -13,10 +13,10 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30"/>
+            <!--<ColumnDefinition Width="30"/>-->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Grid Width="30" Height="25" Background="ForestGreen" ManipulationMode="All" CanDrag="True"
+        <Grid Width="30" Height="25" Background="Transparent" ManipulationMode="All" CanDrag="True"
                                                      ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
                                                      PointerPressed="CollectionDBSchemaRecordField_PointerPressed"  />
         <ListView Grid.Column="1" Style="{StaticResource xSchemaListView}"

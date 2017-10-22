@@ -100,6 +100,10 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\DocumentReferenceFieldController.cs" />
+    <Compile Include="Controllers\FieldControllerBase.cs" />
+    <Compile Include="Controllers\IControllerBase.cs" />
+    <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorModelController.cs" />
@@ -107,13 +111,38 @@
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
+    <Compile Include="Controllers\PointerReferenceFieldController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
-    <Compile Include="Controllers\KeyController.cs" />
+    <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
+    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
+    <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="Models\PointerReferenceFieldModel.cs" />
+    <Compile Include="Models\PointFieldModel.cs" />
+    <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
+    <Compile Include="Rest\Endpoints\Endpoint.cs" />
+    <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
+    <Compile Include="Rest\Endpoints\IDocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IKeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IModelEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\IQuery.cs" />
+    <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
+    <Compile Include="Rest\Endpoints\LocalDocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\Extensions\ControllerExtensions.cs" />
+    <Compile Include="Util\Extensions\ModelExtensions.cs" />
+    <Compile Include="Util\Factories\BaseControllerFactory.cs" />
+    <Compile Include="Util\Factories\FieldControllerFactory.cs" />
+    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
+    <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
+    <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="TagCloud\ComponentFactory.cs" />
     <Compile Include="TagCloud\Geometry\BaseLayout.cs" />
@@ -237,15 +266,12 @@
     <Compile Include="Converters\StringToFontweightConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
-    <Compile Include="Push\IPushController.cs" />
     <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
     <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
     <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
     <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
     <Compile Include="Rest\Exceptions\ApiException.cs" />
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
@@ -263,6 +289,7 @@
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\LassoSelectHelper.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
+    <Compile Include="Util\UITask.cs" />
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
@@ -311,8 +338,6 @@
     </Compile>
     <Compile Include="Controllers\InkFieldModelController.cs" />
     <Compile Include="Models\InkFieldModel.cs" />
-    <Compile Include="Push\Connection.cs" />
-    <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
@@ -405,7 +430,7 @@
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
-    <Compile Include="Util\TypeInfo.cs" />
+    <Compile Include="Util\TypeInfoHelper.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\Collection\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
@@ -443,24 +468,19 @@
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
-    <Compile Include="Models\CollectionModel.cs" />
-    <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
-    <Compile Include="Models\DocumentModelFieldModel.cs" />
-    <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\DocumentFieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
-    <Compile Include="Models\OperatorDocumentModel.cs" />
+    <Compile Include="Models\OperatorDocumentFactory.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\AddOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
-    <Compile Include="Models\PointFieldModel.cs" />
-    <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
@@ -543,9 +563,6 @@
     </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\HomePage.xaml.cs">
-      <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\MenuButton.xaml.cs">
       <DependentUpon>MenuButton.xaml</DependentUpon>
@@ -948,10 +965,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\HomePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\Document Menu\MenuButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1009,6 +1022,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Models\OperatorModels\Set\" />
+    <Folder Include="Push\" />
+    <Folder Include="Views\Operator\" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
     <PackageReference Include="CsvHelper">
       <Version>2.16.3</Version>
     </PackageReference>
@@ -1030,6 +1049,9 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
     </PackageReference>
+    <PackageReference Include="NeoSmart.AsyncLock">
+      <Version>0.3.0.2</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>10.0.2</Version>
     </PackageReference>
@@ -1042,9 +1064,7 @@
       <Name>Windows IoT Extensions for the UWP</Name>
     </SDKReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Views\Operator\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

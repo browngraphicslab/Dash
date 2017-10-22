@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,23 +34,11 @@ namespace Dash
 
         public static void AddSearch(object o, DragEventArgs e)
         {
-            //if (!c.Children.Contains(_searchView))
-            //{
-            //    c.Children.Add(_searchView);
-            //    _searchView.SetPosition(p);
-            //    _searchView.IsDraggable = true;
-            //}
-            //else
-            //{
-            //    c.Children.Remove(_searchView);
-            //}
-            var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionFreeFormPoint(
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
+                MainPage.Instance.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
+
                 e.GetPosition(MainPage.Instance));
-            var pos = new Point(where.X - 30, where.Y -30);
-            MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
 
@@ -108,15 +97,16 @@ namespace Dash
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
-            
-            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+
+
+            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
             newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
             var newDoc = newDocProto.MakeDelegate();
             newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
             collection.ViewModel.AddDocument(newDoc, null);
 
-            DBTest.DBDoc.AddChild(newDoc);
+            //DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
@@ -129,7 +119,7 @@ namespace Dash
             var newDoc = cnote.Document;
             
             collection.ViewModel.AddDocument(newDoc, null);
-            DBTest.DBDoc.AddChild(newDoc);
+            //DBTest.DBDoc.AddChild(newDoc);
         }
 
         public static async void ImportFields(ICollectionView collection, DragEventArgs e)
@@ -142,7 +132,7 @@ namespace Dash
             {
                 var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                     e.GetPosition(MainPage.Instance));
-                var fields = new Dictionary<KeyController, FieldModelController>()
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.ActiveLayoutKey] =
                     new DocumentFieldModelController(
@@ -167,14 +157,14 @@ namespace Dash
                             var btmp = new BitmapImage(new Uri(storageFile.Path, UriKind.Absolute));
                             imgController.Data = btmp;
                             doc.SetField(key, imgController, true);
-                            var imgBox = new ImageBox(new ReferenceFieldModelController(doc.GetId(), key), 0, 0, btmp.PixelWidth, btmp.PixelHeight);
+                            var imgBox = new ImageBox(new DocumentReferenceFieldController(doc.GetId(), key), 0, 0, btmp.PixelWidth, btmp.PixelHeight);
                             data?.AddDocument(imgBox.Document);
                             break;
                         case ".txt":
                             var text = await FileIO.ReadTextAsync(storageFile);
                             var txtController = new TextFieldModelController(text);
                             doc.SetField(key, txtController, true);
-                            var txtBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), 0, 0, 200, 200);
+                            var txtBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key), 0, 0, 200, 200);
                             data?.AddDocument(txtBox.Document);
                             break;
                         case ".doc":
@@ -200,28 +190,31 @@ namespace Dash
             {
                 numbers.Add(new Numbers().Document);
             }
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
+                [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
+
             var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
-            var layoutDocument = new CollectionBox(new ReferenceFieldModelController(collectionDocument.GetId(),  
-                DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+            var layoutDocument = new CollectionBox(new DocumentReferenceFieldController(collectionDocument.GetId(),
+                    KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             collectionDocument.SetActiveLayout(layoutDocument, true, true); 
+
 
             // Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
-            var fields2 = new Dictionary<KeyController, FieldModelController>
+            var fields2 = new Dictionary<KeyController, FieldControllerBase>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[] {numbers2, twoImages2})
             };
-            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
+            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
-                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey), 0, 0, 400, 400).Document;
+                new CollectionBox(new DocumentReferenceFieldController(col2.GetId(),
+                        KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             col2.SetActiveLayout(layoutDoc2, true, true); 
+
 
             //Display collections
             DisplayDocument(collection, col2, where);
@@ -239,7 +232,7 @@ namespace Dash
                 docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -248,16 +241,16 @@ namespace Dash
 
             //Make second collection
             var numbers2 = new Numbers().Document;
-            var fields2 = new Dictionary<KeyController, FieldModelController>
+            var fields2 = new Dictionary<KeyController, FieldControllerBase>
             {
-                [DocumentCollectionFieldModelController.CollectionKey] =
+                [KeyStore.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2})
             };
-            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
+            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
             var layoutDoc2 =
-                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+                new CollectionBox(new DocumentReferenceFieldController(col2.GetId(),
+                        KeyStore.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
             col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
             col2.SetField(KeyStore.LayoutListKey,
@@ -271,12 +264,13 @@ namespace Dash
 
             DisplayDocument(collectionView, new XampleText().Document, where);
 
+            /*
             var ndb = new DBTest();
             for (int i = 0; i < ndb.Documents.Count; i++)
             {
                 DisplayDocument(collectionView, ndb.Documents[i], where);
                 MainPage.Instance.UpdateLayout();
-            }
+            }*/
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)

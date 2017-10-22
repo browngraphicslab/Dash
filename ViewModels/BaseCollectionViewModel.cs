@@ -33,7 +33,7 @@ namespace Dash
         private ListViewSelectionMode _itemSelectionMode;
         private static SelectionElement _previousDragEntered;
 
-        public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+        public virtual KeyController CollectionKey => KeyStore.CollectionKey;
         public KeyController OutputKey
         {
             get; set;
@@ -130,6 +130,8 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+
+            // first check for things we don't want to allow dropped onto the collection
             //restore previous conditions 
             if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
@@ -148,6 +150,7 @@ namespace Dash
             // from now on we are handling this event!
             e.Handled = true;
 
+            // if we are dragging and dropping from the radial menu
             // if we drag from radial menu
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -157,7 +160,6 @@ namespace Dash
                         Action<ICollectionView, DragEventArgs>;
                 action?.Invoke(sender as ICollectionView, e);
             }
-
             // if we drag from the file system
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
             if (sourceIsFileSystem)
@@ -190,7 +192,7 @@ namespace Dash
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
                     return e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where);
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
@@ -198,7 +200,8 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
                 }
             }
-            
+
+            // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
@@ -238,11 +241,8 @@ namespace Dash
         {
             Debug.WriteLine("CollectionViewOnDragLeave Base");
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = CollectionView.GetParentCollectionView(CollectionView.GetParentCollectionView(sender as DependencyObject));
-            if (parentCollection != null)
-            {
-                parentCollection.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
-            }
+            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as SelectionElement;
             if (element != null)

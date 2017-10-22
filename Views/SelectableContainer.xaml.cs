@@ -615,7 +615,7 @@ namespace Dash
 
         private bool IsPositioningContainer()
         {
-            return LayoutDocument.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout);
+            return LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout);
         }
 
         private void AddSnapLine(double lineCoordinate, bool isVertical)

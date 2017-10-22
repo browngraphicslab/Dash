@@ -20,7 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash;
+using Dash.Controllers;
 using static Dash.NoteDocuments;
 using Dash.Controllers.Operators;
 using Dash.Views;
@@ -37,7 +37,6 @@ namespace Dash
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
-
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
@@ -53,8 +52,6 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        //public Dictionary<FieldReference, LinePackage> LineDict = new Dictionary<FieldReference, LinePackage>();
-
         public Dictionary<FieldReference, Path> RefToLine = new Dictionary<FieldReference, Path>();
         public Dictionary<Path, BezierConverter> LineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
@@ -71,7 +68,6 @@ namespace Dash
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private CollectionView ParentCollection;
         private float _backgroundOpacity = .95f;
         #endregion
 
@@ -84,7 +80,6 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            ParentCollection = null;
             DragLeave += Collection_DragLeave;
             //DragEnter += Collection_DragEnter;
         }
@@ -96,17 +91,7 @@ namespace Dash
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         }
 
-        public CollectionFreeformView(CollectionView parentCollection)
-        {
-            InitializeComponent();
-            Loaded += Freeform_Loaded;
-            Unloaded += Freeform_Unloaded;
-            DataContextChanged += OnDataContextChanged;
 
-            DragLeave += Collection_DragLeave;
-            //DragEnter += Collection_DragEnter;
-            ParentCollection = parentCollection;
-        }
 
         public IOReference GetCurrentReference()
         {
@@ -171,7 +156,7 @@ namespace Dash
                         var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
                         if (keyValuePair.Key != null)
                         {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).FieldReference, doc, keyValuePair.Key);
+                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), doc, keyValuePair.Key);
                         }
                         
                     }
@@ -196,9 +181,10 @@ namespace Dash
             if (referencedDoc == null) return;
             if (fmController == null)
             {
-                var op = referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 var type = op.Outputs[reference.FieldKey];
-                fmController = TypeInfoHelper.CreateFieldModelController(type);
+                throw new NotImplementedException();
+                fmController = null; //TypeInfoHelper.CreateFieldModelController(type);
             }
             var docView1 = GetDocView(referencedDoc);
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
@@ -206,8 +192,8 @@ namespace Dash
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
 
-            IOReference outputtingReference = new IOReference(referencedFieldKey, reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
-            IOReference inputtingReference = new IOReference(referencingFieldKey, new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
+            IOReference outputtingReference = new IOReference(reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
+            IOReference inputtingReference = new IOReference(new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
 
             StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
             _currReference = outputtingReference;
@@ -287,14 +273,6 @@ namespace Dash
                 var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
                 DeleteLine(fieldRef, line);
             }
-            //var refs = linesToBeDeleted.Keys.ToList();
-            //for (int i = linesToBeDeleted.Count - 1; i >= 0; i--)
-            //{
-            //    var package = linesToBeDeleted[refs[i]];
-            //    itemsPanelCanvas.Children.Remove(package.Line);
-            //    LineDict.Remove(refs[i]);
-            //}
-            //linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
         }
 
         public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
@@ -310,6 +288,8 @@ namespace Dash
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
+
+
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
         /// </summary>
@@ -423,15 +403,24 @@ namespace Dash
 
         public void StartDrag(IOReference ioReference)
         {
-            if (_currReference != null) return;
+            if (_currReference != null)
+                return;
+
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
-            if (ioReference.PointerArgs == null) return;
-            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
+            if (ioReference.PointerArgs == null)
+            {
+                return;
+            }
+
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
+            {
+                return;
+            }
 
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
             //itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
@@ -522,8 +511,10 @@ namespace Dash
 
         public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink=false)
         {
-            IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
-            IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
+            // called when we release on a link, thus if the ioReference is output the _currReference
+            // is the input since the _currReference must have been dragged from an input
+            var inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            var outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
             // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
@@ -552,12 +543,12 @@ namespace Dash
             DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
-            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+            if (inputController.DocumentType == DashConstants.DocumentTypeStore.OperatorType &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
-                    new ReferenceFieldModelController(outputReference.FieldReference), true);
+                    new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             //Add the key to the inputController's list of user created links
             if (!isLoadedLink)
             {
@@ -600,18 +591,6 @@ namespace Dash
             var line = LineToConverter.FirstOrDefault(k => k.Value.Equals(converter)).Key;
             if (line != null) line.Stroke = converter.GradientBrush;
         }
-
-        /// <summary>
-        /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
-        /// </summary>
-        //public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
-        //{
-        //    if (_currReference != null)
-        //    {
-        //        cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
-        //        EndDrag(ioReference);
-        //    }
-        //}
 
         /// <summary>
         /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
@@ -679,16 +658,17 @@ namespace Dash
 
             var scale = new ScaleTransform
             {
-            CenterX = transformationDelta.ScaleCenter.X,
-            CenterY = transformationDelta.ScaleCenter.Y,
-            ScaleX = transformationDelta.ScaleAmount.X,
-            ScaleY = transformationDelta.ScaleAmount.Y
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
+                ScaleX = transformationDelta.ScaleAmount.X,
+                ScaleY = transformationDelta.ScaleAmount.Y
             };
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(scale);
+
             composite.Children.Add(translate);
             
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
@@ -832,13 +812,12 @@ namespace Dash
             
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
-                //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
                 var pos = e.GetCurrentPoint(this).Position;
-                var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+                var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
+                    [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
                 }, DocumentType.DefaultType);
-                var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                var layout = new DocumentBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
             }
@@ -846,18 +825,18 @@ namespace Dash
             {
                 var droppedField   = _currReference.FieldReference;
                 var droppedSrcDoc  = droppedField.GetDocumentController(null);
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(CollectionBox.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ReferenceFieldModelController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
                
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
-                if (_currReference.FieldReference.FieldKey == KeyStore.CollectionOutputKey)
+                if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
-                    cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
                 }
             }
             CancelDrag(e.Pointer);
@@ -878,8 +857,8 @@ namespace Dash
                           e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
                 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetPosition(this)), dragData.ViewType);
-                cnote.Document.SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);

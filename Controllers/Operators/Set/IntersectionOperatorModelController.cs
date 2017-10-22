@@ -4,7 +4,7 @@ using DashShared;
 
 namespace Dash
 {
-    class IntersectionOperatorModelController : OperatorFieldModelController
+    public class IntersectionOperatorModelController : OperatorFieldModelController
 
     {
         //Input keys
@@ -29,11 +29,11 @@ namespace Dash
         {
         }
 
-        public IntersectionOperatorModelController() : base(new OperatorFieldModel("Intersection"))
+        public IntersectionOperatorModelController() : base(new OperatorFieldModel(OperatorType.Intersection))
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
             DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController) inputs[BKey];
@@ -48,7 +48,7 @@ namespace Dash
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             //return new IntersectionOperatorModelController(OperatorFieldModel);
             return new IntersectionOperatorModelController();

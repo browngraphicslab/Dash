@@ -17,11 +17,15 @@ namespace Dash
 
         public static readonly KeyController OutputCollectionKey = new KeyController("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
 
-        public CollectionMapOperator() : base(new OperatorFieldModel("CollectionMap"))
+        public CollectionMapOperator() : base(new OperatorFieldModel(OperatorType.CollectionMap))
         {
         }
 
-        public override FieldModelController Copy()
+        public CollectionMapOperator(OperatorFieldModel model) : base(model)
+        {
+        }
+
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new CollectionMapOperator();
         }
@@ -68,11 +72,11 @@ namespace Dash
 
         public Dictionary<KeyController, KeyController> InputKeyMap { get; set; } = new Dictionary<KeyController, KeyController>();
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             OperatorFieldModelController operatorController = inputs[InputOperatorKey] as OperatorFieldModelController;
-            Dictionary<KeyController, FieldModelController> operatorInputs = new Dictionary<KeyController, FieldModelController>();
-            Dictionary<KeyController, FieldModelController> operatorOutputs = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> operatorInputs = new Dictionary<KeyController, FieldControllerBase>();
+            Dictionary<KeyController, FieldControllerBase> operatorOutputs = new Dictionary<KeyController, FieldControllerBase>();
 
             List<KeyController> keys = new List<KeyController>();
             List<List<DocumentController>> collections = new List<List<DocumentController>>();
@@ -103,7 +107,7 @@ namespace Dash
 
             List<DocumentController> documents = new List<DocumentController>();
 
-            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
 
             for (int i = 0; i < numDocuments; i++)
             {

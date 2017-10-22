@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Data.Pdf;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -39,15 +40,29 @@ namespace Dash
 
                         // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
                         var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
-                        var image = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
-                            300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50);
+                        var pageImg = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
+                            300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50).Document;
 
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, 300, 300, new List<DocumentController>(new DocumentController[] { image.Document })).Document;
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, 300, 300, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
                         children?.AddDocument(pageDoc);
+                        GetText(pageDoc, pageImg, stream, src);
                     }
                 return pdfDoc.Document;
             }
             return null;
+        }
+
+        public async void GetText(DocumentController pageDoc, DocumentController pageImg, InMemoryRandomAccessStream stream, BitmapImage bitmap)
+        {
+            var img = new Image() { Source = bitmap };
+            var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages();
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+            // Get recognition result 
+            var result = await ocrEngine.RecognizeAsync(softwareBitmap);
+            var pageImgDoc = pageImg.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? pageImg;
+            pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
+            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceFieldController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
         async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {
@@ -93,9 +108,9 @@ namespace Dash
             HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
 
             var renderTargetBitmap = new RenderTargetBitmap();
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
             await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
 
             return renderTargetBitmap;
         }

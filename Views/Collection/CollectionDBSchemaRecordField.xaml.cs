@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Controllers;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,9 +37,6 @@ namespace Dash
     }
     public class CollectionDBSchemaRecordFieldViewModel: ViewModelBase
     {
-        //public static readonly DependencyProperty ContentProperty = DependencyProperty.Register(
-        //    "Content", typeof(string), typeof(CollectionDBSchemaRecordFieldViewModel), new PropertyMetadata(default(string)));
-         
         double    _width;
         bool      _isSelected;
         Thickness _borderThickness;
@@ -73,25 +71,19 @@ namespace Dash
             Document        = document;
             HeaderViewModel = headerViewModel;
             Row             = row;
-            DataReference   = new ReferenceFieldModelController(Document.GetId(), headerViewModel.FieldKey);
+            DataReference   = new DocumentReferenceFieldController(Document.GetId(), headerViewModel.FieldKey);
             BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
             Width           = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
-            //Content = new ReferenceFieldModelController(document.GetId(), headerViewModel.FieldKey).DereferenceToRoot(null).ToString();
         }
 
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             _dataReference = null; // forces the property change to fire-- otherwise, the old and new field references are the same
-            DataReference = new ReferenceFieldModelController(Document.GetId(), HeaderViewModel.FieldKey);
+            DataReference = new DocumentReferenceFieldController(Document.GetId(), HeaderViewModel.FieldKey);
         }
         
-        //public string Content
-        //{
-        //    get { return (string)GetValue(ContentProperty); }
-        //    set { SetValue(ContentProperty, value); }
-        //}
     }
 
 }

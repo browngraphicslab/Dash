@@ -10,8 +10,8 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
-        
-        <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" />
+
+        <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
         <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
@@ -20,13 +20,6 @@
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
-            <!--local:OperatorSearchView Height="400"></-->
-            <!--TextBlock TextAlignment="Center" Foreground="White">-drag-</>
-            <TextBlock DragStarting="DocumentTest_OnDragStarting" CanDrag="True" Foreground="White">DOC TEST</TextBlock>
-            <TextBlock DragStarting="CollectionTest_OnDragStarting" CanDrag="True" Text="COL TEST" Foreground="White"/>
-            <TextBlock DragStarting="NotesTest_OnDragStarting" CanDrag="True" Text="NOTES TEST" Foreground="White"/-->
-       
-            <!--local1:MainMenu></-->
         </StackPanel>
         <Grid HorizontalAlignment="Left"  Margin="-10,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}" Background="{StaticResource DocumentBackgroundOpaque}">
             <local1:AddMenu x:Name="xAddMenu" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>

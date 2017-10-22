@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.Data.Pdf;
+using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -95,11 +97,12 @@ namespace Dash.Sources.FilePicker.PDF {
             PdfPages.Clear();
 
             for (uint i = 0; i < pdfDoc.PageCount; i++) {
-                BitmapImage image = new BitmapImage();
+                var image = new BitmapImage();
 
                 var page = pdfDoc.GetPage(i);
 
-                using (InMemoryRandomAccessStream stream = new InMemoryRandomAccessStream()) {
+
+                using (var stream = new InMemoryRandomAccessStream()) {
                     await page.RenderToStreamAsync(stream);
                     await image.SetSourceAsync(stream);
                 }

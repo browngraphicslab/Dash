@@ -12,45 +12,56 @@
     <Grid GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="LightSteelBlue"></Setter>
-                <Setter Property="Foreground" Value="DarkSlateBlue"></Setter>
+                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition x:Name="xFormatCol" Width="0"/>
-        </Grid.ColumnDefinitions>
-        <Grid x:Name="xFormatControls" Grid.Column="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition x:Name="xFormatCol" Height="0"/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="xFormatControls" Grid.Row="1">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="2*"/>
-                </Grid.RowDefinitions>
-                <Grid Grid.Row="0">
-                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="5*"/>
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Button x:Name="xBoldButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
                         <SymbolIcon Symbol="Bold"></SymbolIcon>
                     </Button>
                 </Grid>
-                <Grid Grid.Row="1">
-                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
+                <Grid Grid.Column="1">
+                    <Button x:Name="xItalicButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
                         <SymbolIcon Symbol="Italic"></SymbolIcon>
                     </Button>
                 </Grid>
-                <Grid Grid.Row="2">
-                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
+                <Grid Grid.Column="2">
+                    <Button x:Name="xUnderlineButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
                         <SymbolIcon Symbol="Underline"></SymbolIcon>
                     </Button>
                 </Grid>
-                <Grid Grid.Row="3">
-                    <ComboBox x:Name="xFontSizeComboBox"  BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                <Grid Grid.Column="3">
+                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
     </Grid >
         <Grid Grid.Column="0">
-            <RichEditBox x:FieldModifier="public" Foreground="GhostWhite" GotFocus="xRichEitBox_GotFocus"  x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionChanged="xRichEitBox_SelectionChanged"  BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue" 
-                 ></RichEditBox>
+            <RichEditBox x:FieldModifier="public" 
+                         AllowDrop="True"
+                         DragOver="xRichEitBox_DragOver" 
+                         Foreground="GhostWhite" 
+                         GotFocus="xRichEditBox_GotFocus" 
+                         x:Name="xRichEditBox" 
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         SelectionChanged="xRichEditBox_SelectionChanged"  
+                         BorderBrush="{StaticResource DocumentBackground}" 
+                         IsColorFontEnabled="True" 
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}" 
+               />
         </Grid>
     </Grid>
 

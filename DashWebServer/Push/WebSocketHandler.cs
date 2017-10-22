@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Reflection;
+using DashShared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using DashShared;
 
 namespace DashWebServer
 {
     public abstract class WebSocketHandler
     {
         protected WebSocketConnectionManager WebSocketConnectionManager { get; set; }
-        private JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings()
+        private JsonSerializerSettings _jsonSerializerSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
@@ -26,7 +26,7 @@ namespace DashWebServer
         {
             WebSocketConnectionManager.AddSocket(socket);
 
-            await SendMessageAsync(socket, new Message()
+            await SendMessageAsync(socket, new Message
             {
                 MessageType = MessageType.ConnectionEvent,
                 Data = WebSocketConnectionManager.GetId(socket)
@@ -68,10 +68,10 @@ namespace DashWebServer
 
         public async Task InvokeClientMethodAsync(string socketId, string methodName, object[] arguments)
         {
-            var message = new Message()
+            var message = new Message
             {
                 MessageType = MessageType.ClientMethodInvocation,
-                Data = JsonConvert.SerializeObject(new InvocationDescriptor()
+                Data = JsonConvert.SerializeObject(new InvocationDescriptor
                 {
                     MethodName = methodName,
                     Arguments = arguments
@@ -94,11 +94,11 @@ namespace DashWebServer
         {
             var invocationDescriptor = JsonConvert.DeserializeObject<InvocationDescriptor>(serializedInvocationDescriptor);
 
-            var method = this.GetType().GetMethod(invocationDescriptor.MethodName);
+            var method = GetType().GetMethod(invocationDescriptor.MethodName);
 
             if (method == null)
             {
-                await SendMessageAsync(socket, new Message()
+                await SendMessageAsync(socket, new Message
                 {
                     MessageType = MessageType.Text,
                     Data = $"Cannot find method {invocationDescriptor.MethodName}"
@@ -112,7 +112,7 @@ namespace DashWebServer
             }
             catch (TargetParameterCountException e)
             {
-                await SendMessageAsync(socket, new Message()
+                await SendMessageAsync(socket, new Message
                 {
                     MessageType = MessageType.Text,
                     Data = $"The {invocationDescriptor.MethodName} method does not take {invocationDescriptor.Arguments.Length} parameters!"
@@ -121,7 +121,7 @@ namespace DashWebServer
 
             catch (ArgumentException e)
             {
-                await SendMessageAsync(socket, new Message()
+                await SendMessageAsync(socket, new Message
                 {
                     MessageType = MessageType.Text,
                     Data = $"The {invocationDescriptor.MethodName} method takes different arguments!"

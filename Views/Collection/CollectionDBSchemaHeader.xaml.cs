@@ -84,7 +84,7 @@ namespace Dash
             var viewModel = (DataContext as HeaderViewModel);
             DragModel = new HeaderDragData()
             {
-                HeaderColumnReference = new ReferenceFieldModelController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
+                HeaderColumnReference = new DocumentReferenceFieldController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
                 FieldKey = viewModel.FieldKey,
                 ViewType = CollectionView.CollectionViewType.DB
             };

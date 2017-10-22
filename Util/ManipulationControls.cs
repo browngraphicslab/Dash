@@ -51,8 +51,7 @@ namespace Dash
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
                 var colView = _element as CollectionFreeformView;
-                if (colView != null) return colView.IsLowestSelected;
-                return true;
+                return colView == null || colView.IsLowestSelected;
             }
         }
 
@@ -179,9 +178,8 @@ namespace Dash
             var point = e.GetCurrentPoint(_element);
 
             // get the scale amount
-            float scaleAmount = (float)Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+            float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+            //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
@@ -205,14 +203,14 @@ namespace Dash
             }
             if (r != Rect.Empty)
             {
-                var trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top);
+                var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
                 else
-                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) / 2);
+                    trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left+r.Width/2, r.Top), scaleAmt));
             }
         }
 

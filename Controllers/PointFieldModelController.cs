@@ -4,25 +4,30 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class PointFieldModelController : FieldModelController
+    public class PointFieldModelController : FieldModelController<PointFieldModel>
     {
-        public PointFieldModelController(Point data) :base(new PointFieldModel(data)) { }
+        public PointFieldModelController(Point data) :base(new PointFieldModel(data) ) { }
         public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y)) { }
+
+        public PointFieldModelController(PointFieldModel pointFieldModel) : base(pointFieldModel)
+        {
+
+        }
+
+        public override void Init()
+        {
+
+        }
 
         /// <summary>
         ///     The <see cref="Dash.PointFieldModel" /> associated with this <see cref="PointFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public PointFieldModel PointFieldModel => FieldModel as PointFieldModel;
-
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Debug.Assert(fieldModel is PointFieldModelController);
-            Data = ((PointFieldModelController) fieldModel).Data;
-        }
+        public PointFieldModel PointFieldModel => Model as PointFieldModel;
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -40,7 +45,7 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new PointFieldModelController(0, 0);
         }
@@ -63,8 +68,11 @@ namespace Dash
             get { return PointFieldModel.Data; }
             set
             {
-                if (SetProperty(ref PointFieldModel.Data, value))
+                if(PointFieldModel.Data != value)
                 {
+                    PointFieldModel.Data = value;
+                    // Update the server
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                     // update local
                     // update server
@@ -78,7 +86,7 @@ namespace Dash
             return $"({Data})";
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<PointFieldModel> Copy()
         {
             return new PointFieldModelController(Data);
         }

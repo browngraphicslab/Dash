@@ -25,7 +25,9 @@ namespace Dash
     public sealed partial class DocumentView : SelectionElement
     {
         public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
+
         public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
+
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -220,14 +222,16 @@ namespace Dash
             copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
+            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 moveButton,
                 copyButton,
                // delegateButton,
-                copyDataButton,
+               // copyDataButton
+                instanceDataButton,
                 copyViewButton,
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
@@ -267,6 +271,16 @@ namespace Dash
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
+            var instanceDataButtonView = instanceDataButton.View;
+            instanceDataButtonView.CanDrag = true;
+            instanceDataButtonView.ManipulationMode = ManipulationModes.All;
+            instanceDataButtonView.ManipulationDelta += (s, e) => e.Handled = true;
+            instanceDataButtonView.ManipulationStarted += (s, e) => e.Handled = true;
+            instanceDataButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
+            };
             var copyViewButtonView = copyViewButton.View;
             copyViewButtonView.CanDrag = true;
             copyViewButton.ManipulationMode = ManipulationModes.All;
@@ -300,14 +314,16 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move)
             {
-                var coll = CollectionView.GetParentCollectionView(this);
+                var coll = this.GetFirstAncestorOfType<CollectionView>();
+                Debug.Assert(coll != null);
                 coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
             }
             else
             { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
                 var currentTranslate = ViewModel.GroupTransform.Translate;
                 var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                ViewModel.GroupTransform = new TransformGroupData(ViewModel.DocumentController.GetActiveLayout().Data.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
             }
         }
 
@@ -357,8 +373,11 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
+            Debug.Assert(dvm.Width != double.NaN);
+            Debug.Assert(dvm.Height != double.NaN);
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
+            // should we allow documents with NaN's for width & height to be resized?
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -430,7 +449,7 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            var docType = ViewModel.DocumentController.Model.DocumentType;
             if (docType.Type != null)
             {
 
@@ -438,14 +457,14 @@ namespace Dash
             else
             {
 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Source = ViewModel.DocumentController.Model.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -526,7 +545,6 @@ namespace Dash
 
             if (useFixedMenu)
                 MainPage.Instance.HideDocumentMenu();
-
         }
 
         private void CopyDocument()
@@ -546,6 +564,10 @@ namespace Dash
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
+        private void InstanceDataDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
+        }
         public void ScreenCap()
         {
             Util.ExportAsImage(OuterGrid);
@@ -597,7 +619,7 @@ namespace Dash
                             break;
                         }
 
-                    DBTest.ResetCycleDetection();
+                    //DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
         }
@@ -677,6 +699,7 @@ namespace Dash
 
         #endregion
 
+
         private void DocumentView_OnDragOver(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -692,6 +715,7 @@ namespace Dash
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
             Debug.WriteLine(query);
+
         }
     }
 }
