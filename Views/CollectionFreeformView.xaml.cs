@@ -147,7 +147,7 @@ namespace Dash
             {
                 var doc = docVM.DocumentController;
                 var linksListFMC =
-                    doc.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+                    doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<TextFieldModelController>;
                 if (linksListFMC != null)
                 {
                     foreach (var textFMC in linksListFMC.TypedData)

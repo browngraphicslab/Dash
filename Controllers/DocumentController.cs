@@ -1107,7 +1107,7 @@ namespace Dash
             }
             if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(FilterOperatorBox.DocumentType))
             {
