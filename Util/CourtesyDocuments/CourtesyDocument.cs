@@ -131,15 +131,16 @@ namespace Dash
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            var positionFmc = docController.GetPositionField(context);
-            Binding positionBinding = new Binding
+            FieldBinding<PointFieldModelController> binding = new FieldBinding<PointFieldModelController>()
             {
-                Source = positionFmc,
-                Path = new PropertyPath(nameof(positionFmc.Data)),
                 Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
                 Converter = new PointToTranslateTransformConverter()
             };
-            element.SetBinding(UIElement.RenderTransformProperty, positionBinding);
+
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,

@@ -139,7 +139,7 @@ namespace Dash
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
 
                 BindPosition(layoutView, layoutDocument, context);
-                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+                //if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
 
                 grid.Children.Add(layoutView);
             }
