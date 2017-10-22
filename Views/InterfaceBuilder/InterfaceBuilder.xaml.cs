@@ -264,9 +264,9 @@ namespace Dash
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout ||
-                   layoutDocument.DocumentType == GridViewLayout.DocumentType ||
-                   layoutDocument.DocumentType == ListViewLayout.DocumentType;
+            return layoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout) ||
+                   layoutDocument.DocumentType.Equals(GridViewLayout.DocumentType) ||
+                   layoutDocument.DocumentType.Equals(ListViewLayout.DocumentType);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
