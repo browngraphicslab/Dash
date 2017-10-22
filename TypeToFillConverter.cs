@@ -12,10 +12,10 @@ namespace Dash
     public static class TypeInfoBrush
     {
         public static SolidColorBrush None = new SolidColorBrush(Colors.Black);
-        public static SolidColorBrush Number = new SolidColorBrush(Colors.DarkBlue);
-        public static SolidColorBrush Text = new SolidColorBrush(Colors.DarkRed);
+        public static SolidColorBrush Number = new SolidColorBrush(Colors.LightBlue);
+        public static SolidColorBrush Text = new SolidColorBrush(Colors.SteelBlue);
         public static SolidColorBrush Image = new SolidColorBrush(Colors.Indigo);
-        public static SolidColorBrush Collection = new SolidColorBrush(Colors.DarkGoldenrod);
+        public static SolidColorBrush Collection = new SolidColorBrush(Colors.DarkSlateBlue);
         public static SolidColorBrush Document = new SolidColorBrush(Colors.DimGray);
         public static SolidColorBrush Reference = new SolidColorBrush(Colors.DarkMagenta);
         public static SolidColorBrush Operator = new SolidColorBrush(Colors.DarkGreen);
@@ -68,19 +68,19 @@ namespace Dash
             if (xaml == new SolidColorBrush(Colors.Black))
             {
                 return TypeInfo.None;
-            } else if (xaml == new SolidColorBrush(Colors.DarkBlue))
+            } else if (xaml == new SolidColorBrush(Colors.LightBlue))
             {
                 return TypeInfo.Number;
-            } else if (xaml == new SolidColorBrush(Colors.DarkRed))
+            } else if (xaml == new SolidColorBrush(Colors.SteelBlue))
             {
                 return TypeInfo.Text;
             } else if (xaml == new SolidColorBrush(Colors.Indigo))
             {
                 return TypeInfo.Image;
-            } else if (xaml == new SolidColorBrush(Colors.DarkGoldenrod))
+            } else if (xaml == new SolidColorBrush(Colors.DarkSlateBlue))
             {
                 return TypeInfo.Collection;
-            } else if (xaml == new SolidColorBrush(Colors.DarkGray))
+            } else if (xaml == new SolidColorBrush(Colors.DimGray))
             {
                 return TypeInfo.Document;
             } else if (xaml == new SolidColorBrush(Colors.DarkMagenta))
