@@ -36,8 +36,8 @@ namespace Dash
             _tempHeight = editedLayoutDocument.GetHeightField().Data;
             _tempWidth = editedLayoutDocument.GetWidthField().Data; 
 
-            editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.HorizontalAlignmentKey, HorizontalAlignmentChanged);
-            editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.VerticalAlignmentKey, VerticalAlignmentChanged);
+            editedLayoutDocument.AddFieldUpdatedListener(KeyStore.HorizontalAlignmentKey, HorizontalAlignmentChanged);
+            editedLayoutDocument.AddFieldUpdatedListener(KeyStore.VerticalAlignmentKey, VerticalAlignmentChanged);
 
             xHorizontalAlignmentComboBox.SelectionChanged += XHorizontalAlignmentComboBox_SelectionChanged;
             xVerticalAlignmentComboBox.SelectionChanged += XVerticalAlignmentComboBox_SelectionChanged; ;
