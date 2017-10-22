@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" >
-        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsHitTestVisible="{x:Bind IsParentSelected, Mode=OneWay}" Background="Transparent" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
+        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" UseLayoutRounding="True">

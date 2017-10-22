@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -35,9 +36,10 @@ namespace Dash
         public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument);
         public event OnSelectionChangedHandler OnSelectionChanged;
 
-
+        //SelectedLayoutContainer is a direct child of this container. It is the "next" node in a linked list whose last element is the lowest selected container
         private SelectableContainer _selectedLayoutContainer;
         private SelectableContainer _parentContainer;
+        //A list of the direct children of this element. 
         private List<SelectableContainer> _childContainers;
         private bool _isSelected;
         private FrameworkElement _contentElement;
@@ -54,17 +56,9 @@ namespace Dash
         private ManipulationControls _centerManipulator;
         private bool _isLoaded;
 
-        public bool IsParentSelected
-        {
-            get
-            {
-                if (_parentContainer == null)
-                {
-                    return true;
-                }
-                return _parentContainer.IsSelected;
-            }
-        }
+
+        private bool _singleTapped = true;
+
         public FrameworkElement ContentElement
         {
             get { return _contentElement; }
@@ -137,6 +131,7 @@ namespace Dash
             Loaded += SelectableContainer_Loaded;
             Unloaded += SelectableContainer_Unloaded;
             Tapped += CompositeLayoutContainer_Tapped;
+            DoubleTapped += CompositeLayoutContainer_DoubleTapped;
 
             var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
             var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
@@ -147,7 +142,7 @@ namespace Dash
             {
                 Source = layoutDocument.GetField(GridLayout.GridRowKey),
                 Path = new PropertyPath("Data")
-            }; 
+            };
             SetBinding(Grid.RowProperty, rowBinding);
 
             var colBinding = new Binding
@@ -157,6 +152,7 @@ namespace Dash
             };
             SetBinding(Grid.ColumnProperty, colBinding);
         }
+
 
         private void SelectableContainer_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -170,6 +166,8 @@ namespace Dash
             _parentContainer?.AddChild(this);
             InitiateManipulators();
             IsSelected = IsRoot();
+            //If the container being loaded is the root or the child of a selected container, then it is hittestvisible
+            IsHitTestVisible = IsRoot() || ParentContainer.IsSelected;
             SetEllipseVisibility();
             SetContent();
             if (IsRoot())
@@ -194,36 +192,125 @@ namespace Dash
         {
             if (XLayoutDisplay == null || !_isLoaded) return;
             XLayoutDisplay.Content = ContentElement;
-
-            ContentElement.IsHitTestVisible = IsSelected;
         }
 
-        #region Selection
 
-        private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
+        #region Selection
+        /// <summary>
+        /// When element is double tapped, we select the lowest child that the pointer intersects with, and deselects
+        /// what was previously selected.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CompositeLayoutContainer_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (!IsLowestSelected)
+            _singleTapped = false;
+
+            //Make all children hittestvisible so that VisualTreeHelper can hit them
+            var allChildren = GetAllChildren();
+            var map = new Dictionary<SelectableContainer, bool>();
+            foreach (var child in allChildren)
             {
-                _parentContainer?.SetSelectedContainer(this);
-                _parentContainer?.FireSelectionChanged(this);
-                IsLowestSelected = true;
-                if (IsRoot())
-                {
-                    FireSelectionChanged(this);
-                }
+                map[child] = child.IsHitTestVisible;
+                child.IsHitTestVisible = true;
             }
-            SetSelectedContainer(null);
+            //Find intersected elements
+            var hitElementList = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(null), null, true).Where(el => el is SelectableContainer).ToList();
+            foreach (var child in allChildren)
+            {
+                child.IsHitTestVisible = map[child]; //Revert hittestvisibility to its original
+            }
+
+            if (hitElementList.Count > 0)
+            {
+                GetRoot().SetSelectedContainer(null); //Deselects every element in the "selected layout" chain
+                SelectableContainer containerToBeSelected = hitElementList.First() as SelectableContainer; //Lowest child
+                containerToBeSelected?.SetAsLowestAndBuildSelectionChain(); //Sets it as the lowest selected container, traversing up and building the "selected layout" chain up to the root
+            }
+
             e.Handled = true;
         }
 
+
+        /// <summary>
+        /// Makes this the lowest selected container
+        /// This only gets called in the children of the selected containers
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true; //Make sure this is here; it makes DoubleTapped work
+            _singleTapped = true;
+            await Task.Delay(200);
+            if (!_singleTapped)
+            {
+                return;
+            }
+            SelectMyself();
+
+        }
+        /// <summary>
+        /// Makes this the lowest selected container and update its parent's selected container
+        /// </summary>
+        private void SelectMyself()
+        {
+            if (!IsLowestSelected)
+            {
+                SetSelectedContainer(null);
+                _parentContainer?.SetSelectedContainer(this);
+                IsLowestSelected = true;
+                FireSelectionChanged(this);
+
+            }
+        }
+
+        /// <summary>
+        /// Selects this as the lowest selected layout container and then builds the "Selected Layout" chain using the parentContainer property
+        /// </summary>
+        public void SetAsLowestAndBuildSelectionChain()
+        {
+            SelectMyself();
+            _parentContainer?.SetSelectedContainerRecur(this);
+        }
+
+
         private void FireSelectionChanged(SelectableContainer selectedContainer)
         {
+            foreach (var child in _childContainers)
+            {
+                child.IsHitTestVisible = true;
+            }
+
             OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument, selectedContainer.DataDocument);
             _parentContainer?.FireSelectionChanged(selectedContainer);
         }
 
+        /// <summary>
+        /// Recursively builds the Selected Layout chain
+        /// </summary>
+        /// <param name="layoutContainer"></param>
+        private void SetSelectedContainerRecur(SelectableContainer layoutContainer)
+        {
+            _selectedLayoutContainer = layoutContainer;
+            _parentContainer?.SetSelectedContainerRecur(this);
+        }
+        /// <summary>
+        /// Sets the new selected layout container and deselects the previous selectedlayoutcontainer
+        /// If we pass it in null, makes the children hit test invisible and deselects the previous selectedlayoutcontainer 
+        /// </summary>
+        /// <param name="layoutContainer"></param>
         public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
+
+            if (layoutContainer == null && !IsRoot())
+            {
+                foreach (var child in _childContainers)
+                {
+                    child.IsHitTestVisible = false;
+                }
+            }
+
             if (_selectedLayoutContainer != null)
             {
                 _selectedLayoutContainer.IsSelected = false;
@@ -278,7 +365,7 @@ namespace Dash
             // manipulation translated
             if (!IsRoot())
             {
-                _centerManipulator = new ManipulationControls(XGrid, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:false);
+                _centerManipulator = new ManipulationControls(XGrid, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
                 _centerManipulator.OnManipulatorTranslatedOrScaled += CenterManipulatorOnOnManipulatorTranslated;
             }
             var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
