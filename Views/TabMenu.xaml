@@ -9,6 +9,30 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xMainGrid" Width="175" Height="350" DoubleTapped="XMainGrid_OnDoubleTapped">
+    <UserControl.Resources>
+        <Style x:Key="TouchStyle" TargetType="ListViewItem">
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Height" Value="10" />
+            <Setter Property="MinHeight" Value="35" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="200" Padding="0" VerticalAlignment="Stretch"
+          Background="{StaticResource WindowsBlue}" Opacity="1"  DoubleTapped="XMainGrid_OnDoubleTapped">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Border Margin="10" BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
+                <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
+                                BorderBrush="Transparent" Margin="5" Text="Search all..." />
+            </Border>
+        </Grid>
+        <!--<ListView x:Name="xListView" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}">
+            
+        </ListView>-->
+        <Grid x:Name="ListGrid" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}" />
     </Grid>
 </UserControl>

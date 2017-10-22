@@ -133,13 +133,13 @@ namespace Dash
                 if (e.VirtualKey == VirtualKey.Down)
                 {
 
-                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                    TabMenu.Instance.MoveSelectedDown();
                 }
 
                 if (e.VirtualKey == VirtualKey.Up)
                 {
 
-                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                    TabMenu.Instance.MoveSelectedUp();
                 }
             }
         }
@@ -170,7 +170,7 @@ namespace Dash
 
                 if (e.VirtualKey == VirtualKey.Enter)
                 {
-                    TabMenu.Instance.SearchView.ActivateItem();
+                    TabMenu.Instance.ActivateItem();
                 }
             }
 

@@ -26,14 +26,31 @@ namespace Dash
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
 
 
-        public SearchView SearchView { get; private set; }
+        //public SearchView SearchView { get; private set; }
         public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+
+        public Point AddHere { get; set; }
+
+        private List<TabItemViewModel> _tabItems;
+        private SearchCategoryItem _searchList;
 
         private TabMenu()
         {
-            this.InitializeComponent();
-            this.MakeView();
-            this.LostFocus += OnLostFocus;
+            InitializeComponent();
+            
+
+            LostFocus += OnLostFocus;
+            //_tabItems = ??? 
+
+
+            _searchList = GetSearchCategories(); 
+            ListGrid.Children.Add(_searchList);
+            _searchList.Margin = new Thickness(0);
+            OuterGrid.Width = _searchList.List.Width;
+
+            xSearch.TextChanged += XSearch_TextChanged;
+            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
+            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
         }
 
         private void OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
@@ -41,17 +58,13 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(this);
         }
 
-        private void MakeView()
-        {
-            xMainGrid.Children.Add(SearchView = new SearchView(GetSearchCategories()));
-        }
 
         private static SearchCategoryItem GetSearchCategories()
         {
             var all = new ObservableCollection<Func<DocumentController>>
             {
                 Util.BlankDoc,
-                Util.BlankCollection, 
+                Util.BlankCollection,
                 Util.BlankNote
             };
 
@@ -60,20 +73,59 @@ namespace Dash
                 all.Add(op.Value.OperationDocumentConstructor);
             }
 
-            //foreach (var doc in ContentController.GetControllers<DocumentController>())
-            //{
-            //    all.Add(() => doc.GetCopy());
-            //}
-
             return new SearchCategoryItem("", "", all);
         }
 
-        
-
+        #region xSEARCH
         public void SetTextBoxFocus()
         {
-            SearchView?.SetTextBoxFocus();
+            xSearch.Focus(FocusState.Programmatic);
         }
+
+        private void XSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            UpdateList(args.QueryText);
+        }
+
+        /// <summary>
+        /// Generates suggestions for searchbox
+        /// </summary>
+        private void XSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+                UpdateList(sender.Text);
+        }
+
+        /// <summary>
+        /// Updates items source of the current listview to reflect search results within the current category
+        /// </summary>
+        private void UpdateList(string query)
+        {
+            var results = GetMatches(query);
+            _searchList.List.ItemsSource = results;
+        }
+
+        /// <summary>
+        /// Returns results that match the query
+        /// </summary>
+        private ObservableCollection<object> GetMatches(string searchInput)
+        {
+            var suggestions = new ObservableCollection<object>();
+            var docNames = _searchList.ListContent;
+            if (docNames != null)
+            {
+                foreach (var name in docNames)
+                {
+                    if (name.ToLower().Contains(searchInput.ToLower()) || searchInput == string.Empty)
+                        suggestions.Add(name);
+                }
+            }
+            return suggestions;
+        }
+
+        #endregion
+
+
 
         private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
@@ -88,12 +140,65 @@ namespace Dash
                 {
                     canvas.Children.Add(Instance);
                 }
-                //Instance.SearchView.UpdateCategories(GetSearchCategories());
-                if (isTouch) Instance.SearchView.ConfigureForTouch();
+                if (isTouch) Instance.ConfigureForTouch();
                 Canvas.SetLeft(Instance, position.X);
                 Canvas.SetTop(Instance, position.Y);
-                Instance.SearchView.SetNoSelection();
+                Instance.SetNoSelection();
             }
+        }
+
+        public void ConfigureForTouch()
+        {
+            _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
+        }
+
+        public void MoveSelectedDown()
+        {
+            if (_searchList.List.SelectedIndex < 0)
+            {
+                _searchList.List.SelectedIndex = 0;
+
+            }
+            else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
+            {
+                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex + 1;
+                _searchList.List.ScrollIntoView(_searchList.List.SelectedItem);
+
+            }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
+
+        }
+
+        public void ActivateItem()
+        {
+            _searchList.ActivateItem(_searchList.SelectedItem);
+        }
+
+        public void SetNoSelection()
+        {
+            if (_searchList != null)
+            {
+                _searchList.List.SelectedIndex = -1;
+                _searchList.SelectedItem = null;
+            }
+            xSearch.Text = string.Empty;
+            UpdateList(string.Empty);
+        }
+
+        public void MoveSelectedUp()
+        {
+            if (_searchList.List.SelectedIndex <= 0)
+            {
+                _searchList.List.SelectedIndex = 0;
+
+            }
+            else
+            {
+                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex - 1;
+            }
+            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
+            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
         }
     }
 }

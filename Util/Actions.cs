@@ -56,7 +56,7 @@ namespace Dash
                 return;
             }
             
-            var searchView = TabMenu.Instance.SearchView;
+            var searchView = TabMenu.Instance;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
