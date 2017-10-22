@@ -934,7 +934,7 @@ namespace Dash
 
             // if no docview to select, select the current collectionview 
             var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView.OnTapped(parentView, null); 
+            parentView?.OnTapped(parentView, null); 
         }
 
         #endregion
