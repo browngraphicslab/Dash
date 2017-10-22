@@ -155,7 +155,7 @@ namespace Dash
                     return;
 
                 // apply position if we are dropping on a freeform
-                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
+                if (layoutContainer.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
@@ -264,9 +264,9 @@ namespace Dash
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout ||
-                   layoutDocument.DocumentType == GridViewLayout.DocumentType ||
-                   layoutDocument.DocumentType == ListViewLayout.DocumentType;
+            return layoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout) ||
+                   layoutDocument.DocumentType.Equals(GridViewLayout.DocumentType) ||
+                   layoutDocument.DocumentType.Equals(ListViewLayout.DocumentType);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)

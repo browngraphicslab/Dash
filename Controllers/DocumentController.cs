@@ -636,7 +636,7 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key == KeyStore.PrototypeKey) HasPrototype = true;
+                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true;
             }
             if (shouldExecute)
             {
@@ -1107,7 +1107,7 @@ namespace Dash
             }
             if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(FilterOperatorBox.DocumentType))
             {
