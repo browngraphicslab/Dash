@@ -54,6 +54,7 @@
                          DragOver="xRichEitBox_DragOver" 
                          Foreground="GhostWhite" 
                          GotFocus="xRichEditBox_GotFocus" 
+                         Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 

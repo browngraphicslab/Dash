@@ -12,6 +12,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -206,7 +207,7 @@ namespace Dash
 
         /// </summary>
         public static KeyController HeaderListKey = new KeyController("7C3F0C3F-F065-4094-8802-F572B35C4D42", "HeaderList");
-        private bool SchemaHeadersContains(string field)
+        private bool SchemaHeadersContains(KeyController field)
         {
             foreach (var s in SchemaHeaders)
                 if (s.FieldKey.Equals(field))
@@ -228,7 +229,7 @@ namespace Dash
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
             }
-            if (_lastFieldSortKey == viewModel.FieldKey)
+            if (_lastFieldSortKey != null && _lastFieldSortKey.Equals(viewModel.FieldKey))
                 UpdateRecords(records.Select((r) => r.Value).Reverse());
             else UpdateRecords(records.Select((r) => r.Value));
             _lastFieldSortKey = viewModel.FieldKey;
@@ -256,7 +257,7 @@ namespace Dash
                 foreach (var d in dbDocs)
                 {
                     foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Id))
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
@@ -338,6 +339,8 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("drop event from collection");
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 

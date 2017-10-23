@@ -411,6 +411,8 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("drop event from collection");
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 

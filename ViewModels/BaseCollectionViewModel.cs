@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using Dash.Controllers.Operators;
+using DashShared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -130,10 +131,28 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            var where = sender is CollectionFreeformView ?
+                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                new Point();
+            if (e.DataView != null &&
+                  (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
+            {
+                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
+                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
 
-            // first check for things we don't want to allow dropped onto the collection
-            //restore previous conditions 
-            if (DocumentView.DragDocumentView != null)
+                var cnote = new CollectionNote(where, dragData.ViewType);
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
+
+                AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
+                CollectionDBSchemaHeader.DragModel = null;
+                return;
+            }
+
+              // first check for things we don't want to allow dropped onto the collection
+              //restore previous conditions 
+              if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
             this.RemoveDragDropIndication(sender as SelectionElement);
 
@@ -181,10 +200,6 @@ namespace Dash
 
                 var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
-
-                var where = sender is CollectionFreeformView ?
-                    Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                    new Point();
 
                 var payloadLayoutDelegates = items.Select((p) =>
                 {

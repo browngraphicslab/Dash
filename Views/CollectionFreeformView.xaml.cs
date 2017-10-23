@@ -840,21 +840,7 @@ namespace Dash
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             Debug.WriteLine("drop event from collection");
-            if (e.DataView != null && 
-                (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
-            {
-                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
-                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
-                
-                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetPosition(this)), dragData.ViewType);
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
-
-                ViewModel.AddDocument(cnote.Document, null);
-                DBTest.DBDoc.AddChild(cnote.Document);
-                CollectionDBSchemaHeader.DragModel = null;
-            } else
-                ViewModel.CollectionViewOnDrop(sender, e);
+            ViewModel.CollectionViewOnDrop(sender, e);
         }
 
         public void SetDropIndicationFill(Brush fill)

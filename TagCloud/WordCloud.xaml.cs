@@ -186,7 +186,7 @@ namespace NewControls
                 m_Words = value;
                 if (value == null) { return; }
 
-                var first = m_Words?.First();
+                var first = m_Words?.FirstOrDefault();
                 if (first != null)
                 {
                     m_MaxWordWeight = first.Occurrences;
