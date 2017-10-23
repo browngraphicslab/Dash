@@ -355,8 +355,8 @@ namespace Dash
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
-                    new List<Action> { SetGridView, SetListView, SetDBView, SetSchemaView, SetFreeformView})),
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
 
 

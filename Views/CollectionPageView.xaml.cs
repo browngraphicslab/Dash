@@ -29,8 +29,14 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += CollectionPageView_DataContextChanged;
+            xThumbs.Loaded += (sender, e) =>
+            {
+                foreach (var t in ViewModel.ThumbDocumentViewModels)
+                    t.Height = xThumbs.ActualHeight;
+            };
             xThumbs.SizeChanged += (sender, e) =>
             {
+                FitPageButton_Click(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Height = xThumbs.ActualHeight;
             };
@@ -52,7 +58,7 @@ namespace Dash
                 PageDocumentViewModels.Insert(0,CurPage);
 
                 var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
-                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,double.NaN);
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,xThumbs.ActualHeight);
                 ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc));
             }
         }

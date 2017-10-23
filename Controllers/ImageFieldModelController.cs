@@ -13,6 +13,7 @@ using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media;
 using Windows.Storage;
 using System.Diagnostics;
+using Windows.Data.Pdf;
 
 namespace Dash
 {
@@ -122,7 +123,14 @@ namespace Dash
                 if (_cacheSource == null) {
                     if (ImageFieldModel.Data != null)
                     {
-                        _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data);
+                        var pathUri = ImageFieldModel.Data;
+                        if (pathUri.AbsoluteUri.Contains(".pdf:"))
+                        {
+                            _cacheSource = new BitmapImage();
+                            loadPdfPage(pathUri, _cacheSource as BitmapImage);
+                        }
+                        else
+                            _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(pathUri);
                     }
                     if (ImageFieldModel.ByteData != null)
                     {
@@ -140,6 +148,25 @@ namespace Dash
                     OnFieldModelUpdated(null);
                 }
             }
+        }
+
+        async void loadPdfPage(Uri uri, BitmapImage bitmapImage)
+        {
+            var pdfPath = uri.AbsoluteUri.Split(new string[] { ".pdf:" }, StringSplitOptions.RemoveEmptyEntries);
+            var storageFile = await ApplicationData.Current.LocalFolder.GetFileAsync(Path.GetFileName(pdfPath[0] + ".pdf"));
+            var pdf  = await PdfDocument.LoadFromFileAsync(storageFile);
+            var page = pdf.GetPage(uint.Parse(pdfPath[1]));
+            
+#pragma warning disable CS4014
+            MainPage.Instance.Dispatcher.RunIdleAsync(async (args) =>
+            {
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await page.RenderToStreamAsync(stream);
+                    bitmapImage.SetSourceAsync(stream);
+                }
+            });
+#pragma warning restore CS4014
         }
         private WriteableBitmap FromBase64(string base64)
         {
