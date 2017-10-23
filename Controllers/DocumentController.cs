@@ -547,6 +547,27 @@ namespace Dash
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
 
+            if (key.Id == KeyStore.PrototypeKey.Id)
+            {
+                var oldPrototype = (oldField as DocumentFieldModelController)?.Data;
+                if (oldPrototype != null)
+                {
+                    DocumentFieldUpdated -= delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
+                                                args.FromDelegate = true;
+                                                oldPrototype.OnDocumentFieldUpdated(sender, args, false);
+                                            };
+                }
+
+                var prototype = (field as DocumentFieldModelController)?.Data;
+                if (prototype != null)
+                {
+                    DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
+                                                args.FromDelegate = true;
+                                                prototype.OnDocumentFieldUpdated(sender, args, false);
+                                            };
+                }
+            }
+
             // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
             {
@@ -735,12 +756,7 @@ namespace Dash
             var delegateController = new DocumentController(delegateModel);
 
             //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-            delegateController.DocumentFieldUpdated +=
-                delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
-                {
-                    args.FromDelegate = true;
-                    OnDocumentFieldUpdated(sender, args, false);
-                };
+          
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
