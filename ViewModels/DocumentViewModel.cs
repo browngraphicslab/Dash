@@ -101,7 +101,7 @@ namespace Dash
 
         public TransformGroupData GroupTransform
         {
-            get { return IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform; }
+            get => IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform;
             set
             {
                 if (IsInInterfaceBuilder)
