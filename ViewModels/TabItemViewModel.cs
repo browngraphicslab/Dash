@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public interface TabItemViewModel
+    public interface ITabItemViewModel
     {
         string Title { get; set; }
 

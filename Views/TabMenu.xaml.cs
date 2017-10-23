@@ -34,22 +34,15 @@ namespace Dash
         {
             AddsToThisCollection = col;
             WhereToAdd = p;
-            System.Diagnostics.Debug.WriteLine("configured"); 
         }
 
-        public List<TabItemViewModel> TabItems { get; private set; }
-        //private SearchCategoryItem _searchList;
+        public List<ITabItemViewModel> TabItems { get; private set; }
 
         private TabMenu()
         {
             InitializeComponent();
             LostFocus += OnLostFocus;
             GetSearchItems();
-
-            //_searchList = GetSearchCategories();                                            //TODO remove this shite 
-            //ListGrid.Children.Add(_searchList);
-            //_searchList.Margin = new Thickness(0);
-            //OuterGrid.Width = _searchList.List.Width;
 
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
@@ -64,25 +57,18 @@ namespace Dash
 
         private void GetSearchItems()
         {
-            var list = new List<TabItemViewModel>();
+            var list = new List<ITabItemViewModel>();
 
             list.Add(new CreateOpTabItemViewModel("Document", Util.BlankDoc));
+            list.Add(new CreateOpTabItemViewModel("Collection", Util.BlankCollection));
+            list.Add(new CreateOpTabItemViewModel("Note", Util.BlankNote));
+
+            foreach (var op in OperationCreationHelper.Operators)
+            {
+                list.Add(new CreateOpTabItemViewModel(op.Key, op.Value.OperationDocumentConstructor));
+            }
 
             TabItems = list;
-
-            //var all = new ObservableCollection<Func<DocumentController>>
-            //{
-            //    Util.BlankDoc,
-            //    Util.BlankCollection,
-            //    Util.BlankNote
-            //};
-
-            //foreach (var op in OperationCreationHelper.Operators)
-            //{
-            //    all.Add(op.Value.OperationDocumentConstructor);
-            //}
-
-            //return new SearchCategoryItem("", "", all);
         }
 
         #region xSEARCH
@@ -133,7 +119,6 @@ namespace Dash
         }
 
         #endregion
-
 
 
         private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -210,9 +195,9 @@ namespace Dash
         private void xListView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (xListView.SelectedIndex == -1) return;
-            var name = xListView.SelectedItem as TabItemViewModel;
+            var name = xListView.SelectedItem as ITabItemViewModel;
             name.ExecuteFunc(); 
-            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
+            MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
     }
 }
