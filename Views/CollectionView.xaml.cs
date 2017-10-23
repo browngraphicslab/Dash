@@ -419,7 +419,7 @@ namespace Dash
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsMainCollection == false)
+            else if (_collectionMenu != null && !isLowestSelected && ParentDocument?.IsMainCollection == false)
             {
                 CloseMenu();
                 ParentDocument.ViewModel?.CloseMenu();
