@@ -30,9 +30,26 @@
                                 BorderBrush="Transparent" Margin="5" Text="Search all..." />
             </Border>
         </Grid>
-        <!--<ListView x:Name="xListView" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}">
+        
+        <ListView x:Name="xListView" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}"
+                  ItemsSource="{x:Bind TabItems}" Tapped="xListView_Tapped">
             
-        </ListView>-->
-        <Grid x:Name="ListGrid" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}" />
+            <ListView.ItemContainerStyle>
+                <!-- TODO: abstract this bs out-->
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Height" Value="1"></Setter>
+                    <Setter Property="Padding" Value="15,10"></Setter>
+                    <Setter Property="Margin" Value="0"></Setter>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
+                    <Setter Property="BorderBrush" Value="#FF444444"></Setter>
+                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Path=Title}" FontSize="11"></TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </UserControl>

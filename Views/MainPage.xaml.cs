@@ -185,7 +185,6 @@ namespace Dash
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
             TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
-            //TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
             TabMenu.ShowAt(xCanvas, true);
             TabMenu.Instance.SetTextBoxFocus();
             e.Handled = true;

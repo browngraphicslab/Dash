@@ -178,6 +178,7 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
@@ -586,9 +587,6 @@
     <Compile Include="Views\SearchCategoryItem.xaml.cs">
       <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TabItem.xaml.cs">
-      <DependentUpon>TabItem.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
@@ -986,10 +984,6 @@
     <Page Include="Views\SearchCategoryItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\TabItem.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TabMenu.xaml">
       <SubType>Designer</SubType>

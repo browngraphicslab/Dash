@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class TabItemViewModel
+    public interface TabItemViewModel
     {
-        //protected object ExecuteFunc()
-        //{
-            
-        //}
+        string Title { get; set; }
+
+        void ExecuteFunc(); 
+
     }
 }

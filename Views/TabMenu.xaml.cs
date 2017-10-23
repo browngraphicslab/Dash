@@ -25,7 +25,7 @@ namespace Dash
         #region STATIC VARIABLES 
         private static TabMenu _instance;
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
-        
+
         public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
         public static Point WhereToAdd;
         #endregion
@@ -34,24 +34,22 @@ namespace Dash
         {
             AddsToThisCollection = col;
             WhereToAdd = p;
+            System.Diagnostics.Debug.WriteLine("configured"); 
         }
 
-        private List<TabItemViewModel> _tabItems;
-        private SearchCategoryItem _searchList;
+        public List<TabItemViewModel> TabItems { get; private set; }
+        //private SearchCategoryItem _searchList;
 
         private TabMenu()
         {
             InitializeComponent();
-            
-
             LostFocus += OnLostFocus;
-            //_tabItems = ??? 
+            GetSearchItems();
 
-
-            _searchList = GetSearchCategories();                                            //TODO remove this shite 
-            ListGrid.Children.Add(_searchList);
-            _searchList.Margin = new Thickness(0);
-            OuterGrid.Width = _searchList.List.Width;
+            //_searchList = GetSearchCategories();                                            //TODO remove this shite 
+            //ListGrid.Children.Add(_searchList);
+            //_searchList.Margin = new Thickness(0);
+            //OuterGrid.Width = _searchList.List.Width;
 
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
@@ -64,21 +62,27 @@ namespace Dash
         }
 
 
-        private static SearchCategoryItem GetSearchCategories()
+        private void GetSearchItems()
         {
-            var all = new ObservableCollection<Func<DocumentController>>
-            {
-                Util.BlankDoc,
-                Util.BlankCollection,
-                Util.BlankNote
-            };
+            var list = new List<TabItemViewModel>();
 
-            foreach (var op in OperationCreationHelper.Operators)
-            {
-                all.Add(op.Value.OperationDocumentConstructor);
-            }
+            list.Add(new CreateOpTabItemViewModel("Document", Util.BlankDoc));
 
-            return new SearchCategoryItem("", "", all);
+            TabItems = list;
+
+            //var all = new ObservableCollection<Func<DocumentController>>
+            //{
+            //    Util.BlankDoc,
+            //    Util.BlankCollection,
+            //    Util.BlankNote
+            //};
+
+            //foreach (var op in OperationCreationHelper.Operators)
+            //{
+            //    all.Add(op.Value.OperationDocumentConstructor);
+            //}
+
+            //return new SearchCategoryItem("", "", all);
         }
 
         #region xSEARCH
@@ -106,8 +110,8 @@ namespace Dash
         /// </summary>
         private void UpdateList(string query)
         {
-            var results = GetMatches(query);
-            _searchList.List.ItemsSource = results;
+            //var results = GetMatches(query);                                                                                         // TODO fix 
+            //xListView.ItemsSource = results;
         }
 
         /// <summary>
@@ -116,15 +120,15 @@ namespace Dash
         private ObservableCollection<object> GetMatches(string searchInput)
         {
             var suggestions = new ObservableCollection<object>();
-            var docNames = _searchList.ListContent;
-            if (docNames != null)
-            {
-                foreach (var name in docNames)
-                {
-                    if (name.ToLower().Contains(searchInput.ToLower()) || searchInput == string.Empty)
-                        suggestions.Add(name);
-                }
-            }
+            //var docNames = _searchList.ListContent;                                                                           // TODO fix 
+            //if (docNames != null)
+            //{
+            //    foreach (var name in docNames)
+            //    {
+            //        if (name.ToLower().Contains(searchInput.ToLower()) || searchInput == string.Empty)
+            //            suggestions.Add(name);
+            //    }
+            //}
             return suggestions;
         }
 
@@ -153,56 +157,62 @@ namespace Dash
 
         public void ConfigureForTouch()
         {
-            _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
+            xListView.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
         }
 
-        public void MoveSelectedDown()
+        public void MoveSelectedDown()                                                                                     // TODO fix 
         {
-            if (_searchList.List.SelectedIndex < 0)
-            {
-                _searchList.List.SelectedIndex = 0;
+            //    if (xListView.SelectedIndex < 0)
+            //    {
+            //        xListView.SelectedIndex = 0;
 
-            }
-            else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
-            {
-                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex + 1;
-                _searchList.List.ScrollIntoView(_searchList.List.SelectedItem);
+            //    }
+            //    else if (xListView.SelectedIndex != xListView.Items.Count - 1)
+            //    {
+            //        xListView.SelectedIndex = xListView.SelectedIndex + 1;
+            //        xListView.ScrollIntoView(xListView.SelectedItem);
 
-            }
-            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
-            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
+            //    }
+            //    _searchList.SelectedItem = xListView.Items[xListView.SelectedIndex];
+            //    xListView.ScrollIntoView(_searchList.SelectedItem);
 
         }
 
         public void ActivateItem()
         {
-            _searchList.ActivateItem(_searchList.SelectedItem);
+            //_searchList.ActivateItem(_searchList.SelectedItem);                                                  // TODO fix 
         }
 
         public void SetNoSelection()
         {
-            if (_searchList != null)
-            {
-                _searchList.List.SelectedIndex = -1;
-                _searchList.SelectedItem = null;
-            }
+
+            xListView.SelectedIndex = -1;
+            //_searchList.SelectedItem = null;                                              // TODO fix
             xSearch.Text = string.Empty;
             UpdateList(string.Empty);
         }
 
         public void MoveSelectedUp()
         {
-            if (_searchList.List.SelectedIndex <= 0)
-            {
-                _searchList.List.SelectedIndex = 0;
+            //if (xListView.SelectedIndex <= 0)
+            //{
+            //    xListView.SelectedIndex = 0;
 
-            }
-            else
-            {
-                _searchList.List.SelectedIndex = _searchList.List.SelectedIndex - 1;
-            }
-            _searchList.SelectedItem = _searchList.List.Items[_searchList.List.SelectedIndex];
-            _searchList.List.ScrollIntoView(_searchList.SelectedItem);
+            //}
+            //else
+            //{
+            //    xListView.SelectedIndex = xListView.SelectedIndex - 1;
+            //}
+            //_searchList.SelectedItem = xListView.Items[xListView.SelectedIndex];
+            //xListView.ScrollIntoView(_searchList.SelectedItem);
+        }
+
+        private void xListView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xListView.SelectedIndex == -1) return;
+            var name = xListView.SelectedItem as TabItemViewModel;
+            name.ExecuteFunc(); 
+            MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
         }
     }
 }
