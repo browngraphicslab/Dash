@@ -230,13 +230,12 @@ namespace Dash
                 return FileType.Ppt;
             if (storagePath.EndsWith(".pptx"))
                 return FileType.Ppt;
-            if (storageItem.FileType == ".url")
+            if (storagePath.EndsWith(".url"))
                 return FileType.Web;
-            if (storageItem.FileType == ".jpg" ||
-                storageItem.FileType == ".jpeg" ||
-                storageItem.FileType == ".png" ||
-                storageItem.FileType == ".png" ||
-                storageItem.FileType == ".gif")
+            if (storagePath.EndsWith(".jpg") ||
+                storagePath.EndsWith(".jpeg") ||
+                storagePath.EndsWith(".png") ||
+                storagePath.EndsWith(".gif"))
                 return FileType.Image;
             throw new ArgumentException($"We do not support the file type for the passed in file: {storageItem.Path}");
         }

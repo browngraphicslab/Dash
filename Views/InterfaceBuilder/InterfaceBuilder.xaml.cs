@@ -193,8 +193,8 @@ namespace Dash
                 }
                 if (newLayoutDocument != null)
                 {
-                    var col = layoutContainer.LayoutDocument.GetField(KeyStore.DataKey) as
-                        DocumentCollectionFieldModelController;
+                    var context = new Context(newLayoutDocument);
+                    var col = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                     col?.AddDocument(newLayoutDocument);
                 }
             }

@@ -40,7 +40,7 @@ namespace Dash
                     case TypeInfo.Number:
                         return new NumberFieldModel(JsonConvert.DeserializeObject<double>(data.ToString()));
                     case TypeInfo.Image:
-                        return new ImageFieldModel(JsonConvert.DeserializeObject<Uri>(data.ToString()));
+                        return new ImageFieldModel((Uri)data);
                     case TypeInfo.Collection:
                         return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()));
                     case TypeInfo.Document:

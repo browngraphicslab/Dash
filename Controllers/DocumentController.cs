@@ -122,11 +122,6 @@ namespace Dash
         /// <param name="handler"></param>
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
-            //++totalCount;
-            //if (++addCount % 100 == 0)
-            //{
-            //    Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 _fieldUpdatedDictionary[key] += handler;
@@ -139,11 +134,6 @@ namespace Dash
 
         public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
-            //--totalCount;
-            //if (++removeCount % 100 == 0)
-            //{
-            //    Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -276,7 +266,7 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            if (obj == this)
+            if (ReferenceEquals(obj, this))
             {
                 return true;
             }

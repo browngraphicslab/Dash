@@ -48,26 +48,26 @@ namespace Dash
         public SelectableContainer ParentContainer { get { return _parentContainer; } }
         public readonly DocumentController LayoutDocument;
         public readonly DocumentController DataDocument;
-        private ManipulationControls _manipulator;
         private bool _isLowestSelected;
         private RootSnapManager _rootSnapManager;
+
+        
         private ManipulationControls _centerManipulator;
         private bool _isLoaded;
 
-        public bool IsParentSelected
-        {
-            get
-            {
-                if (_parentContainer == null)
-                {
-                    return true;
-                }
-                return _parentContainer.IsSelected;
-            }
-        }
+        /// <summary>
+        /// Returns true if the parent container <see cref="IsSelected"/> property
+        /// is true, or if the current container is the root
+        /// </summary>
+        public bool IsParentSelected => IsRoot() || _parentContainer.IsSelected;
+
+        /// <summary>
+        /// The inner content of the selectable container, since the selectable
+        /// container is basically a wrapper this is the actual xaml element
+        /// </summary>
         public FrameworkElement ContentElement
         {
-            get { return _contentElement; }
+            get => _contentElement;
             set
             {
                 _contentElement = value;
@@ -75,9 +75,13 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// True if the container is in the hierarchy of containers which are
+        /// selected. Also true by default if the container is the root container
+        /// </summary>
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             set
             {
                 _isSelected = IsRoot() || value;
@@ -88,9 +92,13 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// True if the container is the lowest selected container in the hierarchy
+        /// of selected containers. The lowest selected container has ellipses visible on it
+        /// </summary>
         public bool IsLowestSelected
         {
-            get { return _isLowestSelected; }
+            get => _isLowestSelected;
             set
             {
                 _isLowestSelected = value;
@@ -179,6 +187,10 @@ namespace Dash
             UpdateSizeMarkers(ContentElement.ActualWidth, ContentElement.ActualHeight);
         }
 
+        /// <summary>
+        /// True if the current container is the root selectable container
+        /// </summary>
+        /// <returns></returns>
         private bool IsRoot()
         {
             return _parentContainer == null;
