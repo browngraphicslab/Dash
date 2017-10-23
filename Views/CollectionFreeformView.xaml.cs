@@ -543,7 +543,7 @@ namespace Dash
             DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
-            if (inputController.DocumentType == DashConstants.DocumentTypeStore.OperatorType &&
+            if (inputController.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType) &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
@@ -926,7 +926,7 @@ namespace Dash
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                {
+                { 
                     view.OnTapped(view, null); // hack to set selection on the lowest view
                     return;
                 }
