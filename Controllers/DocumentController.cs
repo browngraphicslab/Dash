@@ -629,9 +629,9 @@ namespace Dash
             // TODO check field type compatibility
             var context = new Context(this);
             var shouldExecute = false;
-            if (SetFieldHelper(key, field, forceMask))
+            var fieldChanged = false;
+            if (fieldChanged = SetFieldHelper(key, field, forceMask))
             {
-
                 shouldExecute = ShouldExecute(context, key);
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -642,7 +642,7 @@ namespace Dash
             {
                 Execute(context, true);
             }
-            return shouldExecute;
+            return fieldChanged;
         }
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
@@ -1047,10 +1047,7 @@ namespace Dash
         {
             context = new Context(context);
             context.AddDocumentContext(this);
-
-            var contextKey = GetField(KeyStore.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
-            if (contextKey != null)
-                context.AddDocumentContext(contextKey);
+            context.AddDocumentContext(GetDataDocument(null));
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
