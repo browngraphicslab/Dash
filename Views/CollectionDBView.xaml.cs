@@ -125,11 +125,11 @@ namespace Dash
         {
             var autofit = ParentDocument.GetDereferencedField<NumberFieldModelController>(DBFilterOperatorFieldModelController.AutoFitKey, args.Context)?.Data != 0;
 
-            if (args.Reference.FieldKey == DBFilterOperatorFieldModelController.AutoFitKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.FilterFieldKey ||
-                (args.Reference.FieldKey == DBFilterOperatorFieldModelController.BucketsKey  && !autofit) ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey ||
-                args.Reference.FieldKey == ViewModel.CollectionKey)
+            if (args.Reference.FieldKey.Equals( DBFilterOperatorFieldModelController.AutoFitKey) ||
+                args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.FilterFieldKey) ||
+                (args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.BucketsKey) && !autofit) ||
+                args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.SelectedKey) ||
+                args.Reference.FieldKey.Equals(ViewModel.CollectionKey))
                 updateChart(new Context(ParentDocument));
         }
 
@@ -324,7 +324,7 @@ namespace Dash
             }
             if (!updateViewOnly)
             {
-                if (ViewModel.CollectionKey != KeyStore.CollectionOutputKey) // avoid inifinite loop -- input is output.  this happens when something tries to display the CollectionOutputKey field (e.g., Interface Builder showing all document fields)
+                if (!ViewModel.CollectionKey.Equals(KeyStore.CollectionOutputKey)) // avoid inifinite loop -- input is output.  this happens when something tries to display the CollectionOutputKey field (e.g., Interface Builder showing all document fields)
                     ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
                 ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
             }

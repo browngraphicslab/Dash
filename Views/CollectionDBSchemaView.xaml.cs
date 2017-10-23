@@ -200,7 +200,7 @@ namespace Dash
         private void ParentDocument_DocumentFieldUpdated(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == ViewModel.CollectionKey)
+            if (args.Reference.FieldKey.Equals(ViewModel.CollectionKey))
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -209,7 +209,7 @@ namespace Dash
         private bool SchemaHeadersContains(string field)
         {
             foreach (var s in SchemaHeaders)
-                if (s.FieldKey.Id == field)
+                if (s.FieldKey.Equals(field))
                     return true;
             return false;
         }
