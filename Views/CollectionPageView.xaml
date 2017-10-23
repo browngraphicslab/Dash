@@ -71,21 +71,19 @@
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
             <ListView x:Name="xThumbs" 
-                Grid.Row="0" 
-                      SelectionMode="Single"
-                      ItemClick="xThumbs_ItemClick" 
-                Background="Black" 
-                VerticalAlignment="Stretch" 
-                      PointerPressed="xThumbs_PointerPressed"   
-                SelectionChanged="xThumbs_SelectionChanged" 
-                ItemsSource="{Binding ThumbDocumentViewModels}"
-                ScrollViewer.HorizontalScrollMode="Enabled"
-                ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                ScrollViewer.IsHorizontalRailEnabled="True"
-                ScrollViewer.VerticalScrollMode="Disabled">
+                    Grid.Row="0" 
+                    SelectionMode="Single"
+                    Background="Black" 
+                    VerticalAlignment="Stretch" 
+                    SelectionChanged="xThumbs_SelectionChanged" 
+                    ItemsSource="{Binding ThumbDocumentViewModels}"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                    ScrollViewer.IsHorizontalRailEnabled="True"
+                    ScrollViewer.VerticalScrollMode="Disabled">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <ItemsStackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>

@@ -198,16 +198,6 @@ namespace Dash
             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
         }
 
-        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-           
-        }
-
-        private void xThumbs_ItemClick(object sender, ItemClickEventArgs e)
-        {
-
-        }
-
         private void PopOutPage_Click(object sender, RoutedEventArgs e)
         {
             var page = (CurPage.DocumentController).GetViewCopy(null);
