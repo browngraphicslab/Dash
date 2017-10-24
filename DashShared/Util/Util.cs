@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace DashShared
 {
-    public static class Util
+    public static class UtilShared
     {
         /// <summary>
         /// Generates a new id using a consistent format which can be stored in the database. This is better than generating id's in 100 different places

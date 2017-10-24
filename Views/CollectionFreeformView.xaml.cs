@@ -477,7 +477,7 @@ namespace Dash
         /// <param name="pos2">The second position on the link bezier curve</param>
         private void StartConnectionLine(IOReference ioReference, Point pos2)
         {
-            _connectionLine = new Path
+            _connectionLine = new UserCreatedLink
             {
                 //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
                 IsHitTestVisible = false,
@@ -609,6 +609,13 @@ namespace Dash
             {
                 CheckLinePresence(ioReference.FieldReference);
                 RefToLine.Add(ioReference.FieldReference, _connectionLine);
+                var connectionLine = _connectionLine as UserCreatedLink;
+                if(connectionLine != null)
+                {
+                    connectionLine.referencingDocument = inputController;
+                    connectionLine.reference = outputReference.FieldReference;
+                    connectionLine.referencingKey = inputReference.FieldReference.FieldKey;
+                }
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
                 _converter.OnPathUpdated += UpdateGradient;
                 _connectionLine = null;

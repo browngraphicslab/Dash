@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -72,13 +73,13 @@ namespace Dash
                 var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
                 if (docType != null)
                 {
-                    if (docType.Equals(CollectionBox.DocumentType) || docType.Equals(OperatorBox.DocumentType))
+                    if (docType.Equals(OperatorBox.DocumentType) || docType.Equals(CollectionBox.DocumentType))
                     {
                         //Get the coordinates of the view
                         Point screenCoords = docView.TransformToVisual(Window.Current.Content)
                             .TransformPoint(new Point(0, 0));
                         var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
-                        if (freeformView?.RefToLine != null)
+                        if (freeformView?.RefToLine != null && !IsConnected(docView))
                         {
                             foreach (var link in freeformView.RefToLine)
                             {
@@ -106,7 +107,10 @@ namespace Dash
                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
                                                       intersectionBottomX < screenCoords.X + docView.ActualWidth))
                                 {
-                                    ChangeConnections(freeformView, link);
+
+
+                                    ChangeConnections(freeformView,docView, link);
+
                                     break;
                                 }
                                 
@@ -118,15 +122,67 @@ namespace Dash
             }
         }
 
-        private void ChangeConnections(CollectionFreeformView ffView, KeyValuePair<FieldReference, Path> link)
+        private bool IsConnected(DocumentView docView)
         {
-            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
-            //var i = link.Value.Data;
-            //ffView.MakeLine(ffView.RefToLine[link.Key],)
-            //MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc, TypeInfo fieldTypeInfo)
+            var userLinks = docView.ViewModel.DocumentController.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+            if(userLinks == null || userLinks.Data.Count <= 0)
+            {
+                return false;
+            }
+            return true;
         }
 
-       
+
+
+
+        private void ChangeConnections(CollectionFreeformView ffView, DocumentView docView, KeyValuePair<FieldReference, Path> link)
+        {
+            // the old connection is [referencedDoc] -> [referencingDoc]
+            // the new connection is [referencedDoc] -> [droppedDoc] -> [referencingDoc]
+
+            // delete the current connection between referenced doc and referencing doc
+            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
+
+            var droppedDoc = docView.ViewModel.DocumentController;
+            var opFMController = droppedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            var droppedDocInputKey = opFMController.Inputs.Keys.FirstOrDefault();
+            var droppedDocOutputKey = opFMController.Outputs.Keys.FirstOrDefault();
+
+            var userLink = link.Value as UserCreatedLink;
+            var fieldRef = userLink.reference;
+            var referencingDoc = userLink.referencingDocument;
+            var referencingKey = userLink.referencingKey;
+
+            var referencedKey = fieldRef.FieldKey;
+            var docId = fieldRef.GetDocumentId();
+            //find the document containing the referenced field, if it is in this collection
+            var referencedDoc = ffView.ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
+
+
+            //Add connection between dropped and right node
+            MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);
+
+            //Add connection between dropped and right node
+            MakeConnection(ffView, referencedDoc, referencedKey, droppedDoc, droppedDocInputKey);
+        }
+
+        private static FieldModelController MakeConnection(CollectionFreeformView ffView, DocumentController DroppedDoc, KeyController DroppedDocOutputKey, DocumentController referencingDoc, KeyController referencingKey)
+        {
+            var fieldRef2 = new DocumentFieldReference(DroppedDoc.GetId(), DroppedDocOutputKey);
+            var thisRef = (DroppedDoc.GetDereferencedField(KeyStore.ThisKey, null));
+            if (DroppedDoc.DocumentType == OperatorDocumentModel.OperatorType &&
+                fieldRef2 is DocumentFieldReference && thisRef != null)
+                referencingDoc.SetField(DroppedDocOutputKey, thisRef, true);
+            else
+            {
+                referencingDoc.SetField(DroppedDocOutputKey,
+                    new ReferenceFieldModelController(fieldRef2), true);
+            }
+
+            ffView.AddLineFromData(fieldRef2, referencingDoc, referencingKey);
+            return thisRef;
+        }
+
 
 
         public void OperatorHolding(object sender, HoldingRoutedEventArgs e)

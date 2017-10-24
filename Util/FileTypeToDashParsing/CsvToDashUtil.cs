@@ -36,7 +36,7 @@ namespace Dash
             csv.Read();
 
             // set up a prototype document that models each of the rows
-            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), uniquePath ?? DashShared.Util.GenerateNewId()));
+            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), uniquePath ?? DashShared.UtilShared.GenerateNewId()));
             var protoFieldDict = new Dictionary<KeyController, FieldModelController>()
             { // dictionary of fields to set on the prototype document
                 [KeyStore.AbstractInterfaceKey] = new TextFieldModelController(protoDoc.DocumentType.Id),
@@ -47,7 +47,7 @@ namespace Dash
             // generate a default field model controller for each of the fields
             foreach (var header in headers)
             {
-                var key = new KeyController(DashShared.Util.GenerateNewId(), header);
+                var key = new KeyController(DashShared.UtilShared.GenerateNewId(), header);
                 var field = Util.StringToFieldModelController(csv[header]).GetDefaultController();
                 protoFieldDict.Add(key, field);
                 headerToFieldMap.Add(header, field);
@@ -68,7 +68,7 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GenerateNewId(), "CSV Collection"));
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), "CSV Collection"));
             SetDefaultActiveLayout(outputDoc); // set active layout on the output doc
 
             outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);

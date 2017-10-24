@@ -84,7 +84,7 @@ namespace Dash
         public override FieldModelController GetDefaultController()
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
-                new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
+                new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.UtilShared.GetDeterministicGuid("Default Document"))));
         }
 
         public override void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder=false)

@@ -226,7 +226,7 @@ namespace Dash
         {
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), 
-                new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
+                new DocumentType(DashShared.UtilShared.GetDeterministicGuid(BasePath), BasePath));
             Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController(Prototype.DocumentType.Type + "API"), true);
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -237,7 +237,7 @@ namespace Dash
         public KeyController GetKey(JToken jToken)
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
-            return new KeyController(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
+            return new KeyController(DashShared.UtilShared.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)
