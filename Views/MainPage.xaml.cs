@@ -154,19 +154,22 @@ namespace Dash
                 var x = pointerPosition.X - Window.Current.Bounds.X;
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
                 var pos = new Point(x, y);
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();  
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
+
+                // add tabitemviewmodels that directs user to documentviews within the current collection 
+                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
+                Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
+                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.OriginalItems);
+                foreach (DocumentView dv in docViews)
+                {
+                    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+                }
+                TabMenu.Instance.TabItems = tabItems;
+                Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
+
                 TabMenu.Configure(topCollection as CollectionFreeformView, pos);
                 TabMenu.ShowAt(xCanvas);
                 TabMenu.Instance.SetTextBoxFocus();
-
-
-                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>(); 
-                foreach (DocumentView dv in docViews)
-                {
-                    Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count); 
-                    TabMenu.Instance.AddItem(new GoToTabItemViewModel("??????????????", dv.Choose));
-                    Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
-                }
             }
 
             if (xCanvas.Children.Contains(TabMenu.Instance))

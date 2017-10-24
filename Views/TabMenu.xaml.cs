@@ -36,7 +36,8 @@ namespace Dash
             WhereToAdd = p;
         }
 
-        public List<ITabItemViewModel> TabItems { get; set; }
+        public List<ITabItemViewModel> OriginalItems { get; set; }
+        public List<ITabItemViewModel> TabItems { get; set; } = new List<ITabItemViewModel>(); 
 
         private TabMenu()
         {
@@ -54,15 +55,15 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(this);
         }
 
-        public void AddItem(ITabItemViewModel item)
-        {
-            TabItems.Add(item); 
-        }
+        //public void AddItem(ITabItemViewModel item)
+        //{
+        //    TabItems.Add(item); 
+        //}
 
-        public void RemoveItem(ITabItemViewModel item)
-        {
-            TabItems.Remove(item);
-        }
+        //public void RemoveItem(ITabItemViewModel item)
+        //{
+        //    TabItems.Remove(item);
+        //}
 
         private void GetSearchItems()
         {
@@ -77,7 +78,7 @@ namespace Dash
                 list.Add(new CreateOpTabItemViewModel(op.Key, op.Value.OperationDocumentConstructor));
             }
 
-            TabItems = list;
+            OriginalItems = list;
         }
 
         #region xSEARCH
