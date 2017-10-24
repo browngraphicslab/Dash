@@ -264,20 +264,21 @@ namespace Dash
 
         private void ClampScale(double newScale, ref float scale)
         {
-            if (newScale > MaxScale)
-            {
-                scale = (float)(MaxScale / ElementScale);
-                ElementScale = MaxScale;
-            }
-            else if (newScale < MinScale)
-            {
-                scale = (float)(MinScale / ElementScale);
-                ElementScale = MinScale;
-            }
-            else
-            {
-                ElementScale = newScale;
-            }
+            //if (newScale > MaxScale)
+            //{
+            //    scale = (float)(MaxScale / ElementScale);
+            //    ElementScale = MaxScale;
+            //}
+            //else if (newScale < MinScale)
+            //{
+            //    scale = (float)(MinScale / ElementScale);
+            //    ElementScale = MinScale;
+            //}
+            //else
+            //{
+            //    ElementScale = newScale;
+            //}
+            ElementScale = newScale;
         }
     }
 }

@@ -49,6 +49,7 @@ namespace DashShared
         Api,
         Compound,
         Subtract,
-        Multiply
+        Multiply,
+        Regex
     }
 }

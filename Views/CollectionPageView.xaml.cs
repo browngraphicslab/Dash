@@ -157,7 +157,11 @@ namespace Dash
         {
             ViewModel.SetSelected(this, isSelected);
             ViewModel.UpdateDocumentsOnSelection(isSelected);
+            if (isSelected)
+                xSplitter.Opacity = 1;
+            else xSplitter.Opacity = 0;
         }
+
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
@@ -187,7 +191,7 @@ namespace Dash
 
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
         {
-            var _element = ((CurPage.Content as CollectionView)?.CurrentView as CollectionFreeformView);
+            var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
             _element?.ManipulationControls.FitToParent();
         }
 

@@ -211,6 +211,9 @@ namespace Dash
                 case OperatorType.Multiply:
                     controller = new MultiplyOperatorFieldModelController(model);
                     break;
+                case OperatorType.Regex:
+                    controller = new RegexOperatorFieldModelController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

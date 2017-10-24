@@ -46,7 +46,7 @@
         <local:DocumentView x:Name="xDocView" Grid.Row="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <localMicrosoft:GridSplitter 
             x:Name="xSplitter"
-            Grid.Row="1" Height="11" ResizeBehavior="BasedOnAlignment" HorizontalAlignment="Stretch"
+            Grid.Row="1" Height="11" Opacity="0" ResizeBehavior="BasedOnAlignment" HorizontalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 

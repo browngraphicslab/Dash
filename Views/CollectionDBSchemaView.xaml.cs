@@ -256,6 +256,15 @@ namespace Dash
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs)
                 {
+                    //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
+                    //    d.GetField(KeyStore.DocumentTextKey) != null)
+                    //{
+                    //    var rd = OperatorDocumentFactory.CreateOperatorDocument(new RegexOperatorFieldModelController());
+                    //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController(".*PAYMENTS.*"), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController("\\."), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
+                    //    d.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
+                    // }
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
