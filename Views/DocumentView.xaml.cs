@@ -6,6 +6,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -105,6 +106,18 @@ namespace Dash
                 //if (Parent == null)
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
+            }
+
+            fitFreeFormChildrenToTheirLayouts();
+        }
+
+        void fitFreeFormChildrenToTheirLayouts()
+        {
+            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
+            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
+            if (this == parentOfFreeFormChild)
+            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
+                freeFormChild?.ManipulationControls?.FitToParent();
             }
         }
 
@@ -339,7 +352,8 @@ namespace Dash
         }
 
         /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.
+        /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
+        /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -349,9 +363,10 @@ namespace Dash
             Resize(p.X, p.Y);
             e.Handled = true;
 
-            // bcz: this will auto-scale contents to fit the container 
-            //var ff = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
-            //ff?.ManipulationControls?.FitToParent();
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                fitFreeFormChildrenToTheirLayouts();
+            }
         }
 
         /// <summary>

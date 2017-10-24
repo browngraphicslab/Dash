@@ -39,9 +39,9 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition MinHeight="50"/>
+            <RowDefinition MinHeight="50" Height="*"/>
             <RowDefinition Height="11"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
         <local:DocumentView x:Name="xDocView" Grid.Row="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <localMicrosoft:GridSplitter 

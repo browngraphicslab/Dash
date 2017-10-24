@@ -45,7 +45,7 @@ namespace Dash
                         // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
                         //var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
                         var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, //await ToBase64(renderTargetBitmap),
-                            300, 300 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
+                            900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
 
                         var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(localFile.Path) + ": Page " + i, 300, 300, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
                         children?.AddDocument(pageDoc);

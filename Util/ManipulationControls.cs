@@ -191,18 +191,31 @@ namespace Dash
 
         public void FitToParent()
         {
-            var par = _element.Parent as FrameworkElement;
             var ff = _element as CollectionFreeformView;
+            var par = ff?.Parent as FrameworkElement;
             if (par == null || ff == null)
                 return;
 
-            var rect = par.GetBoundingRect();
-            Rect r = Rect.Empty;
-            foreach (var i in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => ic as ContentPresenter))
+            var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight)); //  par.GetBoundingRect();
+
+            //if (ff.ViewModel.DocumentViewModels.Count == 1)
+            //{
+            //    ff.ViewModel.DocumentViewModels[0].GroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
+            //    var aspect = rect.Width / rect.Height;
+            //    var ffHeight = ff.ViewModel.DocumentViewModels[0].Height;
+            //    var ffwidth = ff.ViewModel.DocumentViewModels[0].Width;
+            //    var ffAspect = ffwidth / ffHeight;
+            //    ff.ViewModel.DocumentViewModels[0].Width  = aspect > ffAspect ? rect.Height * ffAspect : rect.Width;
+            //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
+            //    return;
+            //}
+            
+            var r = Rect.Empty;
+            foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
             {
-                if (i != null)
-                    r.Union((i.Content as DocumentViewModel).Content.GetBoundingRect(par));
+                r.Union(dvm?.Content?.GetBoundingRect(par) ?? r);
             }
+
             if (r != Rect.Empty)
             {
                 var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
