@@ -107,18 +107,6 @@ namespace Dash
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
             }
-
-            fitFreeFormChildrenToTheirLayouts();
-        }
-
-        void fitFreeFormChildrenToTheirLayouts()
-        {
-            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
-            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
-            if (this == parentOfFreeFormChild)
-            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
-                freeFormChild?.ManipulationControls?.FitToParent();
-            }
         }
 
 
@@ -369,6 +357,16 @@ namespace Dash
             }
         }
 
+        void fitFreeFormChildrenToTheirLayouts()
+        {
+            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
+            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
+            if (this == parentOfFreeFormChild)
+            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
+                freeFormChild?.ManipulationControls?.FitToParent();
+            }
+        }
+
         /// <summary>
         /// If the user was resizing proportionally, ends the proportional resizing and 
         /// changes the DraggerButton back to its normal appearance.
@@ -439,7 +437,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-
+            
             //initDocumentOnDataContext();
         }
 
@@ -478,7 +476,6 @@ namespace Dash
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
             }
-
         }
 
         /// <summary>

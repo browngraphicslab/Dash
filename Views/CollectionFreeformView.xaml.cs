@@ -134,6 +134,12 @@ namespace Dash
             }
 
             LoadLines();
+            fitFreeFormChildrenToTheirLayouts();
+        }
+        void fitFreeFormChildrenToTheirLayouts()
+        {
+            var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
+            ManipulationControls?.FitToParent();
         }
 
 

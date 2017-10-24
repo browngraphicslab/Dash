@@ -95,10 +95,13 @@
                 </ListView.ItemTemplate>
             </ListView>
             <RelativePanel x:Name="navBar" Grid.Row="1" Height="40" HorizontalAlignment="Center">
-                <Button x:Name="prevButton" RelativePanel.AlignLeftWithPanel="True"  Content="&lt;&lt;"  Click="PrevButton_Click"/>
-                <Button x:Name="xPageNum"  RelativePanel.RightOf="prevButton" Content=""   Click="FitPageButton_Click" CanDrag="True" />
-                <Button x:Name="xPopOutPage"  RelativePanel.RightOf="xPageNum" Content="PopOut"   Click="PopOutPage_Click" CanDrag="True" />
-                <Button RelativePanel.RightOf="xPopOutPage" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
+                <Button x:Name="prevButton" VerticalContentAlignment="Center" RelativePanel.AlignLeftWithPanel="True" VerticalAlignment="Stretch" Content="&lt;&lt;" 
+                        RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True" Click="PrevButton_Click"/>
+                <Grid x:Name="xPageNumContainer" Background="Black" VerticalAlignment="Stretch" RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"  RelativePanel.RightOf="prevButton" CanDrag="True" DragStarting="xPageNumContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xPageNum_ManipulationStarted">
+                    <TextBlock x:Name="xPageNum"  Text=""  VerticalAlignment="Stretch" />
+                </Grid>
+                <Button x:Name="xNextButton" VerticalContentAlignment="Center" RelativePanel.RightOf="xPageNumContainer"  VerticalAlignment="Stretch"  
+                        RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
             </RelativePanel>
         </Grid>
 

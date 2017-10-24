@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -72,10 +73,8 @@ namespace Dash
 
                 // replace old layout of page name/id with a new one because
                 // fieldbinding's can't be removed yet
-                navBar.Children.Remove(xPageNum);
-                xPageNum = new Button() { Name = "xPageNum" };
-                xPageNum.Click += FitPageButton_Click;
-                RelativePanel.SetRightOf(xPageNum, this.prevButton);
+                xPageNumContainer.Children.Remove(xPageNum);
+                xPageNum = new TextBlock();
 
                 var binding = new FieldBinding<DocumentFieldModelController>()
                 {
@@ -91,8 +90,8 @@ namespace Dash
                     value.Content.Loaded += Content_Loaded;
                 }
 
-                navBar.Children.Add(xPageNum);
-                xPageNum.AddFieldBinding(Button.ContentProperty, binding);
+                xPageNumContainer.Children.Add(xPageNum);
+                xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
             }
         }
 
@@ -198,14 +197,19 @@ namespace Dash
             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
         }
 
-        private void PopOutPage_Click(object sender, RoutedEventArgs e)
+        private void xPageNum_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var page = (CurPage.DocumentController).GetViewCopy(null);
-            var activeLayout = page.GetActiveLayout()?.Data ?? page;
-            activeLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
-            activeLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
-            MainPage.Instance.DisplayDocument(page);
+            e.Handled = true;
+            e.Complete();
+        }
+
+        private void xPageNumContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Link;
+            e.Data.Properties.Add("View", true);
+            e.Data.Properties.Add("Width", xDocView.ActualWidth);
+            e.Data.Properties.Add("Height", xDocView.ActualHeight);
+            CurPage.DocumentView_DragStarting(sender, e, ViewModel);
         }
     }
 }

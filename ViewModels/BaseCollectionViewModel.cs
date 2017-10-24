@@ -195,19 +195,27 @@ namespace Dash
 
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
-                var collectionViewModel = e.DataView.Properties.ContainsKey("CollectionViewModel") == true ?
-                          e.DataView.Properties["CollectionViewModel"] as CollectionViewModel : null;
+                var collectionViewModel = e.DataView.Properties.ContainsKey(nameof(BaseCollectionViewModel)) == true ?
+                          e.DataView.Properties[nameof(BaseCollectionViewModel)] as BaseCollectionViewModel : null;
 
                 var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
+
+                var width = e.DataView.Properties.ContainsKey("Width") == true ? (double)e.DataView.Properties["Width"] : double.NaN;
+                var height = e.DataView.Properties.ContainsKey("Height") == true ? (double)e.DataView.Properties["Height"] : double.NaN;
 
                 var payloadLayoutDelegates = items.Select((p) =>
                 {
                     if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
-                    return e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
+                    var newDoc = e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
+                    if (double.IsNaN(newDoc.GetWidthField().Data))
+                        newDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+                    if (double.IsNaN(newDoc.GetHeightField().Data))
+                        newDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+                    return newDoc;
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
