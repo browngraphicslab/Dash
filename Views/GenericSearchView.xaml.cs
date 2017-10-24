@@ -46,10 +46,10 @@ namespace Dash
             var fields = new ObservableCollection<object>() {};
             var all = new ObservableCollection<object>();
 
-            var categories = new List<SearchCategoryItem>();
+            //var categories = new List<SearchCategoryItem>();
 
             // TODO: create actions to specify what happens when an item in a specific category is selected
-            //categories.Add(new SearchCategoryItem(string.Empty,"DOCUMENT", docs, null));
+            //categories.Add(new SearchCategoryItem(string.Empty, "DOCUMENT", docs, null));
             //categories.Add(new SearchCategoryItem(string.Empty, "COLLECTION", collections, null));
             //categories.Add(new SearchCategoryItem(string.Empty, "FIELD", fields, null));
             //categories.Add(new SearchCategoryItem(string.Empty, "ALL", all, null));

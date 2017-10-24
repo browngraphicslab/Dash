@@ -18,7 +18,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="200" Padding="0" VerticalAlignment="Stretch"
+    <Grid x:Name="OuterGrid" CornerRadius="0" MinWidth="200" Padding="0" VerticalAlignment="Stretch"
           Background="{StaticResource WindowsBlue}" Opacity="1"  DoubleTapped="XMainGrid_OnDoubleTapped">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -32,7 +32,7 @@
         </Grid>
         
         <ListView x:Name="xListView" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}"
-                  ItemsSource="{x:Bind TabItems}" Tapped="xListView_Tapped">
+                  ItemsSource="{x:Bind TabItems}" Tapped="xListView_Tapped" MaxHeight="320" VerticalContentAlignment="Top">
             
             <ListView.ItemContainerStyle>
                 <!-- TODO: abstract this bs out-->
