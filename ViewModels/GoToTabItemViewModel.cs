@@ -10,15 +10,20 @@ namespace Dash
     {
         private string _title;
         public string Title { get => _title; set => _title = value; }
+        public List<DocumentViewModel> Documents { get; set; }
 
-        public GoToTabItemViewModel(string title)
+        public GoToTabItemViewModel(string title, List<DocumentViewModel> docs)
         {
             _title = title;
+            Documents = docs; 
         }
 
         public void ExecuteFunc()
         {
-            throw new NotImplementedException();
+            foreach (DocumentViewModel doc in Documents)
+            {
+                doc.DocumentController.
+            }
         }
     }
 }

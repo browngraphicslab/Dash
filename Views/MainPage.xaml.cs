@@ -154,11 +154,13 @@ namespace Dash
                 var x = pointerPosition.X - Window.Current.Bounds.X;
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
                 var pos = new Point(x, y);
-                var bottomCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().LastOrDefault();  
-                //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
-                TabMenu.Configure(bottomCollection as CollectionFreeformView, pos);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();  
+                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
                 TabMenu.ShowAt(xCanvas);
                 TabMenu.Instance.SetTextBoxFocus();
+
+
+                topCollection.ViewModel.SelectionGroup
             }
 
             if (xCanvas.Children.Contains(TabMenu.Instance))
