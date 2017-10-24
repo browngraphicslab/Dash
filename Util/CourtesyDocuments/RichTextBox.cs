@@ -61,14 +61,8 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
             }
             SetupTextBinding(rtv, docController, context);
+            SetupBindings(rtv, docController, context);
 
-            // bind the rich text height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(rtv, heightController);
-
-            // bind the rich text width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(rtv, widthController);
 
             //add to key to framework element dictionary
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;

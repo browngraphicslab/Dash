@@ -29,8 +29,14 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += CollectionPageView_DataContextChanged;
+            xThumbs.Loaded += (sender, e) =>
+            {
+                foreach (var t in ViewModel.ThumbDocumentViewModels)
+                    t.Height = xThumbs.ActualHeight;
+            };
             xThumbs.SizeChanged += (sender, e) =>
             {
+                FitPageButton_Click(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Height = xThumbs.ActualHeight;
             };
@@ -52,7 +58,7 @@ namespace Dash
                 PageDocumentViewModels.Insert(0,CurPage);
 
                 var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
-                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,double.NaN);
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,xThumbs.ActualHeight);
                 ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc));
             }
         }
@@ -190,16 +196,6 @@ namespace Dash
         {
             var ind = xThumbs.SelectedIndex;
             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
-        }
-
-        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-           
-        }
-
-        private void xThumbs_ItemClick(object sender, ItemClickEventArgs e)
-        {
-
         }
 
         private void PopOutPage_Click(object sender, RoutedEventArgs e)

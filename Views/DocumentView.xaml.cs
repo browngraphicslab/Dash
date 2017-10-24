@@ -30,7 +30,7 @@ namespace Dash
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
-        private ManipulationControls manipulator;
+        public ManipulationControls ManipulationControls;
 
         private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
 
@@ -52,8 +52,8 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, true, true);
-            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            ManipulationControls = new ManipulationControls(this, true, true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -299,8 +299,6 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-
-            
         }
 
         /// <summary>
@@ -350,6 +348,10 @@ namespace Dash
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
             e.Handled = true;
+
+            // bcz: this will auto-scale contents to fit the container 
+            //var ff = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
+            //ff?.ManipulationControls?.FitToParent();
         }
 
         /// <summary>

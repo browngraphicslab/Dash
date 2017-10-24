@@ -284,7 +284,8 @@ namespace Dash
         {
         }
 
-        private void xRichEitBox_Drop(object sender, DragEventArgs e)
+
+        private void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
             DocumentController theDoc = null;
             if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
@@ -333,7 +334,7 @@ namespace Dash
                 {
                     var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
                     var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
-                    if (theDoc != null && theDoc != DBTest.DBNull)
+                    if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
                         var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
                         pt.X -= 150;

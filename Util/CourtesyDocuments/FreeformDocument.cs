@@ -81,12 +81,10 @@ namespace Dash
             };
             grid.Loaded += delegate
             {
-                Debug.WriteLine($"Add freeform listener {++i}");
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
             };
             grid.Unloaded += delegate
             {
-                Debug.WriteLine($"Remove freeform listener {--i}");
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
             };
             if (isInterfaceBuilderLayout)
@@ -105,7 +103,6 @@ namespace Dash
                 
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
-                // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
             return grid;
@@ -132,7 +129,6 @@ namespace Dash
             AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder, keysToFrameworkElementsIn);
         }
 
-        private static int i = 0;
         private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             foreach (var layoutDocument in docs)
@@ -140,12 +136,8 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-
-                var positionField = layoutDocument.GetPositionField(context);
-                BindTranslation(layoutView, positionField);
-
+                BindPosition(layoutView, layoutDocument, context);
                 if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
-
                 grid.Children.Add(layoutView);
             }
         }

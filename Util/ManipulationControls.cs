@@ -191,8 +191,10 @@ namespace Dash
 
         public void FitToParent()
         {
-            var par = _element.Parent as ContentControl;
+            var par = _element.Parent as FrameworkElement;
             var ff = _element as CollectionFreeformView;
+            if (par == null || ff == null)
+                return;
 
             var rect = par.GetBoundingRect();
             Rect r = Rect.Empty;

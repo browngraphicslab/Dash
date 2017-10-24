@@ -38,6 +38,7 @@ namespace Dash
             this.MakeView();
         }
 
+        // TODO what to do with this file 
         private void MakeView()
         {
             // TODO: get ObservableCollections of all docs, collections, fields... etc

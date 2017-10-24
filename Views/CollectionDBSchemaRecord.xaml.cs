@@ -60,7 +60,7 @@ namespace Dash
             args.Data.Properties.Add("View", true);
             args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
             var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data?.DocumentType;
-            if (layoutDocType == null || layoutDocType == DefaultLayout.DocumentType)
+            if (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType))
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
                     dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);

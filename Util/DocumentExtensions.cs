@@ -225,11 +225,11 @@ namespace Dash
                 if (width.HasValue)
                     layoutDelegateDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController((double)width), true);
                 else
-                    layoutDelegateDoc.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.HorizontalAlignment.Stretch.ToString()), true);
+                    layoutDelegateDoc.SetField(KeyStore.HorizontalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.HorizontalAlignment.Stretch.ToString()), true);
                 if (height.HasValue)
                     layoutDelegateDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController((double)height), true);
                 else
-                    layoutDelegateDoc.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.VerticalAlignment.Stretch.ToString()), true);
+                    layoutDelegateDoc.SetField(KeyStore.VerticalAlignmentKey, new TextFieldModelController(Windows.UI.Xaml.VerticalAlignment.Stretch.ToString()), true);
                 if (pos.HasValue)
                     layoutDelegateDoc.SetField(KeyStore.PositionFieldKey, new PointFieldModelController((Point)pos), true);
             }

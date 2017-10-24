@@ -46,7 +46,8 @@ namespace Dash
 
         public override DocumentController GetDocumentController(Context context)
         {
-            return ContentController<DocumentModel>.GetController<DocumentController>(DocumentId);
+            var deepestDelegateID = context?.GetDeepestDelegateOf(DocumentId) ?? DocumentId;
+            return ContentController<DocumentModel>.GetController<DocumentController>(deepestDelegateID);
         }
 
         public override FieldReference GetFieldReference()

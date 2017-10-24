@@ -122,11 +122,6 @@ namespace Dash
         /// <param name="handler"></param>
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
-            //++totalCount;
-            //if (++addCount % 100 == 0)
-            //{
-            //    Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 _fieldUpdatedDictionary[key] += handler;
@@ -139,11 +134,6 @@ namespace Dash
 
         public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
-            //--totalCount;
-            //if (++removeCount % 100 == 0)
-            //{
-            //    Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -276,7 +266,7 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            if (obj == this)
+            if (ReferenceEquals(obj, this))
             {
                 return true;
             }
@@ -557,6 +547,27 @@ namespace Dash
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
 
+            if (key.Id == KeyStore.PrototypeKey.Id)
+            {
+                var oldPrototype = (oldField as DocumentFieldModelController)?.Data;
+                if (oldPrototype != null)
+                {
+                    DocumentFieldUpdated -= delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
+                                                args.FromDelegate = true;
+                                                oldPrototype.OnDocumentFieldUpdated(sender, args, false);
+                                            };
+                }
+
+                var prototype = (field as DocumentFieldModelController)?.Data;
+                if (prototype != null)
+                {
+                    DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
+                                                args.FromDelegate = true;
+                                                prototype.OnDocumentFieldUpdated(sender, args, false);
+                                            };
+                }
+            }
+
             // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
             {
@@ -629,20 +640,20 @@ namespace Dash
             // TODO check field type compatibility
             var context = new Context(this);
             var shouldExecute = false;
-            if (SetFieldHelper(key, field, forceMask))
+            var fieldChanged = false;
+            if (fieldChanged = SetFieldHelper(key, field, forceMask))
             {
-
                 shouldExecute = ShouldExecute(context, key);
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key == KeyStore.PrototypeKey) HasPrototype = true;
+                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true;
             }
             if (shouldExecute)
             {
                 Execute(context, true);
             }
-            return shouldExecute;
+            return fieldChanged;
         }
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
@@ -745,12 +756,7 @@ namespace Dash
             var delegateController = new DocumentController(delegateModel);
 
             //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-            delegateController.DocumentFieldUpdated +=
-                delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
-                {
-                    args.FromDelegate = true;
-                    OnDocumentFieldUpdated(sender, args, false);
-                };
+          
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
@@ -1047,10 +1053,7 @@ namespace Dash
         {
             context = new Context(context);
             context.AddDocumentContext(this);
-
-            var contextKey = GetField(KeyStore.DocumentContextKey)?.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
-            if (contextKey != null)
-                context.AddDocumentContext(contextKey);
+            context.AddDocumentContext(GetDataDocument(null));
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
@@ -1107,7 +1110,7 @@ namespace Dash
             }
             if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder); //
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(FilterOperatorBox.DocumentType))
             {

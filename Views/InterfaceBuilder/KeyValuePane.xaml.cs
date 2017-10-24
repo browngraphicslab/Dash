@@ -97,7 +97,7 @@ namespace Dash
             var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
 
             for (int i = 0; i < ListItemSource.Count; i++)
-                if (ListItemSource[i].Key == fieldKey)
+                if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
                         new BoundFieldModelController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id), TypeColumnWidth);
         }

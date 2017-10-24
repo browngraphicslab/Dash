@@ -16,9 +16,7 @@
             <!--<ColumnDefinition Width="30"/>-->
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Grid Width="30" Height="25" Background="Transparent" ManipulationMode="All" CanDrag="True"
-                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
-                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed"  />
+        <!--<Grid Width="30" Height="25" Background="Gray" ManipulationMode="All" CanDrag="True"  />-->
         <ListView Grid.Column="1" Style="{StaticResource xSchemaListView}"
             ItemsSource="{Binding RecordFields}"
             SelectionMode="None"
@@ -26,12 +24,15 @@
             ShowsScrollingPlaceholders="False">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel CanDrag="True" Orientation="Horizontal"  Margin="0"/>
+                    <ItemsStackPanel CanDrag="False" Orientation="Horizontal"  Margin="0"/>
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" />
+                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" CanDrag="True"
+                                                         ManipulationMode="All"
+                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

@@ -655,7 +655,7 @@
             <Setter Property="ItemsPanel">
                 <Setter.Value>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <ItemsStackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </Setter.Value>
             </Setter>
@@ -745,12 +745,5 @@
         </Style>
 
         <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="White"/>
-
-        <!--TODO what is this doing here-->
-        <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
-            <DataTemplate>
-                <StackPanel Orientation="Vertical"></StackPanel>
-            </DataTemplate>
-        </ItemsPanelTemplate>
     </Application.Resources>
 </Application>

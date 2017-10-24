@@ -101,7 +101,7 @@ namespace Dash
 
         public TransformGroupData GroupTransform
         {
-            get { return IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform; }
+            get => IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform;
             set
             {
                 if (IsInInterfaceBuilder)
@@ -173,7 +173,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder, KeysToFrameworkElements);
+                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder, KeysToFrameworkElements);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;

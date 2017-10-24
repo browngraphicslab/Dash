@@ -356,7 +356,6 @@
     <Compile Include="Views\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SearchCategoryItem.xaml.cs" />
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -808,10 +807,6 @@
     <Page Include="Views\MenuButtonList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\SearchCategoryItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SelectionElement.xaml">
       <SubType>Designer</SubType>

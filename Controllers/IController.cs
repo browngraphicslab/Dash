@@ -24,6 +24,30 @@ namespace Dash
         /// </summary>
         public abstract void Init();
 
+        /// <summary>
+        /// If you get an exception here, you are trying to compare 2 controllers with ==.
+        /// This causes problems with data persistence so you should always use .Equals to compare controllers
+        /// </summary>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public static bool operator ==(IController<T> c1, IController<T> c2)
+        {
+            if (ReferenceEquals(c1, null))
+            {
+                return ReferenceEquals(c2, null);
+            }
+            if (ReferenceEquals(c2, null))
+            {
+                return false;
+            }
+            throw new NotImplementedException();
+        }
+
+        public static bool operator !=(IController<T> c1, IController<T> c2)
+        {
+            return !(c1 == c2);
+        }
 
         /// <summary>
         /// the model that this controller controls

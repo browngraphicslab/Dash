@@ -147,7 +147,7 @@ namespace Dash
             {
                 var doc = docVM.DocumentController;
                 var linksListFMC =
-                    doc.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+                    doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<TextFieldModelController>;
                 if (linksListFMC != null)
                 {
                     foreach (var textFMC in linksListFMC.TypedData)
@@ -543,7 +543,7 @@ namespace Dash
             DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
-            if (inputController.DocumentType == DashConstants.DocumentTypeStore.OperatorType &&
+            if (inputController.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType) &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
@@ -840,21 +840,7 @@ namespace Dash
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             Debug.WriteLine("drop event from collection");
-            if (e.DataView != null && 
-                (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
-            {
-                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
-                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
-                
-                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetPosition(this)), dragData.ViewType);
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
-
-                ViewModel.AddDocument(cnote.Document, null);
-                DBTest.DBDoc.AddChild(cnote.Document);
-                CollectionDBSchemaHeader.DragModel = null;
-            } else
-                ViewModel.CollectionViewOnDrop(sender, e);
+            ViewModel.CollectionViewOnDrop(sender, e);
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -926,7 +912,7 @@ namespace Dash
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                {
+                { 
                     view.OnTapped(view, null); // hack to set selection on the lowest view
                     return;
                 }
@@ -934,7 +920,7 @@ namespace Dash
 
             // if no docview to select, select the current collectionview 
             var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView.OnTapped(parentView, null); 
+            parentView?.OnTapped(parentView, null); 
         }
 
         #endregion
