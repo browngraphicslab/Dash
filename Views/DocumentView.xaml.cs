@@ -75,14 +75,32 @@ namespace Dash
             DataContext = documentViewModel;
         }
 
+        public void Choose()
+        {
+            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            if (ParentCollection != null)
+            {
+                ParentCollection.MaxZ += 1;
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+            }
+            OnSelected();
+
+            // bring document to center? 
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            if (mainView != null)
+            {
+                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
+                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
+                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
+            }
+        }
+
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            //Loaded -= This_Loaded;
-            //Unloaded -= This_Unloaded;
         }
 
 

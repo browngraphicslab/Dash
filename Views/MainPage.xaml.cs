@@ -160,7 +160,13 @@ namespace Dash
                 TabMenu.Instance.SetTextBoxFocus();
 
 
-                topCollection.ViewModel.SelectionGroup
+                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>(); 
+                foreach (DocumentView dv in docViews)
+                {
+                    Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count); 
+                    TabMenu.Instance.AddItem(new GoToTabItemViewModel("??????????????", dv.Choose));
+                    Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
+                }
             }
 
             if (xCanvas.Children.Contains(TabMenu.Instance))

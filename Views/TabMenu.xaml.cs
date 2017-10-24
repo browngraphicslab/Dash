@@ -36,7 +36,7 @@ namespace Dash
             WhereToAdd = p;
         }
 
-        public List<ITabItemViewModel> TabItems { get; private set; }
+        public List<ITabItemViewModel> TabItems { get; set; }
 
         private TabMenu()
         {
