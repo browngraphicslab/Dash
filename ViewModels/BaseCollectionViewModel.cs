@@ -124,6 +124,36 @@ namespace Dash
                 RemoveDocuments(e.Items.Select((i)=>(i as DocumentViewModel).DocumentController).ToList());
         }
 
+
+        private static KeyController addSubDocs(CollectionDBSchemaHeader.HeaderDragData dragData, List<DocumentController> subDocs, DocumentController d, DocumentController docContext, FieldControllerBase fieldData)
+        {
+            var fkey = dragData.FieldKey;
+            if (fieldData == null)
+                foreach (var f in d.EnumFields().Where((ff) => !ff.Key.IsUnrenderedKey())) {
+                    fieldData = f.Value;
+                    fkey = f.Key;
+                    break;
+                }
+
+            if (fieldData is TextFieldModelController)
+            {
+                var newlayout = new TextingBox(new DocumentReferenceFieldController(d.GetDataDocument(null).GetId(), fkey), 0, 0, 200, 100);
+                newlayout.Document.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(docContext), true);
+                subDocs.Add(newlayout.Document);
+            }
+            else if(fieldData is NumberFieldModelController)
+            {
+                var newlayout = new TextingBox(new DocumentReferenceFieldController(d.GetDataDocument(null).GetId(), fkey), 0, 0, 80, 50);
+                newlayout.Document.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(docContext), true);
+                subDocs.Add(newlayout.Document);
+            } else if (fieldData is DocumentFieldModelController)
+            {
+                subDocs.Add((fieldData as DocumentFieldModelController).Data);
+            }
+            else
+                subDocs.Add(d);
+            return fkey;
+        }
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -140,9 +170,26 @@ namespace Dash
                 var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
                           e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
 
+                // bcz: testing stuff out here...
                 var cnote = new CollectionNote(where, dragData.ViewType);
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(dragData.FieldKey.Name), true);
+                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceFieldController).DereferenceToRoot(null);
+                var subDocs = new List<DocumentController>();
+                var showField = dragData.FieldKey;
+                foreach (var d in (getDocs as DocumentCollectionFieldModelController).Data)
+                {
+                    var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
+                    if (fieldData is DocumentFieldModelController)
+                        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
+                    else if (fieldData is DocumentCollectionFieldModelController)
+                        foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
+                            showField = addSubDocs(dragData, subDocs, dd, dd.GetDataDocument(null), null);
+                    else
+                        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
+                }
+                if (subDocs != null)
+                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(subDocs), true);
+                else  cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(showField.Name), true);
 
                 AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
