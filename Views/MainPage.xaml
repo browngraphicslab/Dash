@@ -14,7 +14,7 @@
         <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
-        <Border HorizontalAlignment="Stretch" Height="32" VerticalAlignment="Top" Margin="0,0,0,0" Background="#FF0C0C0C"/>
+        <Border HorizontalAlignment="Stretch" Height="32" VerticalAlignment="Top" Margin="0,0,0,0" Background="{StaticResource CollectionBackground}"/>
         <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>

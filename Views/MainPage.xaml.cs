@@ -61,7 +61,7 @@ namespace Dash
         {
 
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["CollectionBackground"]).Color;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
 

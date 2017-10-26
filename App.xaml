@@ -63,6 +63,7 @@
         <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="BorderHighlight" Color="#FF444444"/>
+        <SolidColorBrush x:Key="CollectionBackground" Color="#FF0C0C0C"/>
         <SolidColorBrush x:Key="GreenText" Color="#FFBAC6E4" ></SolidColorBrush>
 
 
