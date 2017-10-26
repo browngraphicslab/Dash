@@ -503,7 +503,8 @@ namespace Dash
 
         private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Debug.WriteLine("emtpy place tapepepepd"); 
+            var newField = new KeyFieldContainer(new KeyController(), new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false, TypeColumnWidth);
+            ListItemSource.Add(newField);
         }
     }
 }

@@ -69,6 +69,9 @@ namespace Dash
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
+
+            //handles drop from keyvaluepane 
+
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -166,7 +169,7 @@ namespace Dash
         //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
         //}
-
+#region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void AddField()
         {
@@ -181,6 +184,15 @@ namespace Dash
                 Width -= KeyValPaneWidth;
             }
         }
+        private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true; 
+        }
+        private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true; 
+        }
+        #endregion
 
         DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
