@@ -36,8 +36,15 @@ namespace Dash
             WhereToAdd = p;
         }
 
+        private List<ITabItemViewModel> _tabItems = new List<ITabItemViewModel>();  
         public List<ITabItemViewModel> OriginalItems { get; set; }
-        public List<ITabItemViewModel> TabItems { get; set; } = new List<ITabItemViewModel>(); 
+        public List<ITabItemViewModel> TabItems {
+            get { return _tabItems; }
+            set {
+                _tabItems = value;
+                xListView.ItemsSource = value; 
+            }
+        } 
 
         private TabMenu()
         {
