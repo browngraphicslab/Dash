@@ -91,8 +91,8 @@ namespace Dash
                     _prototypeLayout = CreatePrototypeLayout();
                 var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
-                docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
-                docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(300), true);
+                docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+                docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
                 docLayout.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(viewtype.ToString()), true);
 
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();

@@ -212,7 +212,7 @@ namespace Dash
 
             var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform.EndDrag(ioRef, false);
+            freeform?.EndDrag(ioRef, false);
         }
 
         #endregion

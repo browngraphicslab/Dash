@@ -62,16 +62,6 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(this);
         }
 
-        //public void AddItem(ITabItemViewModel item)
-        //{
-        //    TabItems.Add(item); 
-        //}
-
-        //public void RemoveItem(ITabItemViewModel item)
-        //{
-        //    TabItems.Remove(item);
-        //}
-
         private void GetSearchItems()
         {
             var list = new List<ITabItemViewModel>();

@@ -150,7 +150,7 @@ namespace Dash
             {
                 if (refText.StartsWith("http"))
                 {
-                    //theDoc = DBTest.CreateWebPage(refText);
+                     theDoc = DBTest.CreateWebPage(refText);
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
