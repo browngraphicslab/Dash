@@ -36,6 +36,8 @@ namespace Dash
 
             }
         }
+        public bool IsConnected { get; set; }
+
         private bool _hasPrototypes;
         public bool HasPrototype {
             get {

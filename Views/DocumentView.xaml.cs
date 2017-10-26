@@ -71,7 +71,7 @@ namespace Dash
             if (docView != null)
             {
                 var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
-                if (docType != null)
+                if (docType != null && docView.ViewModel?.DocumentController?.IsConnected == false)
                 {
                     if (docType.Equals(OperatorBox.DocumentType) || docType.Equals(CollectionBox.DocumentType))
                     {
@@ -96,9 +96,9 @@ namespace Dash
                                 var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
 
                                 // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
-                                var intersectionTopX = curvePoint1.X + (1 / slope) * (screenCoords.Y - curvePoint1.Y);
+                                var intersectionTopX = curvePoint1.X - (1 / slope) * (-screenCoords.Y + curvePoint1.Y);
                                 var intersectionBottomX =
-                                    curvePoint1.X + (1 / slope) * (screenCoords.Y + docView.ActualHeight - curvePoint1.Y);
+                                    curvePoint1.X - (1 / slope) * (-(screenCoords.Y + docView.ActualHeight) + curvePoint1.Y);
 
                                 // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                                 // the link is outside the document.
@@ -140,8 +140,6 @@ namespace Dash
             // the old connection is [referencedDoc] -> [referencingDoc]
             // the new connection is [referencedDoc] -> [droppedDoc] -> [referencingDoc]
 
-            // delete the current connection between referenced doc and referencing doc
-            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
 
             var droppedDoc = docView.ViewModel.DocumentController;
             var opFMController = droppedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
@@ -158,6 +156,8 @@ namespace Dash
             //find the document containing the referenced field, if it is in this collection
             var referencedDoc = ffView.ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
 
+            // delete the current connection between referenced doc and referencing doc
+            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
 
             //Add connection between dropped and right node
             MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);

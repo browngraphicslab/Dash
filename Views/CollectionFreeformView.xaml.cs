@@ -620,6 +620,10 @@ namespace Dash
                 _converter.OnPathUpdated += UpdateGradient;
                 _connectionLine = null;
             }
+
+            inputReference.FieldReference.GetDocumentController(null).IsConnected = true;
+            outputReference.FieldReference.GetDocumentController(null).IsConnected = true; //this right?
+
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
         }
 
