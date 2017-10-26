@@ -158,14 +158,12 @@ namespace Dash
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
                 var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
-                Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
                 var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.OriginalItems);
                 foreach (DocumentView dv in docViews)
                 {
                     tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
                 }
                 TabMenu.Instance.TabItems = tabItems;
-                Debug.WriteLine("how many???????????? " + TabMenu.Instance.TabItems.Count);
 
                 TabMenu.Configure(topCollection as CollectionFreeformView, pos);
                 TabMenu.ShowAt(xCanvas);
