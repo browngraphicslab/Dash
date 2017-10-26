@@ -1100,11 +1100,11 @@ namespace Dash
             {
                 return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.DocumentType))
+            if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
                 return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorBoxType))
+            if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
             {
                 return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
@@ -1132,13 +1132,17 @@ namespace Dash
             {
                 return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
-            if (DocumentType.Equals(FilterOperatorBox.DocumentType))
+            if (DocumentType.Equals(DashConstants.TypeStore.FilterOperatorDocumentType))
             {
                 return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.MapOperatorBoxType))
+            if (DocumentType.Equals(DashConstants.TypeStore.MapOperatorBoxType))
             {
                 return CollectionMapOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
+            {
+                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
             if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
             {

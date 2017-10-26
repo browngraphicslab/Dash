@@ -551,7 +551,7 @@ namespace Dash
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
             // TODO bob what does this mean
-            if (inputController.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType) &&
+            if (inputController.DocumentType.Equals(DashConstants.TypeStore.OperatorType) &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
             {
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);

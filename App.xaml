@@ -644,6 +644,7 @@
             <Setter Property="AllowDrop" Value="True"/>
             <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"/>
             <Setter Property="SelectionMode" Value="Extended"/>
+            <Setter Property="MinHeight" Value="40"/>
             <Setter Property="ItemContainerStyle">
                 <Setter.Value>
                     <Style TargetType="ListViewItem">
