@@ -7,6 +7,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,7 +32,7 @@ namespace Dash
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
-        private ManipulationControls manipulator;
+        public ManipulationControls ManipulationControls;
 
         private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
 
@@ -58,8 +59,8 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, true, true);
-            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            ManipulationControls = new ManipulationControls(this, true, true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -361,8 +362,6 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-
-            
         }
 
         /// <summary>
@@ -403,7 +402,8 @@ namespace Dash
         }
 
         /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.
+        /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
+        /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -412,6 +412,21 @@ namespace Dash
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
             e.Handled = true;
+
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                fitFreeFormChildrenToTheirLayouts();
+            }
+        }
+
+        void fitFreeFormChildrenToTheirLayouts()
+        {
+            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
+            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
+            if (this == parentOfFreeFormChild)
+            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
+                freeFormChild?.ManipulationControls?.FitToParent();
+            }
         }
 
         /// <summary>
@@ -484,7 +499,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-
+            
             //initDocumentOnDataContext();
         }
 
@@ -523,7 +538,6 @@ namespace Dash
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
             }
-
         }
 
         /// <summary>

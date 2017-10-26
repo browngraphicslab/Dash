@@ -218,7 +218,7 @@ namespace Dash
 
             var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform.EndDrag(ioRef, false);
+            freeform?.EndDrag(ioRef, false);
         }
 
         #endregion
@@ -361,8 +361,8 @@ namespace Dash
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
-                    new List<Action> { SetGridView, SetListView, SetDBView, SetSchemaView, SetFreeformView})),
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
 
 
@@ -425,7 +425,7 @@ namespace Dash
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsMainCollection == false)
+            else if (_collectionMenu != null && !isLowestSelected && ParentDocument?.IsMainCollection == false)
             {
                 CloseMenu();
                 ParentDocument.ViewModel?.CloseMenu();

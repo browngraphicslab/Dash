@@ -154,7 +154,7 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
-            if (doc.DocumentType == DashConstants.TypeStore.CollectionDocument)
+            if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
             {
                 var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
                 if (coll.Data.Contains(doc))
