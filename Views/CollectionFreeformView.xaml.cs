@@ -546,15 +546,20 @@ namespace Dash
                 return;
             }
 
-            DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
+            // get the document that has the input field
+            var inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
                 .GetDereferencedField(KeyStore.ThisKey, null);
+            // TODO bob what does this mean
             if (inputController.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType) &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+            {
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-            else
+            } else {
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
+            }
+                
             //Add the key to the inputController's list of user created links
             if (!isLoadedLink)
             {

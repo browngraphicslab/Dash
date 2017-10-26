@@ -108,6 +108,7 @@
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
+    <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorModelController.cs" />
