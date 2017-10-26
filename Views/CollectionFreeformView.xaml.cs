@@ -805,7 +805,7 @@ namespace Dash
             // If drawing a link node and you release onto the canvas, if the handle you're drawing from
             // is a document or a collection, this will create a new linked document/collection at the point
             // you released the mouse
-            
+
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 var pos = e.GetCurrentPoint(this).Position;
@@ -819,13 +819,14 @@ namespace Dash
             }
             else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
             {
-                var droppedField   = _currReference.FieldReference;
-                var droppedSrcDoc  = droppedField.GetDocumentController(null);
+                var droppedField = _currReference.FieldReference;
+                var droppedSrcDoc = droppedField.GetDocumentController(null);
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
                 cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
-               
+
+
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
@@ -834,6 +835,15 @@ namespace Dash
                     var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
                     cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
                 }
+
+                // bcz: hack to find the CollectionView for the newly created collection so that we can wire up the connection line as if it it had already been there
+                UpdateLayout();
+                for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
+                    if (itemsPanelCanvas.Children[i] is ContentPresenter) {
+                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
+                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.Collection, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
+                        break;
+                    }
             }
             CancelDrag(e.Pointer);
         }

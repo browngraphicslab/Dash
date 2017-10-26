@@ -154,6 +154,62 @@ namespace Dash
                 subDocs.Add(d);
             return fkey;
         }
+
+        List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
+        {
+            var dictionary = new Dictionary<object, Dictionary<KeyController, List<object>>>();
+
+            foreach (var d in docs)
+            {
+                var obj = d.GetDereferencedField(pivotKey, null).GetValue(null);
+                if (!dictionary.ContainsKey(obj))
+                    dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
+                var fieldDict = dictionary[obj];
+                foreach (var f in d.EnumFields())
+                if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey()) {
+                    if (!fieldDict.ContainsKey(f.Key))
+                    {
+                        fieldDict.Add(f.Key, new List<object>());
+                    }
+                    fieldDict[f.Key].Add(f.Value.GetValue(new Context(d)));
+                }
+            }
+
+            var pivoted = new List<DocumentController>();
+            foreach (var d in dictionary)
+            {
+                var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                FieldControllerBase primary = null;
+                if (d.Key is string)
+                    primary = new TextFieldModelController(d.Key as string);
+                else if (d.Key is double)
+                    primary = new NumberFieldModelController((double)d.Key);
+                else if (d.Key is DocumentController)
+                    primary = new DocumentFieldModelController((DocumentController)d.Key);
+                doc.SetField(pivotKey, primary, true);
+                foreach (var f in d.Value)
+                {
+                    var items = new List<FieldControllerBase>();
+                    foreach (var i in f.Value)
+                    {
+                        if (i is string)
+                            items.Add(new TextFieldModelController(i as string));
+                        else if (i is double)
+                            items.Add(new NumberFieldModelController((double) i));
+                        else if (i is DocumentController)
+                            items.Add(new DocumentFieldModelController((DocumentController)i));
+                    }
+                    if (items.FirstOrDefault() is TextFieldModelController)
+                        doc.SetField(f.Key, new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController)), true);
+                    else if (items.FirstOrDefault() is NumberFieldModelController)
+                        doc.SetField(f.Key, new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController)), true);
+                    else if (items.FirstOrDefault() is DocumentFieldModelController)
+                        doc.SetField(f.Key, new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data)), true);
+                }
+                pivoted.Add(doc);
+            }
+            return pivoted;
+        }
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -175,17 +231,18 @@ namespace Dash
                 var getDocs = (dragData.HeaderColumnReference as DocumentReferenceFieldController).DereferenceToRoot(null);
                 var subDocs = new List<DocumentController>();
                 var showField = dragData.FieldKey;
-                foreach (var d in (getDocs as DocumentCollectionFieldModelController).Data)
-                {
-                    var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
-                    if (fieldData is DocumentFieldModelController)
-                        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
-                    else if (fieldData is DocumentCollectionFieldModelController)
-                        foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
-                            showField = addSubDocs(dragData, subDocs, dd, dd.GetDataDocument(null), null);
-                    else
-                        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
-                }
+                //foreach (var d in (getDocs as DocumentCollectionFieldModelController).Data)
+                //{
+                //    var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
+                //    if (fieldData is DocumentFieldModelController)
+                //        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
+                //    else if (fieldData is DocumentCollectionFieldModelController)
+                //        foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
+                //            showField = addSubDocs(dragData, subDocs, dd, dd.GetDataDocument(null), null);
+                //    else
+                //        showField = addSubDocs(dragData, subDocs, d, d.GetDataDocument(null), fieldData);
+                //}
+                subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
                 if (subDocs != null)
                     cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(subDocs), true);
                 else  cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
