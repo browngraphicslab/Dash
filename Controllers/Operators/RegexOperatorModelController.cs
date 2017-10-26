@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Text.RegularExpressions;
 using System;
+using System.Linq;
 
 namespace Dash
 {
@@ -50,7 +51,8 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             initProto();
-            var text = (inputs[TextKey] as TextFieldModelController).Data;
+            var text = (inputs[TextKey] is ListFieldModelController<TextFieldModelController>) ? (inputs[TextKey] as ListFieldModelController<TextFieldModelController>).Data.Aggregate("", (init, fm) => init + " " + (fm as TextFieldModelController).Data ) :
+                (inputs[TextKey] as TextFieldModelController).Data;
             var expr = (inputs[ExpressionKey] as TextFieldModelController).Data;
             var split = (inputs[SplitExpressionKey] as TextFieldModelController).Data;
             var rsplit = new Regex(split);
