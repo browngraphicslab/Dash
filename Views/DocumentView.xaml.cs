@@ -145,7 +145,7 @@ namespace Dash
             xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
         }
 
-#endregion
+        #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
@@ -167,6 +167,21 @@ namespace Dash
 
         //}
 
+        private static int KeyValPaneWidth = 200;
+        private void AddField()
+        {
+            if (xKeyValPane.Width == 0)
+            {
+                xKeyValPane.Width = KeyValPaneWidth;
+                Width += KeyValPaneWidth;
+            }
+            else
+            {
+                xKeyValPane.Width = 0;
+                Width -= KeyValPaneWidth;
+            }
+        }
+
         DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
         private void SetUpMenu()
@@ -179,11 +194,12 @@ namespace Dash
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
+            var addButton = new MenuButton(Symbol.Add, "Add", bgcolor, AddField);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
@@ -196,6 +212,7 @@ namespace Dash
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
+                , addButton
             };
             var moveButtonView = moveButton.View;
             moveButtonView.CanDrag = true;
@@ -455,7 +472,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-            
+            xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
             //initDocumentOnDataContext();
         }
 
@@ -553,7 +570,7 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
         private void FadeOut_Completed(object sender, object e)
@@ -596,8 +613,8 @@ namespace Dash
         #endregion
 
         #region Activation
-        
-        public Rect ClipRect { get { return xClipRect.Rect;  } }
+
+        public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -614,7 +631,7 @@ namespace Dash
                 OnSelected();
 
                 // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
             }
         }
 

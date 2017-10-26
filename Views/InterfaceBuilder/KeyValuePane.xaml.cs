@@ -352,6 +352,8 @@ namespace Dash
         /// </summary>
         private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            e.Handled = true;
+
             // if there's already an editing textbox, get rid of it
             if (_tb != null)
             {
@@ -497,6 +499,11 @@ namespace Dash
                     FocusOn(xNewKeyField);
                 }
             }
+        }
+
+        private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("emtpy place tapepepepd"); 
         }
     }
 }
