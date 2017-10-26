@@ -8,11 +8,11 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="350">
-    <Grid Width="200" Background="{StaticResource DocumentBackgroundOpaque}">
+    <Grid x:Name="xContainerGrid"  Background="{StaticResource DocumentBackgroundOpaque}">
         <Grid.Resources>
             <local:MenuTypeToIcon x:Key="IconConverter"/>
         </Grid.Resources>
-        <StackPanel Orientation="Vertical" Padding="10,0,0,0">
+        <StackPanel x:Name="xStackPanel" Orientation="Vertical" >
             <!-- header -->
             <Grid x:Name="xHeader" Tapped="xHeader_Tapped" Style="{StaticResource xMenuItemHeaderContainer}" >
                 <TextBlock x:Name="xLeftIcon" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{x:Bind HeaderIcon, Mode=OneWay}" />
@@ -20,15 +20,15 @@
                 <TextBlock x:Name="xHeaderLabel" Text="{x:Bind HeaderLabel, Mode=OneWay}" Style="{StaticResource xMenuItemHeader}"></TextBlock>
             </Grid>
             <!-- leafs / content -->
-        <Grid x:Name="xItemContainer">
+        <Grid x:Name="xItemContainer" >
             <StackPanel Orientation="Vertical">
                 <!-- leafs / end nodes -->
-                <ListView x:Name="xItemsList" Width="200" Margin="0" SelectionMode="None">
+                <ListView x:Name="xItemsList" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Margin="0" SelectionMode="None">
                 <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:AddMenuItem">
-                    <Grid MinWidth="{Binding ElementName=xItemsList, Path=Width}" Padding="10,10,0,10" Background="Transparent" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
+                    <Grid Padding="10,10,0,10" Background="Transparent" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
                         <TextBlock Style="{StaticResource xMenuItem}" Text="{Binding DocType}"></TextBlock>
-                        <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Margin="0,0,20,0" 
+                        <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Margin="0,0,10,0" 
                                     Text="{Binding Type, Converter={StaticResource IconConverter}}" />
                     </Grid>
                 </DataTemplate>
@@ -39,6 +39,7 @@
                 <Style TargetType="ListViewItem">
                     <Setter Property="FontSize" Value="11"></Setter>
                     <Setter Property="Height" Value="0"></Setter>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="Padding" Value="0"></Setter>
                     <Setter Property="Margin" Value="0"></Setter>
                     <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>

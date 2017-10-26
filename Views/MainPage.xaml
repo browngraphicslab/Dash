@@ -9,11 +9,12 @@
     xmlns:local1="using:Dash.Views.Document_Menu"
     mc:Ignorable="d">
 
+    <!-- negative margin here hides the collection's output dot-->
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
-
         <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
+        <Border Background="{StaticResource DocumentBackgroundOpaque}" HorizontalAlignment="Stretch" Height="30" VerticalAlignment="Top" Margin="0,0,0,0"></Border>
         <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>
@@ -21,8 +22,13 @@
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
         </StackPanel>
-        <Grid HorizontalAlignment="Left"  Margin="-10,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}" Background="{StaticResource DocumentBackgroundOpaque}">
-            <local1:AddMenu x:Name="xAddMenu" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>
+        <Grid HorizontalAlignment="Left"  Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <local1:AddMenu Margin="0,30,0,0" x:Name="xAddMenu" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>
+            <Border Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}"></Border>
         </Grid>
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
         <Grid Margin="0,0,-5,0" HorizontalAlignment="Right">

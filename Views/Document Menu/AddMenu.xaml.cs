@@ -63,12 +63,18 @@ namespace Dash.Views.Document_Menu
         /// <param name="col"></param>
         /// <param name="tree"></param>
         public void AddNodeFromCollection(CollectionView col, TreeMenuNode tree, TreeMenuNode parent) {
+            if (xHierarchyMenu.Children.Count == 0)
+            {
+                var icon = tree.HeaderIcon;
+                tree = new TreeMenuNode(MenuDisplayType.Header);
+                tree.HeaderIcon = icon;
+                tree.HeaderLabel = "Main Collection";
+            }
             ViewToMenuItem.Add(col, tree); // put into dictionary for later access
-            if (parent == null) // root case
-                xAddMenuContainer.Children.Add(tree); // add to relevant parent
+           if (parent == null) // root case
+                xHierarchyMenu.Children.Add(tree); // add to relevant parent
             else
                 parent.Add(tree);
-
         }
 
         /// <summary>
@@ -96,12 +102,12 @@ namespace Dash.Views.Document_Menu
             OperatorTree.Add(new AddMenuItem("compound operator", AddMenuTypes.Operator));
 
             // set ops subheaders
-            TreeMenuNode setOpsTree = new TreeMenuNode(true);
+            TreeMenuNode setOpsTree = new TreeMenuNode(MenuDisplayType.Subheader);
             setOpsTree.HeaderLabel = "Set";
             SetOperatorMenuActions(setOpsTree,new List<string> { "Union", "Intersection", "Map", "Filter" });
            
             // set ops subheaders
-            TreeMenuNode mathOpsTree = new TreeMenuNode(true);
+            TreeMenuNode mathOpsTree = new TreeMenuNode(MenuDisplayType.Subheader);
             mathOpsTree.HeaderLabel = "Math";
             SetOperatorMenuActions(mathOpsTree, new List<string> { "Add","Multiply","Divide","Subtract" });
 
@@ -124,6 +130,24 @@ namespace Dash.Views.Document_Menu
                 all[s] = OperationCreationHelper.Operators[s].OperationDocumentConstructor;
                 setOpsTree.Add(new AddMenuItem(s, AddMenuTypes.Operator, all[s]));
             }
+        }
+
+
+        // TODO: use a tab control here to make it extensible
+        private void xAddTab_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xHierarchyMenu.Visibility = Visibility.Collapsed;
+            xAddMenu.Visibility = Visibility.Visible;
+            xAddTab.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
+            xHierarchyTab.Background = Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush;
+        }
+
+        private void xHierarchyTab_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xAddMenu.Visibility = Visibility.Collapsed;
+            xHierarchyMenu.Visibility = Visibility.Visible;
+            xHierarchyTab.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
+            xAddTab.Background = Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush;
         }
     }
 }

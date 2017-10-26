@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -47,6 +49,7 @@ namespace Dash.Views.Document_Menu
             this.DocType = label;
             Type = icon;
         }
+        
 
         public AddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action)
         {
@@ -74,6 +77,12 @@ namespace Dash.Views.Document_Menu
         {
         }
 
+    }
+
+    public enum MenuDisplayType {
+        Header,
+        Subheader,
+        Hierarchy
     }
     
     /// <summary>
@@ -128,8 +137,11 @@ namespace Dash.Views.Document_Menu
             set { SetValue(HeaderIconProperty, value); }
         }
 
+        public MenuDisplayType DisplayType;
+
         // containing parent
         public TreeMenuNode TreeParent {get ; set; }
+        public double ListWidth { get { return xItemContainer.Width; } set { xItemContainer.Width = value; } }
         
         #region Bindings
         // the text labelling the header
@@ -152,24 +164,44 @@ namespace Dash.Views.Document_Menu
             HeaderIcon = App.Current.Resources["OperatorIcon"] as String;
         }
 
-        public TreeMenuNode(bool isSubHeader)
+        public TreeMenuNode(MenuDisplayType DisplayType)
         {
             this.InitializeComponent();
 
             // default values for testing
             HeaderLabel = "Document";
-            HeaderIcon = App.Current.Resources["OperatorIcon"] as String; 
+            HeaderIcon = App.Current.Resources["OperatorIcon"] as String;
 
-            this.isSubHeader = isSubHeader;
-            if (isSubHeader) {
+            this.DisplayType = DisplayType;
+
+            // stylize depending on type
+            if (DisplayType == MenuDisplayType.Subheader) {
                 xHeader.Background = App.Current.Resources["AccentGreen"] as SolidColorBrush;
                 xLeftIcon.Visibility = Visibility.Collapsed;
                 xHeaderLabel.Style = App.Current.Resources["xMenuItem"] as Style;
+            } else if (DisplayType == MenuDisplayType.Hierarchy)
+            {
+                xHeader.Background = new SolidColorBrush(Colors.Transparent);
+                xItemContainer.Padding = new Thickness(10,0,0,0);
+                xHeader.BorderThickness = new Thickness(0, 0, 0, 1);
+                xHeaderLabel.FontWeight = FontWeights.Bold;
+                xHeader.BorderBrush = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
             }
             
         }
 
         // == METHODS ==
+
+        /// <summary>
+        /// Returns the number of items currently in this tree's node list.
+        /// </summary>
+        public int itemCount()
+        {
+            return xItemsList.Items.Count;
+        }
+        
+
+
         /// <summary>
         /// Adds a menu item to the bottom of the item list. Adds the tapped event handler to
         /// the corresponding list view item.
@@ -191,6 +223,7 @@ namespace Dash.Views.Document_Menu
         {
             item.TreeParent = this;
             xChildrenList.Children.Add(item);
+
         }
         
         // == EVENT HANDLERS ==

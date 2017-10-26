@@ -165,9 +165,11 @@ namespace Dash
             xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
-            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+            if (ParentCollection != null)
+            {
+                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                 new AddMenuItem(title, AddMenuTypes.Operator, Choose)); // adds op view to menu
-
+            }
         }
 
         /// <summary>
@@ -187,13 +189,14 @@ namespace Dash
             if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
             {
 
-                TreeMenuNode tree = new TreeMenuNode(true);
+                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
                 tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
                 tree.HeaderLabel = "Collection";
 
                 // if nested, add to parent collection, otherwise add to main collection
-                if (ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                 {
+
                     AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
                 } else
                 {

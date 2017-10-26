@@ -164,6 +164,7 @@ namespace Dash
             }
         }
 
+
         public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
         {
             var docId = reference.GetDocumentId();
@@ -183,6 +184,7 @@ namespace Dash
             {
                 var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 var type = op.Outputs[reference.FieldKey];
+                return; // gods this is a hack anna DELETE THIS BEFORE YOU PUSH
                 throw new NotImplementedException();
                 fmController = null; //TypeInfoHelper.CreateFieldModelController(type);
             }
