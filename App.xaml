@@ -681,7 +681,7 @@
             <Setter Property="CanDragItems" Value="True"></Setter>
             <Setter Property="CanReorderItems" Value="True"></Setter>
             <Setter Property="AllowDrop" Value="True"></Setter>
-            <Setter Property="ShowsScrollingPlaceholders" Value="True"></Setter>
+            <Setter Property="ShowsScrollingPlaceholders" Value="False"></Setter>
         </Style>
 
         <!--Collection Grid View-->
@@ -735,6 +735,7 @@
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
         <local:BoundFieldModelControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"></local:BoundFieldModelControllerToFrameworkElementConverter>
         <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"></local:ReferenceFieldModelControllerToFrameworkElementConverter>
+        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"></local:ObjectToStringConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
         <!--local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></-->
