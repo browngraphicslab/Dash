@@ -12,8 +12,8 @@
     <Grid GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
@@ -44,7 +44,7 @@
                     </Button>
                 </Grid>
                 <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{ThemeResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
     </Grid >
@@ -59,9 +59,9 @@
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 
                          SelectionChanged="xRichEditBox_SelectionChanged"  
-                         BorderBrush="{StaticResource DocumentBackground}" 
+                         BorderBrush="{ThemeResource DocumentBackground}" 
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}" 
+                         SelectionHighlightColor="{ThemeResource DarkWindowsBlue}" 
                />
         </Grid>
     </Grid>

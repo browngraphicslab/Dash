@@ -7,7 +7,7 @@
     mc:Ignorable="d">
 
     <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
-    <Grid Background="{StaticResource DocumentBackground}">
+    <Grid Background="{ThemeResource DocumentBackground}">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"
                    Text="{x:Bind Text, Mode=OneWay}"

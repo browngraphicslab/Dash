@@ -9,7 +9,7 @@
     d:DesignWidth="400">
 
 
-    <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent" Background="{StaticResource DocumentBackground}">
+    <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent" Background="{ThemeResource DocumentBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>

@@ -45,7 +45,7 @@
         <StackPanel Grid.Row="1" Orientation="Vertical">
 
             <!-- search -->
-            <Grid Background="{StaticResource WindowsBlue}" Padding="10" Margin="0,0,0,1">
+            <Grid Background="{ThemeResource WindowsBlue}" Padding="10" Margin="0,0,0,1">
                 <Border BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
                     <TextBox Text="search all..." Background="Transparent" BorderThickness="0" Padding="10,9,0,0"  FontSize="11" BorderBrush="#4CFFFFFF" ></TextBox>
                 </Border>

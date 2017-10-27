@@ -589,6 +589,10 @@ namespace Dash
             DisplayDocument(del1);
         }
 
-       
+
+        private void LightTheme(object sender, TappedRoutedEventArgs e)
+        {
+            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+        }
     }
 }

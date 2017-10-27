@@ -9,14 +9,14 @@
     d:DesignHeight="500"
     d:DesignWidth="800">
 
-    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" Padding="0,0" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
+    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" Padding="0,0" BorderThickness="0" BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AccentGreen}">
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource AccentGreen}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

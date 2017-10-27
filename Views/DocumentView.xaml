@@ -40,7 +40,7 @@
         <!--drop shadow ui elements-->
         <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                   Fill="{StaticResource DocumentBackground}" >
+                   Fill="{ThemeResource DocumentBackground}" >
             <Rectangle.Resources>
                 <!-- Animate background color -->
                 <Storyboard x:Name="colorStoryboard">
@@ -53,7 +53,7 @@
                 </Storyboard>
             </Rectangle.Resources>
         </Rectangle>
-        <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}"></Border>
+        <Border x:Name="xGradientOverlay" Background="{ThemeResource DocumentGradient}"></Border>
 
 
         <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
