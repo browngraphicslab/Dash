@@ -119,6 +119,7 @@ namespace Dash
             }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
+
         #region Bindings
 
         protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)

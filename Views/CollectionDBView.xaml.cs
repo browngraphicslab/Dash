@@ -302,8 +302,11 @@ namespace Dash
             var sumOfFields = 0.0;
             if (dbDocs != null && (pattern == null || pattern.Count() != 0))
             {
-                foreach (var dmc in dbDocs.Select((d) => d))
+                int count = 0;
+                foreach (var dmc in dbDocs)
                 {
+                    count++;
+                    Debug.WriteLine("Count = " + count + " rawText = " + rawText.Length);
                     var visited = new List<DocumentController>();
                     visited.Add(dmc);
                     if (pattern == null)
@@ -343,7 +346,12 @@ namespace Dash
             }
             else if (field != null)
             {
-                rawText += " " + field.GetValue(new Context(dataDoc)).ToString();
+                if (field is ListFieldModelController<TextFieldModelController>)
+                {
+                    foreach (var tfmc in (field as ListFieldModelController<TextFieldModelController>).Data)
+                        rawText += " " + tfmc.ToString();
+                } else
+                    rawText += " " + field.GetValue(new Context(dataDoc)).ToString();
                 var numberField = field as NumberFieldModelController;
                 if (numberField != null)
                 {
@@ -370,24 +378,24 @@ namespace Dash
             if ((pattern != null && pattern.Count == 0) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return null;
             // loop through each field to find on that matches the field name pattern 
-            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && ( pattern == null || pf.Key.Name == pattern[0] || pattern[0] == "" || pf.Value is DocumentFieldModelController)))
+            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && ( pattern == null || pf.Key.Name == pattern[0] || pattern[0] == "")))
             {
-                if (pfield.Value is DocumentFieldModelController)
-                {
-                    var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
-                    if (!visited.Contains(nestedDoc))
-                    {
-                        visited.Add(nestedDoc);
-                        var field = searchInDocumentForNamedField(pattern, nestedDoc, visited);
-                        if (field != null)
-                        {
-                            return field;
-                        }
-                    }
-                }
-                else if (pattern != null && pattern.Count == 1)
+                if (pattern != null && pattern.Count == 1)
                 {
                     return new DocumentReferenceFieldController(dmc.GetId(), pfield.Key);
+                }
+            }
+            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Value is DocumentFieldModelController))
+            {
+                var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
+                if (!visited.Contains(nestedDoc))
+                {
+                    visited.Add(nestedDoc);
+                    var field = searchInDocumentForNamedField(pattern, nestedDoc, visited);
+                    if (field != null)
+                    {
+                        return field;
+                    }
                 }
             }
             return null;

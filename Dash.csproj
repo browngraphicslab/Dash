@@ -108,6 +108,7 @@
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
+    <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorModelController.cs" />
@@ -137,6 +138,7 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
@@ -222,6 +224,9 @@
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
+      <DependentUpon>MeltOperatorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
     </Compile>
@@ -292,17 +297,17 @@
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="ViewModels\ICollectionViewModel.cs" />
     <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
-    <Compile Include="Views\ApiOpView.xaml.cs">
+    <Compile Include="Views\Operators\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\BezierConverter.cs" />
-    <Compile Include="Views\ApiView.xaml.cs">
+    <Compile Include="Views\Operators\ApiView.xaml.cs">
       <DependentUpon>ApiView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CollectionMapView.xaml.cs">
+    <Compile Include="Views\Operators\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
+    <Compile Include="Views\Operators\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\DragOutDocIcon.xaml.cs">
@@ -701,6 +706,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Operators\MeltOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\RadialColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -757,19 +766,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ApiOpView.xaml">
+    <Page Include="Views\Operators\ApiOpView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ApiView.xaml">
+    <Page Include="Views\Operators\ApiView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\CollectionMapView.xaml">
+    <Page Include="Views\Operators\CollectionMapView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\CompoundOperatorEditor.xaml">
+    <Page Include="Views\Operators\CompoundOperatorEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

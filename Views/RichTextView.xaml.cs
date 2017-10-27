@@ -265,18 +265,18 @@ namespace Dash
 
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xFormatCol.Height = new GridLength(30);
+            xFormatRow.Height = new GridLength(30);
         }
 
         private void Grid_GotFocus(object sender, RoutedEventArgs e)
         {
 
-            xFormatCol.Height = new GridLength(30);
+            xFormatRow.Height = new GridLength(30);
         }
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
-            xFormatCol.Height = new GridLength(0);
+            xFormatRow.Height = new GridLength(0);
         }
 
 

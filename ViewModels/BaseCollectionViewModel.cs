@@ -151,24 +151,24 @@ namespace Dash
                 if (doc == null)
                     continue;
                 foreach (var f in d.Value)
-                {
-                    var items = new List<FieldControllerBase>();
-                    foreach (var i in f.Value)
-                    {
-                        if (i is string)
-                            items.Add(new TextFieldModelController(i as string));
-                        else if (i is double)
-                            items.Add(new NumberFieldModelController((double) i));
-                        else if (i is DocumentController)
-                            items.Add(new DocumentFieldModelController((DocumentController)i));
+                    if (doc.GetField(f.Key) == null) {
+                        var items = new List<FieldControllerBase>();
+                        foreach (var i in f.Value)
+                        {
+                            if (i is string)
+                                items.Add(new TextFieldModelController(i as string));
+                            else if (i is double)
+                                items.Add(new NumberFieldModelController((double) i));
+                            else if (i is DocumentController)
+                                items.Add(new DocumentFieldModelController((DocumentController)i));
+                        }
+                        if (items.FirstOrDefault() is TextFieldModelController)
+                            doc.SetField(f.Key, new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController)), true);
+                        else if (items.FirstOrDefault() is NumberFieldModelController)
+                            doc.SetField(f.Key, new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController)), true);
+                        else if (items.FirstOrDefault() is DocumentFieldModelController)
+                            doc.SetField(f.Key, new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data)), true);
                     }
-                    if (items.FirstOrDefault() is TextFieldModelController)
-                        doc.SetField(f.Key, new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController)), true);
-                    else if (items.FirstOrDefault() is NumberFieldModelController)
-                        doc.SetField(f.Key, new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController)), true);
-                    else if (items.FirstOrDefault() is DocumentFieldModelController)
-                        doc.SetField(f.Key, new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data)), true);
-                }
                 pivoted.Add(doc);
             }
             return pivoted;
@@ -182,7 +182,7 @@ namespace Dash
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceFieldModelController)?.GetDocumentController(null);
-                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType))
+                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
                         [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(pivotKey.Id) })
@@ -223,25 +223,18 @@ namespace Dash
                 if (fieldData is DocumentCollectionFieldModelController)
                     foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
                     {
-                        var fkey = dragData.FieldKey;
-                        foreach (var f in dd.EnumFields().Where((ff) => !ff.Key.IsUnrenderedKey()))
-                        {
-                            fieldData = f.Value;
-                            fkey = f.Key;
-                            break;
-                        }
-
+                        var dataDoc = dd.GetDataDocument(null);
+                        
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
                         expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
-                        expandedDoc.SetField(fkey, dd.GetDereferencedField(fkey,null), true);
+                        expandedDoc.SetField(showField, new DocumentFieldModelController(dataDoc), true);
                         subDocs.Add(expandedDoc);
-                        showField = fkey;
                     }
                 else if (fieldData is ListFieldModelController<TextFieldModelController>)
                     foreach (var dd in (fieldData as ListFieldModelController<TextFieldModelController>).Data)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-                        expandedDoc.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
+                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
                         expandedDoc.SetField(showField, new TextFieldModelController((dd as TextFieldModelController).Data), true);
                         subDocs.Add(expandedDoc);
                     }
@@ -249,7 +242,7 @@ namespace Dash
                     foreach (var dd in (fieldData as ListFieldModelController<NumberFieldModelController>).Data)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-                        expandedDoc.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
+                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
                         expandedDoc.SetField(showField, new NumberFieldModelController((dd as NumberFieldModelController).Data), true);
                         subDocs.Add(expandedDoc);
                     }
@@ -281,7 +274,7 @@ namespace Dash
                 var subDocs = new List<DocumentController>();
                 var showField = dragData.FieldKey;
                 var firstDocValue = (getDocs as DocumentCollectionFieldModelController).Data.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<TextFieldModelController> || firstDocValue.GetValue(null) is List<NumberFieldModelController>)
+                if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<FieldControllerBase>)
                      showField = expandCollection(dragData, getDocs, subDocs, showField);
                 else subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
                 if (subDocs != null)

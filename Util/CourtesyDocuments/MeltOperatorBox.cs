@@ -9,12 +9,12 @@ using DashShared;
 
 namespace Dash
 {
-    class FilterOperatorBox : CourtesyDocument
+    class MeltOperatorBox : CourtesyDocument
     {
-        public FilterOperatorBox(ReferenceFieldModelController refToOp)
+        public MeltOperatorBox(ReferenceFieldModelController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
-            Document = new DocumentController(fields, DashConstants.TypeStore.FilterOperatorDocumentType);
+            Document = new DocumentController(fields, DashConstants.TypeStore.MeltOperatorBoxDocumentType);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -27,16 +27,19 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context,
+            bool isInterfaceBuilderLayout = false)
         {
             return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
+        public static FrameworkElement MakeView(DocumentController docController, Context context,
+            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
-            return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout,
-                () => new FilterView());
+            return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn,
+                isInterfaceBuilderLayout,
+                () => new MeltOperatorView());
         }
     }
 
