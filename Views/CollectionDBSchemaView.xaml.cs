@@ -116,6 +116,8 @@ namespace Dash
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
+            xEditTextBox.Height = Math.Max(250, 50 + numReturns * 15);
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
