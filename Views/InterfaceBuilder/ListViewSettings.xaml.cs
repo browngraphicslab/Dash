@@ -31,7 +31,7 @@ namespace Dash
 
         public ListViewSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == ListViewLayout.DocumentType);
+            Debug.Assert(docController.DocumentType.Equals(ListViewLayout.DocumentType));
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));

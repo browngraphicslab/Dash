@@ -66,13 +66,10 @@ namespace Dash
                 var newContext = context;
                 if (doc.ShouldExecute(context, FieldKey))
                 {
+                    newContext = doc.Execute(context, false);
+                    if (newContext.TryDereferenceToRoot(this, out controller))
                     {
-
-                        newContext = doc.Execute(context, false);
-                        if (newContext.TryDereferenceToRoot(this, out controller))
-                        {
-                            return controller;
-                        }
+                        return controller;
                     }
                 }
 

@@ -134,10 +134,14 @@ namespace Dash
             foreach (var layoutDocument in docs)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
-                layoutView.HorizontalAlignment = HorizontalAlignment.Left;
-                layoutView.VerticalAlignment = VerticalAlignment.Top;
+                // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
+                // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
+                // TODO it helps the freeformdocument position elements correctly
+                layoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+                layoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 BindPosition(layoutView, layoutDocument, context);
-                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+                if (isInterfaceBuilder)
+                    SetupBindings(layoutView, layoutDocument, context);
                 grid.Children.Add(layoutView);
             }
         }

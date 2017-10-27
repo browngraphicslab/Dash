@@ -34,7 +34,7 @@ namespace Dash
             Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
-
+        
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _downPt = e.GetCurrentPoint(null);
@@ -42,11 +42,6 @@ namespace Dash
         }
 
         private void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void CollectionDBSchemaRecordField_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Complete();
             StartDragAsync(_downPt);
@@ -59,8 +54,9 @@ namespace Dash
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
             args.Data.Properties.Add("View", true);
             args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
+            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
             var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data?.DocumentType;
-            if (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType))
+            if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
                     dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);

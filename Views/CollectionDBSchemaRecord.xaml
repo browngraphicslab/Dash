@@ -11,17 +11,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Height="25">
         <Grid.ColumnDefinitions>
-            <!--<ColumnDefinition Width="30"/>-->
+            <ColumnDefinition Width="30"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <!--<Grid Width="30" Height="25" Background="Gray" ManipulationMode="All" CanDrag="True"  />-->
-        <ListView Grid.Column="1" Style="{StaticResource xSchemaListView}"
-            ItemsSource="{Binding RecordFields}"
-            SelectionMode="None"
-                  CanDrag="False"
-            ShowsScrollingPlaceholders="False">
+        <Grid Width="30" Height="25" Background="Gray" ManipulationMode="All" PointerPressed="CollectionDBSchemaRecordField_PointerPressed" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" CanDrag="True"  />
+        <ListView Grid.Column="1" 
+                    Style="{StaticResource xSchemaListView}"
+                    ItemsSource="{Binding RecordFields}"
+                    SelectionMode="None"
+                    CanDrag="False">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel CanDrag="False" Orientation="Horizontal"  Margin="0"/>
@@ -29,10 +29,11 @@
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" CanDrag="True"
+                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" 
+                                                         CanDrag="True"
                                                          ManipulationMode="All"
-                                                     ManipulationDelta="CollectionDBSchemaRecordField_ManipulationDelta" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
-                                                     PointerPressed="CollectionDBSchemaRecordField_PointerPressed"/>
+                                                         ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
+                                                         PointerPressed="CollectionDBSchemaRecordField_PointerPressed"/>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

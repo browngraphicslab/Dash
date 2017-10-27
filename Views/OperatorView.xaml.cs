@@ -159,15 +159,24 @@ namespace Dash
         /// <param name="e"></param>
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
+            // get the id of the document this operator is on
             var docRef = DataContext as DocumentFieldReference;
             var docId = docRef.DocumentId;
+
+            // get the keycontroller for where the end of this link was dropped
             var el = sender as FrameworkElement;
-            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
-            bool isCompound = false;
+            var linkedKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+
+            // get the type of the key which was linked <see OperatorType>
+            var type = isOutput ? _operator.Outputs[linkedKey] : _operator.Inputs[linkedKey].Type;
+
+            var isCompound = false;
             if (xOpContentPresenter.Content is CompoundOperatorEditor)
-                if (isCompound = view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+                if (isCompound = view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor)
+                    isOutput = !isOutput;
+
+            // create a new ioref representing the entire action
+            var ioRef = new IOReference(new DocumentFieldReference(docId, linkedKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
 
             view.EndDrag(ioRef, isCompound);
         }

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dash.Converters;
 
-
-namespace Dash.Converters
+namespace Dash
 {
     public class ObjectToStringConverter : SafeDataToXamlConverter<object, string>
     {
@@ -15,6 +15,10 @@ namespace Dash.Converters
         public ObjectToStringConverter(Context context)
         {
             _context = context;
+        }
+        public ObjectToStringConverter()
+        {
+            _context = null;
         }
 
         public override string ConvertDataToXaml(object refField, object parameter = null)

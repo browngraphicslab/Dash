@@ -43,25 +43,29 @@ namespace Dash
                         }
                         else
                         {
+
                             _collectionFieldModelController = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context);
                             if (_collectionFieldModelController == null) return;
                             var documents = _collectionFieldModelController.GetDocuments();
-                            bool newDoc = DocumentViewModels.Count != documents.Count;
-                            if (!newDoc)
-                                foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
-                                    if (!documents.Contains(d))
-                                    {
-                                        newDoc = true;
-                                        break;
-                                    }
-                            if (newDoc)
-                            {
-                                if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                                    DocumentViewModels.Clear();
-                                if (cargs == null)
-                                    cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                                UpdateViewModels(cargs, copiedContext);
-                            }
+                            DocumentViewModels.Clear();
+                            AddViewModels(documents, args.Context);
+                            //TODO tfs: I don't think we actually want to do this...
+                            //bool newDoc = DocumentViewModels.Count != documents.Count;
+                            //if (!newDoc)
+                            //    foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
+                            //        if (!documents.Contains(d))
+                            //        {
+                            //            newDoc = true;
+                            //            break;
+                            //        }
+                            //if (newDoc)
+                            //{
+                            //    if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                            //        DocumentViewModels.Clear();
+                            //    if (cargs == null)
+                            //        cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                            //    UpdateViewModels(cargs, copiedContext);
+                            //}
                         }
                     });
             }

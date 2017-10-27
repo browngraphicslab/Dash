@@ -45,7 +45,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
             fields[KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
 
-            var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.DocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
 
             return prototypeDocument;
         }

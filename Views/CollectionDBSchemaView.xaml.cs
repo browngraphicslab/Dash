@@ -31,6 +31,7 @@ namespace Dash
             xHeaderView.ItemsSource = SchemaHeaders;
             Loaded   += CollectionDBSchemaView_Loaded1;
             Unloaded += CollectionDBSchemaView_Unloaded1;
+            xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
         }
 
         private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -113,18 +114,31 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
+            xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
-
+        
         private void xEditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
+                if (xEditTextBox.Text == "\r")
+                {
+                    var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                    var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+                    xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+                    dc.Selected = false;
+                    var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    updateEditBox(recordViewModel.RecordFields[column]); 
+                }
                 e.Handled = true;
-            }
+            }   
             if (e.Key == Windows.System.VirtualKey.Tab)
             {
                 e.Handled = true;
@@ -134,17 +148,19 @@ namespace Dash
         private void xEditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
             {
+                direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
                 var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                 SetFieldValue(dc);
                 var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                var recordViewModel = xRecordsView.Items[Math.Max(0,Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                 updateEditBox(recordViewModel.RecordFields[column]);
             }
 
-            if (e.Key == Windows.System.VirtualKey.Tab)
+            if (e.Key == Windows.System.VirtualKey.Tab || e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.Left)
             {
+                direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
                 var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                 SetFieldValue(dc);
                 var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
@@ -240,8 +256,7 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument
-                .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
             var headerList = ParentDocument
                 .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -254,7 +269,7 @@ namespace Dash
                                                      FieldKey = ContentController<KeyModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs)
+                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? db))
                 {
                     //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
