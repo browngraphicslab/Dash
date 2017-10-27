@@ -36,7 +36,7 @@ namespace Dash
         public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 50, FontWeight weight = null, Color? backgroundColor = null)
+        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 40, FontWeight weight = null, Color? backgroundColor = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             (fields[KeyStore.HorizontalAlignmentKey] as TextFieldModelController).Data = HorizontalAlignment.Left.ToString();

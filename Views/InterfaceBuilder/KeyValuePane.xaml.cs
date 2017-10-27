@@ -471,7 +471,7 @@ namespace Dash
         {
             // not sure what this was fixing, but it breaks the doc test example
             //for (int i = 0; i < 3; i++)
-            //  (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
+            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
 
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)

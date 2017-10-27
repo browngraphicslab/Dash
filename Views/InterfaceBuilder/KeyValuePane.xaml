@@ -29,7 +29,7 @@
             <TextBlock Grid.Column="3"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Type</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
-                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
+                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting" 
                   IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick" Tapped="xKeyValueListView_Tapped"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0,9.333,0,31">
             <ListView.ItemContainerStyle>
@@ -58,12 +58,12 @@
                             <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/> 
                         </Grid.ColumnDefinitions>
                         <CheckBox Tag="{Binding}" IsChecked="{x:Bind Path=IsPrimary}" Width="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"></CheckBox>
-                        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left"  />
                         </ScrollViewer>
 
-                        <Border Grid.Column="2" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
-                        <ScrollViewer Grid.Column="3" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <Border Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                         </ScrollViewer>
                     </Grid>
