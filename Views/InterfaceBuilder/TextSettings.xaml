@@ -126,25 +126,25 @@
                 <Grid Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                     <local:SettingsPaneBlock>
                         <local:SettingsPaneBlock.MainContent>
-                            <ComboBox x:Name="xBackgroundColorComboBox" Background="White" BorderBrush="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
-                                                <Rectangle.Fill>
-                                                    <SolidColorBrush Color="{Binding Color}" />
-                                                </Rectangle.Fill>
-                                            </Rectangle>
-                                            <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xBackgroundColorComboBox" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="15" Width="15" Margin="2" VerticalAlignment="Center" Stroke="Transparent">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </local:SettingsPaneBlock.MainContent>
                         <local:SettingsPaneBlock.Title>TEXT COLOR</local:SettingsPaneBlock.Title>
                     </local:SettingsPaneBlock>
                 </Grid>
