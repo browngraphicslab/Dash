@@ -542,5 +542,30 @@ namespace Dash
         {
             return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
         }
+
+        /// <summary>
+        /// Return the union of all the keys, along with their types from a collection
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(DocumentCollectionFieldModelController collection)
+        {
+            // create the new list of headers
+            var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
+
+            // iterate over all the documents in the input collection and get their key's
+            // and associated types
+            foreach (var documentController in collection.Data)
+            foreach (var field in documentController.EnumFields())
+            {
+                if (field.Key.Name.StartsWith("_"))
+                    continue;
+
+                if (!typedHeaders.ContainsKey(field.Key))
+                    typedHeaders[field.Key] = new HashSet<TypeInfo>();
+                typedHeaders[field.Key].Add(field.Value.TypeInfo);
+            }
+            return typedHeaders;
+        }
     }
 }

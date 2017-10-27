@@ -50,6 +50,7 @@ namespace DashShared
         Compound,
         Subtract,
         Multiply,
-        Regex
+        Regex,
+        Melt
     }
 }

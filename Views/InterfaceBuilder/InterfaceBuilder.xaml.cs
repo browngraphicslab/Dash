@@ -160,7 +160,7 @@ namespace Dash
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 

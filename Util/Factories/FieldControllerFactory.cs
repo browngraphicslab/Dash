@@ -214,6 +214,9 @@ namespace Dash
                 case OperatorType.Regex:
                     controller = new RegexOperatorFieldModelController(model);
                     break;
+                case OperatorType.Melt:
+                    controller = new MeltOperatorFieldModelController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

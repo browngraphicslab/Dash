@@ -27,7 +27,7 @@ namespace Dash
             };
 
             // create a new document to hold the operator
-            var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.OperatorType);
+            var doc = new DocumentController(fields, DashConstants.TypeStore.OperatorType);
 
             // set the layout on the operator using the passed in func or a default OperatorBox with no custom content
             SetOperatorLayout(layoutFunc ?? (rfmc => new OperatorBox(rfmc)), doc);
