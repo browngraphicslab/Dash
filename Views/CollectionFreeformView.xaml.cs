@@ -201,9 +201,68 @@ namespace Dash
             IOReference outputtingReference = new IOReference(reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
             IOReference inputtingReference = new IOReference(new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
 
-            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
+            //StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
+            //_currReference = outputtingReference;
+            //EndDrag(inputtingReference, false, true);
+
+            _connectionLine = new Path
+            {
+                IsHitTestVisible = false,
+                StrokeThickness = 5,
+                IsHoldingEnabled = false,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                CompositeMode = ElementCompositeMode.SourceOver
+            };
+
+            Canvas.SetZIndex(_connectionLine, -1);
+            _converter = new BezierConverter(outputtingReference.FrameworkElement, null, itemsPanelCanvas);
+            _converter.Pos2 = new Point(0,0);
+
+            _lineBinding = new MultiBinding<PathFigureCollection>(_converter, null);
+            _lineBinding.AddBinding(outputtingReference.ContainerView, RenderTransformProperty);
+            _lineBinding.AddBinding(outputtingReference.ContainerView, WidthProperty);
+            _lineBinding.AddBinding(outputtingReference.ContainerView, HeightProperty);
+            Binding lineBinding = new Binding
+            {
+                Source = _lineBinding,
+                Path = new PropertyPath("Property")
+            };
+            PathGeometry pathGeo = new PathGeometry();
+            BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
+            _connectionLine.Data = pathGeo;
+
+            
+
+            itemsPanelCanvas.Children.Add(_connectionLine);
             _currReference = outputtingReference;
-            EndDrag(inputtingReference, false, true);
+
+            //binding line position 
+            _converter.Element2 = inputtingReference.FrameworkElement;
+            _lineBinding.AddBinding(inputtingReference.ContainerView, RenderTransformProperty);
+            _lineBinding.AddBinding(inputtingReference.ContainerView, WidthProperty);
+            _lineBinding.AddBinding(inputtingReference.ContainerView, HeightProperty);
+
+            CheckLinePresence(inputtingReference.FieldReference);
+            RefToLine.Add(inputtingReference.FieldReference, _connectionLine);
+            if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
+            _converter.OnPathUpdated += UpdateGradient;
+            _connectionLine = null;
+
+            _currReference = null;
+
+            _converter.setGradientAngle();
+            _connectionLine.Stroke = _converter.GradientBrush;
+
+            DocumentController inputController = outputtingReference.FieldReference.GetDocumentController(null);
+            var thisRef = (inputtingReference.ContainerView.DataContext as DocumentViewModel).DocumentController
+                .GetDereferencedField(KeyStore.ThisKey, null);
+            if (inputController.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType) &&
+                outputtingReference.FieldReference is DocumentFieldReference && thisRef != null)
+                inputController.SetField(outputtingReference.FieldReference.FieldKey, thisRef, true);
+            else
+                inputController.SetField(outputtingReference.FieldReference.FieldKey,
+                    new DocumentReferenceFieldController(inputtingReference.FieldReference.GetDocumentId(), inputtingReference.FieldReference.FieldKey), true);
         }
 
         private DocumentView GetDocView(DocumentController doc)
@@ -450,27 +509,27 @@ namespace Dash
                                                                 //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
-            // set up for manipulation on lines 
-            _connectionLine.Tapped += (s, e) =>
-            {
-                e.Handled = true;
-                var line = s as Path;
-                var green = _converter.GradientBrush;
-                //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
-                line.IsHoldingEnabled = !line.IsHoldingEnabled;
-            };
+            //// set up for manipulation on lines 
+            //_connectionLine.Tapped += (s, e) =>
+            //{
+            //    e.Handled = true;
+            //    var line = s as Path;
+            //    var green = _converter.GradientBrush;
+            //    //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+            //    line.IsHoldingEnabled = !line.IsHoldingEnabled;
+            //};
 
-            _connectionLine.Holding += (s, e) =>
-            {
-                if (_connectionLine != null) return;
-                ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
-            };
+            //_connectionLine.Holding += (s, e) =>
+            //{
+            //    if (_connectionLine != null) return;
+            //    ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
+            //};
 
-            _connectionLine.PointerPressed += (s, e) =>
-            {
-                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
-                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
-            };
+            //_connectionLine.PointerPressed += (s, e) =>
+            //{
+            //    if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
+            //    ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
+            //};
 
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
@@ -556,18 +615,14 @@ namespace Dash
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             //Add the key to the inputController's list of user created links
-            if (!isLoadedLink)
-            {
-                if (inputController.GetField(KeyStore.UserLinksKey) == null)
-                {
-                    inputController.SetField(KeyStore.UserLinksKey,
-                        new ListFieldModelController<TextFieldModelController>(), true);
-                }
-                var linksList =
-                    inputController.GetField(KeyStore.UserLinksKey) as
-                        ListFieldModelController<TextFieldModelController>;
-                linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-            }
+            if (inputController.GetField(KeyStore.UserLinksKey) == null)
+                inputController.SetField(KeyStore.UserLinksKey,
+                    new ListFieldModelController<TextFieldModelController>(), true);
+            var linksList =
+                inputController.GetField(KeyStore.UserLinksKey) as
+                    ListFieldModelController<TextFieldModelController>;
+            linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
+            
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -584,6 +639,8 @@ namespace Dash
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
+
+            _currReference = null;
 
         }
 
