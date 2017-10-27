@@ -14,13 +14,7 @@ namespace Dash
         public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath = null)
         {
             var text = await FileIO.ReadTextAsync(item);
-            var fields = new Dictionary<KeyController, FieldControllerBase>()
-            {
-                [KeyStore.TitleKey] = new TextFieldModelController(item.Name),
-                [FileTextKey] = new TextFieldModelController(text)
-            };
-            var doc = new DocumentController(fields, TextFileDocumentType);
-            doc.SetActiveLayout(new DefaultLayout(0, 0, 200, 200).Document, true, true);
+            var doc = new NoteDocuments.PostitNote(text, item.Name).Document;
             return doc;
         }
     }

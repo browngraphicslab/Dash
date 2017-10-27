@@ -183,14 +183,14 @@ namespace Dash
 
         public class ImageNote : NoteDocument
         {
-            public static KeyController IamgeFieldKey = new KeyController("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
+            public static KeyController ImageFieldKey = new KeyController("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
 
             public override DocumentController CreatePrototype()
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     {KeyStore.TitleKey, new TextFieldModelController("Prototype Title")},
-                    {IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))}
+                    {ImageFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))}
                 };
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -200,7 +200,7 @@ namespace Dash
                 var prototype = GetDocumentPrototype();
 
                 var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
-                var imageLayout = new ImageBox(new DocumentReferenceFieldController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
+                var imageLayout = new ImageBox(new DocumentReferenceFieldController(prototype.GetId(), ImageFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -213,7 +213,7 @@ namespace Dash
 
                 Document = GetDocumentPrototype().MakeDelegate();
                 Document.SetField(KeyStore.TitleKey, new TextFieldModelController("Title?"), true);
-                Document.SetField(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
+                Document.SetField(ImageFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
@@ -226,7 +226,7 @@ namespace Dash
         public class PostitNote : NoteDocument
         {
             public static KeyController NotesFieldKey = new KeyController("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
-            public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Post it Note");
+            public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Text Note");
 
             public override DocumentController CreatePrototype()
             {
@@ -240,24 +240,28 @@ namespace Dash
             {
                 var prototypeTextLayout =
                     new TextingBox(new DocumentReferenceFieldController(GetDocumentPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
-                prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-                prototypeTextLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
+                prototypeTextLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                prototypeTextLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
 
                 return prototypeTextLayout.Document;
             }
 
-            public PostitNote(DocumentType type) : base(type)
+            // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
+            public PostitNote(string text = null, string title = null, DocumentType type = null) : base(type ?? DocumentType)
             {
                 _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
                 _prototypeLayout = CreatePrototypeLayout();
 
                 Document = GetDocumentPrototype().MakeDelegate();
-                Document.SetField(NotesFieldKey, new TextFieldModelController("Write something amazing!"), true);
+                Document.SetField(NotesFieldKey, new TextFieldModelController(text ?? "Write something amazing!"), true);
+                // TODO ideally the title is displayed above the note but i can hand that off to someone - LSM
+                Document.SetField(KeyStore.TitleKey, new TextFieldModelController(title ?? "Untitled Note"), true);
                 Document.SetField(KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 docLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                docLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
                 
                 Document.AddLayoutToLayoutList(docLayout);
                 Document.SetActiveLayout(docLayout,true, true);
