@@ -794,6 +794,7 @@ namespace Dash
         /// <param name="key">The key that the given field would be inserted at</param>
         /// <param name="field">The field that would be inserted into the document</param>
         /// <returns>True if the field would cause a cycle, false otherwise</returns>
+        /// TODO Make cycle detection work with two operator inputs going to the same field
         private bool CheckCycle(KeyController key, FieldControllerBase field)
         {
             if (!(field is ReferenceFieldModelController))

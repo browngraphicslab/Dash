@@ -589,7 +589,7 @@ namespace Dash
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
-
+            _currReference = null;
         }
 
         /// <summary>
