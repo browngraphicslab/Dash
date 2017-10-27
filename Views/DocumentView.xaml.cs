@@ -172,17 +172,19 @@ namespace Dash
         //}
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
-        private void AddField()
+        private void OpenCloseKeyValuePane()
         {
             if (xKeyValPane.Width == 0)
             {
                 xKeyValPane.Width = KeyValPaneWidth;
                 ViewModel.Width += KeyValPaneWidth;
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth, 0), new Point(0, 0), new Point(1, 1)));
             }
             else
             {
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth, 0), new Point(0, 0), new Point(1, 1)));
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
@@ -248,7 +250,7 @@ namespace Dash
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
-            var addButton = new MenuButton(Symbol.Add, "Add", bgcolor, AddField);
+            var addButton = new MenuButton(Symbol.Add, "Add", bgcolor, OpenCloseKeyValuePane);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
