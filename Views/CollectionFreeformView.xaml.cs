@@ -164,7 +164,6 @@ namespace Dash
                         {
                             AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), doc, keyValuePair.Key);
                         }
-                        
                     }
                 }
             }
@@ -247,12 +246,11 @@ namespace Dash
             RefToLine.Add(inputtingReference.FieldReference, _connectionLine);
             if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
             _converter.OnPathUpdated += UpdateGradient;
-            _connectionLine = null;
-
-            _currReference = null;
-
             _converter.setGradientAngle();
             _connectionLine.Stroke = _converter.GradientBrush;
+
+            _connectionLine = null;
+            _currReference = null;
 
             DocumentController inputController = outputtingReference.FieldReference.GetDocumentController(null);
             var thisRef = (inputtingReference.ContainerView.DataContext as DocumentViewModel).DocumentController
@@ -881,8 +879,7 @@ namespace Dash
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Freeform.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
-
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
