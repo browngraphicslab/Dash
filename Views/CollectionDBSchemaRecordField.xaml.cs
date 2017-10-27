@@ -71,7 +71,7 @@ namespace Dash
             Document        = document;
             HeaderViewModel = headerViewModel;
             Row             = row;
-            DataReference   = new DocumentReferenceFieldController(Document.GetId(), headerViewModel.FieldKey);
+            DataReference   = new DocumentReferenceFieldController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
             BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
             Width           = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
