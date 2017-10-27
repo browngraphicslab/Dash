@@ -53,7 +53,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(this, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -190,7 +190,7 @@ namespace Dash
         }
         private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            e.Handled = true;
+           // e.Handled = true;
         }
 
         private void OnKeyValueDrop(DragEventArgs e)
@@ -218,8 +218,7 @@ namespace Dash
                 return;
 
             // apply position if we are dropping on a freeform
-            //var posInLayoutContainer = e.GetPosition(layoutContainer);
-            var posInLayoutContainer = e.GetPosition(OuterGrid);
+            var posInLayoutContainer = e.GetPosition(xFieldContainer);
             var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
             var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
             var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
