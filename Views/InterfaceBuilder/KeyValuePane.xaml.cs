@@ -352,6 +352,8 @@ namespace Dash
         /// </summary>
         private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            e.Handled = true;
+
             // if there's already an editing textbox, get rid of it
             if (_tb != null)
             {
@@ -469,7 +471,7 @@ namespace Dash
         {
             // not sure what this was fixing, but it breaks the doc test example
             //for (int i = 0; i < 3; i++)
-            //  (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
+            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
 
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
@@ -497,6 +499,12 @@ namespace Dash
                     FocusOn(xNewKeyField);
                 }
             }
+        }
+
+        private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var newField = new KeyFieldContainer(new KeyController(), new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false, TypeColumnWidth);
+            ListItemSource.Add(newField);
         }
     }
 }

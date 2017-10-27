@@ -91,7 +91,7 @@ namespace Dash
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
         }
 
-
+        
 
         public IOReference GetCurrentReference()
         {
@@ -638,7 +638,18 @@ namespace Dash
         #endregion
 
         #region Manipulation
+        public Rect ClipRect { get { return xClippingRect.Rect; } }
+        public void Move(TranslateTransform translate)
+        {
+            if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
 
+            var composite = new TransformGroup();
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        }
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   

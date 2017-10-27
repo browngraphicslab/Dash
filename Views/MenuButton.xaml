@@ -8,6 +8,6 @@
     d:DesignHeight="80"
     d:DesignWidth="70">
     <!--<Grid Width="55" Height="50">-->
-    <StackPanel x:Name="xButtonStackPanel" Orientation="Vertical" ></StackPanel>
+    <StackPanel x:Name="xButtonStackPanel" Orientation="Vertical" Padding="2,0,0,0"></StackPanel>
     <!--</Grid>-->
 </UserControl>
