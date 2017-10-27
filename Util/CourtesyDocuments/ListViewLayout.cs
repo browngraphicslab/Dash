@@ -123,6 +123,10 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
+            listView.Loaded += (s, e) =>
+            {
+                Util.FixListViewBaseManipulationDeltaPropagation(listView);
+            };
             listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
 
             listView.HorizontalContentAlignment = HorizontalAlignment.Center; 

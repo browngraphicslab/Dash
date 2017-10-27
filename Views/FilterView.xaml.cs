@@ -11,7 +11,18 @@ namespace Dash
 {
     public sealed partial class FilterView : UserControl
     {
+        // TODO Galen comment this and rename it or remove it
         private bool _isHasFieldPreviouslySelected;
+
+        /// <summary>
+        /// The document containing the Filter Operator that this view is associated with
+        /// </summary>
+        private DocumentController _operatorDoc;
+
+        /// <summary>
+        /// List of the documents in the input collection, set when the datacontext is changed
+        /// </summary>
+        public List<DocumentController> Documents { get; set; }
 
         public FilterView()
         {
@@ -19,14 +30,16 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
         }
 
-        private DocumentController _operatorDoc;
-
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var refToOp = args.NewValue as FieldReference;
-            var doc = refToOp.GetDocumentController(null);
-            _operatorDoc = doc;
-            doc.AddFieldUpdatedListener(FilterOperatorFieldModelController.InputCollection,
+            // datacontext is a reference to the operator field
+            var refToOp = DataContext as FieldReference;
+
+            // get the document containing the operator
+            _operatorDoc = refToOp?.GetDocumentController(null);
+
+            // listen for when the input collection is changed
+            _operatorDoc?.AddFieldUpdatedListener(FilterOperatorFieldModelController.InputCollection,
                 delegate(DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
                 {
                     Documents = eventArgs.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null)
@@ -146,8 +159,6 @@ namespace Dash
         {
             UpdateParams();
         }
-
-        public List<DocumentController> Documents { get; set; }
 
         private void XComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

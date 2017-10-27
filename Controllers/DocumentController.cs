@@ -943,21 +943,36 @@ namespace Dash
 
         public Context Execute(Context oldContext, bool update)
         {
+            // add this document to the context
             var context = new Context(oldContext);
             context.AddDocumentContext(this);
+
+            // check to see if there is an operator on this document, if so it would be stored at the
+            // operator key
             var opField = GetDereferencedField(KeyStore.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
-                return context;
+                return context; // no operator so we're done
             }
+
+            // create dictionaries to hold the inputs and outputs, these are being prepared
+            // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
             var outputs = new Dictionary<KeyController, FieldControllerBase>(opField.Outputs.Count);
+            
+            // iterate over the operator inputs adding them to our preparing dictionaries if they 
+            // exist, and returning if there is a required field that we are missing
             foreach (var opFieldInput in opField.Inputs)
             {
+                // get the operator inputs based on the input keys (these are always references)
                 var field = GetField(opFieldInput.Key);
+                // dereference the inputs so that the field is now the actual field from the output document
                 field = field?.DereferenceToRoot(context);
+                
                 if (field == null)
                 {
+                    // if the reference was null and the reference was recquired just return the context
+                    // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
                         return context;
@@ -968,7 +983,12 @@ namespace Dash
                     inputs[opFieldInput.Key] = field;
                 }
             }
+
+            // execute the operator
             opField.Execute(inputs, outputs);
+
+            // pass the updates along 
+            // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
                 var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
@@ -1081,11 +1101,11 @@ namespace Dash
             {
                 return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.DocumentType))
+            if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
                 return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorBoxType))
+            if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
             {
                 return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
@@ -1113,13 +1133,17 @@ namespace Dash
             {
                 return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
-            if (DocumentType.Equals(FilterOperatorBox.DocumentType))
+            if (DocumentType.Equals(DashConstants.TypeStore.FilterOperatorDocumentType))
             {
                 return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
-            if (DocumentType.Equals(DashConstants.DocumentTypeStore.MapOperatorBoxType))
+            if (DocumentType.Equals(DashConstants.TypeStore.MapOperatorBoxType))
             {
                 return CollectionMapOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
+            {
+                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
             if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
             {
