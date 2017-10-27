@@ -32,7 +32,7 @@
                 <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListView x:Name="xHeaderView" Grid.Column="1"
+            <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Column="1"
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
