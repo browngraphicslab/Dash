@@ -29,7 +29,7 @@
         <!--grid wrapping the headers for formatting-->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <!--<ColumnDefinition Width="30" />-->
+                <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView x:Name="xHeaderView" Grid.Column="1"

@@ -34,7 +34,7 @@ namespace Dash
             Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
-
+        
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _downPt = e.GetCurrentPoint(null);
@@ -42,11 +42,6 @@ namespace Dash
         }
 
         private void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void CollectionDBSchemaRecordField_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Complete();
             StartDragAsync(_downPt);
