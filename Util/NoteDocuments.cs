@@ -229,7 +229,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     [KeyStore.TitleKey]             = new TextFieldModelController("Prototype Title"),
-                    [NotesFieldKey]                 = new TextFieldModelController("Prototype Content"),
+                    [KeyStore.DocumentTextKey]      = new TextFieldModelController("Prototype Content"),
                     [KeyStore.AbstractInterfaceKey] = new TextFieldModelController("PostIt Note Data API"),
                     [KeyStore.PrimaryKeyKey]        = new ListFieldModelController<TextFieldModelController>(
                             new TextFieldModelController[] {new TextFieldModelController(KeyStore.TitleKey.Id)})
@@ -241,7 +241,7 @@ namespace Dash
             {
                 var prototype = GetDocumentPrototype();
                 var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
-                var textLayout  = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                var textLayout  = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, double.NaN);
                 var prototypeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, textLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
@@ -264,7 +264,7 @@ namespace Dash
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
                 dataDocument.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
-                dataDocument.SetField(NotesFieldKey, new TextFieldModelController(text ?? "Write something amazing!"), true);
+                dataDocument.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(text ?? "Write something amazing!"), true);
                 dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDocument), true);
                 
 

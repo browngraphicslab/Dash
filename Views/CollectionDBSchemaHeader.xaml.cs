@@ -97,8 +97,7 @@ namespace Dash
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var viewModel = (DataContext as HeaderViewModel);
-            viewModel.Width  =_startWidth + e.Cumulative.Translation.X;
-            Debug.WriteLine("start = " + _startWidth + " viewwidth = " + viewModel.Width + " cumu" + e.Cumulative.Translation.X);
+            viewModel.Width = Math.Max(12, _startWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
         private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

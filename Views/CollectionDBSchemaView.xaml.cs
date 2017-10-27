@@ -280,7 +280,7 @@ namespace Dash
                     //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController(".*"), true);
                     //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController("\\."), true);
                     //    rd.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
-                    //    d.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
+                    //    d.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
