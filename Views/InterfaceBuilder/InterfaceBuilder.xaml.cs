@@ -85,7 +85,7 @@ namespace Dash
         private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            if (documentView.ViewModel == null || documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            if (documentView.ViewModel == null /*|| documentView.ViewModel.DocumentController.GetId() != editingDocumentId*/)
             {
                 return;
             }
@@ -200,7 +200,7 @@ namespace Dash
             }
         }
 
-        private static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
+        public static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;

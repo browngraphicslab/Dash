@@ -71,7 +71,7 @@ namespace Dash
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
 
             //handles drop from keyvaluepane 
-
+            OnKeyValueDrop(e);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -169,7 +169,7 @@ namespace Dash
         //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
         //}
-#region KEYVALUEPANE
+        #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void AddField()
         {
@@ -186,11 +186,48 @@ namespace Dash
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
         }
         private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
+        }
+
+        private void OnKeyValueDrop(DragEventArgs e)
+        {
+            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null) return;
+
+            // get data variables from the DragArgs
+            var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+
+            var dataDocController = kvp.Value;
+            if (!dataDocController.Equals(ViewModel.DocumentController)) return; // return if it's not sent from the appropriate keyvaluepane 
+
+            var dataKey = kvp.Key;
+            var context = new Context(dataDocController);
+            var dataField = dataDocController.GetDereferencedField(dataKey, context);
+
+            // get a layout document for the data - use the most abstract prototype as the field reference document
+            //  (otherwise, the layout would point directly to the data instance which would make it impossible to
+            //   create Data copies since the layout would point directly to the (source) data instance and not the common prototype).
+            var dataPrototypeDoc = kvp.Value;
+            while (dataPrototypeDoc.GetPrototype() != null)
+                dataPrototypeDoc = dataPrototypeDoc.GetPrototype();
+            var layoutDocument = InterfaceBuilder.GetLayoutDocumentForData(dataField, dataPrototypeDoc, dataKey, null);
+            if (layoutDocument == null)
+                return;
+
+            // apply position if we are dropping on a freeform
+            //var posInLayoutContainer = e.GetPosition(layoutContainer);
+            var posInLayoutContainer = e.GetPosition(OuterGrid);
+            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
+            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
+            var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+            layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
+
+            // add the document to the composite
+            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
+            data?.AddDocument(layoutDocument); 
         }
         #endregion
 
