@@ -176,21 +176,17 @@ namespace Dash
             if (xKeyValPane.Width == 0)
             {
                 xKeyValPane.Width = KeyValPaneWidth;
-                Width += KeyValPaneWidth;
+                ViewModel.Width += KeyValPaneWidth;
             }
             else
             {
                 xKeyValPane.Width = 0;
-                Width -= KeyValPaneWidth;
+                ViewModel.Width -= KeyValPaneWidth;
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-        }
-        private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-           // e.Handled = true;
         }
 
         private void OnKeyValueDrop(DragEventArgs e)
@@ -521,6 +517,7 @@ namespace Dash
         {
             ViewModel = DataContext as DocumentViewModel;
             xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+            var mc = new ManipulationControls(xKeyValuePane, false, false);
             //initDocumentOnDataContext();
         }
 
