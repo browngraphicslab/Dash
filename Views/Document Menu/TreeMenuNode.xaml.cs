@@ -16,8 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
-
+// NOTE: there's a couple of classes in this fiel, all related to the tree notes.
 namespace Dash.Views.Document_Menu
 {
     /// <summary>
@@ -56,6 +55,7 @@ namespace Dash.Views.Document_Menu
             this.DocType = label;
             Type = icon;
 
+            // handles clicking of the item in the menu
             TappedEventHandler tapped = (sender, e) => {
                 if (action != null)
                 {
@@ -79,6 +79,7 @@ namespace Dash.Views.Document_Menu
 
     }
 
+    // defines the header style and indendation behavior
     public enum MenuDisplayType {
         Header,
         Subheader,
@@ -125,12 +126,14 @@ namespace Dash.Views.Document_Menu
         private bool isSubHeader = false;
         //public ListView ItemsList { get { return xItemsList; } set { xItemsList = value; } } uncomment if use case arises
 
+        // text that displays on the header
         public string HeaderLabel
         {
             get { return (string)GetValue(HeaderLabelProperty); }
             set { SetValue(HeaderLabelProperty, value); }
         }
-        // optional: the icon on the header
+
+        // optional: the icon on the header, generally want to set this
         public string HeaderIcon
         {
             get { return (string)GetValue(HeaderIconProperty); }

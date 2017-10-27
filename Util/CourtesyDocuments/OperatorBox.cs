@@ -17,7 +17,7 @@ namespace Dash
         public OperatorBox(ReferenceFieldModelController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200,100), refToOp);
-            Document = new DocumentController(fields, DashConstants.DocumentTypeStore.OperatorBoxType);
+            Document = new DocumentController(fields, DashConstants.TypeStore.OperatorBoxType);
             if (refToOp.DereferenceToRoot<OperatorFieldModelController>(null).IsCompound())
             {
                 DocumentController controller = refToOp.GetDocumentController(null);

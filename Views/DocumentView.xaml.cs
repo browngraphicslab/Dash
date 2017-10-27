@@ -71,6 +71,12 @@ namespace Dash
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
+            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
+            AddHandler(PointerPressedEvent, new PointerEventHandler(hdlr), true);
+        }
+
+        private void hdlr(object sender, PointerRoutedEventArgs e)
+        {
         }
         #region choose
 
@@ -119,7 +125,7 @@ namespace Dash
 
             //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
         }
-        
+
         private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
@@ -140,14 +146,14 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection)
             {
-                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName); // TODO: change this for tab menu
                 if (ViewModel.DisplayName != "operator")
                 {
                     if (ParentCollection != null)
                     {
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            treeMenuItem = new AddMenuItem(ViewModel.DisplayName, AddMenuTypes.Document, Choose);
+                            treeMenuItem = new AddMenuItem(ViewModel.DisplayName, AddMenuTypes.Document, Choose); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                                     treeMenuItem);
                         }
@@ -567,6 +573,9 @@ namespace Dash
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
 
+           
+            AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(treeMenuItem);
+
             if (useFixedMenu)
                 MainPage.Instance.HideDocumentMenu();
         }
@@ -654,24 +663,27 @@ namespace Dash
         public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
+        { 
             if (!IsSelected)
             {
-                await Task.Delay(100);
+                await Task.Delay(100); // allows for double-tap
 
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection == null) return;
-                ParentCollection.MaxZ += 1;
-                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                if (ParentCollection != null)
+                {
+                    ParentCollection.MaxZ += 1;
+                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
 
-                if (e != null) e.Handled = true;
-                OnSelected();
-
-                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
+                    if (e != null)
+                        e.Handled = true;
+                    OnSelected();
+                    
+                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
+                }
             }
         }
-
+        
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
