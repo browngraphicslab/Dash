@@ -177,7 +177,7 @@ namespace Dash
                 [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
 
-            var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+            var collectionDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
             var layoutDocument = new CollectionBox(new DocumentReferenceFieldController(collectionDocument.GetId(),
                     KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             collectionDocument.SetActiveLayout(layoutDocument, true, true); 

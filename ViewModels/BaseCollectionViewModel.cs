@@ -182,7 +182,7 @@ namespace Dash
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceFieldModelController)?.GetDocumentController(null);
-                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.DocumentTypeStore.OperatorType))
+                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
                         [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(pivotKey.Id) })

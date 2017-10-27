@@ -257,7 +257,7 @@ namespace Dash
                     {
                         [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
                     };
-                    var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
+                    var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
                     var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey))
                         .Document;
                     doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document,
@@ -280,7 +280,7 @@ namespace Dash
                 {
                     [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
                 };
-                var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
+                var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
                 var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey)).Document;
                 doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document, false,
                     true);

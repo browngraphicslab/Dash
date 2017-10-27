@@ -11,7 +11,7 @@ namespace Dash
         public CollectionMapOperatorBox(ReferenceFieldModelController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
-            Document = new DocumentController(fields, DashConstants.DocumentTypeStore.MapOperatorBoxType);
+            Document = new DocumentController(fields, DashConstants.TypeStore.MapOperatorBoxType);
         }
 
         protected override DocumentController GetLayoutPrototype()

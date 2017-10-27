@@ -11,18 +11,6 @@ namespace DashShared
         public const bool DEVELOP_LOCALLY = true;
 
 
-        public static class TypeStore
-        {
-            public static DocumentType FreeFormDocumentLayout =
-                new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
-
-            public static DocumentType CollectionDocument =
-                new DocumentType("2D4D93AE-6A88-4723-B254-7DA2959D0240", "collection");
-
-            public static DocumentType MainDocumentType = 
-                new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
-        }
-
         #region DocumentDB
 
         /// <summary>
@@ -175,18 +163,20 @@ namespace DashShared
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
         }
 
-        public static class DocumentTypeStore
+        public static class TypeStore
         {
             public static DocumentType FreeFormDocumentLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
             public static DocumentType CollectionDocument  = new DocumentType("2D4D93AE-6A88-4723-B254-7DA2959D0240", "collection");
             public static DocumentType FileLinkDocument = new DocumentType("54442257-4BF4-4EB0-B3E8-B8868951F198", "File link");
             public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
-            // TODO rename to CollectionBox Doc type
-            public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
-            public static readonly DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
-
+            public static DocumentType CollectionBoxType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
+            public static DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
             public static DocumentType OperatorBoxType =
                 new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
+            public static DocumentType MainDocumentType = 
+                new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
+            public static DocumentType FilterOperatorDocumentType = new DocumentType("30651C8A-C3EC-4CF6-999B-F8F1ED094D65", "Filter Operator Box");
+            public static DocumentType MeltOperatorBoxDocumentType = new DocumentType("8A0E72A1-0FF4-4AAB-9C12-9DF09DCF39CA", "Melt Operator Box");
         }
     }
 }

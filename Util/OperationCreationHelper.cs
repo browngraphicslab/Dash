@@ -30,6 +30,7 @@ namespace Dash
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
             AddOperator(() => new CollectionMapOperator(), "Map", rfmc => new CollectionMapOperatorBox(rfmc));
             AddOperator(() => new CompoundOperatorFieldController(), "Compound");
+            AddOperator(() => new MeltOperatorFieldModelController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
