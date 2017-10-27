@@ -62,6 +62,12 @@ namespace Dash
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
+            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
+            AddHandler(PointerPressedEvent, new PointerEventHandler(hdlr), true);
+        }
+
+        private void hdlr(object sender, PointerRoutedEventArgs e)
+        {
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -582,24 +588,27 @@ namespace Dash
         public Rect ClipRect { get { return xClipRect.Rect;  } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
+        { 
             if (!IsSelected)
             {
-                await Task.Delay(100);
+                await Task.Delay(100); // allows for double-tap
 
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection == null) return;
-                ParentCollection.MaxZ += 1;
-                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                if (ParentCollection != null)
+                {
+                    ParentCollection.MaxZ += 1;
+                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
 
-                if (e != null) e.Handled = true;
-                OnSelected();
+                    if (e != null)
+                        e.Handled = true;
+                    OnSelected();
 
-                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
+                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
+                }
             }
         }
-
+        
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);

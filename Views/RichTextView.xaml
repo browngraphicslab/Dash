@@ -18,7 +18,7 @@
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition x:Name="xFormatCol" Height="0"/>
+            <RowDefinition x:Name="xFormatRow" Height="0"/>
         </Grid.RowDefinitions>
         <Grid x:Name="xFormatControls" Grid.Row="1">
             <Grid>
@@ -47,9 +47,8 @@
                     <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
-    </Grid >
-        <Grid Grid.Column="0">
-            <RichEditBox x:FieldModifier="public" 
+        </Grid >
+        <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          DragOver="xRichEitBox_DragOver" 
                          Foreground="{StaticResource MainText}" 
@@ -61,9 +60,7 @@
                          SelectionChanged="xRichEditBox_SelectionChanged"  
                          BorderBrush="{StaticResource DocumentBackground}" 
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}" 
-               />
-        </Grid>
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
     </Grid>
 
 </UserControl>
