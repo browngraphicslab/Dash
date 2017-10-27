@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -45,6 +46,8 @@ namespace Dash
 
         public static int dvCount = 0;
 
+        private Storyboard _storyboard;
+
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -69,6 +72,7 @@ namespace Dash
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
         }
+        #region choose
 
         /// <summary>
         /// Navigates the main collection view to show this DocumentView in the center of the screen,
@@ -95,6 +99,9 @@ namespace Dash
             }
             return null;
         }
+
+
+        #endregion
 
         private void OnDrop(object sender, DragEventArgs e)
         {
