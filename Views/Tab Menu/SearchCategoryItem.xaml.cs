@@ -47,10 +47,9 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-        private Action<Func<DocumentController>> _action;
         public object SelectedItem;
         private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
-        
+
         /// <summary>
         /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
         /// </summary>
@@ -76,6 +75,42 @@ namespace Dash
             xList.Tapped += XList_Tapped;
         }
 
+
+        /// <summary>
+        /// Adds an item to the list
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="name"></param>
+        public void AddToList(Func<DocumentController> func, string name = "")
+        {
+            // if _titleToFuncDictionary already contains the name, it's most likely because the document/collection/operator we're adding has the same DisplayName
+            // must differentiate the key before adding to _titleToFuncDictionary or ListContent  
+            if (_titleToFuncDictionary.ContainsKey(name))
+            {
+                string newName = name;
+                int i = 1;
+                while (_titleToFuncDictionary.ContainsKey(newName))
+                    newName = name + i++;
+                name = newName;
+            }
+            _titleToFuncDictionary[name] = func;
+            ListContent.Add(name);
+        }
+
+        public void RemoveFromList(Func<DocumentController> func, string name = "")
+        {
+            if (_titleToFuncDictionary[name] != func)
+            {
+                string newName = name;
+                int i = 1;
+                while (_titleToFuncDictionary[newName] != func) 
+                    newName = name + i++;
+                name = newName;
+            }
+            _titleToFuncDictionary.Remove(name); 
+            ListContent.Remove(name); 
+        }
+
         private void XList_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ActivateItem();
@@ -88,7 +123,9 @@ namespace Dash
             var func = _titleToFuncDictionary[name];
             if (func != null)
             {
-                Actions.AddDocFromFunction(func);
+                var docCont = func.Invoke(); 
+                if (docCont != null)
+                    Actions.AddDocFromFunction(TabMenu.Instance,docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);
@@ -105,7 +142,9 @@ namespace Dash
             var func = _titleToFuncDictionary[name];
             if (func != null)
             {
-                Actions.AddDocFromFunction(func);
+                var docCont = func.Invoke();
+                if (docCont != null)
+                    Actions.AddDocFromFunction(TabMenu.Instance, docCont);
             }
 
             MainPage.Instance.xCanvas.Children.Remove(TabMenu.Instance);

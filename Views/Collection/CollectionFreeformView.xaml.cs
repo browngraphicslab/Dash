@@ -170,6 +170,7 @@ namespace Dash
             }
         }
 
+
         public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
         {
             var docId = reference.GetDocumentId();
@@ -189,6 +190,7 @@ namespace Dash
             {
                 var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
                 var type = op.Outputs[reference.FieldKey];
+                return; // gods this is a hack anna DELETE THIS BEFORE YOU PUSH
                 throw new NotImplementedException();
                 fmController = null; //TypeInfoHelper.CreateFieldModelController(type);
             }
@@ -633,6 +635,16 @@ namespace Dash
         #endregion
 
         #region Manipulation
+        public void Move(TranslateTransform translate)
+        {
+            var composite = new TransformGroup();
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        }
+
+        public Rect ClipRect { get { return xClippingRect.Rect; } }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 

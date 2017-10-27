@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Views.Document_Menu;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -44,6 +45,11 @@ namespace Dash
 
         public static int dvCount = 0;
 
+        // == CONSTRUCTORs ==
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+        }
 
         public DocumentView()
         {
@@ -64,16 +70,37 @@ namespace Dash
             this.Drop += OnDrop;
         }
 
+        /// <summary>
+        /// Navigates the main collection view to show this DocumentView in the center of the screen,
+        /// then selects this document
+        /// </summary>
+        /// <returns></returns>
+        public DocumentController Choose()
+        {
+            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            if (ParentCollection != null)
+            {
+                ParentCollection.MaxZ += 1;
+                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+            }
+            OnSelected();
+
+            // bring document to center? 
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            if (mainView != null)
+            {
+                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
+                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
+                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
+            }
+            return null;
+        }
+
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-        }
-
-        public DocumentView(DocumentViewModel documentViewModel) : this()
-        {
-            DataContext = documentViewModel;
         }
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
@@ -82,11 +109,11 @@ namespace Dash
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            //Loaded -= This_Loaded;
-            //Unloaded -= This_Unloaded;
+
+            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
         }
-
-
+        
+        private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -98,56 +125,91 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            if (ViewModel != null)
+
+            // Adds a function to tabmenu, which brings said DocumentView to focus 
+            // this gets the hierarchical view of the document, clicking on this will shimmy over to this
+            IsMainCollection = (this == MainPage.Instance.MainDocView);
+
+            // add corresponding instance of this to hierarchical view
+            if (!IsMainCollection)
             {
-                //if (Parent == null)
-                //    ViewModel.Width = ActualWidth;
-                //else ViewModel.Width = double.NaN;
-                //if (Parent == null)
-                //    ViewModel.Height = ActualHeight;
-                //else ViewModel.Height = double.NaN;
+                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName);
+                if (ViewModel.DisplayName != "operator")
+                {
+                    if (ParentCollection != null)
+                    {
+                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                        {
+                            treeMenuItem = new AddMenuItem(ViewModel.DisplayName, AddMenuTypes.Document, Choose);
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                                    treeMenuItem);
+                        }
+                    }
+                }
             }
         }
 
-
-        #region Xaml Styling Methods (used by operator view)
+        #region Xaml Styling Methods (used by operator/colelction view)
         private bool isOperator = false;
+        private bool addItem = false;
         /// <summary>
-        /// Applies custom override styles to the operator view
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        public void StyleOperator(double borderRadiusAmount)
+        public void StyleOperator(double width, string title)
         {
             isOperator = true;
-            xShadowTarget.RadiusX = borderRadiusAmount;
-            xShadowTarget.RadiusY = borderRadiusAmount;
-
-            var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
-            Color c = brush.Color;
-            c.A = 204;
-            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
+            xShadowTarget.Margin = new Thickness(width,0,width,0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            xTitle.Text = title;
+            xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+            if (ParentCollection != null)
+            {
+                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                new AddMenuItem(title, AddMenuTypes.Operator, Choose)); // adds op view to menu
+            }
         }
 
-#endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
-        /// When a field is dragged onto documentview, adds that field to the document 
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
-        //{
+        public void StyleCollection(CollectionView view)
+        {
+            addItem = false;
+            xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+            xTitle.Text = "Collection";
 
-        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-        //if (view == null) return; // we can't always assume we're on a collection		
+            // add item to menu
+            if (ParentCollection != null)
+                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
+            
+            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
+            {
 
-        //view.CanLink = false;
-        //args.Handled = true;
+                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
+                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
+                tree.HeaderLabel = "Collection";
 
-        //view.CancelDrag(args.Pointer); 
+                // if nested, add to parent collection, otherwise add to main collection
+                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                {
 
-        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
+                } else
+                {
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
+                }
+            }
+            
 
-        //}
+        }
+
+        #endregion
+        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
 
         DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
@@ -161,7 +223,7 @@ namespace Dash
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
@@ -535,11 +597,14 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
         private void FadeOut_Completed(object sender, object e)
         {
+            // KBTODO remove itself from tab menu 
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
+
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();
@@ -578,8 +643,8 @@ namespace Dash
         #endregion
 
         #region Activation
-        
-        public Rect ClipRect { get { return xClipRect.Rect;  } }
+
+        public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -596,7 +661,7 @@ namespace Dash
                 OnSelected();
 
                 // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected(); 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
             }
         }
 
@@ -623,7 +688,7 @@ namespace Dash
                     if (useFixedMenu)
                     {
                         MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.xMainDocView != this)
+                        if (MainPage.Instance.MainDocView != this)
                             MainPage.Instance.ShowDocumentMenu();
                     }
                 }

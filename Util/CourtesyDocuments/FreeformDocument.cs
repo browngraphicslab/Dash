@@ -105,6 +105,7 @@ namespace Dash
                 SetupBindings(container, docController, context);
                 return container;
             }
+            
             return grid;
         }
 
