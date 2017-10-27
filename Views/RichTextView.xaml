@@ -52,7 +52,7 @@
             <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          DragOver="xRichEitBox_DragOver" 
-                         Foreground="GhostWhite" 
+                         Foreground="{StaticResource MainText}" 
                          GotFocus="xRichEditBox_GotFocus" 
                          Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
