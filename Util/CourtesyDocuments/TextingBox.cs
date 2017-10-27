@@ -39,6 +39,8 @@ namespace Dash
         public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 50, FontWeight weight = null, Color? backgroundColor = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
+            (fields[KeyStore.HorizontalAlignmentKey] as TextFieldModelController).Data = HorizontalAlignment.Left.ToString();
+            (fields[KeyStore.VerticalAlignmentKey] as TextFieldModelController).Data = VerticalAlignment.Top.ToString();
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);

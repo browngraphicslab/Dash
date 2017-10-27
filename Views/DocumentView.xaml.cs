@@ -128,6 +128,7 @@ namespace Dash
                 //    ViewModel.Height = ActualHeight;
                 //else ViewModel.Height = double.NaN;
             }
+            new ManipulationControls(xKeyValuePane, false, false);
         }
 
 
@@ -185,6 +186,10 @@ namespace Dash
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+        private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
         }
@@ -517,7 +522,6 @@ namespace Dash
         {
             ViewModel = DataContext as DocumentViewModel;
             xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
-            var mc = new ManipulationControls(xKeyValuePane, false, false);
             //initDocumentOnDataContext();
         }
 
