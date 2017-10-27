@@ -45,15 +45,15 @@
                 <!-- Animate background color -->
                 <Storyboard x:Name="colorStoryboard">
                     <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC303030" To="#CC414141" Duration="0:0:0.075"/>
+                                    From="#CCFFFFFF" To="#FFFFFFFF" Duration="0:0:0.075"/>
                 </Storyboard>
                 <Storyboard x:Name="colorStoryboardOut">
                     <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC414141" To="#CC303030" Duration="0:0:0.075"/>
+                                    From="#CCFFFFFF" To="#FFFFFFFF" Duration="0:0:0.075"/>
                 </Storyboard>
             </Rectangle.Resources>
         </Rectangle>
-        <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}"></Border>
+        <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}" Visibility="Collapsed"></Border>
 
 
         <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">

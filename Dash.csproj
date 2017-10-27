@@ -618,8 +618,8 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\docmenu.png" />
-    <Content Include="Assets\gridbg.jpg" />
-    <Content Include="Assets\gridbg2.jpg" />
+    <Content Include="Assets\Dark_gridbg.jpg" />
+    <Content Include="Assets\Dark_gridbg2.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -633,6 +633,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
+    <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

@@ -38,17 +38,17 @@
     
     -->
     <Application.Resources>
-        <!-- NUMBERS, THICKNESSES --> 
-        <x:Double x:Key="DocumentOpacity">.8</x:Double>
+        <!-- NUMBERS, THICKNESSES -->
+        <x:Double x:Key="DocumentOpacity">.9</x:Double>
         <x:Double x:Key="DefaultFontSize">12</x:Double>
         <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
         <!-- COLORS -->
-        <Color x:Key="WindowsBlueColor">#FF17477E</Color>
-        <Color x:Key="AccentGreenColor">#FF265C49</Color>
-        <Color x:Key="DocumentBackgroundColor">#FF303030</Color>
-        <Color x:Key="DocumentBackgroundSelectedColor">#FF414141</Color>
-        <Color x:Key="MainTextColor">#FFAAABB0</Color>
+        <Color x:Key="WindowsBlueColor">#FF068484</Color>
+        <Color x:Key="AccentGreenColor">#FF000000</Color>
+        <Color x:Key="DocumentBackgroundColor">#FFFFFFFF</Color>
+        <Color x:Key="DocumentBackgroundSelectedColor">#FF000000</Color>
+        <Color x:Key="MainTextColor">#FF666666</Color>
         
 
         <!-- SOLID COLOR BRUSHES -->
@@ -69,14 +69,14 @@
 
         <!-- background colors -->
         <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
-        <Color x:Key="TranslucentDocumentBackgroundColor">#CC303030</Color>
+        <Color x:Key="TranslucentDocumentBackgroundColor">#CCFFFFFF</Color>
         <SolidColorBrush x:Key="RadialMenuBackground" Color="{StaticResource TranslucentDocumentBackgroundColor}" />
         <SolidColorBrush x:Key="DraggerLineStroke" Color="#66007AFF"/>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{StaticResource DocumentBackgroundColor}" Opacity="{StaticResource DocumentOpacity}" />
         <SolidColorBrush x:Key="DocumentBackgroundOpaque" Color="{StaticResource DocumentBackgroundColor}"  />
         <SolidColorBrush x:Key="DocumentHighlightBackground" Color="{StaticResource DocumentBackgroundSelectedColor}" Opacity="{StaticResource DocumentOpacity}" ></SolidColorBrush>
-        <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
+        <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0">
             <GradientStop Color="Transparent" Offset="0"/>
             <GradientStop Color="#FFFFFFFF" Offset="1" />
         </LinearGradientBrush>
