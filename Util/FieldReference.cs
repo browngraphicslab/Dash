@@ -82,6 +82,7 @@ namespace Dash
 
         public FieldControllerBase DereferenceToRoot(Context context)
         {
+            context = context ?? new Context();
             FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceFieldModelController)
             {
