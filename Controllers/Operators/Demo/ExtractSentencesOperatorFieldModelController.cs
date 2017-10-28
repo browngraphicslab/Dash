@@ -51,7 +51,7 @@ namespace Dash.Controllers.Operators.Demo
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.Data)
             {
-                var dataDoc = Util.GetDataDoc(inputDoc);
+                var dataDoc = Util.GetDataDoc(inputDoc, null);
                 var textInput = dataDoc.GetField(textFieldKey) as TextFieldModelController;
                 if (textInput != null)
                 {

@@ -53,13 +53,22 @@ namespace Dash
             _operatorDoc = refToOp?.GetDocumentController(null);
 
             // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorFieldModelController.InputCollection,
-                delegate (DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
-                {
-                    InputCollection = eventArgs.NewValue
-                        .DereferenceToRoot<DocumentCollectionFieldModelController>(null);
-                    _allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
-                });
+            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorFieldModelController.InputCollection, OnInputCollectionChanged);
+            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorFieldModelController.TextField, OnTextFieldChanged);
+
+        }
+
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var tfmc = args.NewValue.DereferenceToRoot<TextFieldModelController>(null);
+            XTextFieldBox.Text = ContentController<KeyModel>.GetController<KeyController>(tfmc.Data).Name;
+
+        }
+
+        private void OnInputCollectionChanged(DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
+        {
+            InputCollection = eventArgs.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null);
+            _allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
         }
 
 
