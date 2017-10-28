@@ -562,7 +562,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.Data)
             {
-                var actualDoc = GetDataDoc(docController);
+                var actualDoc = GetDataDoc(docController, null);
 
                 foreach (var field in actualDoc.EnumFields())
                 {
@@ -583,13 +583,13 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <returns></returns>
-        public static DocumentController GetDataDoc(DocumentController docController)
+        public static DocumentController GetDataDoc(DocumentController docController, Context context)
         {
             var actualDoc = docController;
-            var dataDoc = docController.GetField(KeyStore.DocumentContextKey);
+            var dataDoc = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context);
             if (dataDoc != null)
             {
-                actualDoc = (dataDoc as DocumentFieldModelController).Data;
+                actualDoc = dataDoc.Data;
             }
             return actualDoc;
         }

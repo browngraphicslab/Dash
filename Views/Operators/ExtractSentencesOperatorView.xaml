@@ -10,7 +10,7 @@
     d:DesignWidth="400">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <AutoSuggestBox VerticalAlignment="Center" HorizontalAlignment="Stretch"
+        <AutoSuggestBox x:Name="XTextFieldBox" VerticalAlignment="Center" HorizontalAlignment="Stretch"
                         TextChanged="AutoSuggestBox_TextChanged"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"

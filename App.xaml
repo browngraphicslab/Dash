@@ -603,12 +603,13 @@
 
 
         <!-- Operator View (& Links)-->
-        <Style TargetType="Ellipse" x:Key="xLinkHandle">
+        <Style TargetType="Ellipse" x:Key="xOutputLinkHandle">
             <Setter Property="Fill" Value="{StaticResource OutputHandleColor}" />
             <Setter Property="Height" Value="20"></Setter>
             <Setter Property="Width" Value="20"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
+            <Setter Property="AllowDrop" Value="True"/>
         </Style>
         <Style TargetType="Ellipse" x:Key="xInputLinkHandle">
             <Setter Property="Fill" Value="{StaticResource InputHandleColor}" />
@@ -616,6 +617,7 @@
             <Setter Property="Width" Value="20"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
+            <Setter Property="AllowDrop" Value="True"/>
         </Style>
 
         <!-- Collection View -->

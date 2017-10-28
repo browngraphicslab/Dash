@@ -78,6 +78,10 @@ namespace Dash
             public KeyController FieldKey;
             public CollectionView.CollectionViewType ViewType;
         }
+
+        /// <summary>
+        /// Static bucket to hold drag data when the header is dragged, this is a total hack!
+        /// </summary>
         public static HeaderDragData DragModel = null;
         
         private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
