@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Dash.Controllers;
 using Dash.Controllers.Operators;
+using Dash.Controllers.Operators.Demo;
 using DashShared;
 using DashShared.Models;
 using Flurl.Util;
@@ -216,6 +217,9 @@ namespace Dash
                     break;
                 case OperatorType.Melt:
                     controller = new MeltOperatorFieldModelController(model);
+                    break;
+                case OperatorType.ExtractSentences:
+                    controller = new ExtractSentencesOperatorFieldModelController(model);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

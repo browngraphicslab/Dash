@@ -31,6 +31,27 @@ namespace Dash
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
         private DocumentView documentView;
 
+        /// <summary>
+        /// The operator field model controller backing this operator view
+        /// </summary>
+        private OperatorFieldModelController _operator { get; set; }
+
+        /// <summary>
+        /// Used to cache the last datacontext so that we don't rebind unecessarily
+        /// </summary>
+        private object _lastDataContext { get; set; } = null;
+
+        /// <summary>
+        /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
+        /// </summary>
+        public object OperatorContent
+        {
+            get => xOpContentPresenter.Content;
+            set => xOpContentPresenter.Content = value;
+        }
+
+
+
         public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             this.InitializeComponent();
@@ -49,71 +70,86 @@ namespace Dash
             documentView.StyleOperator(0);
         }
 
-        public object OperatorContent
-        {
-            get { return xOpContentPresenter.Content; }
-            set { xOpContentPresenter.Content = value; }
-        }
 
-        private OperatorFieldModelController _operator;
 
-        private object _lastDataContext = null;
-        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        /// <summary>
+        /// Called whenever the datacontext for the entire view changes
+        /// The datacontext should be a <see cref="DocumentFieldReference"/> to a <see cref="OperatorFieldModelController"/>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnUserControlDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (args.NewValue == _lastDataContext)
+            // cache datacontext updates so we don't update the operator when the data context
+            // updates to itself
+            if (DataContext == _lastDataContext)
             {
                 return;
             }
-            else
-            {
-                _lastDataContext = args.NewValue;
-            }
-            _operator = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
+            _lastDataContext = DataContext;
+
+            // get the operator field model controller form the data context
+            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
             _isCompound = _operator.IsCompound();
 
+            // bind the input and output lists (the things we link to)
             var inputsBinding = new Binding
             {
                 Source = _operator.Inputs,
             };
+            InputListView.SetBinding(ItemsControl.ItemsSourceProperty, inputsBinding);
             var outputsBinding = new Binding
             {
                 Source = _operator.Outputs,
             };
-            InputListView.SetBinding(ItemsControl.ItemsSourceProperty, inputsBinding);
             OutputListView.SetBinding(ItemsControl.ItemsSourceProperty, outputsBinding);
 
-            if (_isCompound)
+            // if the operator isn't a compound operator then we're done
+            if (!_isCompound)
             {
-                MakeCompoundEditor();
-                xOpContentPresenter.Content = _compoundOpEditor;
-                DoubleTapped += OnDoubleTapped;
-                _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true; 
-
-                var compoundFMCont = _operator as CompoundOperatorFieldController;
-
-                InputListView.PointerReleased += (s, e) =>
-                {
-                    if (xOpContentPresenter.Content == null) return;
-                    var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
-                    if (ioRef == null) return;
-                    if (ioRef.IsOutput) return;
-                    KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
-                    compoundFMCont.AddInputreference(newInput, ioRef);
-                };
-
-                OutputListView.PointerReleased += (s, e) =>
-                {
-                    if (xOpContentPresenter.Content == null) return;
-                    var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
-                    if (ioRef == null) return;
-                    if (!ioRef.IsOutput) return;
-                    KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
-                    compoundFMCont.AddOutputreference(newOutput, ioRef);
-                    _currOutputRef = ioRef;
-                };
+                return;
             }
-
+            // otherwise set up the compound operator
+            OnDataContextChangedIfCompound();
         }
+
+        /// <summary>
+        /// Helper method to help finish setting up the view when the operator is a compound operator
+        /// </summary>
+        private void OnDataContextChangedIfCompound()
+        {
+            MakeCompoundEditor();
+            xOpContentPresenter.Content = _compoundOpEditor;
+            DoubleTapped -= OnCompoundOperatorDoubleTapped;
+            DoubleTapped += OnCompoundOperatorDoubleTapped;
+            _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true;
+
+            var compoundFMCont = _operator as CompoundOperatorFieldController;
+
+            InputListView.PointerReleased += (s, e) =>
+            {
+                if (xOpContentPresenter.Content == null) return;
+                var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
+                if (ioRef == null) return;
+                if (ioRef.IsOutput) return;
+                KeyController newInput = new KeyController(Guid.NewGuid().ToString(),
+                    "Input " + (compoundFMCont.Inputs.Count + 1));
+                compoundFMCont.AddInputreference(newInput, ioRef);
+            };
+
+            OutputListView.PointerReleased += (s, e) =>
+            {
+                if (xOpContentPresenter.Content == null) return;
+                var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
+                if (ioRef == null) return;
+                if (!ioRef.IsOutput) return;
+                KeyController newOutput = new KeyController(Guid.NewGuid().ToString(),
+                    "Output " + (compoundFMCont.Outputs.Count + 1));
+                compoundFMCont.AddOutputreference(newOutput, ioRef);
+                _currOutputRef = ioRef;
+            };
+        }
+
 
         /// <summary>
         /// Envokes handler for starting a link by dragging on a link ellipse handle.
@@ -134,11 +170,21 @@ namespace Dash
             view.StartDrag(ioRef);
         }
 
+        /// <summary>
+        /// Fired whenever an input link is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             StartNewLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
 
+        /// <summary>
+        /// Fired whenever an ouput link is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             StartNewLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
@@ -206,7 +252,13 @@ namespace Dash
         }
 
         #region expandoflyout
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+
+        /// <summary>
+        /// Fired if the operator view is for a compound operator and the view is double tapped
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCompoundOperatorDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (xOpContentPresenter.Content == null) ExpandView(null, null);
             else ContractView(null, null);
@@ -252,6 +304,10 @@ namespace Dash
             xOpContentPresenter.Content = _compoundOpEditor;
         }
 
+        /// <summary>
+        /// Create the compound operator editor view in the center of the operator
+        /// </summary>
+        /// <param name="collectionField"></param>
         private void MakeCompoundEditor(FieldControllerBase collectionField = null)
         {
             // TODO do we want to resolve this field reference

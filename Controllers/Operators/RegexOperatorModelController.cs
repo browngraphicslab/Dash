@@ -31,6 +31,7 @@ namespace Dash
             [ExpressionKey]      = new IOInfo(TypeInfo.Text, true),
             [SplitExpressionKey] = new IOInfo(TypeInfo.Text, true)
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [MatchesKey] = TypeInfo.Collection,
