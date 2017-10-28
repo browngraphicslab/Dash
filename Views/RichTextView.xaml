@@ -51,6 +51,7 @@
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          DragOver="xRichEitBox_DragOver" 
+
                          Foreground="{StaticResource MainText}" 
                          GotFocus="xRichEditBox_GotFocus" 
                          Drop="xRichEditBox_Drop"   
@@ -58,7 +59,9 @@
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 
                          SelectionChanged="xRichEditBox_SelectionChanged"  
+                         Background="Transparent"
                          BorderBrush="{StaticResource DocumentBackground}" 
+                         BorderThickness="1"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
     </Grid>

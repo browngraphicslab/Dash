@@ -30,7 +30,7 @@
                 <Grid x:Name="DocumentViewContainerGrid" 
                         AllowDrop="True"
                         HorizontalAlignment="Stretch"
-                        Margin="5,5,5,5"
+                        Margin="0"
                         VerticalAlignment="Stretch"
                         ManipulationMode="All"
                 >

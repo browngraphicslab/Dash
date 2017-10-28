@@ -46,17 +46,17 @@ namespace Dash
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+        public CollectionView ParentCollection;
 
         /// <summary>
         /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CompoundOperatorEditor CompoundFreeform => this.GetFirstAncestorOfType<CompoundOperatorEditor>();
+        public CompoundOperatorEditor CompoundFreeform;
 
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public DocumentView ParentDocument;
 
         public enum CollectionViewType
         {
@@ -100,10 +100,16 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
+            ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ParentDocument.StyleCollection(this);
+
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
+            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
+            
             if (_collectionMenu == null)
                 MakeMenu();
             // set the top-level viewtype to be freeform by default
-            if (ParentDocument == MainPage.Instance.xMainDocView)
+            if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 _viewType = CollectionViewType.Freeform;
             }
@@ -135,7 +141,7 @@ namespace Dash
 
             // use a fully dark gridbg for the parent-level, nested collectionviews
             // use a lighter background
-            if (ParentDocument == MainPage.Instance.xMainDocView)
+            if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
