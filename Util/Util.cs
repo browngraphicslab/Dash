@@ -509,16 +509,21 @@ namespace Dash
             return null;
         }
 
-        public static DocumentController BlankDoc()
+        public static DocumentController BlankDocWithPosition(Point pos)
         {
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextFieldModelController("Document")
             };
             var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
-            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
+            var layout = new FreeFormDocument(new List<DocumentController>(), pos, new Size(200, 200)).Document;
             blankDocument.SetActiveLayout(layout, true, true);
             return blankDocument;
+        }
+
+        public static DocumentController BlankDoc()
+        {
+            return BlankDocWithPosition(new Point(0, 0));
         }
 
         public static DocumentController BlankCollection()

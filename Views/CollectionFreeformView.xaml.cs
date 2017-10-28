@@ -139,7 +139,7 @@ namespace Dash
         void fitFreeFormChildrenToTheirLayouts()
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
-            ManipulationControls?.FitToParent();
+            //ManipulationControls?.FitToParent();
         }
 
 
