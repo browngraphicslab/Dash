@@ -10,14 +10,14 @@
     ManipulationStarted="UserControl_ManipulationStarted"
     AllowDrop="True"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}">
 
     <Grid Width="{Binding Width}" MinWidth="12" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="10" MinWidth="10" />
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Yellow">
+        <Grid Grid.Column="0" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
             <TextBox IsHitTestVisible="False"  FontSize="12" Foreground="Black" Text="{Binding}" Height="25"/>
          </Grid>
          <Grid Background="Black" Grid.Column="1" ManipulationMode="All" CanDrag="False" 

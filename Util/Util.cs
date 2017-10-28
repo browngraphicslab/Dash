@@ -555,17 +555,38 @@ namespace Dash
 
             // iterate over all the documents in the input collection and get their key's
             // and associated types
-            foreach (var documentController in collection.Data)
-            foreach (var field in documentController.EnumFields())
+            foreach (var docController in collection.Data)
             {
-                if (field.Key.Name.StartsWith("_"))
-                    continue;
+                var actualDoc = GetDataDoc(docController);
 
-                if (!typedHeaders.ContainsKey(field.Key))
-                    typedHeaders[field.Key] = new HashSet<TypeInfo>();
-                typedHeaders[field.Key].Add(field.Value.TypeInfo);
+                foreach (var field in actualDoc.EnumFields())
+                {
+                    if (field.Key.Name.StartsWith("_"))
+                        continue;
+
+                    if (!typedHeaders.ContainsKey(field.Key))
+                        typedHeaders[field.Key] = new HashSet<TypeInfo>();
+                    typedHeaders[field.Key].Add(field.Value.TypeInfo);
+                }
             }
             return typedHeaders;
+        }
+
+        /// <summary>
+        /// Helper method to get the data document from a document if it exists
+        /// otherwise return the document itself
+        /// </summary>
+        /// <param name="docController"></param>
+        /// <returns></returns>
+        public static DocumentController GetDataDoc(DocumentController docController)
+        {
+            var actualDoc = docController;
+            var dataDoc = docController.GetField(KeyStore.DocumentContextKey);
+            if (dataDoc != null)
+            {
+                actualDoc = (dataDoc as DocumentFieldModelController).Data;
+            }
+            return actualDoc;
         }
     }
 }

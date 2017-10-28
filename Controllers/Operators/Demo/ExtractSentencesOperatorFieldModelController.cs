@@ -51,13 +51,14 @@ namespace Dash.Controllers.Operators.Demo
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.Data)
             {
-                var textInput = inputDoc.GetField(textFieldKey) as TextFieldModelController;
+                var dataDoc = Util.GetDataDoc(inputDoc);
+                var textInput = dataDoc.GetField(textFieldKey) as TextFieldModelController;
                 if (textInput != null)
                 {
                     var sentences = Regex.Split(textInput.Data, @"(?<=[\.!\?])\s+");
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
                     {
-                        var outputDoc = inputDoc.MakeDelegate();
+                        var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new TextFieldModelController(sentence), true);
                         outputDocs.Add(outputDoc);
                     }
