@@ -273,10 +273,13 @@ namespace Dash
 
                 var subDocs = new List<DocumentController>();
                 var showField = dragData.FieldKey;
-                var firstDocValue = (getDocs as DocumentCollectionFieldModelController).Data.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<FieldControllerBase>)
-                     showField = expandCollection(dragData, getDocs, subDocs, showField);
-                else subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
+                if ((getDocs as DocumentCollectionFieldModelController).Data.Any())
+                {
+                    var firstDocValue = (getDocs as DocumentCollectionFieldModelController).Data.First().GetDataDocument(null).GetDereferencedField(showField, null);
+                    if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<FieldControllerBase>)
+                        showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    else subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
+                }
                 if (subDocs != null)
                     cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(subDocs), true);
                 else cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
