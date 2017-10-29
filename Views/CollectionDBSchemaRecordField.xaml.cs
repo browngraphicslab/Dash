@@ -72,9 +72,19 @@ namespace Dash
             HeaderViewModel = headerViewModel;
             Row             = row;
             DataReference   = new DocumentReferenceFieldController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
+
+            // hack to expand headers if they contain alot of text
+            var tfmc = DataReference.DereferenceToRoot<TextFieldModelController>(null);
+            if (tfmc != null)
+            {
+                var neededWidth = tfmc.Data.Length * 3.0;
+                HeaderViewModel.Width = Math.Min(300, neededWidth);
+            }
+
+
             BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
             Width           = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
-            HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
+            HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + HeaderViewModel.Width;
             Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
         }
 

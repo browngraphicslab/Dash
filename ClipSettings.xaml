@@ -21,100 +21,144 @@
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,5,0">
-                        <!--<TextBox x:Name="xClipXTextBox" 
-                                 Header="Clip X" 
-                                 Height="Auto" 
-                                 BorderBrush="White" 
-                                 Background="White" 
-                                 VerticalContentAlignment="Center" 
-                                 VerticalAlignment="Top" 
-                                 Margin="0,0,0,5" 
-                                 TextAlignment="Center"
-                                 FontSize="12" 
-                                 TextChanged="XClipXTextBox_OnTextChanged"/>-->
-                        <TextBox x:Name="xClipXTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                        <TextBox x:Name="xClipXTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,5"
-                                 TextAlignment="Center" FontSize="12" TextChanged="XClipXTextBox_OnTextChanged" />
+                                 TextAlignment="Center" FontSize="12" TextChanged="XClipXTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <TextBlock Text="Clip X" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                            <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
 
-                        <Border x:Name="xClipXLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="Clip X" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                            <Border x:Name="xHorizontalDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+
+                            <Border x:Name="xHorizontalIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="0" Margin="5,0,0,0">
-                        <!--<TextBox x:Name="xClipYTextBox" 
-                                 Header="Clip Y" 
-                                 Height="Auto" 
-                                 BorderBrush="White" 
-                                 Background="White" 
-                                 VerticalContentAlignment="Center" 
-                                 VerticalAlignment="Top"  
-                                 Margin="0,0,0,5" 
-                                 TextAlignment="Center"
-                                 FontSize="12"
-                                 TextChanged="XClipYTextBox_OnTextChanged"/>-->
-                        <TextBox x:Name="xClipYTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                        <TextBox x:Name="xClipYTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,5"
-                                 TextAlignment="Center" FontSize="12" TextChanged="XClipYTextBox_OnTextChanged" />
+                                 TextAlignment="Center" FontSize="12" TextChanged="XClipYTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <TextBlock Text="Clip Y" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
 
-                        <Border x:Name="xClipYLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="Clip Y" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                            <Border x:Name="xVerticalDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+
+                            <Border x:Name="xVerticalIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="0" Grid.Row="1" Margin="0,5,5,0">
-                        <!--<TextBox x:Name="xClipWidthTextBox" 
-                                 Header="Clip Width Ratio" 
-                                 Height="Auto" 
-                                 BorderBrush="White" 
-                                 Background="White" 
-                                 VerticalContentAlignment="Center" 
-                                 VerticalAlignment="Top" 
-                                 Margin="0,0,0,5" 
-                                 TextAlignment="Center"
-                                 FontSize="12"
-                                 TextChanged="XClipWidthTextBox_OnTextChanged"/>-->
-                        <TextBox x:Name="xClipWidthTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                        <TextBox x:Name="xClipWidthTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
-                                 TextAlignment="Center" FontSize="12" TextChanged="XClipWidthTextBox_OnTextChanged" />
+                                 TextAlignment="Center" FontSize="12" TextChanged="XClipWidthTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
+                        <TextBlock Text="Width Ratio" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
 
-                        <Border x:Name="xClipWidthLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="Width Ratio" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                            <Border x:Name="xWidthDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+
+                            <Border x:Name="xWidthIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+                        </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
-                        <!--<TextBox x:Name="xClipHeightTextBox"
-                                 Header="Clip Height Ratio" 
-                                 Height="Auto" 
-                                 BorderBrush="White" 
-                                 Background="White" 
-                                 VerticalContentAlignment="Center" 
-                                 VerticalAlignment="Top"  
-                                 Margin="0,0,0,5" 
-                                 TextAlignment="Center"
-                                 FontSize="12"
-                                 TextChanged="XClipHeightTextBox_OnTextChanged"/>-->
-                        <TextBox x:Name="xClipHeightTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
+                        <TextBox x:Name="xClipHeightTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
-                                 TextAlignment="Center" FontSize="12" TextChanged="XClipHeightTextBox_OnTextChanged" />
+                                 TextAlignment="Center" FontSize="12" TextChanged="XClipHeightTextBox_OnTextChanged"
+                                 LostFocus="XTextBox_OnLostFocus" />
+                        <TextBlock Text="Height Ratio" FontSize="12" Foreground="White"
+                                       HorizontalAlignment="Center"/>
+                        <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
+                              Background="Transparent"
+                              VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
+                              PointerPressed="XMovementDetectionGrid_OnPointerPressed"
+                              PointerReleased="XMovementDetectionGrid_OnPointerReleased"
+                              PointerCanceled="XMovementDetectionGrid_OnPointerCanceled" ManipulationMode="All"
+                              ManipulationDelta="XMovementDetectionGrid_OnManipulationDelta"
+                              ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
 
-                        <Border x:Name="xClipHeightLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="Height Ratio" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                            <Border x:Name="xHeightDeduct" Tag="Deduct" Width="25" Height="25"
+                                    HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+
+                            </Border>
+
+                            <Border x:Name="xHeightIncrement" Tag="Increment" Width="25" Height="25"
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                           FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center">
+                                </TextBlock>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </Grid>
             </local:SettingsPaneBlock.MainContent>

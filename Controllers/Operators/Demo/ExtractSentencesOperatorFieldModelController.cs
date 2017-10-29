@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 
-namespace Dash.Controllers.Operators.Demo
+namespace Dash
 {
     public class ExtractSentencesOperatorFieldModelController : OperatorFieldModelController
     {

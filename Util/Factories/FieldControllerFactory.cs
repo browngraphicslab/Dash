@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Dash.Controllers;
 using Dash.Controllers.Operators;
-using Dash.Controllers.Operators.Demo;
 using DashShared;
 using DashShared.Models;
 using Flurl.Util;
