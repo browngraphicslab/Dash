@@ -27,6 +27,7 @@ namespace Dash
             AddViewModels(_collectionFieldModelController.Data, context);
 
             var copiedContext = new Context(context);
+            OutputKey = KeyStore.CollectionOutputKey;
 
             if (collection is ReferenceFieldModelController)
             {

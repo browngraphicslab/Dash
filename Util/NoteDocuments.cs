@@ -172,6 +172,7 @@ namespace Dash
                     docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(dataDocument), true);
                     docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                     docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+                    docLayout.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
                     Document = docLayout;
                 }
             }
