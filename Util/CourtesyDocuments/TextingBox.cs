@@ -36,7 +36,7 @@ namespace Dash
         public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null, Color? backgroundColor = null)
+        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null, Color? backgroundColor = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -50,7 +50,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -89,7 +89,7 @@ namespace Dash
         /// </summary>
         /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -104,6 +104,8 @@ namespace Dash
             };
             SetupBindings(tb, docController, context);
 
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
+
             // add bindings to work with operators
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
@@ -113,10 +115,11 @@ namespace Dash
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey, fmController);
             }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
+
         #region Bindings
 
         protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)
@@ -124,7 +127,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,
@@ -136,17 +139,9 @@ namespace Dash
             }
         }
 
-        protected static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
+        protected static IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
-            if (fieldModelController is TextFieldModelController)
-            {
-                return new StringToStringConverter();
-            }
-            else if (fieldModelController is NumberFieldModelController)
-            {
-               return new StringToDoubleConverter(0);
-            }
-            else if (fieldModelController is DocumentFieldModelController)
+            if (fieldModelController is DocumentFieldModelController)
             {
                 return new DocumentControllerToStringConverter();
             }
@@ -154,7 +149,16 @@ namespace Dash
             {
                 return new DocumentCollectionToStringConverter();
             }
-            return null;
+            else if (fieldModelController is NumberFieldModelController)
+            {
+                return new StringToDoubleConverter(0);
+            }
+            else if (fieldModelController is ReferenceFieldModelController)
+            {
+                return null;
+            }
+
+            return new ObjectToStringConverter(null);
         }
         
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)

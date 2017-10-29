@@ -15,6 +15,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -143,18 +144,23 @@ namespace Dash
                 var context = new Context(dataDocController);
                 var dataField = dataDocController.GetDereferencedField(dataKey, context);
 
-                // get a layout document for the data
-                var layoutDocument = GetLayoutDocumentForData(dataField, dataDocController, dataKey, context);
+                // get a layout document for the data - use the most abstract prototype as the field reference document
+                //  (otherwise, the layout would point directly to the data instance which would make it impossible to
+                //   create Data copies since the layout would point directly to the (source) data instance and not the common prototype).
+                var dataPrototypeDoc = kvp.Value;
+                while (dataPrototypeDoc.GetPrototype() != null)
+                    dataPrototypeDoc = dataPrototypeDoc.GetPrototype();
+                var layoutDocument = GetLayoutDocumentForData(dataField, dataPrototypeDoc, dataKey, context);
                 if (layoutDocument == null)
                     return;
 
                 // apply position if we are dropping on a freeform
-                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+                if (layoutContainer.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -187,45 +193,45 @@ namespace Dash
                 }
                 if (newLayoutDocument != null)
                 {
-                    var col = layoutContainer.LayoutDocument.GetField(KeyStore.DataKey) as
-                        DocumentCollectionFieldModelController;
+                    var context = new Context(newLayoutDocument);
+                    var col = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                     col?.AddDocument(newLayoutDocument);
                 }
             }
         }
 
-        private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
+        private static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentFieldModelController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is InkFieldModelController)
             {
-                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new InkBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }
@@ -258,9 +264,9 @@ namespace Dash
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
-                   layoutDocument.DocumentType == GridViewLayout.DocumentType ||
-                   layoutDocument.DocumentType == ListViewLayout.DocumentType;
+            return layoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout) ||
+                   layoutDocument.DocumentType.Equals(GridViewLayout.DocumentType) ||
+                   layoutDocument.DocumentType.Equals(ListViewLayout.DocumentType);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)

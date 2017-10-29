@@ -26,19 +26,18 @@ namespace Dash.Converters
 
         string GetPrimaryKeyString(DocumentController data)
         {
-            var keyList = data.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
+            var keys = data.GetDereferencedField< ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, _context);
             var context = _context;
-            if (keyList == null)
+            if (keys == null)
             {
                 var docContext = data.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(data))?.Data;
                 if (docContext != null)
                 {
                     context = new Context(docContext);
-                    keyList = docContext.GetDereferencedField(KeyStore.PrimaryKeyKey, context);
+                    keys = docContext.GetDereferencedField< ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, context);
                     data = docContext;
                 }
             }
-            var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
                 var docString = "<";
@@ -125,7 +124,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
@@ -161,7 +160,7 @@ namespace Dash.Converters
                 _doc = doc;
                 return _doc;
             }
-            return DBTest.DBNull;
+            return null;
         }
     }
     public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentFieldModelController, string>
@@ -219,7 +218,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;

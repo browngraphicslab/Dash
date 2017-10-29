@@ -8,7 +8,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash;
 using DashShared;
-
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -28,7 +28,7 @@ namespace Dash
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
-        public ImageBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -60,19 +60,24 @@ namespace Dash
 
         private static EditableImage _editableImage;
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
             _editableImage = new EditableImage(docController, context);
             var image = _editableImage.Image;
 
+
             SetupBindings(image, docController, context);
+
 
             // set up interactions with operations
             var imageFMController = docController.GetDereferencedField(KeyStore.DataKey, context) as ImageFieldModelController;
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), reference.FieldKey, imageFMController);
+            BindOperationInteractions(image, GetImageReference(docController).GetFieldReference().Resolve(context), reference.FieldKey, imageFMController);
+
+          
+            if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = image;
 
             if (isInterfaceBuilderLayout)
             {
@@ -112,7 +117,7 @@ namespace Dash
             {
                 return;
             }
-            var binding = new FieldBinding<FieldModelController>()
+            var binding = new FieldBinding<FieldControllerBase>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
@@ -208,7 +213,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();

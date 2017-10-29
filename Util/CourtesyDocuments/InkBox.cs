@@ -16,11 +16,9 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink Box");
 
-        public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
-
         private static string PrototypeId = "29BD18A0-8236-4305-B063-B77BA4192C59";
 
-        public InkBox(FieldModelController refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
+        public InkBox(FieldControllerBase refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -30,7 +28,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
 
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkFieldModelController;
@@ -45,6 +43,12 @@ namespace Dash
                     //SetupBindings(selectableContainer, docController, context);
                     return selectableContainer;
                 }
+
+                //add to key to framework element dictionary
+                var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+                if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = inkCanvas;
+
+
                 return inkCanvas;
             }
             return new Grid();
@@ -52,7 +56,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();

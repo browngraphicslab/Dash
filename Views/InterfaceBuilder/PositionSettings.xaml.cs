@@ -30,33 +30,30 @@ namespace Dash
 
         private void BindPosition(DocumentController docController, Context context)
         {
-            var fmc = docController.GetField(KeyStore.PositionFieldKey);
             var positionController = docController.GetPositionField(context);
             Debug.Assert(positionController != null);
 
-            var converter = new StringCoordinateToPointConverter(positionController.Data);
-
-            var xPositionBinding = new Binding
+            var xPositionBinding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = positionController,
-                Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = converter,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new StringCoordinateToPointConverter(positionController.Data),
                 ConverterParameter = Coordinate.X,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty,xPositionBinding);
+            xHorizontalPositionTextBox.AddFieldBinding(TextBox.TextProperty, xPositionBinding);
 
-            var yPositionBinding = new Binding
+            var yPositionBinding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = positionController,
-                Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = converter,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new StringCoordinateToPointConverter(positionController.Data),
                 ConverterParameter = Coordinate.Y,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
+            xVerticalPositionTextBox.AddFieldBinding(TextBox.TextProperty, yPositionBinding);
         }
 
         #region ValueSlider

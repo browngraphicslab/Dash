@@ -10,7 +10,7 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel("ImageToUri"))
+        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel(OperatorType.ImageToUri))
         {
         }
 
@@ -28,7 +28,7 @@ namespace Dash
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             //throw new NotImplementedException();
 
@@ -38,7 +38,7 @@ namespace Dash
             //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
         
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ImageOperatorFieldModelController(OperatorFieldModel);
         }

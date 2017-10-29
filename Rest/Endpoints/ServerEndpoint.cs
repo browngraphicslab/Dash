@@ -11,7 +11,6 @@ namespace Dash
 {
     public class ServerEndpoint
     {
-
         public ServerEndpoint()
         {
             Connection = InitializeConnection();
@@ -50,27 +49,31 @@ namespace Dash
         /// <param name="PostAsJson">Most post requests will default to json, but tokens do not so we have this option</param>
         /// <returns>An HttpResponseMessage upon success</returns>
         /// <exception cref="ApiException">Throws an api excpetion if the request was not successful</exception>
-        public HttpResponseMessage Post(string path, object bodyObject, bool PostAsJson=true)
+        public async Task<HttpResponseMessage> Post(string path, object bodyObject, bool PostAsJson=true)
         {
             try
             {
                 var a = JsonConvert.SerializeObject(bodyObject);
 
                 // make the post request and get the result
-                var response = PostAsJson ? Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")).Result :
-                                            Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent).Result;
+                var response = PostAsJson ? await Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")) :
+                                            await Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent);
 
-                //Debug.WriteLine(response.RequestMessage.Content);
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
+
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
+
                     //TODO we should extract this logging from this class
                     //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
                     // create api exception wrapper which lets us print a useful message to debug output
                     var ex = new ApiException(response);
                     //Debug.WriteLine(ex.ApiExceptionMessage());
                     throw ex;
+
                 }
 
                 // otherwise return the result
@@ -100,18 +103,15 @@ namespace Dash
             try
             {
                 // make the get request and get the result
-                var response = Connection.GetAsync(DashConstants.ServerBaseUrl + apiPath).Result;
+                var response = await Connection.GetAsync(DashConstants.ServerBaseUrl + apiPath);
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
                     // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    //Debug.WriteLine(ex.ApiExceptionMessage());
 
                     // then throw the HttpRequestException
                     response.EnsureSuccessStatusCode();
-                    //TODO we should think about how get requests should work, maybe we want get requests to happen in individual controllers
                 }
 
                 // otherwise return the result
@@ -137,22 +137,18 @@ namespace Dash
         /// <param name="bodyObject">The object which is serialized in json as the body of the put request</param>
         /// <returns>An HttpResponseMessage upon success</returns>
         /// <exception cref="ApiException">Throws an api exception if the request was not successful</exception>
-        public HttpResponseMessage Put(string path, object bodyObject)
+        public async Task<HttpResponseMessage> Put(string path, object bodyObject)
         {
             try
             {
                 // make the put request and get the result
-                var response = Connection.PutAsJsonAsync(DashConstants.ServerBaseUrl + path, bodyObject).Result;
+                var response = await Connection.PutAsJsonAsync(DashConstants.ServerBaseUrl + path, bodyObject);
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    //TODO we should extract this logging from this class
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-                    throw ex;
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
                 }
 
                 // otherwise return the result
@@ -176,22 +172,18 @@ namespace Dash
         /// </summary>
         /// <param name="apiPath">The path in the api that we are getting from</param>
         /// <returns>A documentDB document which represents the item whcih was deleted, or throws and HttpRequestError or an AggregateException</returns>
-        public HttpResponseMessage Delete(string apiPath)
+        public async Task<HttpResponseMessage> Delete(string apiPath)
         {
             try
             {
                 // make the put request and get the result
-                var response = Connection.DeleteAsync(DashConstants.ServerBaseUrl + apiPath).Result;
+                var response = await Connection.DeleteAsync(DashConstants.ServerBaseUrl + apiPath);
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
-                    //TODO we should extract this logging from this class
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
-                    // create api exception wrapper which lets us print a useful message to debug output
-                    var ex = new ApiException(response);
-                    Debug.WriteLine(ex.ApiExceptionMessage());
-                    throw ex;
+                    // then throw the HttpRequestException
+                    response.EnsureSuccessStatusCode();
                 }
 
                 // otherwise return the result

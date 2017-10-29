@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -38,8 +37,7 @@ namespace Dash
 
         public RichTextSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == RichTextBox.DocumentType,
-                "you can only create rich text settings for a rich text box");
+            Debug.Assert(docController.DocumentType.Equals(RichTextBox.DocumentType), "you can only create rich text settings for a rich text box");
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
             this.AddFonts();

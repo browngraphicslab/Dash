@@ -39,14 +39,14 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition MinHeight="50"/>
+            <RowDefinition MinHeight="50" Height="*"/>
             <RowDefinition Height="11"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
         <local:DocumentView x:Name="xDocView" Grid.Row="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <localMicrosoft:GridSplitter 
             x:Name="xSplitter"
-            Grid.Row="1" Height="11" ResizeBehavior="BasedOnAlignment" HorizontalAlignment="Stretch"
+            Grid.Row="1" Height="11" Opacity="0" ResizeBehavior="BasedOnAlignment" HorizontalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 
@@ -71,21 +71,19 @@
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
             <ListView x:Name="xThumbs" 
-                Grid.Row="0" 
-                      SelectionMode="Single"
-                      ItemClick="xThumbs_ItemClick" 
-                Background="Black" 
-                VerticalAlignment="Stretch" 
-                      PointerPressed="xThumbs_PointerPressed"   
-                SelectionChanged="xThumbs_SelectionChanged" 
-                ItemsSource="{Binding ThumbDocumentViewModels}"
-                ScrollViewer.HorizontalScrollMode="Enabled"
-                ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                ScrollViewer.IsHorizontalRailEnabled="True"
-                ScrollViewer.VerticalScrollMode="Disabled">
+                    Grid.Row="0" 
+                    SelectionMode="Single"
+                    Background="Black" 
+                    VerticalAlignment="Stretch" 
+                    SelectionChanged="xThumbs_SelectionChanged" 
+                    ItemsSource="{Binding ThumbDocumentViewModels}"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                    ScrollViewer.IsHorizontalRailEnabled="True"
+                    ScrollViewer.VerticalScrollMode="Disabled">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal" />
+                        <ItemsStackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
@@ -97,10 +95,13 @@
                 </ListView.ItemTemplate>
             </ListView>
             <RelativePanel x:Name="navBar" Grid.Row="1" Height="40" HorizontalAlignment="Center">
-                <Button x:Name="prevButton" RelativePanel.AlignLeftWithPanel="True"  Content="&lt;&lt;"  Click="PrevButton_Click"/>
-                <Button x:Name="xPageNum"  RelativePanel.RightOf="prevButton" Content=""   Click="FitPageButton_Click" CanDrag="True" />
-                <Button x:Name="xPopOutPage"  RelativePanel.RightOf="xPageNum" Content="PopOut"   Click="PopOutPage_Click" CanDrag="True" />
-                <Button RelativePanel.RightOf="xPopOutPage" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
+                <Button x:Name="prevButton" VerticalContentAlignment="Center" RelativePanel.AlignLeftWithPanel="True" VerticalAlignment="Stretch" Content="&lt;&lt;" 
+                        RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True" Click="PrevButton_Click"/>
+                <Grid x:Name="xPageNumContainer" Background="Black" VerticalAlignment="Stretch" RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True"  RelativePanel.RightOf="prevButton" CanDrag="True" DragStarting="xPageNumContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xPageNum_ManipulationStarted">
+                    <TextBlock x:Name="xPageNum"  Text=""  VerticalAlignment="Stretch" />
+                </Grid>
+                <Button x:Name="xNextButton" VerticalContentAlignment="Center" RelativePanel.RightOf="xPageNumContainer"  VerticalAlignment="Stretch"  
+                        RelativePanel.AlignTopWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.AlignRightWithPanel="True"  Content=">>" Click="NextButton_Click"/>
             </RelativePanel>
         </Grid>
 

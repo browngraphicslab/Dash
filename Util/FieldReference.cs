@@ -7,15 +7,31 @@ using DashShared;
 
 namespace Dash
 {
+    /// <summary>
+    /// Abstract class which contains the utilities for referencing fields on documents
+    /// in different ways
+    /// </summary>
     public abstract class FieldReference
     {
+        /// <summary>
+        /// The key for the field that is being referenced
+        /// </summary>
         public KeyController FieldKey { get; set; }
 
+        /// <summary>
+        /// create a new field reference to some field associated with the passed in key controller
+        /// </summary>
+        /// <param name="fieldKey"></param>
         protected FieldReference(KeyController fieldKey)
         {
             FieldKey = fieldKey;
         }
 
+        /// <summary>
+        /// Returns the document id for the document which contains the passed in field
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public string GetDocumentId(Context context = null)
         {
             return GetDocumentController(context)?.GetId();
@@ -32,9 +48,10 @@ namespace Dash
         /// <returns>A new FieldModelController that points to the same field in the lowest delegate of the pointed to document</returns>
         public abstract FieldReference Resolve(Context context);
 
-        public FieldModelController Dereference(Context context)
+
+        public FieldControllerBase Dereference(Context context)
         {
-            FieldModelController controller;
+            FieldControllerBase controller;
             if (context != null)
             {
                 if (context.TryDereferenceToRoot(this, out controller))
@@ -42,45 +59,42 @@ namespace Dash
                     return controller;
                 }
             }
-            DocumentController doc = GetDocumentController(context);
-            context = context ?? new Context();
-            var newContext = context;
-            if (doc.ShouldExecute(context, FieldKey))
+            var doc = GetDocumentController(context);
+            if (doc != null)
             {
+                context = context ?? new Context();
+                var newContext = context;
+                if (doc.ShouldExecute(context, FieldKey))
                 {
-
-                    newContext = doc.Execute(context, false);
-                    if (newContext.TryDereferenceToRoot(this, out controller))
                     {
-                        return controller;
+
+                        newContext = doc.Execute(context, false);
+                        if (newContext.TryDereferenceToRoot(this, out controller))
+                        {
+                            return controller;
+                        }
                     }
                 }
+
+                var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
+
+                return fmc;
             }
-
-            var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
-
-            return fmc;
+            return null;
         }
 
-        public FieldModelController DereferenceToRoot(Context context)
+        public FieldControllerBase DereferenceToRoot(Context context)
         {
-            FieldModelController reference = Dereference(context);
+            FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceFieldModelController)
             {
                 reference = reference.Dereference(context);
             }
-            //if (reference == null)
-            //{
-            //    return null;
-            //}
-            //if (reference.InputReference != null)
-            //{
-            //    return reference.InputReference.DereferenceToRoot(context);
-            //}
+
             return reference;
         }
 
-        public T DereferenceToRoot<T>(Context context) where T : FieldModelController
+        public T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
         {
             return DereferenceToRoot(context) as T;
         }
@@ -100,5 +114,7 @@ namespace Dash
         {
             return FieldKey.GetHashCode();
         }
+
+        public abstract ReferenceFieldModelController GetReferenceController();
     }
 }

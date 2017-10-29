@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="StoredProcedures\getDocumentDTO.js" />
+    <Content Include="StoredProcedures\bulkImport.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Views;Areas\**\Views">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -41,6 +46,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Filter" Version="1.0.2" />
     <PackageReference Include="Serilog" Version="2.5.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.0.1" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.2.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -19,7 +19,7 @@ namespace Dash
     {
         public static DocumentType DocumentType =
             new DocumentType("7C92378E-C38E-4B28-90C4-F5EF495878E5", "Document Box");
-        public DocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+        public DocumentBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
@@ -30,7 +30,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,
@@ -41,7 +41,7 @@ namespace Dash
                 element.AddFieldBinding(DocumentView.DataContextProperty, binding);
             }
         }
-        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldModelController fieldModelController)
+        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
             if (fieldModelController is DocumentFieldModelController)
             {
@@ -51,7 +51,7 @@ namespace Dash
         }
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -59,20 +59,20 @@ namespace Dash
 
             ///* 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
 
             if (fieldModelController is ImageFieldModelController)
-                return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
+                return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
-                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout, true);
+                return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout, true);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 
             //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
             //var docView = new KeyValuePane();
             //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
-                //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
-            
+            //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+
             var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
 
             var border = new Border();
@@ -80,15 +80,19 @@ namespace Dash
 
             SetupDocumentBinding(docView, docController, context);
 
+            //Add to key to framework element dictionary
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = border; 
+
             // bind the text height
             //var docheightController = GetHeightField(docController, context);
             //if (docheightController != null)
-                //BindHeight(docView, docheightController);
+            //BindHeight(docView, docheightController);
 
             // bind the text width
             //var docwidthController = GetWidthField(docController, context);
             //if (docwidthController != null)
-                //BindWidth(docView, docwidthController);
+            //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

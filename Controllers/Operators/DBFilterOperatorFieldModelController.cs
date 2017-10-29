@@ -10,7 +10,7 @@ namespace Dash.Controllers.Operators
 {
     public class DBFilterOperatorFieldModel : OperatorFieldModel
     {
-        public DBFilterOperatorFieldModel() : base("DBfilter")
+        public DBFilterOperatorFieldModel() : base(OperatorType.DBfilter)
         {
         }
     }
@@ -22,7 +22,7 @@ namespace Dash.Controllers.Operators
         static public DocumentController CreateFilter(ReferenceFieldModelController inputDocs, string fieldRef)
         {
             var filterFieldController = new DBFilterOperatorFieldModelController(new DBFilterOperatorFieldModel());
-            var filterOp = OperatorDocumentModel.CreateOperatorDocumentModel(filterFieldController);
+            var filterOp = OperatorDocumentFactory.CreateOperatorDocument(filterFieldController);
             filterOp.DocumentType = DBFilterOperatorType;
             
             filterOp.SetField(InputDocsKey,    inputDocs, true);
@@ -34,11 +34,13 @@ namespace Dash.Controllers.Operators
                 new NumberFieldModelController[] { new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0), new NumberFieldModelController(0) }
                 ), true);
 
-            var layoutDoc = new DBFilterOperatorBox(new ReferenceFieldModelController(filterOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+
+            var layoutDoc = new DBFilterOperatorBox(new DocumentReferenceFieldController(filterOp.GetId(), KeyStore.OperatorKey)).Document;
+
             filterOp.SetActiveLayout(layoutDoc, true, true); 
             
             // this field stores the Avg so that the operator view can have something to bind to.
-            filterOp.SetField(SelfAvgResultKey, new ReferenceFieldModelController(filterOp.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), true);
+            filterOp.SetField(SelfAvgResultKey, new DocumentReferenceFieldController(filterOp.GetId(), DBFilterOperatorFieldModelController.AvgResultKey), true);
             filterOp.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(ClassKey.Id), new TextFieldModelController(FilterFieldKey.Id) }), true);
 
             return filterOp;
@@ -55,7 +57,6 @@ namespace Dash.Controllers.Operators
         //
 
         //Output keys
-        public static readonly KeyController ResultsKey      = new KeyController("AE54F402-3B8F-4437-A71F-FF8B9B804194", "Results");
         public static readonly KeyController AvgResultKey    = new KeyController("27A7017A-170E-4E4A-8CDC-94983C2A5188", "Avg");
         public static readonly KeyController CountBarsKey    = new KeyController("539D338C-1851-4E45-A6E3-145B3659C237", "CountBars");
 
@@ -65,11 +66,11 @@ namespace Dash.Controllers.Operators
         public static readonly KeyController ClassKey         = new KeyController("018E279A-119B-42E6-9AAF-00A5F76A08F1", "Filter");
 
         //Input Keys
-        public static readonly KeyController FilterFieldKey  = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "FilterField");
-        public static readonly KeyController BucketsKey      = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "Buckets");
+        public static readonly KeyController FilterFieldKey  = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
+        public static readonly KeyController BucketsKey      = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
         public static readonly KeyController SelectedKey     = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
         public static readonly KeyController InputDocsKey    = new KeyController("0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17", "Dataset");
-        public static readonly KeyController AutoFitKey      = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "AutoFit");
+        public static readonly KeyController AutoFitKey      = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "_AutoFit");
         
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
@@ -81,13 +82,13 @@ namespace Dash.Controllers.Operators
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [ResultsKey]    = TypeInfo.Collection,
+            [KeyStore.CollectionOutputKey]    = TypeInfo.Collection,
             [CountBarsKey]  = TypeInfo.Collection,
             [BucketsKey]    = TypeInfo.List,
             [AvgResultKey]  = TypeInfo.Number
         };
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var idocs        = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey]);
             var dbDocs       = (idocs as DocumentCollectionFieldModelController)?.Data ?? (idocs as DocumentFieldModelController)?.Data.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null).Data;
@@ -101,7 +102,7 @@ namespace Dash.Controllers.Operators
         }
         
 
-        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
+        static List<FieldControllerBase> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
         {
             double minValue = double.MaxValue;
             double maxValue = double.MinValue;
@@ -127,10 +128,10 @@ namespace Dash.Controllers.Operators
                 barStart += barDomain;
             }
 
-            return barDomains.Select((b) => b as FieldModelController).ToList();
+            return barDomains.Select((b) => b as FieldControllerBase).ToList();
         }
 
-        public void filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars, Dictionary<KeyController, FieldModelController> outputs)
+        public void filterDocuments(List<DocumentController> dbDocs, List<FieldControllerBase> bars, List<string> pattern, List<FieldControllerBase> selectedBars, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -166,7 +167,7 @@ namespace Dash.Controllers.Operators
                 }
             }
             outputs[CountBarsKey] = new ListFieldModelController<NumberFieldModelController>(countBars);
-            outputs[ResultsKey]   = new DocumentCollectionFieldModelController(collection);
+            outputs[KeyStore.CollectionOutputKey]   = new DocumentCollectionFieldModelController(collection);
             outputs[BucketsKey]   = new ListFieldModelController<NumberFieldModelController>(bars.Select((b) => b as NumberFieldModelController));
             outputs[AvgResultKey] = new NumberFieldModelController(sumOfFields / dbDocs.Count);
         }
@@ -191,13 +192,13 @@ namespace Dash.Controllers.Operators
                 }
                 else if (pattern.Count == 1)
                 {
-                    return new ReferenceFieldModelController(srcDoc.GetId(), pfield.Key);
+                    return new DocumentReferenceFieldController(srcDoc.GetId(), pfield.Key);
                 }
             }
             return null;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new DBFilterOperatorFieldModelController(OperatorFieldModel as DBFilterOperatorFieldModel);
         }

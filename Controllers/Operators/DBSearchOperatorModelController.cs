@@ -9,7 +9,7 @@ namespace Dash.Controllers.Operators
 {
     public class DBSearchOperatorFieldModel : OperatorFieldModel
     {
-        public DBSearchOperatorFieldModel() : base("search")
+        public DBSearchOperatorFieldModel() : base(OperatorType.Search)
         {
         }
     }
@@ -17,34 +17,34 @@ namespace Dash.Controllers.Operators
     {
         public DBSearchOperatorFieldModel DBSearchOperatorFieldModel {  get { return OperatorFieldModel as DBSearchOperatorFieldModel; } }
        
-        static public DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
+        public static DocumentController CreateSearch(DocumentController searchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
-            var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+            var searchOp = OperatorDocumentFactory.CreateOperatorDocument(searchFieldController);
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             searchOp.SetField(SearchForDocKey, new DocumentFieldModelController(searchForDoc), true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new DocumentReferenceFieldController(dbDoc.GetId(), KeyStore.DataKey), true);
 
-
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new DocumentReferenceFieldController(searchOp.GetId(), KeyStore.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }
 
-        static public DocumentController CreateSearch(FieldModelController fieldContainingSearchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
+        public static DocumentController CreateSearch(FieldControllerBase fieldContainingSearchForDoc, DocumentController dbDoc, string fieldRef, string retPath)
         {
             var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel());
-            var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+            var searchOp = OperatorDocumentFactory.CreateOperatorDocument(searchFieldController);
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             if (fieldContainingSearchForDoc != null)
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
             else
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new DocumentReferenceFieldController(dbDoc.GetId(), KeyStore.DataKey), true);
 
-            var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
+            var layoutDoc = new DBSearchOperatorBox(new DocumentReferenceFieldController(searchOp.GetId(), KeyStore.OperatorKey)).Document;
+
             searchOp.SetActiveLayout(layoutDoc, true, true);
             return searchOp;
         }
@@ -54,7 +54,6 @@ namespace Dash.Controllers.Operators
         }
 
         //Output keys
-        public static readonly KeyController ResultsKey      = new KeyController("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
         public static readonly KeyController InputDocsKey    = new KeyController("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
         public static readonly KeyController FieldPatternKey = new KeyController("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
         public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
@@ -69,17 +68,17 @@ namespace Dash.Controllers.Operators
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
-            [ResultsKey] = TypeInfo.Collection
+            [KeyStore.CollectionOutputKey] = TypeInfo.Collection
         };
         
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data.Trim(' ','\r');
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
             var returnPath   = new List<string>(retPathString.Split('.'));
             var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
-            if (searchForDoc == DBTest.DBNull)
-                searchForDoc = null;
+            //if (searchForDoc == DBTest.DBNull)
+            //    searchForDoc = null;
             var dbDocs       = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
             if (dbDocs == null)
                 return;
@@ -98,7 +97,7 @@ namespace Dash.Controllers.Operators
                 }
             }
             
-            outputs[ResultsKey] = new DocumentCollectionFieldModelController(documents);
+            outputs[KeyStore.CollectionOutputKey] = new DocumentCollectionFieldModelController(documents);
         }
 
         private void D_DocumentFieldUpdated()
@@ -130,8 +129,8 @@ namespace Dash.Controllers.Operators
             foreach (var field in dmc.EnumFields()) 
                 if (field.Key != KeyStore.ThisKey) {
                     foreach (var docRef in field.Value.GetReferences())
-                        if (docRef?.GetId() == targetDocument.GetId())
-                            return new ReferenceFieldModelController(dmc.GetId(), field.Key);
+                        if (docRef.GetId() == targetDocument.GetId())
+                            return new DocumentReferenceFieldController(dmc.GetId(), field.Key);
                 }
             return null;
         }
@@ -183,7 +182,7 @@ namespace Dash.Controllers.Operators
             return null;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new DBSearchOperatorFieldModelController(OperatorFieldModel as DBSearchOperatorFieldModel);
         }

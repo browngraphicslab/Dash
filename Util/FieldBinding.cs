@@ -13,14 +13,14 @@ using Dash.Converters;
 
 namespace Dash
 {
-    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldModelController;
+    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldControllerBase;
 
     public enum XamlDerefernceLevel {
         DereferenceToRoot,
         DereferenceOneLevel
     };
 
-    public class FieldBinding<T> where T : FieldModelController
+    public class FieldBinding<T> where T : FieldControllerBase
     {
         public BindingMode Mode;
         public DocumentController Document;
@@ -72,7 +72,7 @@ namespace Dash
 
     public static class BindingExtension
     {
-        public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             switch (binding.Mode)
             {
@@ -88,12 +88,12 @@ namespace Dash
             }
         }
 
-        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             binding.ConvertToXaml(element, property, binding.Context);
         }
 
-        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
@@ -119,22 +119,22 @@ namespace Dash
         }
 
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
-            where T : FrameworkElement where U : FieldModelController
+            where T : FrameworkElement where U : FieldControllerBase
         {
             bool updateUI = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 (sender, args) =>
                 {
                     updateUI = false;
-                    if (binding.Context == null)
-                    {
-                        binding.ConvertToXaml(element, property,  args.Context);
+                if (binding.Context == null)
+                {
+                    binding.ConvertToXaml(element, property, args.Context);
 
-                    }
-                    else
-                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
-                    {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
+                }
+                else
+                if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                {
+                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !args.Context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
                     }
                     updateUI = true;

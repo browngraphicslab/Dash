@@ -5,6 +5,8 @@ using Dash;
 using DashShared;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using System.Collections.Generic;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -12,9 +14,9 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("ED3B2D3C-C3EA-4FDC-9C0C-71E10F549C5F", "Rich Text");
 
-        public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
+        public RichTextBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
+            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
             Document = new DocumentController(fields, DocumentType);
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
@@ -22,7 +24,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,
@@ -34,7 +36,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             RichTextView rtv = null;
             var refToRichText =
@@ -52,6 +54,7 @@ namespace Dash
                     
                 };
                 rtv = richText;
+                rtv.ManipulationMode = ManipulationModes.All;
                 rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
                 rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
                 //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
@@ -59,14 +62,12 @@ namespace Dash
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
             }
             SetupTextBinding(rtv, docController, context);
+            SetupBindings(rtv, docController, context);
 
-            // bind the rich text height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(rtv, heightController);
 
-            // bind the rich text width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(rtv, widthController);
+            //add to key to framework element dictionary
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = rtv;
 
             if (isInterfaceBuilderLayout)
             {

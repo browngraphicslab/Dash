@@ -5,10 +5,9 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:collections="using:System.Collections"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped"
+    d:DesignWidth="400" DataContextChanged="OnUserControlDataContextChanged" RightTapped="OnRightTapped"
     x:Name="OpView">
 
     <Grid>
@@ -26,7 +25,9 @@
             </Grid.ColumnDefinitions>
 
             <!--Inner Content-->
-            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            <Border Grid.Column="1">
+                <ContentPresenter x:Name="xOpContentPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            </Border>
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
@@ -44,10 +45,10 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" 
-                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
+                            <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" Grid.Column="1" VerticalAlignment="Center"/>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
-                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
+                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"
+                                     DragEnter="UIElement_OnDragEnter" Drop="UIElement_OnDrop"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -67,8 +68,8 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Foreground="White" Margin="0,0,-10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
-                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
+                            <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left"/>
+                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
                                 <ToolTipService.ToolTip>
                                     <local:FieldPreview Loading="FieldPreview_OnLoading"></local:FieldPreview>

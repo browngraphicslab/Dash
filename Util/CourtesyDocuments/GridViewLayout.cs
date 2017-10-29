@@ -33,7 +33,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -112,7 +112,7 @@ namespace Dash
             AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
 
             var grid = new Grid();
@@ -125,14 +125,14 @@ namespace Dash
             gridView.ItemContainerStyle = new Style { TargetType = typeof(GridViewItem) };
             SetupBindings(gridView, docController, context); 
 
-            LayoutDocuments(docController, context, gridView, isInterfaceBuilderLayout);
+            LayoutDocuments(docController, context, gridView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
             var c = new Context(context);
             docController.DocumentFieldUpdated += delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments(sender, c, gridView, isInterfaceBuilderLayout);
+                    LayoutDocuments(sender, c, gridView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
             };
             grid.Children.Add(gridView);
@@ -154,14 +154,14 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid, bool isInterfaceBuilder)
+        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             double maxHeight = 0;
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
+                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
                 if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);

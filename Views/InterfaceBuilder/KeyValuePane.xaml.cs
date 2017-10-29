@@ -51,6 +51,8 @@ namespace Dash
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
         {
+            var dataContext = documentToDisplay.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null);
+            documentToDisplay = dataContext?.Data ?? documentToDisplay;
             if (_documentControllerDataContext != null)
                 _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
             _documentControllerDataContext = documentToDisplay;
@@ -73,10 +75,11 @@ namespace Dash
         private void SetListItemSourceToCurrentDataContext()
         {
             ListItemSource.Clear();
+            var keys = _documentControllerDataContext.GetDereferencedField< ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t)=> (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
                 {
-                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext)));
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext), keys.Contains(keyFieldPair.Key.Id), TypeColumnWidth));
                 }
         }
 
@@ -89,12 +92,14 @@ namespace Dash
             else SetListItemSourceToCurrentDataContext();
         }
 
-        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
+            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
+
             for (int i = 0; i < ListItemSource.Count; i++)
-                if (ListItemSource[i].Key == fieldKey)
+                if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, RealDataContext));
+                        new BoundFieldModelController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id), TypeColumnWidth);
         }
 
         private void FocusOn(TextBox tb)
@@ -147,7 +152,7 @@ namespace Dash
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
-            FieldModelController fmController = new TextFieldModelController("something went wrong");
+            FieldControllerBase fmController = new TextFieldModelController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
             //fmController = _documentControllerDataContext.GetField(key);
@@ -176,15 +181,16 @@ namespace Dash
             }
             else if (item == TypeInfo.Document)
             {
-                var fields = new Dictionary<KeyController, FieldModelController>()
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
                 };
 
                 fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
             }
+            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext)));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext), keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
             return true;
@@ -242,18 +248,45 @@ namespace Dash
         public class KeyFieldContainer
         {
             public KeyController Key { get; }
+            public bool IsPrimary { get; }
             public BoundFieldModelController Controller { get; set; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
+            public GridLength TypeColumnWidth { get; set; }
+            public GridLength PrimaryKeyColumnWidth { get; set; }
 
-            public KeyFieldContainer(KeyController key, BoundFieldModelController controller)
+            public KeyFieldContainer(KeyController key, BoundFieldModelController controller, bool isPrimary, GridLength typeColumnWidth)
             {
                 Key = key;
                 Controller = controller;
                 Type = (controller.FieldModelController.TypeInfo).ToString();
+                IsPrimary = isPrimary;
+                TypeColumnWidth = typeColumnWidth;
+                PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
+            }
+        }
+        
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
+            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController))?.ToList() ?? new List<TextFieldModelController>();
+            if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() == 0)
+            {
+                keys.Add(new TextFieldModelController(kf.Key.Id));
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(keys), false);
             }
         }
 
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
+            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController))?.ToList() ?? new List<TextFieldModelController>();
+            if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() != 0)
+            {
+                keys.RemoveAt(keys.FindIndex((k) => k.Data == kf.Key.Id));
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(keys), false);
+            }
+        }
 
         private void xNewKeyField_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -329,12 +362,16 @@ namespace Dash
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
             var posInKVPane = e.GetPosition(xOuterGrid);
 
-            var col0Width = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem).ContentTemplateRoot as Grid).ColumnDefinitions[0].ActualWidth;
-            var col1Width = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem).ContentTemplateRoot as Grid).ColumnDefinitions[1].ActualWidth;
+            var item = (xKeyValueListView.ContainerFromIndex(0) as ListViewItem);
+            if (item == null)
+                return;
+            var col0Width = (item.ContentTemplateRoot as Grid).ColumnDefinitions[0].ActualWidth;
+            var col1Width = (item.ContentTemplateRoot as Grid).ColumnDefinitions[1].ActualWidth;
+            var col2Width = (item.ContentTemplateRoot as Grid).ColumnDefinitions[2].ActualWidth;
             // make sure you can only edit the key or values; don't edit the type 
-            if (posInKVPane.X < col0Width)
+            if (posInKVPane.X > col0Width && posInKVPane.X < col1Width)
                 _editKey = true;
-            else if (posInKVPane.X > col0Width && posInKVPane.X < col0Width + col1Width)
+            else if (posInKVPane.X > col1Width && posInKVPane.X < col1Width + col2Width)
                 _editKey = false;
             else
                 return;
@@ -350,6 +387,8 @@ namespace Dash
                 _tb.Text = (tappedSource as TextBlock).Text;
             else if (tappedSource is Image)
                 _tb.Text = (tappedSource as Image).BaseUri.AbsoluteUri;
+            else if (tappedSource is Grid)
+                return;
             else throw new NotImplementedException();
 
             //add textbox graphically and set up events 
@@ -374,7 +413,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        DBTest.ResetCycleDetection();
+                        //DBTest.ResetCycleDetection();
                         _selectedKV.Key.Name = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
@@ -387,8 +426,8 @@ namespace Dash
             {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    DBTest.ResetCycleDetection();
-                    var field = _documentControllerDataContext.GetDereferencedField<FieldModelController>(_selectedKV.Key, new Context(_documentControllerDataContext));
+                    //DBTest.ResetCycleDetection();
+                    var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(_selectedKV.Key, new Context(_documentControllerDataContext));
                     this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();
                 }

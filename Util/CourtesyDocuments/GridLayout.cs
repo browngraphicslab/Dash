@@ -55,9 +55,10 @@ namespace Dash
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,
             Context context)
-        {
-            var rowTypes =
-                docController.GetDereferencedField(GridRowsTypeKey, context) as ListFieldModelController<NumberFieldModelController>;
+        { 
+            var rowTypesAA =
+                docController.GetDereferencedField(GridRowsTypeKey, context);
+            var rowTypes = rowTypesAA as ListFieldModelController<NumberFieldModelController>;
             var rowValues =
                 docController.GetDereferencedField(GridRowsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
             if (rowTypes == null || rowValues == null) return;
@@ -105,7 +106,9 @@ namespace Dash
             AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilder)    
+
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+
         {
             context = context ?? new Context();
             context.AddDocumentContext(docController);
@@ -118,7 +121,7 @@ namespace Dash
             Debug.Assert(col != null);
             foreach (var documentController in col.GetDocuments())
             {
-                var element = documentController.MakeViewUI(context, isInterfaceBuilder);
+                var element = documentController.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn);
                 grid.Children.Add(element);
             }
             if (isInterfaceBuilder)

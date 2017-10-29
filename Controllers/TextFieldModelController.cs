@@ -2,21 +2,30 @@
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+ using DashShared.Models;
 
 namespace Dash
 {
-    public class TextFieldModelController : FieldModelController
+    public class TextFieldModelController : FieldModelController<TextFieldModel>
     {
         public TextFieldModelController(string data) : base(new TextFieldModel(data))
         {
-            Data = data; 
+        }
+
+        public TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel)
+        {
+        }
+
+        public override void Init()
+        {
+
         }
 
         /// <summary>
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public TextFieldModel TextFieldModel => FieldModel as TextFieldModel;
+        public TextFieldModel TextFieldModel => Model as TextFieldModel;
 
         public override object GetValue(Context context)
         {
@@ -36,24 +45,19 @@ namespace Dash
             get { return TextFieldModel.Data; }
             set
             {
-                if (SetProperty(ref TextFieldModel.Data, value))
+                if (TextFieldModel.Data != value)
                 {
-                    // TODO - lsm could the args be set to Update! again this is default so maybe it doesn't matter
+                    TextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
+                    // Update the server
+                    UpdateOnServer();
                 }
             }
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Data = (fieldModel as TextFieldModelController).Data;
-        }
-        
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new TextFieldModelController("Default Value");
         }
@@ -63,7 +67,7 @@ namespace Dash
             return Data;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<TextFieldModel> Copy()
         {
             return new TextFieldModelController(Data);
         }

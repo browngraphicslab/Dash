@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -22,18 +24,18 @@ namespace Dash
         public XampleText()
         {
             // create a document with two images
-            var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
             fields.Add(Text1FieldKey, new TextFieldModelController("Test1"));
             fields.Add(Text2FieldKey, new TextFieldModelController("Test2"));
             fields.Add(Text3FieldKey, new TextFieldModelController("Test3"));
 
             Document = new DocumentController(fields, NumbersType);
 
-            var tBox1 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Text1FieldKey), 0,
+            var tBox1 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text1FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Text2FieldKey), 0,
+            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text2FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox3 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Text3FieldKey), 0,
+            var tBox3 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text3FieldKey), 0,
                 0, 60, 35).Document;
 
             var gridPanel = new GridLayout().Document;

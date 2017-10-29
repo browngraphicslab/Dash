@@ -20,9 +20,9 @@ namespace Dash
 
         public InkFieldModelController InkFieldModelController;
 
-        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            if (collection == null) return;
+            Debug.Assert(collection != null);
             _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddViewModels(_collectionFieldModelController.Data, context);
 
@@ -42,37 +42,42 @@ namespace Dash
                         }
                         else
                         {
+
                             _collectionFieldModelController = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context);
                             if (_collectionFieldModelController == null) return;
                             var documents = _collectionFieldModelController.GetDocuments();
-                            bool newDoc = DocumentViewModels.Count != documents.Count;
-                            if (!newDoc)
-                                foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
-                                    if (!documents.Contains(d))
-                                    {
-                                        newDoc = true;
-                                        break;
-                                    }
-                            if (newDoc)
-                            {
-                                if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                                    DocumentViewModels.Clear();
-                                if (cargs == null)
-                                    cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                                UpdateViewModels(cargs, copiedContext);
-                            }
+                            DocumentViewModels.Clear();
+                            AddViewModels(documents, args.Context);
+                            //TODO tfs: I don't think we actually want to do this...
+                            //bool newDoc = DocumentViewModels.Count != documents.Count;
+                            //if (!newDoc)
+                            //    foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
+                            //        if (!documents.Contains(d))
+                            //        {
+                            //            newDoc = true;
+                            //            break;
+                            //        }
+                            //if (newDoc)
+                            //{
+                            //    if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                            //        DocumentViewModels.Clear();
+                            //    if (cargs == null)
+                            //        cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                            //    UpdateViewModels(cargs, copiedContext);
+                            //}
                         }
                     });
             }
             else
             {
-                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
+                collection.FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
                     UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs,
                         copiedContext);
                 };
             }
             CellSize = 250; // TODO figure out where this should be set
+          //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
@@ -153,7 +158,7 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
-            if (doc.DocumentType == DashConstants.DocumentTypeStore.CollectionDocument)
+            if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
             {
                 var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
                 if (coll.Data.Contains(doc))

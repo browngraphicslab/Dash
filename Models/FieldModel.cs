@@ -3,19 +3,25 @@ using DashShared;
 
 namespace Dash
 {
+    /*
     /// <summary>
     ///     Base data class for documents. If a document is a spread sheet, a field is a cell, and a fieldModel wraps
     ///     the data which is stored in a cell
     /// </summary>
+    /// /
     public abstract class FieldModel : EntityBase
     {
-        public FieldModel()
+        public FieldModel(string id = null) : base(id)
         {
             // Initialize Local Variables
 
             // Add Any Events
         }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/master
         /// <summary>
         /// Implemented by inheritors of this class. Builds the server-representation data transfer object
         /// representing this field. This includes two fields: the TypeInfo and Data field.
@@ -28,9 +34,8 @@ namespace Dash
         /// </summary>
         /// <returns>the data transfer object</returns>
         public FieldModelDTO GetFieldDTO() {
-            FieldModelDTO f = GetFieldDTOHelper();
-            f.Id = this.Id;
-            return f;
+            var fieldModelDto = GetFieldDTOHelper();
+            return fieldModelDto;
         }
-    }
+    }*/
 }

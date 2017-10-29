@@ -6,6 +6,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -24,11 +25,13 @@ namespace Dash
     public sealed partial class DocumentView : SelectionElement
     {
         public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
+
         public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
+
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
-        private ManipulationControls manipulator;
+        public ManipulationControls ManipulationControls;
 
         private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
 
@@ -41,6 +44,7 @@ namespace Dash
 
         public static int dvCount = 0;
 
+
         public DocumentView()
         {
             InitializeComponent();
@@ -49,8 +53,8 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, true, true);
-            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            ManipulationControls = new ManipulationControls(this, true, true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -58,6 +62,12 @@ namespace Dash
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
+            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
+            AddHandler(PointerPressedEvent, new PointerEventHandler(hdlr), true);
+        }
+
+        private void hdlr(object sender, PointerRoutedEventArgs e)
+        {
         }
 
         private void OnDrop(object sender, DragEventArgs e)
@@ -159,54 +169,76 @@ namespace Dash
 
             copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Copy View", bgcolor, CopyViewDocument);
+            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 moveButton,
                 copyButton,
                // delegateButton,
-                copyDataButton,
+               // copyDataButton
+                instanceDataButton,
                 copyViewButton,
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
-
             var moveButtonView = moveButton.View;
             moveButtonView.CanDrag = true;
+            moveButton.ManipulationMode = ManipulationModes.All;
+            moveButton.ManipulationDelta += (s, e) => e.Handled = true;
+            moveButton.ManipulationStarted += (s, e) => e.Handled = true;
             moveButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            moveButtonView.DropCompleted += MoveButtonView_DropCompleted;
+            moveButtonView.DropCompleted += ButtonView_DropCompleted;
             var copyButtonView = copyButton.View;
             copyButtonView.CanDrag = true;
+            copyButton.ManipulationMode = ManipulationModes.All;
+            copyButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
             copyButtonView.DragStarting += (s, e) =>
             {
                 _moveTimer.Stop();
-                e.Data.RequestedOperation = copyButton.ButtonIcon.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
-                ViewModel.DocumentView_DragStarting(this, e);
+                e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            copyButtonView.DropCompleted += CopyButtonView_DropCompleted1;
+            copyButtonView.DropCompleted += ButtonView_DropCompleted;
             var copyDataButtonView = copyDataButton.View;
             copyDataButtonView.CanDrag = true;
+            copyDataButton.ManipulationMode = ManipulationModes.All;
+            copyDataButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyDataButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyDataButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
+            };
+            var instanceDataButtonView = instanceDataButton.View;
+            instanceDataButtonView.CanDrag = true;
+            instanceDataButtonView.ManipulationMode = ManipulationModes.All;
+            instanceDataButtonView.ManipulationDelta += (s, e) => e.Handled = true;
+            instanceDataButtonView.ManipulationStarted += (s, e) => e.Handled = true;
+            instanceDataButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
             var copyViewButtonView = copyViewButton.View;
             copyViewButtonView.CanDrag = true;
+            copyViewButton.ManipulationMode = ManipulationModes.All;
+            copyViewButton.ManipulationDelta += (s, e) => e.Handled = true;
+            copyViewButton.ManipulationStarted += (s, e) => e.Handled = true;
             copyViewButtonView.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 e.Data.Properties.Add("View", true);
-                ViewModel.DocumentView_DragStarting(this, e);
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
 
 
@@ -226,24 +258,21 @@ namespace Dash
             _moveTimer.Tick += Timer_Tick;
         }
 
-        private void CopyButtonView_DropCompleted1(UIElement sender, DropCompletedEventArgs args)
+        private void ButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move)
             {
-                var coll = CollectionView.GetParentCollectionView(this);
+                var coll = this.GetFirstAncestorOfType<CollectionView>();
+                Debug.Assert(coll != null);
                 coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
             }
-        }
-
-        private void MoveButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-        }
-
-        private void CopyButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            copyButton.ButtonIcon.Symbol = Symbol.Copy;
-            copyButton.ButtonText.Text = "Copy";
-            _moveTimer.Stop();
+            else
+            { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
+                var currentTranslate = ViewModel.GroupTransform.Translate;
+                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+            }
         }
 
         DispatcherTimer _moveTimer = new DispatcherTimer();
@@ -255,7 +284,7 @@ namespace Dash
 
         private void Timer_Tick(object sender, object e)
         {
-            copyButton.ButtonIcon.Symbol = Symbol.MoveToFolder;
+            copyButton.Contents.Symbol = Symbol.MoveToFolder;
             copyButton.ButtonText.Text = "Move";
         }
 
@@ -290,13 +319,11 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
+            Debug.Assert(dvm.Width != double.NaN);
+            Debug.Assert(dvm.Height != double.NaN);
             dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
             dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
             // should we allow documents with NaN's for width & height to be resized?
-            //if (double.IsNaN(dvm.Width))
-            //    dvm.Width = ActualWidth + dx;
-            //if (double.IsNaN(dvm.Height))
-            //    dvm.Height = ActualHeight + dy;
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -319,7 +346,8 @@ namespace Dash
         }
 
         /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.
+        /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
+        /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -328,6 +356,21 @@ namespace Dash
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
             e.Handled = true;
+
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                fitFreeFormChildrenToTheirLayouts();
+            }
+        }
+
+        void fitFreeFormChildrenToTheirLayouts()
+        {
+            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
+            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
+            if (this == parentOfFreeFormChild)
+            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
+                freeFormChild?.ManipulationControls?.FitToParent();
+            }
         }
 
         /// <summary>
@@ -368,7 +411,7 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            var docType = ViewModel.DocumentController.Model.DocumentType;
             if (docType.Type != null)
             {
 
@@ -376,14 +419,14 @@ namespace Dash
             else
             {
 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Source = ViewModel.DocumentController.Model.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -400,7 +443,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-
+            
             //initDocumentOnDataContext();
         }
 
@@ -439,7 +482,6 @@ namespace Dash
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
             }
-
         }
 
         /// <summary>
@@ -464,7 +506,6 @@ namespace Dash
 
             if (useFixedMenu)
                 MainPage.Instance.HideDocumentMenu();
-
         }
 
         private void CopyDocument()
@@ -484,6 +525,10 @@ namespace Dash
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
+        private void InstanceDataDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
+        }
         public void ScreenCap()
         {
             Util.ExportAsImage(OuterGrid);
@@ -532,56 +577,38 @@ namespace Dash
                             break;
                         }
 
-                    DBTest.ResetCycleDetection();
+                    //DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
         }
         #endregion
 
         #region Activation
-
-        /// <summary>
-        /// Called when the pointer first goes down on the document. Selects it and brings it to the
-        /// foreground of the canvas, in front of all other documents.
-        /// </summary>
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (ParentCollection == null) return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-
-            OnSelected();
-            e.Handled = true;
-        }
-
+        
         public Rect ClipRect { get { return xClipRect.Rect;  } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
+        { 
             if (!IsSelected)
             {
-                await System.Threading.Tasks.Task.Delay(100);
-                OnSelected();
+                await Task.Delay(100); // allows for double-tap
+
+                //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+                if (ParentCollection != null)
+                {
+                    ParentCollection.MaxZ += 1;
+                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+
+                    if (e != null)
+                        e.Handled = true;
+                    OnSelected();
+
+                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
+                }
             }
-            if (e != null) e.Handled = true;
-
-
-            //if (!IsSelected)
-            //{
-            //    await System.Threading.Tasks.Task.Delay(100);
-
-            //    if (e != null) e.Handled = true;
-            //    if (ViewModel == null)
-            //        return;
-            //    if (ViewModel.IsInInterfaceBuilder)
-            //        return;
-
-            //    OnSelected();
-            //}
-
-
         }
-
+        
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
@@ -605,7 +632,7 @@ namespace Dash
                     if (useFixedMenu)
                     {
                         MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.MainDocView != this)
+                        if (MainPage.Instance.xMainDocView != this)
                             MainPage.Instance.ShowDocumentMenu();
                     }
                 }
@@ -633,6 +660,7 @@ namespace Dash
 
         #endregion
 
+
         private void DocumentView_OnDragOver(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -648,6 +676,7 @@ namespace Dash
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
             Debug.WriteLine(query);
+
         }
     }
 }

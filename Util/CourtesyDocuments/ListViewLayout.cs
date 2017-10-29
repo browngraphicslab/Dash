@@ -36,7 +36,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -61,12 +61,12 @@ namespace Dash
             docController.SetField(SpacingKey, currentSpacingField, forceMask);
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context,  bool isInterfaceBuilderLayout = false)
         {
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        private static void BindSpacing(ListView listView, DocumentController docController, Context context)
+        private static void BindSpacing(ListView listView, DocumentController docController,  Context context)
         {
             var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberFieldModelController;
             if (spacingController == null)
@@ -112,7 +112,7 @@ namespace Dash
             AddBinding(listview, docController, SpacingKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
 
             var grid = new Grid();
@@ -122,6 +122,10 @@ namespace Dash
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
+            };
+            listView.Loaded += (s, e) =>
+            {
+                Util.FixListViewBaseManipulationDeltaPropagation(listView);
             };
             listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
 
@@ -173,13 +177,13 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, ListView list, bool isInterfaceBuilder)
+        private static void LayoutDocuments(DocumentController docController, Context context, ListView list, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
+                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
                 if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);

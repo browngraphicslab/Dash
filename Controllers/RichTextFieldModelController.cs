@@ -9,28 +9,41 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class RichTextFieldModelController: FieldModelController
+    public class RichTextFieldModelController: FieldModelController<RichTextFieldModel>
     {
         public RichTextFieldModelController(): base(new RichTextFieldModel()) { }
         public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data)) { }
+
+        public RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel)
+        {
+
+        }
+
+        public override void Init()
+        {
+            
+        }
+
         /// <summary>
         /// The <see cref="RichTextFieldModel"/> associated with this <see cref="RichTextFieldModelController"/>
         /// </summary>
-        public RichTextFieldModel RichTextFieldModel => FieldModel as RichTextFieldModel;
+        public RichTextFieldModel RichTextFieldModel => Model as RichTextFieldModel;
 
         public RichTextFieldModel.RTD Data
         {
             get { return RichTextFieldModel.Data; }
             set
             {
-                if (SetProperty(ref RichTextFieldModel.Data, value))
+                if (RichTextFieldModel.Data != value)
                 {
+                    RichTextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
+                    // Update the server
+                    UpdateOnServer();
                 }
 
             }
@@ -49,13 +62,8 @@ namespace Dash
             return false;
         }
         public ITextSelection SelectedText { get; set; }
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            var richTextFieldModelController = fieldModel as RichTextFieldModelController;
-            if (richTextFieldModelController != null) Data = richTextFieldModelController.Data;
-        }
 
-        public override TypeInfo TypeInfo => TypeInfo.RichText;
+        public override TypeInfo TypeInfo => TypeInfo.RichTextField;
 
         public override IEnumerable<DocumentController> GetReferences()
         {
@@ -65,26 +73,27 @@ namespace Dash
                 var split = link.Split('\"');
                 if (split.Count() > 1)
                 {
-                    var doc = ContentController.GetController<DocumentController>(split[1]);
+                    var doc = ContentController<DocumentModel>.GetController<DocumentController>(split[1]);
                     if (doc != null)
                         yield return doc;
                 }
             }
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            var richTextView = new RichTextView()
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                TargetRTFController = this
-            };
+        // bcz: just want the basic behavior of converting the field into a string.. no need to override.
+        //public override FrameworkElement GetTableCellView(Context context)
+        //{
+        //    var richTextView = new RichTextView()
+        //    {
+        //        HorizontalAlignment = HorizontalAlignment.Stretch,
+        //        VerticalAlignment = VerticalAlignment.Stretch,
+        //        TargetRTFController = this
+        //    };
 
-            return richTextView;
-        }
+        //    return richTextView;
+        //}
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RichTextFieldModelController(new RichTextFieldModel.RTD("Default Value"));
         }
@@ -94,7 +103,7 @@ namespace Dash
             return Data.ReadableString;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<RichTextFieldModel> Copy()
         {
             return new RichTextFieldModelController(Data);
         }

@@ -16,6 +16,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static Dash.NoteDocuments;
+using Dash.Controllers;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -23,21 +25,28 @@ namespace Dash
 {
     public sealed partial class CollectionDBView : SelectionElement, ICollectionView
     {
-        public BaseCollectionViewModel ViewModel { get; private set; }
         public CollectionDBView()
         {
             this.InitializeComponent();
             DataContextChanged += CollectionDBView_DataContextChanged;
-            Loaded += CollectionDBView_Loaded;
-            SizeChanged += CollectionDBView_SizeChanged;
-            xParameter.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            Loaded             += CollectionDBView_Loaded;
+            SizeChanged        += (sender, e) => updateChart(new Context(ParentDocument), true);
+            xParameter.Style    = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
+            xTagCloud.TermDragStarting += XTagCloud_TermDragStarting;
         }
 
-        private void CollectionDBView_SizeChanged(object sender, SizeChangedEventArgs e)
+        void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
-            if (ParentDocument != null)
-                UpdateChart(new Context(ParentDocument));
+            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null).Data;
+            var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
+            if (dbDocs != null && pattern != null && pattern.Count() > 0)
+            {
+                var collection = dbDocs.Where((d) => testPatternMatch(d.GetDataDocument(null), pattern, term));
+                
+                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, term, 200, 300, collection.ToList()).Document;
+                args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
+            }
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
@@ -45,19 +54,17 @@ namespace Dash
             var dv = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
             
             ParentDocument = dv.ViewModel.DocumentController;
-            UpdateChart(new Context(ParentDocument));
+            updateChart(new Context(ParentDocument));
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
-            if (ParentDocument != null)
-                UpdateChart(new Context(ParentDocument));
+            updateChart(new Context(ParentDocument));
         }
         
-
         DocumentController _parentDocument;
         public DocumentController ParentDocument {
             get { return _parentDocument; }
@@ -66,6 +73,10 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
+                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
+                    {
+                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
+                    }
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.BucketsKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(new NumberFieldModelController[] {
@@ -108,16 +119,18 @@ namespace Dash
                 }
             }
         }
-        
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
         private void ParentDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == DBFilterOperatorFieldModelController.AutoFitKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.FilterFieldKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.BucketsKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey ||
-                args.Reference.FieldKey == ViewModel.CollectionKey)
-                UpdateChart(new Context(ParentDocument));
+            var autofit = ParentDocument.GetDereferencedField<NumberFieldModelController>(DBFilterOperatorFieldModelController.AutoFitKey, args.Context)?.Data != 0;
+
+            if (args.Reference.FieldKey.Equals( DBFilterOperatorFieldModelController.AutoFitKey) ||
+                args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.FilterFieldKey) ||
+                (args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.BucketsKey) && !autofit) ||
+                args.Reference.FieldKey.Equals(DBFilterOperatorFieldModelController.SelectedKey) ||
+                args.Reference.FieldKey.Equals(ViewModel.CollectionKey))
+                updateChart(new Context(ParentDocument));
         }
 
         public void UpdateBucket(int changedBucket, double maxDomain)
@@ -146,80 +159,72 @@ namespace Dash
             ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey, new ListFieldModelController<NumberFieldModelController>(selectedBars), true);
         }
 
-
-        public void UpdateChart(Context context)
+        void updateChart(Context context, bool updateViewOnly=false)
         {
-            var dbDocs  = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context).Data;
-            var buckets = ParentDocument.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, context)?.Data;
-            var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, context)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
-            var autofit = ParentDocument.GetDereferencedField<NumberFieldModelController>(DBFilterOperatorFieldModelController.AutoFitKey, context).Data != 0;
-            var selectedBars = ParentDocument.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
+            var dbDocs  = ParentDocument?.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
+            var buckets = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.BucketsKey, context)?.Data;
+            var pattern = ParentDocument?.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, context)?.Data?.Trim(' ', '\r')?.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
+            var autofit = ParentDocument?.GetDereferencedField<NumberFieldModelController>(DBFilterOperatorFieldModelController.AutoFitKey, context)?.Data != 0;
+            var selectedBars = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
             if (dbDocs != null && buckets != null)
             {
                 if (autofit)
                 {
-                    var newBuckets = autoFitBuckets(dbDocs, pattern.ToList(), buckets.Count);
-                    if (newBuckets != null)
-                    {
-                        if (newBuckets.Count == buckets.Count)
-                            for (int i = 0; i < newBuckets.Count; i++)
-                                if ((newBuckets[i] as NumberFieldModelController).Data != (buckets[i] as NumberFieldModelController).Data)
-                                {
-                                    ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(newBuckets.Select((b) => b as NumberFieldModelController)), true);
-                                    break;
-                                }
-                        buckets = newBuckets;
-                    }
+                    buckets = autoFitBuckets(dbDocs.Select((d) => d.GetDataDocument(null)).ToList(), pattern.ToList(), buckets.Count) ?? buckets;
                 }
 
-                var barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars);
-                var xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
+                string rawText   = "";
+                var    barCounts = filterDocuments(dbDocs, buckets, pattern.ToList(), selectedBars, updateViewOnly, ref rawText);
+                double barSum    = updateBars(buckets, barCounts);
 
-                if (xBars.Count == barCounts.Count)
+                if (barSum == 0 && dbDocs.Count > 0)
                 {
-                    for (int i = 0; i < buckets.Count; i++)
-                    {
-                        xBars[i].MaxDomain = (buckets[i] as NumberFieldModelController).Data;
-                    }
-                }
-                else
-                {
-                    setupBars(buckets);
-                    xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
-                }
-
-
-                double barSum = 0;
-                for (int i = 0; i < barCounts.Count; i++)
-                {
-                    var b = barCounts[i];
-                    xBars[i].xBar.Height = xBarChart.ActualHeight * b;
-                    barSum += b;
-                }
-                for (int i = 0; i < barCounts.Count; i++)
-                {
-                    var b = barCounts[i];
-                    xBars[i].xBar.Height /= Math.Max(1, barSum);
+                    this.xTagCloud.TheText = rawText;
+                    this.xNumberContent.Visibility = Visibility.Collapsed;
+                    this.xTextContent.Visibility = Visibility.Visible;
                 }
             }
         }
-        public void setupBars(List<FieldModelController> buckets)
+
+        double updateBars(List<FieldControllerBase> buckets, List<double> barCounts)
         {
-            this.xBarChart.Children.Clear();
-            this.xBarChart.ColumnDefinitions.Clear();
-            this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-            for (int i = 0; i < buckets.Count; i++)
+            var xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
+            if (xBars.Count == barCounts.Count) // have all of the bars already, just need to change their heights
             {
-                this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(10, GridUnitType.Star) });
-                this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
-                var g = new CollectionDBChartBar() { FilterChart = this, BucketIndex = i, MaxDomain = (buckets[i] as NumberFieldModelController).Data };
-                Grid.SetColumn(g, i * 2 + 1);
-                this.xBarChart.Children.Add(g);
+                for (int i = 0; i < buckets.Count; i++)
+                {
+                    xBars[i].MaxDomain = (buckets[i] as NumberFieldModelController).Data;
+                }
             }
-            this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+            else // otherwise, need to build all the bars
+            {
+                var selectedBars = ParentDocument?.GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ?? new List<FieldControllerBase>();
+                var selectedInds = selectedBars.Select((f) => (f as NumberFieldModelController)?.Data);
+                this.xBarChart.Children.Clear();
+                this.xBarChart.ColumnDefinitions.Clear();
+                this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });
+                for (int i = 0; i < buckets.Count; i++)
+                {
+                    this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(10, GridUnitType.Star) }); // add bar spacing
+                    this.xBarChart.ColumnDefinitions.Add(new ColumnDefinition() { Width = GridLength.Auto });                       // add bar
+                    var g = new CollectionDBChartBar() { FilterChart = this, BucketIndex = i, MaxDomain = (buckets[i] as NumberFieldModelController).Data, IsSelected = selectedInds.Contains(i) };
+                    Grid.SetColumn(g, i * 2 + 1);
+                    this.xBarChart.Children.Add(g);
+                }
+                xBars = xBarChart.Children.Select((c) => (c as CollectionDBChartBar)).ToList();
+            }
+
+
+            double barSum = barCounts.Aggregate((v, b) => v + b);
+            for (int i = 0; i < barCounts.Count; i++)
+            {
+                xBars[i].xBar.Height = xBarChart.ActualHeight * barCounts[i] / Math.Max(1, barSum);
+            }
+
+            return barSum;
         }
 
-        static List<FieldModelController> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
+        List<FieldControllerBase> autoFitBuckets(List<DocumentController> dbDocs, List<string> pattern, int numBars)
         {
             double minValue = double.MaxValue;
             double maxValue = double.MinValue;
@@ -227,7 +232,7 @@ namespace Dash
             {
                 var visited = new List<DocumentController>();
                 visited.Add(dmc);
-                var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
+                var refField = searchInDocumentForNamedField(pattern, dmc, visited);
                 var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, new Context(dmc));
                 if (field != null)
                 {
@@ -246,11 +251,46 @@ namespace Dash
                 barDomains.Add(new NumberFieldModelController(barStart));
                 barStart += barDomain;
             }
+            var newBuckets = barDomains.Select((b) => b as FieldControllerBase).ToList();
+            ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey, new ListFieldModelController<NumberFieldModelController>(newBuckets.Select((b) => b as NumberFieldModelController)), true);
 
-            return barDomains.Select((b) => b as FieldModelController).ToList();
+            return newBuckets;
         }
 
-        public List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldModelController> bars, List<string> pattern, List<FieldModelController> selectedBars)
+        static bool testPatternMatch(DocumentController dmc, string[] pattern, string term)
+        {
+            if ((pattern != null && pattern.Count() == 0) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                return false;
+            // loop through each field to find on that matches the field name pattern 
+            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && (pattern == null || pf.Key.Name == pattern[0])))
+            {
+                if (pattern == null || pfield.Key.Name == pattern.First())
+                {
+                    var pvalue = pfield.Value.DereferenceToRoot(new Context(dmc));
+                    if (pvalue is DocumentFieldModelController)
+                    {
+                        var nestedDoc = (pvalue as DocumentFieldModelController).Data;
+                        return testPatternMatch(nestedDoc, null, term);
+                    }
+                    else if (pvalue is DocumentCollectionFieldModelController)
+                    {
+                        foreach (var nestedDoc in (pvalue as DocumentCollectionFieldModelController).Data.Select((d) => d.GetDataDocument(null)))
+                            if (testPatternMatch(nestedDoc, null, term))
+                                return true;
+                    }
+                    else if (pvalue is TextFieldModelController)
+                    {
+                        var text = (pvalue as TextFieldModelController).Data;
+                        if (text != null && text.Contains(term))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldControllerBase> bars, List<string> pattern,
+                                     List<FieldControllerBase> selectedBars, bool updateViewOnly, ref string rawText)
         {
             bool keepAll = selectedBars.Count == 0;
 
@@ -260,61 +300,107 @@ namespace Dash
                 countBars.Add(0);
 
             var sumOfFields = 0.0;
-            if (dbDocs != null && pattern.Count() != 0)
+            if (dbDocs != null && (pattern == null || pattern.Count() != 0))
             {
-                foreach (var dmc in dbDocs.ToArray())
+                int count = 0;
+                foreach (var dmc in dbDocs)
                 {
+                    count++;
+                    Debug.WriteLine("Count = " + count + " rawText = " + rawText.Length);
                     var visited = new List<DocumentController>();
                     visited.Add(dmc);
-
-                    var refField = SearchInDocumentForNamedField(pattern, dmc, dmc, visited);
-                    var field = refField?.GetDocumentController(new Context(dmc)).GetDereferencedField<NumberFieldModelController>(refField.FieldKey, new Context(dmc));
-                    if (field != null)
+                    if (pattern == null)
                     {
-                        sumOfFields += field.Data;
-                        foreach (var b in bars)
+                        var dataDoc = dmc.GetDataDocument(null);
+                        foreach (var f in dataDoc.EnumFields().Where((f) => !f.Key.IsUnrenderedKey()))
                         {
-                            if (field.Data <= (b as NumberFieldModelController).Data)
-                            {
-                                countBars[bars.IndexOf(b)]++;
-                                if (keepAll || selectedBars.Select((fm) => (fm as NumberFieldModelController).Data).ToList().Contains(bars.IndexOf(b)))
-                                    collection.Add(dmc);
-                                break;
-                            }
+                            var refField = new DocumentReferenceFieldController(dataDoc.GetId(), f.Key);
+                            inspectField(bars, refField, selectedBars, updateViewOnly, ref rawText, keepAll, collection, countBars, ref sumOfFields, dmc, visited);
                         }
+                    }
+                    else
+                    {
+                        var refField = searchInDocumentForNamedField(pattern, dmc, visited);
+                        inspectField(bars, refField, selectedBars, updateViewOnly, ref rawText, keepAll, collection, countBars, ref sumOfFields, dmc, visited);
                     }
                 }
             }
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey, new DocumentCollectionFieldModelController(collection), true);
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
+            if (!updateViewOnly)
+            {
+                if (!ViewModel.CollectionKey.Equals(KeyStore.CollectionOutputKey)) // avoid inifinite loop -- input is output.  this happens when something tries to display the CollectionOutputKey field (e.g., Interface Builder showing all document fields)
+                    ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
+                ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey, new NumberFieldModelController(sumOfFields / dbDocs.Count), true);
+            }
             return countBars;
         }
 
-        private static ReferenceFieldModelController SearchInDocumentForNamedField(List<string> pattern, DocumentController srcDoc, DocumentController dmc, List<DocumentController> visited)
+        void inspectField(List<FieldControllerBase> bars, ReferenceFieldModelController refField, List<FieldControllerBase> selectedBars, bool updateViewOnly, ref string rawText, bool keepAll, List<DocumentController> collection, List<double> countBars, ref double sumOfFields, DocumentController dmc, List<DocumentController> visited)
         {
-            if (pattern.Count == 0 || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
-                return null;
-            // loop through each field to find on that matches the field name pattern 
-            foreach (var pfield in dmc.EnumFields().Where((pf) => pf.Key.Name == pattern[0] || pattern[0] == "" || pf.Value is DocumentFieldModelController))
+            var dataDoc = dmc.GetDataDocument(null);
+            var field = refField?.GetDocumentController(new Context(dataDoc)).GetDereferencedField(refField.FieldKey, new Context(dataDoc));
+            if (field is DocumentCollectionFieldModelController)
             {
-                if (pfield.Value is DocumentFieldModelController)
+                var counted = filterDocuments((field as DocumentCollectionFieldModelController).Data, bars, null, selectedBars, updateViewOnly, ref rawText);
+                for (int i = 0; i < counted.Count; i++)
+                    countBars[i] += counted[i] > 0 ? 1 : 0;
+            }
+            else if (field != null)
+            {
+                if (field is ListFieldModelController<TextFieldModelController>)
                 {
-                    var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
-                    if (!visited.Contains(nestedDoc))
+                    foreach (var tfmc in (field as ListFieldModelController<TextFieldModelController>).Data)
+                        rawText += " " + tfmc.ToString();
+                } else
+                    rawText += " " + field.GetValue(new Context(dataDoc)).ToString();
+                var numberField = field as NumberFieldModelController;
+                if (numberField != null)
+                {
+                    sumOfFields += numberField.Data;
+                    foreach (var b in bars)
                     {
-                        visited.Add(nestedDoc);
-                        var field = SearchInDocumentForNamedField(pattern, nestedDoc, nestedDoc, visited);
-                        if (field != null)
-                            return field;
+                        if (numberField.Data <= (b as NumberFieldModelController).Data)
+                        {
+                            countBars[bars.IndexOf(b)]++;
+                            if (keepAll || selectedBars.Select((fm) => (fm as NumberFieldModelController).Data).ToList().Contains(bars.IndexOf(b)))
+                                collection.Add(dmc);
+                            break;
+                        }
                     }
                 }
-                else if (pattern.Count == 1)
+                else if (keepAll)
+                    collection.Add(dmc);
+            }
+        }
+
+        static ReferenceFieldModelController searchInDocumentForNamedField(List<string> pattern, DocumentController srcDoc, List<DocumentController> visited)
+        {
+            var dmc = srcDoc.GetDataDocument(null);
+            if ((pattern != null && pattern.Count == 0) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                return null;
+            // loop through each field to find on that matches the field name pattern 
+            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && ( pattern == null || pf.Key.Name == pattern[0] || pattern[0] == "")))
+            {
+                if (pattern != null && pattern.Count == 1)
                 {
-                    return new ReferenceFieldModelController(srcDoc.GetId(), pfield.Key);
+                    return new DocumentReferenceFieldController(dmc.GetId(), pfield.Key);
+                }
+            }
+            foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Value is DocumentFieldModelController))
+            {
+                var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
+                if (!visited.Contains(nestedDoc))
+                {
+                    visited.Add(nestedDoc);
+                    var field = searchInDocumentForNamedField(pattern, nestedDoc, visited);
+                    if (field != null)
+                    {
+                        return field;
+                    }
                 }
             }
             return null;
         }
+
         #region ItemSelection
 
         public void ToggleSelectAllItems()
@@ -333,6 +419,8 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("drop event from collection");
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 

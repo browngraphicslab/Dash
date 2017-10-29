@@ -10,6 +10,9 @@ using Dash.Views;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using DashShared;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -25,11 +28,28 @@ namespace Dash
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
-            xGridView.ItemsSource = SchemaHeaders;
-            Loaded   += CollectionDBSchemaView_Loaded1;
-            Unloaded += CollectionDBSchemaView_Unloaded1;
+            xHeaderView.ItemsSource = SchemaHeaders;
+            xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
         }
 
+        private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            var recordSource = xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>;
+            var slist = SchemaHeaders.ToArray().ToList();
+            foreach (var r in recordSource)
+                if (r.RecordFields.Count == slist.Count)
+                {
+                    UpdateRecords((xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray().Select((xr)=> xr.Document));
+                    var stuff = new ListFieldModelController<TextFieldModelController>();
+                    foreach (var s in SchemaHeaders)
+                        stuff.Add(new TextFieldModelController(s.FieldKey.Id));
+                    ParentDocument.SetField(HeaderListKey, stuff, true);
+                    break;
+                }
+            CollectionDBSchemaHeader.DragModel = null;
+        }
+
+        //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
         public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
             new ObservableCollection<CollectionDBSchemaRecordViewModel>();
 
@@ -44,25 +64,14 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
+                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
+                    {
+                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
+                    }
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.BucketsKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.BucketsKey,
-                            new ListFieldModelController<NumberFieldModelController>(new[]
-                            {
-                                new NumberFieldModelController(0), new NumberFieldModelController(0),
-                                new NumberFieldModelController(0), new NumberFieldModelController(0)
-                            }), true);
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
                             new TextFieldModelController(""), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.AutoFitKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.AutoFitKey,
-                            new NumberFieldModelController(3), true);
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.SelectedKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.SelectedKey,
-                            new ListFieldModelController<NumberFieldModelController>(), true);
-                    ParentDocument.SetField(DBFilterOperatorFieldModelController.AvgResultKey,
-                        new NumberFieldModelController(0), true);
                     ParentDocument.DocumentFieldUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
@@ -77,16 +86,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void CollectionDBSchemaView_Unloaded1(object sender, RoutedEventArgs e)
-        {
-            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
-        }
-
-        private void CollectionDBSchemaView_Loaded1(object sender, RoutedEventArgs e)
-        {
-            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
-        }
 
         private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
         {
@@ -103,20 +102,31 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            if (field is TextFieldModelController)
-                xEditTextBox.Text = (field as TextFieldModelController).Data;
-            else xEditTextBox.Text = field.ToString();
+            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
+            xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
-
+        
         private void xEditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
+                if (xEditTextBox.Text == "\r")
+                {
+                    var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                    var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+                    xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+                    dc.Selected = false;
+                    var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    updateEditBox(recordViewModel.RecordFields[column]); 
+                }
                 e.Handled = true;
-            }
+            }   
             if (e.Key == Windows.System.VirtualKey.Tab)
             {
                 e.Handled = true;
@@ -126,17 +136,19 @@ namespace Dash
         private void xEditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
             {
+                direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
                 var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                 SetFieldValue(dc);
                 var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                var recordViewModel = xRecordsView.Items[Math.Max(0,Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                 updateEditBox(recordViewModel.RecordFields[column]);
             }
 
-            if (e.Key == Windows.System.VirtualKey.Tab)
+            if (e.Key == Windows.System.VirtualKey.Tab || e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.Left)
             {
+                direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
                 var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                 SetFieldValue(dc);
                 var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
@@ -156,7 +168,7 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             dc.Document.ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, new Context(dc.Document)));
-            dc.DataReference = new ReferenceFieldModelController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
+            dc.DataReference = new DocumentReferenceFieldController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -166,6 +178,8 @@ namespace Dash
             if (ParentDocument != null)
                 ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = null;
+
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
 
@@ -176,13 +190,14 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
-            SchemaHeaders.First().Width = 150;
+
+            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.OutputKey = DBFilterOperatorFieldModelController.ResultsKey;
+            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
                 ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
@@ -194,55 +209,95 @@ namespace Dash
         private void ParentDocument_DocumentFieldUpdated(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey == ViewModel.CollectionKey ||
-                args.Reference.FieldKey == DBFilterOperatorFieldModelController.SelectedKey)
+            if (args.Reference.FieldKey.Equals(ViewModel.CollectionKey))
                 UpdateFields(new Context(ParentDocument));
         }
 
-        private bool SchemaHeadersContains(string field)
+        /// </summary>
+        public static KeyController HeaderListKey = new KeyController("7C3F0C3F-F065-4094-8802-F572B35C4D42", "HeaderList");
+        private bool SchemaHeadersContains(KeyController field)
         {
             foreach (var s in SchemaHeaders)
-                if (s.FieldKey.Name == field)
+                if (s.FieldKey.Equals(field))
                     return true;
             return false;
         }
 
+        KeyController _lastFieldSortKey = null;
+        public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
+        {
+            var dbDocs = ParentDocument
+                   .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+
+            var records = new SortedList<string, DocumentController>();
+            foreach (var d in dbDocs)
+            {
+                var str = d.GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                if (records.ContainsKey(str))
+                    records.Add(str + Guid.NewGuid(), d);
+                else records.Add(str, d);
+            }
+            if (_lastFieldSortKey != null && _lastFieldSortKey.Equals(viewModel.FieldKey))
+                UpdateRecords(records.Select((r) => r.Value).Reverse());
+            else UpdateRecords(records.Select((r) => r.Value));
+            _lastFieldSortKey = viewModel.FieldKey;
+        }
         /// <summary>
         ///     Updates all the fields in the schema view
         /// </summary>
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument
-                .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
-            var selectedBars = ParentDocument
-                .GetDereferencedField<ListFieldModelController<NumberFieldModelController>>(
-                    DBFilterOperatorFieldModelController.SelectedKey, context)?.Data;
+            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
+            var headerList = ParentDocument
+                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
             {
+                SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
+                SchemaHeaders.Clear();
+                foreach (var h in headerList)
+                { 
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
+                                                     FieldKey = ContentController<KeyModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
+                }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs)
+                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? db))
                 {
+                    //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
+                    //    d.GetField(KeyStore.DocumentTextKey) != null)
+                    //{
+                    //    var rd = OperatorDocumentFactory.CreateOperatorDocument(new RegexOperatorFieldModelController());
+                    //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController("^\\$[0-9.]+$"), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController(" "), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController(".*"), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController("\\."), true);
+                    //    rd.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
+                    //    d.SetField(RegexOperatorFieldModelController.MatchesKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
+                    //}
                     foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key.Name))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaDocument = ParentDocument, Width=70, FieldKey = f.Key, Selected = false } );
+                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
                 }
-                // remove possible infinite loops
-                filterDocuments(dbDocs, selectedBars.Select((b) => SchemaHeaders[(int)(b as NumberFieldModelController).Data].FieldKey.Name).ToList());
-                
+                SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
+
                 // add all the records
-                var records = new List<CollectionDBSchemaRecordViewModel>();
-                int recordCount = 0;
-                foreach (var d in dbDocs)
-                {
-                    records.Add(new CollectionDBSchemaRecordViewModel(
-                        d,
-                        SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
-                        ));
-                    recordCount++;
-                }
-                xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
+                UpdateRecords(dbDocs);
             }
+        }
+
+        private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
+        {
+            var records = new List<CollectionDBSchemaRecordViewModel>();
+            int recordCount = 0;
+            foreach (var d in dbDocs)
+            {
+                records.Add(new CollectionDBSchemaRecordViewModel(
+                    d,
+                    SchemaHeaders.Select(f => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
+                    ));
+                recordCount++;
+            }
+            xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
         }
 
         /// <summary>
@@ -264,8 +319,7 @@ namespace Dash
                 if (SearchInDocumentForNamedField(dmc, selectedBars, visited))
                     collection.Add(dmc);
             }
-            ParentDocument.SetField(DBFilterOperatorFieldModelController.ResultsKey,
-                new DocumentCollectionFieldModelController(collection), true);
+            ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
         }
 
         private static bool SearchInDocumentForNamedField(DocumentController dmc, List<string> selectedBars,
@@ -303,6 +357,8 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("drop event from collection");
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 
@@ -338,5 +394,20 @@ namespace Dash
         }
 
         #endregion
+
+        private void xOuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
+
+        private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+        }
+
+        private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Util.FixListViewBaseManipulationDeltaPropagation(xRecordsView);
+        }
     }
 }

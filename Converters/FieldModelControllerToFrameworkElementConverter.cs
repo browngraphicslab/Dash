@@ -10,9 +10,9 @@ namespace Dash
 {
     public class BoundFieldModelController
     {
-        public FieldModelController FieldModelController;
+        public FieldControllerBase FieldModelController;
         public DocumentController   ContextDocumentController;
-        public BoundFieldModelController(FieldModelController fieldModelController, DocumentController contextDocument)
+        public BoundFieldModelController(FieldControllerBase fieldModelController, DocumentController contextDocument)
         {
             FieldModelController = fieldModelController;
             ContextDocumentController = contextDocument;
@@ -36,7 +36,7 @@ namespace Dash
     {
         public override FrameworkElement ConvertDataToXaml(ReferenceFieldModelController data, object parameter = null)
         {
-            return data.GetTableCellView(null);
+            return data?.GetTableCellView(null) ?? new Grid();
         }
 
         public override ReferenceFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)

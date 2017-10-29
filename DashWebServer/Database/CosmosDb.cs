@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 
 // cache design which could be really nice http://pdalinis.blogspot.com/2013/06/auto-refresh-caching-for-net-using.html
 // it could also make things a little more complicated (dependency injection with two instances of the same interface)
@@ -17,13 +19,77 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace DashWebServer
 {
-
     /// <summary>
     ///     Serves as the connector for the cosmosDb database
     ///     Based off of https://auth0.com/blog/documentdb-with-aspnetcore/
     /// </summary>
     public class CosmosDb : IDocumentRepository
     {
+        /// <summary>
+        ///     Initialize a new connection to the database, should only be done once!
+        /// </summary>
+        public CosmosDb(IMemoryCache memoryCache)
+        {
+            // get the memory cache
+            _memoryCache = memoryCache;
+
+            // if the _client isn't null then we are making unecessary connections to the database
+            Debug.Assert(_client == null);
+
+            try
+            {
+                _client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
+
+                // Creates the database with the passed in documentId if it does not exist, and returns the database with the passed in documentId
+                _client.CreateDatabaseIfNotExistsAsync(new Database
+                {
+                    Id = DashConstants.DocDbDatabaseId
+                }).Wait();
+
+                // Creates the collection with the passed in documentId if it does not exist, and returns the collection with the passed in documentId
+                _client.CreateDocumentCollectionIfNotExistsAsync(GetDatabaseLink,
+                    new DocumentCollection {Id = DashConstants.DocDbCollectionId}).Wait();
+
+                AddStoredProcedures().Wait();
+            }
+            catch (DocumentClientException e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+            catch (AggregateException ex)
+            {
+                Debug.WriteLine("One or more exceptions has occurred:");
+                foreach (var exception in ex.InnerExceptions)
+                    Debug.WriteLine("  " + exception.Message);
+                // If you throw here the database did not connect. for local start emulator.
+                throw;
+            }
+        }
+
+        private async Task AddStoredProcedures()
+        {
+            var scripts = Directory.GetFiles(DashConstants.StoredProceduresDirectory);
+            foreach (var script in scripts)
+            {
+                var storedProcedure = new StoredProcedure
+                {
+                    Body = File.ReadAllText(script),
+                    Id = Path.GetFileNameWithoutExtension(script)
+                };
+
+                try
+                {
+                    await _client.CreateStoredProcedureAsync(GetCollectionLink, storedProcedure);
+                }
+                catch (DocumentClientException e)
+                {
+                    Debug.WriteLine("Stored procedure probably already exists");
+                    Debug.WriteLine(e);
+                }
+            }
+        }
+
         #region PrivateVariables
 
         /// <summary>
@@ -54,49 +120,8 @@ namespace DashWebServer
         ///     </para>
         /// </summary>
         private readonly IMemoryCache _memoryCache;
-        
 
         #endregion
-               
-        /// <summary>
-        ///     Initialize a new connection to the database, should only be done once!
-        /// </summary>
-        public CosmosDb(IMemoryCache memoryCache)
-        {
-            // get the memory cache
-            _memoryCache = memoryCache;
-
-            // if the _client isn't null then we are making unecessary connections to the database
-            Debug.Assert(_client == null);
-
-            try
-            {
-                _client = new DocumentClient(new Uri(EndpointUrl), PrimaryKey);
-
-                // Creates the database with the passed in documentId if it does not exist, and returns the database with the passed in documentId
-                _client.CreateDatabaseIfNotExistsAsync(new Database
-                {
-                    Id = DashConstants.DocDbDatabaseId
-                }).Wait();
-
-                // Creates the collection with the passed in documentId if it does not exist, and returns the collection with the passed in documentId
-                _client.CreateDocumentCollectionIfNotExistsAsync(GetDatabaseLink,
-                    new DocumentCollection { Id = DashConstants.DocDbCollectionId }).Wait();
-            }
-            catch (DocumentClientException e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
-            catch (AggregateException ex)
-            {
-                Debug.WriteLine("One or more exceptions has occurred:");
-                foreach (var exception in ex.InnerExceptions)
-                    Debug.WriteLine("  " + exception.Message);
-                // If you throw here the database did not connect
-                throw;
-            }
-        }
 
         #region DatabaseLinkGenerators
 
@@ -121,6 +146,12 @@ namespace DashWebServer
             return UriFactory.CreateDocumentUri(DashConstants.DocDbDatabaseId, DashConstants.DocDbCollectionId, docId);
         }
 
+        private Uri GetStoredProcedureLink(string sprocId)
+        {
+            return UriFactory.CreateStoredProcedureUri(DashConstants.DocDbDatabaseId, DashConstants.DocDbCollectionId,
+                sprocId);
+        }
+
         #endregion
 
         #region CREATE
@@ -133,6 +164,14 @@ namespace DashWebServer
         /// <returns>The added items</returns>
         public async Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items) where T : EntityBase
         {
+<<<<<<< HEAD
+            // nasty but easiest way to create array of dynamics from c# objects
+            dynamic argsJson = JsonConvert.SerializeObject(items.ToArray());
+            var args = new[] {JsonConvert.DeserializeObject<dynamic[]>(argsJson)};
+            var results =
+                await _client.ExecuteStoredProcedureAsync<List<T>>(GetStoredProcedureLink("bulkImport"), args);
+            return results.Response;
+=======
             var results = new List<T>();
 
             try
@@ -150,6 +189,7 @@ namespace DashWebServer
                 Debug.WriteLine(e);
                 throw;
             }
+>>>>>>> origin/master
         }
 
         /// <summary>
@@ -164,10 +204,9 @@ namespace DashWebServer
             {
                 // we use upsert to replace the document if it exists or create a new one if it doesn't
                 var resourceResponse = await _client.UpsertDocumentAsync(GetCollectionLink, item);
-                T result = (dynamic)resourceResponse.Resource;
 
-                // add the new document to the cache
-                var result2 = AddDocumentToCache(result);
+                T result = (dynamic) resourceResponse.Resource;
+
                 return result;
             }
             catch (DocumentClientException e)
@@ -176,6 +215,8 @@ namespace DashWebServer
                 throw;
             }
         }
+
+        //public object Lock2 = new object();
 
         #endregion
 
@@ -203,23 +244,44 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
+<<<<<<< HEAD
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in GetItemsAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+=======
                 Debug.WriteLine(e);
+>>>>>>> origin/master
                 throw;
             }
         }
 
         /// <summary>
-        /// Gets an item from the database using its documentId. This method is faster than querying using <see cref="GetItemsAsync{T}"/> since the
-        /// item can be retrieved from an in memory cache, or accessed through a direct link in the database
+        ///     Gets an item from the database using its documentId. This method is faster than querying using
+        ///     <see cref="GetItemsAsync{T}" /> since the
+        ///     item can be retrieved from an in memory cache, or accessed through a direct link in the database
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
         public async Task<T> GetItemByIdAsync<T>(string documentId) where T : EntityBase
         {
-            var result = GetDocumentFromCacheOrNull<T>(documentId);
-            if (result is null)
+            T result;
+            //var result = GetDocumentFromCacheOrNull<T>(documentId);
+            //if (result is null)
+            try
             {
+<<<<<<< HEAD
+                var resourceResponse = await _client.ReadDocumentAsync(GetDocumentLink(documentId));
+                result = (dynamic) resourceResponse.Resource;
+            }
+            catch (DocumentClientException e)
+            {
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in GetItemByIdAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+                Debug.WriteLine($"desired id: {documentId}");
+                throw;
+=======
                 try
                 {
                     var resourceResponse = await _client.ReadDocumentAsync(GetDocumentLink(documentId));
@@ -230,14 +292,16 @@ namespace DashWebServer
                     Debug.WriteLine(e);
                     throw;
                 }
+>>>>>>> origin/master
             }
 
             return result;
         }
 
         /// <summary>
-        /// Gets an item from the database using its documentId. This method is faster than querying using <see cref="GetItemsAsync{T}"/> since the
-        /// item can be retrieved from an in memory cache, or accessed through a direct link in the database
+        ///     Gets an item from the database using its documentId. This method is faster than querying using
+        ///     <see cref="GetItemsAsync{T}" /> since the
+        ///     item can be retrieved from an in memory cache, or accessed through a direct link in the database
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
@@ -246,9 +310,7 @@ namespace DashWebServer
         {
             var results = new List<T>();
             foreach (var documentId in documentIds)
-            {
                 results.Add(await GetItemByIdAsync<T>(documentId));
-            }
 
             return results;
         }
@@ -269,9 +331,7 @@ namespace DashWebServer
 
             // transfer over all the new models
             foreach (var item in items)
-            {
                 results.Add(await UpdateItemAsync(item));
-            }
 
             return results;
         }
@@ -286,19 +346,30 @@ namespace DashWebServer
         {
             try
             {
+                Debug.WriteLine("updated: " + document.Id);
+
+
                 // add the documetn to the cache and return it, it will update itself in the database when it needs to
-                var result = AddDocumentToCache(document);
+                //var result = AddDocumentToCache(document);
+                var resourceResponse = await _client.UpsertDocumentAsync(GetCollectionLink, document);
+                T result = (dynamic) resourceResponse.Resource;
                 return result;
             }
             catch (DocumentClientException e)
             {
+<<<<<<< HEAD
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in UpdateItemAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+=======
                 Debug.WriteLine(e);
+>>>>>>> origin/master
                 throw;
             }
         }
 
         /// <summary>
-        /// Updates a single document in the database but skips the cache, this should only be called by the cache callback
+        ///     Updates a single document in the database but skips the cache, this should only be called by the cache callback
         /// </summary>
         /// <typeparam name="T">The class type of the document that is going to be updated</typeparam>
         /// <param name="document">The document that is going to be updated</param>
@@ -312,10 +383,17 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
+<<<<<<< HEAD
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in UpdateItemAsyncSkipCache");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+=======
                 Debug.WriteLine(e);
+>>>>>>> origin/master
                 throw;
             }
         }
+
         #endregion
 
         #region DELETE
@@ -329,11 +407,40 @@ namespace DashWebServer
         {
             try
             {
-                RemoveDocumentFromCache(document);
-                var resourceResponse = await _client.DeleteDocumentAsync(GetDocumentLink(document.Id));
+                //RemoveDocumentFromCache(document);
+                await _client.DeleteDocumentAsync(GetDocumentLink(document.Id));
             }
             catch (DocumentClientException e)
             {
+<<<<<<< HEAD
+                //Debug.WriteLine(e);
+                Debug.WriteLine($"Failed in DeleteItemAsync");
+                Debug.WriteLine($"desired type: {typeof(T)}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        ///     Deletes all the documents from the database
+        /// </summary>
+        /// <returns></returns>
+        public async Task DeleteAllAsync()
+        {
+            try
+            {
+                var query = _client.CreateDocumentQuery<Document>(GetCollectionLink, "Select * From c")
+                    .AsDocumentQuery();
+                var results = new List<Document>();
+                while (query.HasMoreResults)
+                    results.AddRange(await query.ExecuteNextAsync<Document>());
+
+                foreach (var doc in results)
+                    await _client.DeleteDocumentAsync(GetDocumentLink(doc.Id));
+            }
+            catch (Exception e)
+            {
+=======
+>>>>>>> origin/master
                 Debug.WriteLine(e);
                 throw;
             }
@@ -344,7 +451,7 @@ namespace DashWebServer
         #region MemoryCacheFunctionality
 
         /// <summary>
-        /// Get a document from the cache if it is in the cache, otherwise returns null
+        ///     Get a document from the cache if it is in the cache, otherwise returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document"></param>
@@ -355,24 +462,15 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Get a document from the cache if it is in the cache, otherwise returns null
+        ///     Get a document from the cache if it is in the cache, otherwise returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document"></param>
         /// <returns></returns>
         private T GetDocumentFromCacheOrNull<T>(string document) where T : EntityBase
         {
-
             if (_memoryCache.TryGetValue(GetMemoryCacheKeyFromDocument(document), out T cacheEntry))
-            {
-                //var ac = new AccessCondition { Condition = cacheEntry.ETag, Type = AccessConditionType.IfNoneMatch };
-                //var response = await client.ReadDocumentAsync(cacheEntry.SelfLink, new RequestOptions { AccessCondition = ac });
-                //if (response.StatusCode == HttpStatusCode.NotModified)
-                //{
                 return cacheEntry;
-                //}
-                //cacheEntry = response.Resource;
-            }
             //else
             //{
             //    cacheEntry = (from f in client.CreateDocumentQuery(collectionLink, new FeedOptions { EnableCrossPartitionQuery = true })
@@ -386,7 +484,7 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Adds the passed in document to the cache
+        ///     Adds the passed in document to the cache
         /// </summary>
         private T AddDocumentToCache<T>(T document) where T : EntityBase
         {
@@ -394,7 +492,7 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Removes the passed in document from the cache
+        ///     Removes the passed in document from the cache
         /// </summary>
         private void RemoveDocumentFromCache<T>(T document) where T : EntityBase
         {
@@ -402,16 +500,13 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Adds cache entries to the database when they are evicted, but ignore the callback if they are removed
-        /// manually (deleted on purpose)
+        ///     Adds cache entries to the database when they are evicted, but ignore the callback if they are removed
+        ///     manually (deleted on purpose)
         /// </summary>
         private async void OnEntryEvictedFromCache(object key, object value, EvictionReason reason, object state)
         {
-
             if (reason == EvictionReason.Removed)
-            {
                 return;
-            }
 
             Debug.Assert(value is EntityBase);
             await UpdateItemAsyncSkipCache(value as EntityBase);
@@ -422,7 +517,7 @@ namespace DashWebServer
         #region MemoryCacheHelpers
 
         /// <summary>
-        /// helper method to provide a consistent way of generating unique cache keys for documents
+        ///     helper method to provide a consistent way of generating unique cache keys for documents
         /// </summary>
         /// <param name="documentId"></param>
         /// <returns></returns>
@@ -433,7 +528,7 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Overload method to make getting cache keys from anything that inherits from entity base a little nicer
+        ///     Overload method to make getting cache keys from anything that inherits from entity base a little nicer
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
@@ -443,15 +538,17 @@ namespace DashWebServer
         }
 
         /// <summary>
-        /// Method to generate the policy we use to store entries in the cache, this includes the registration of
-        /// callbacks to add the data to the database when the data is being evicted.
+        ///     Method to generate the policy we use to store entries in the cache, this includes the registration of
+        ///     callbacks to add the data to the database when the data is being evicted.
         /// </summary>
         /// <returns></returns>
         private MemoryCacheEntryOptions GetMemoryCacheEntryPolicy()
         {
             return new MemoryCacheEntryOptions
             {
-                SlidingExpiration = TimeSpan.FromMinutes(2), // remove any data from the cache that hasn't been accessed for this amount of time
+                SlidingExpiration =
+                    TimeSpan.FromMinutes(
+                        2), // remove any data from the cache that hasn't been accessed for this amount of time
                 PostEvictionCallbacks =
                 {
                     new PostEvictionCallbackRegistration
@@ -461,7 +558,6 @@ namespace DashWebServer
                 }
             };
         }
-        
 
         #endregion
     }

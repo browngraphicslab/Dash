@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -20,7 +20,7 @@ namespace Dash
         static DocumentController CreatePrototypeInk()
         {
             // bcz: default values for data fields can be added, but should not be needed
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields.Add(InkFieldKey, new InkFieldModelController());
             return new DocumentController(fields, InkDocType);
 
@@ -31,7 +31,7 @@ namespace Dash
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
             
-            var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey));
+            var prototypeInkLayout = new InkBox(new DocumentReferenceFieldController(_prototypeTwoImages.GetId(), InkFieldKey));
             prototypeInkLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             prototypeInkLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             prototypeInkLayout.Document.SetHeight(double.NaN);

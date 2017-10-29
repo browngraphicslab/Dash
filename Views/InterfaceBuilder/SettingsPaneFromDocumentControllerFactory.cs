@@ -15,39 +15,39 @@ namespace Dash
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
             var type = layoutDocument.DocumentType;
-            if (type == ImageBox.DocumentType)
+            if (type.Equals(ImageBox.DocumentType))
             {
                 return CreateImageSettingsLayout(layoutDocument);
             }
-            if (type == TextingBox.DocumentType)
+            if (type.Equals(TextingBox.DocumentType))
             {
                 return CreateTextSettingsLayout(layoutDocument);
             }
-            if (type == CollectionBox.DocumentType)
+            if (type.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
                 return CreateCollectionSettingsLayout(layoutDocument);
             }
-            if (type == RichTextBox.DocumentType)
+            if (type.Equals(RichTextBox.DocumentType))
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            if (type.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
-            if (type == ListViewLayout.DocumentType)
+            if (type.Equals(ListViewLayout.DocumentType))
             {
                 return CreateListViewSettingsLayout(layoutDocument);
             }
-            if (type == GridViewLayout.DocumentType)
+            if (type.Equals(GridViewLayout.DocumentType))
             {
                 return CreateGridViewsettingsLayout(layoutDocument); 
             }
-            if (type == InkBox.DocumentType)
+            if (type.Equals(InkBox.DocumentType))
             {
                 return CreateInkSettingsLayout(layoutDocument);
             }
-            if (type == KeyValueDocumentBox.DocumentType)
+            if (type.Equals(KeyValueDocumentBox.DocumentType))
             {
                 return CreateKeyValueSettingsLayout(layoutDocument);
             }

@@ -47,11 +47,8 @@ namespace Dash
         /// Title for this category
         /// </summary>
         public string Title { get; }
-
         private Action<Func<DocumentController>> _action;
-
         public object SelectedItem;
-
         private Dictionary<string, Func<DocumentController>> _titleToFuncDictionary;
         
         /// <summary>
@@ -70,7 +67,9 @@ namespace Dash
             ListContent = new ObservableCollection<string>();
             foreach (var func in content)
             {
-                var name = func.Invoke().Title;
+                var doc = func.Invoke();
+                var name = doc.Title;
+                //doc.DeleteOnServer();
                 _titleToFuncDictionary[name] = func;
                 ListContent.Add(name);
             }
@@ -113,7 +112,7 @@ namespace Dash
         }
         private void XList_OnLoaded(object sender, RoutedEventArgs e)
         {
-            Util.FixListViewBaseManipulationDeltaPropagation(xList);
+            //Util.FixListViewBaseManipulationDeltaPropagation(xList);
         }
     }
 }

@@ -1,99 +1,203 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
-using System.Diagnostics;
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Dash
 {
-    public class DocumentEndpoint
+    /*
+    public class DocumentEndpoint : IDocumentEndpoint
     {
-        private ServerEndpoint _connection;
+        private readonly ServerEndpoint _connection;
+
+        ConcurrentDictionary<string, SemaphoreSlim> _semaphores = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private SemaphoreSlim _semaphore;
 
         public DocumentEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+
+            // create a semaphore to be used in the get documents async task
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         /// <summary>
-        /// Adds a new Document to the DashWebServer and returns that DocumentModel.
+        ///     Adds a document to the server.
         /// </summary>
         /// <param name="newDocument"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> AddDocument(DocumentModel newDocument)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async Task AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
             try
             {
-                // convert from Dash DocumentModel to DashShared DocumentModel (server representation)
-                HttpResponseMessage result = _connection.Post("api/Document", newDocument);
-                var resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
-                return new Result<DocumentModel>(true, resultdoc);
+                if (!_semaphores.ContainsKey(newDocument.Id))
+                {
+                    _semaphores[newDocument.Id] = new SemaphoreSlim(1);
+                }
+
+                await _semaphores[newDocument.Id].WaitAsync();
+
+                var result = await _connection.Post("api/Document", newDocument);
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
+
+                success(resultDoc);
+                _semaphores[newDocument.Id].Release();
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+                error(e);
+                _semaphores[newDocument.Id].Release();
             }
         }
 
         /// <summary>
-        /// Updates an existing Document in the DashWebServer and returns the updated document model.
+        ///     Updates a document on the server.
         /// </summary>
-        /// <param name="DocumentToUpdate"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel documentToUpdate)
+        /// <param name="documentToUpdate"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
+            Action<Exception> error)
         {
             try
             {
-                HttpResponseMessage result = _connection.Put("api/Document", documentToUpdate);
-                DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
-                return new Result<DocumentModel>(true, resultdoc);
+                if (!_semaphores.ContainsKey(documentToUpdate.Id))
+                {
+                    _semaphores[documentToUpdate.Id] = new SemaphoreSlim(1);
+                }
+
+                await _semaphores[documentToUpdate.Id].WaitAsync();
+
+                var result = await _connection.Put("api/Document", documentToUpdate);
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
+
+                success(resultDoc);
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+                error(e);
             }
-            
+            finally
+            {
+                _semaphores[documentToUpdate.Id].Release();
+            }
         }
 
         /// <summary>
-        /// Fetches a document with the given ID from the server.
+        ///     Gets a document from the server.
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> GetDocument(string id)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async Task GetDocument(string id, Func<DocumentModelDTO, Task> success, Action<Exception> error)
         {
             try
             {
-                var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
-                return new Result<DocumentModel>(true, result);
+                var result = await _connection.GetItem<DocumentModelDTO>($"api/Document/{id}");
+                await success(result);
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+                error(e);
             }
         }
 
         /// <summary>
-        /// Deletes a document with the given ID from the server.
+        ///     Gets a document from the server.
         /// </summary>
-        /// <param name="document"></param>
-        /// <returns></returns>
-        public Result DeleteDocument(DocumentModel document)
+        /// <param name="id"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async Task GetDocuments(IEnumerable<string> ids, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
         {
-            string id = document.Id;
+
             try
             {
-                _connection.Delete($"api/Document/{id}");
-                return new Result(true);
+                if (!ids.Any())
+                {
+                    Debug.WriteLine("id count is zero in GetDocuments in DocumentEndpoint");
+                }
+
+                var result = await _connection.Post("api/Document/batch", ids);
+                var resultDoc = await result.Content.ReadAsAsync<IEnumerable<DocumentModelDTO>>();
+                await success(resultDoc);
             }
-            catch (ApiException e)
+            catch (Exception e)
             {
                 // return the error message
-                return new Result(false, string.Join("\n", e.Errors));
+                error(e);
             }
         }
-    }
+
+        /// <summary>
+        ///     Deletes a document from the server.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
+        {
+            try
+            {
+                var response = await _connection.Delete($"api/Document/{document.Id}");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
+        }
+
+        /// <summary>
+        ///     Deletes all documents from the server.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async void DeleteAllDocuments(Action success, Action<Exception> error)
+        {
+            try
+            {
+                var response = await _connection.Delete($"api/Document");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
+        }
+
+
+        public async Task GetDocumentByType(DocumentType documentType, Func<IEnumerable<DocumentModelDTO>, Task> success, Action<Exception> error)
+        {
+            try
+            {
+                var response = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/type/{documentType.Id}");
+                await success(response);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
+        }
+    }*/
 }

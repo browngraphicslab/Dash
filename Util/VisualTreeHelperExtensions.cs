@@ -9,17 +9,17 @@ namespace Dash
 {
     public static class VisualTreeHelperExtensions
     {
-        public static T GetFirstDescendantOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static T GetFirstDescendantOfType<T>(this DependencyObject start)
         {
             return start.GetDescendantsOfType<T>().FirstOrDefault();
         }
 
-        public static IEnumerable<T> GetDescendantsOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetDescendantsOfType<T>(this DependencyObject start)
         {
             return start.GetDescendants().OfType<T>();
         }
 
-        public static IEnumerable<T> GetDescentantsOfNextGenerationOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetDescentantsOfNextGenerationOfType<T>(this DependencyObject start)
         {
             return start.GetDescendantsOfNextGeneration().OfType<T>();
         }
@@ -32,6 +32,33 @@ namespace Dash
             {
                 var child = VisualTreeHelper.GetChild(start, i);
                 yield return child;
+            }
+        }
+        public static IEnumerable<T> GetImmediateDescendantsOfType<T>(this DependencyObject start) where T : DependencyObject
+        {
+            var queue = new Queue<DependencyObject>();
+            var count = VisualTreeHelper.GetChildrenCount(start);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(start, i);
+                if (child is T)
+                    yield return child as T;
+                else
+                    queue.Enqueue(child);
+            }
+            while (queue.Count > 0)
+            {
+                var parent = queue.Dequeue();
+                var count2 = VisualTreeHelper.GetChildrenCount(parent);
+
+                for (int i = 0; i < count2; i++)
+                {
+                    var child = VisualTreeHelper.GetChild(parent, i);
+                    if (child is T)
+                        yield return child as T;
+                    else
+                        queue.Enqueue(child);
+                }
             }
         }
 

@@ -27,7 +27,7 @@ namespace Dash
         }
         public KeyValueSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == KeyValueDocumentBox.DocumentType, "You can only create image settings for an InkBox");
+            Debug.Assert(docController.DocumentType.Equals(KeyValueDocumentBox.DocumentType), "You can only create image settings for an InkBox");
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));

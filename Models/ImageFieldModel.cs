@@ -1,12 +1,14 @@
 ﻿using System;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared.Models;
 
 namespace Dash
 {
     /// <summary>
     /// A Field Model which holds image data
     /// </summary>
+    [FieldModelTypeAttribute(TypeInfo.Image)]
     public class ImageFieldModel : FieldModel
     {
         /// <summary>
@@ -16,26 +18,20 @@ namespace Dash
 
         public string ByteData = null;
 
-        /// <summary>
-        /// Create a new Image Field Model that does not represent an image
-        /// </summary>
-        public ImageFieldModel()//TODO Make this a default image?
+        public ImageFieldModel() : base(null)
         {
+            
         }
+
 
         /// <summary>
         /// Create a new Image Field Model which represents the image pointed to by the <paramref name="data"/>
         /// </summary>
         /// <param name="data">The uri that the image this field model encapsulates is sourced from</param>
-        public ImageFieldModel(Uri path, string bytes)
+        public ImageFieldModel(Uri path, string bytes = null, string id = null) : base(id)
         {
             Data = path;
             ByteData = bytes;
-        }
-
-        protected override FieldModelDTO GetFieldDTOHelper()
-        {
-            return new FieldModelDTO(TypeInfo.Image, Data);
         }
     }
 }

@@ -51,8 +51,7 @@ namespace Dash
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
                 var colView = _element as CollectionFreeformView;
-                if (colView != null) return colView.IsLowestSelected;
-                return true;
+                return colView == null || colView.IsLowestSelected;
             }
         }
 
@@ -179,9 +178,8 @@ namespace Dash
             var point = e.GetCurrentPoint(_element);
 
             // get the scale amount
-            float scaleAmount = (float)Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+            float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+            //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
             var newScale = ElementScale * scaleAmount;
@@ -193,26 +191,43 @@ namespace Dash
 
         public void FitToParent()
         {
-            var par = _element.Parent as ContentControl;
             var ff = _element as CollectionFreeformView;
+            var par = ff?.Parent as FrameworkElement;
+            if (par == null || ff == null)
+                return;
 
-            var rect = par.GetBoundingRect();
-            Rect r = Rect.Empty;
-            foreach (var i in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => ic as ContentPresenter))
+            var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight)); //  par.GetBoundingRect();
+
+            //if (ff.ViewModel.DocumentViewModels.Count == 1)
+            //{
+            //    ff.ViewModel.DocumentViewModels[0].GroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
+            //    var aspect = rect.Width / rect.Height;
+            //    var ffHeight = ff.ViewModel.DocumentViewModels[0].Height;
+            //    var ffwidth = ff.ViewModel.DocumentViewModels[0].Width;
+            //    var ffAspect = ffwidth / ffHeight;
+            //    ff.ViewModel.DocumentViewModels[0].Width  = aspect > ffAspect ? rect.Height * ffAspect : rect.Width;
+            //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
+            //    return;
+            //}
+            
+            var r = Rect.Empty;
+            foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
             {
-                if (i != null)
-                    r.Union((i.Content as DocumentViewModel).Content.GetBoundingRect(par));
+                r.Union(dvm?.Content?.GetBoundingRect(par) ?? r);
             }
+
             if (r != Rect.Empty)
             {
-                var trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top);
+                var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
+                {
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
+                }
                 else
-                    trans = new Point(-r.Left, -r.Top + (rect.Height - r.Height) / 2);
+                    trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left+r.Width/2, r.Top), scaleAmt));
             }
         }
 
@@ -251,20 +266,21 @@ namespace Dash
 
         private void ClampScale(double newScale, ref float scale)
         {
-            if (newScale > MaxScale)
-            {
-                scale = (float)(MaxScale / ElementScale);
-                ElementScale = MaxScale;
-            }
-            else if (newScale < MinScale)
-            {
-                scale = (float)(MinScale / ElementScale);
-                ElementScale = MinScale;
-            }
-            else
-            {
-                ElementScale = newScale;
-            }
+            //if (newScale > MaxScale)
+            //{
+            //    scale = (float)(MaxScale / ElementScale);
+            //    ElementScale = MaxScale;
+            //}
+            //else if (newScale < MinScale)
+            //{
+            //    scale = (float)(MinScale / ElementScale);
+            //    ElementScale = MinScale;
+            //}
+            //else
+            //{
+            //    ElementScale = newScale;
+            //}
+            ElementScale = newScale;
         }
     }
 }

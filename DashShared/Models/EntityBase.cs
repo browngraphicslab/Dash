@@ -12,7 +12,7 @@ namespace DashShared
     /// the base class for anything that is stored in the Database, with few exceptions every model
     /// should inherit from this class.
     /// </summary>
-    public abstract class EntityBase
+    public abstract class EntityBase : ISerializable
     {
 
         protected EntityBase(string id = null)
@@ -27,7 +27,7 @@ namespace DashShared
         [Key] // key in the database
         [Required] // cannot be null
         [JsonProperty("id")] // serialized as id (for documentdb)
-        public string Id { get; set; }
+        public string Id { get; protected set; }
 
         /// <summary>
         /// Pretty print the key for debugging purposes
@@ -36,6 +36,24 @@ namespace DashShared
         public override string ToString()
         {
             return $"Id:{Id}" + base.ToString();
+        }
+
+        protected bool Equals(EntityBase other)
+        {
+            return string.Equals(Id, other.Id);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((EntityBase) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id != null ? Id.GetHashCode() : 0);
         }
     }
 }

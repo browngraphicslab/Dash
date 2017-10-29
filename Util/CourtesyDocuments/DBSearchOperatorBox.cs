@@ -39,32 +39,32 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
-            var opDoc = opfmc.FieldReference.GetDocumentController(null);
+            OperatorView opView = new OperatorView { DataContext = opfmc.GetFieldReference()};
+            var opDoc = opfmc.GetDocumentController(null);
             var stack = new Windows.UI.Xaml.Controls.StackPanel();
             stack.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
             var returnBox = new Windows.UI.Xaml.Controls.TextBox();
-            returnBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            returnBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             returnBox.Height = 50;
             returnBox.Text = "";
             returnBox.AcceptsReturn = true;
             returnBox.VerticalAlignment = VerticalAlignment.Top;
             returnBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.ReturnDocKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
             var searchBox = new Windows.UI.Xaml.Controls.TextBox();
-            searchBox.Style = Application.Current.Resources["xPlainTextBox"] as Style;
+            searchBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
             searchBox.Height = 50;
             searchBox.Text = "";
             searchBox.AcceptsReturn = true;
             searchBox.VerticalAlignment = VerticalAlignment.Top;
             searchBox.TextChanged += ((sender, e) =>
             {
-                DBTest.ResetCycleDetection();
+                //DBTest.ResetCycleDetection();
                 if (opDoc != null)
                     opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.FieldPatternKey,
                         new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);

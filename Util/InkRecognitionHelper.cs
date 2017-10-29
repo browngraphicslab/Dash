@@ -8,9 +8,11 @@ using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -156,13 +158,16 @@ namespace Dash
         public bool DeleteIntersectingConnections(Point point1, Point point2)
         {
             bool lineDeleted = false;
-            var toBeDeleted = new List<FieldReference>();
             //Calculate line 1
             var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
             var yInt1 = point1.Y - point1.X * slope1;
             var view = FreeformInkControl.FreeformView;
-
+            var refsToLines = new Dictionary<FieldReference, Path>();
             foreach (var pair in view.RefToLine)
+            {
+                refsToLines[pair.Key] = pair.Value;
+            }
+            foreach (var pair in refsToLines)
             {
                 //Calculate line 2
                 var line = pair.Value;
@@ -183,7 +188,6 @@ namespace Dash
                 if (PointBetween(intersectionPoint, point1, point2) &&
                     PointBetween(intersectionPoint, curvePoint1, curvePoint2))
                 {
-                    toBeDeleted.Add(pair.Key);
                     var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                     var doc2 = view2.ViewModel.DocumentController;
                     var fields = doc2.EnumFields().ToImmutableList();
@@ -194,19 +198,16 @@ namespace Dash
                         {
                             var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
                                 .Equals(pair.Key.DereferenceToRoot(null));
-                            if (referencesEqual)
+                            if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
                             {
+                                view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
                                 doc2.SetField(field.Key,
-                                    referenceFieldModelController.DereferenceToRoot(null).Copy(), true);
+                                    referenceFieldModelController.DereferenceToRoot(null).GetCopy(), true);
                             }
                         }
                     }
                     lineDeleted = true;
                 }
-            }
-            foreach (var key in toBeDeleted)
-            {
-                view.DeleteLine(key, view.RefToLine[key]);
             }
             return lineDeleted;
         }
@@ -342,17 +343,15 @@ namespace Dash
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
-            var fields = new Dictionary<KeyController, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(recognizedDocuments)
-            };
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+
+            var documentController = Util.BlankCollection();
+            documentController.SetField(KeyStore.CollectionKey,
+                new DocumentCollectionFieldModelController(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
-                    new ReferenceFieldModelController(documentController.GetId(),
-                        DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
-                    region.BoundingRect.Height).Document, true, true);
+                    new DocumentReferenceFieldController(documentController.GetId(),
+                        KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
+                     region.BoundingRect.Height).Document, true, true);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
@@ -367,6 +366,7 @@ namespace Dash
                     FreeformInkControl.TargetCanvas, MainPage.Instance);
             Canvas.SetLeft(TabMenu.Instance, absPos.X);
             Canvas.SetTop(TabMenu.Instance, absPos.Y);
+
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
         }
@@ -379,7 +379,7 @@ namespace Dash
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
                 FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyController, FieldControllerBase>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
@@ -399,7 +399,7 @@ namespace Dash
                     //    doc.SetField(key, new TextFieldModelController(text), true);
                     //}
                     doc.ParseDocField(key, text);
-                    var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key),
+                    var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
                         relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                     (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
                         rect.Height / 1.5;

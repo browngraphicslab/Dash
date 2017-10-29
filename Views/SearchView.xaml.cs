@@ -33,14 +33,15 @@ namespace Dash
 
         }
 
+        public void UpdateCategories(SearchCategoryItem categories)
+        {
+            ListGrid.Children.Clear();
+            this.MakeCategories(categories);
+        }
+
         public void ConfigureForTouch()
         {
             _searchList.List.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
-        }
-
-        public void ConfigureForMouse()
-        {
-            _searchList.List.ItemContainerStyle = this.Resources["MouseStyle"] as Style;
         }
 
         public void MoveSelectedDown()
@@ -48,7 +49,6 @@ namespace Dash
             if (_searchList.List.SelectedIndex < 0)
             {
                 _searchList.List.SelectedIndex = 0;
-
             } 
             else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
             {

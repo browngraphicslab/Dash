@@ -1,25 +1,24 @@
 ﻿using System;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
+    [FieldModelTypeAttribute(TypeInfo.Operator)]
     public class OperatorFieldModel : FieldModel {
         /// <summary>
         /// Type of operator it is; to be used by the server to determine what controller to use for operations 
         /// This should probably eventually be an enum
         /// </summary>
-        public string Type { get; set; }
+        public OperatorType Type { get; set; }
 
-        public OperatorFieldModel(string type) {
-            Type = type; 
+        public OperatorFieldModel(OperatorType type, bool isCompound = false, string id = null) : base(id)
+        {
+            Type = type;
+            IsCompound = isCompound;
         }
-
-        protected override FieldModelDTO GetFieldDTOHelper() {
-            return new FieldModelDTO(TypeInfo.Reference, Type);
-		}
-		
         public override string ToString() {
-            return Type;
+            return Type.ToString();
         }
 
         /// <summary>

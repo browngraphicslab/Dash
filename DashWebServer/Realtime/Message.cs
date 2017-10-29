@@ -35,7 +35,7 @@ namespace DashWebServer
 
         public RealtimeMessage(Snapshot diff)
         {
-            Body = diff.WorldState.ToDictionary(pair => pair.Key, pair => (object)pair.Value);
+            Body = diff.WorldState.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
 
         public byte[] ToBytes()

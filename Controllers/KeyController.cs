@@ -1,53 +1,65 @@
-﻿using System.Runtime.InteropServices.WindowsRuntime;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    public class KeyController : ViewModelBase, IController
+    //Abstract class from "KeyController<T>" should inherit.
+    public class KeyController : IController<KeyModel>
     {
-        /// <summary>
-        ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
-        ///     on the fieldModel!
-        /// </summary>
-        public KeyModel KeyModel { get; set; }
-
-        private readonly int _hash;
 
         public string Name
         {
-            get { return KeyModel.Name; }
-            set { KeyModel.Name = value; }
+            get => Model.Name;
+            set
+            {
+                Model.Name = value;
+                UpdateOnServer();
+            }
+        }
+        public KeyController(string guid, bool saveOnServer = true) : this(new KeyModel(guid))
+        {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public string Id => KeyModel.Id;
-
-        public KeyController(KeyModel keyModel)
+        public KeyController(string guid, string name, bool saveOnServer = true) : this(new KeyModel(guid, name))
         {
-            // Initialize Local Variables
-            KeyModel = keyModel;
-            _hash = KeyModel.GetHashCode();
-            ContentController.AddModel(keyModel);
-            ContentController.AddController(this);
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController(string guid) : this(new KeyModel(guid))
+        public KeyController(bool saveOnServer = true) : this(new KeyModel())
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController(string guid, string name) : this(new KeyModel(guid, name))
+        public KeyController(KeyModel model, bool saveOnServer = true) : base(model)
         {
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
         }
 
-        public KeyController() : this(new KeyModel())
+        public override void Init()
         {
+
         }
 
-        /// <summary>
-        /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
-        /// </summary>
-        public string GetId()
+        public override string ToString()
         {
-            return KeyModel.Id;
+            return this.Name;
         }
 
         /// <summary>
@@ -56,7 +68,7 @@ namespace Dash
         /// <returns></returns>
         public string GetName()
         {
-            return KeyModel.Name;
+            return Model.Name;
         }
 
         public override bool Equals(object obj)
@@ -67,25 +79,41 @@ namespace Dash
 
         public override int GetHashCode()
         {
-            return _hash;
-        }
 
-        public override string ToString()
-        {
-            return KeyModel.Name;
+            return GetId().GetHashCode();
+
         }
 
         public bool IsUnrenderedKey()
         {
-            return Equals(KeyStore.DelegatesKey) ||
-                   Equals(KeyStore.PrototypeKey) ||
-                   Equals(KeyStore.LayoutListKey) ||
-                   Equals(KeyStore.ActiveLayoutKey) ||
-                   Equals(KeyStore.IconTypeFieldKey);
+            return Model.Name.StartsWith("_");
+            //return Equals(KeyStore.DelegatesKey) ||
+            //       Equals(KeyStore.PrototypeKey) ||
+            //       Equals(KeyStore.LayoutListKey) ||
+            //       Equals(KeyStore.ActiveLayoutKey) ||
+            //       Equals(KeyStore.IconTypeFieldKey);
         }
 
         public virtual void Dispose()
         {
+
         }
+
+        /*
+
+        public static Dictionary<staticKey, Tuple<string, string>> _dict = new Dictionary<staticKey, Tuple<string, string>>()
+        {
+            {staticKey.Layout, new Tuple<string, string>("collection","id")}
+        };
+
+        public static KeyController Get(staticKey key)
+        {
+            return ContentController<KeyModel>.GetController<KeyController>(_dict[key]);
+        }
+
+        public enum staticKey
+        {
+            Layout
+        }*/
     }
 }

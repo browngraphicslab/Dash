@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
@@ -12,20 +13,23 @@ namespace Dash
     {
         private readonly HashSet<DocumentController> _documentContextList;
 
-        private readonly Dictionary<FieldReference, FieldModelController> _data;
+        private readonly Dictionary<FieldReference, FieldControllerBase> _data;
 
-        public HashSet<DocumentController> DocContextList { get { return _documentContextList; } }
+        public HashSet<DocumentController> DocContextList => _documentContextList;
 
+        /// <summary>
+        /// Create a new context with no initial values
+        /// </summary>
         public Context()
         {
             _documentContextList = new HashSet<DocumentController>();
-            _data = new Dictionary<FieldReference, FieldModelController>();
+            _data = new Dictionary<FieldReference, FieldControllerBase>();
         }
 
         public Context(DocumentController initialContext)
         {
             _documentContextList = new HashSet<DocumentController>{initialContext};
-            _data = new Dictionary<FieldReference, FieldModelController>();
+            _data = new Dictionary<FieldReference, FieldControllerBase>();
         }
 
         public Context(Context copyFrom)
@@ -33,12 +37,12 @@ namespace Dash
             if (copyFrom == null)
             {
                 _documentContextList = new HashSet<DocumentController>();
-                _data = new Dictionary<FieldReference, FieldModelController>();
+                _data = new Dictionary<FieldReference, FieldControllerBase>();
             }
             else
             {
                 _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
-                _data = new Dictionary<FieldReference, FieldModelController>(copyFrom._data);
+                _data = new Dictionary<FieldReference, FieldControllerBase>(copyFrom._data);
             }
         }
 
@@ -83,17 +87,27 @@ namespace Dash
             return true;
         }
 
+        public FieldControllerBase Dereference(ReferenceFieldModelController reference)
+        {
+            return reference.GetFieldReference().Dereference(this);
+        }
+
+        public FieldControllerBase DereferenceToRoot(ReferenceFieldModelController reference)
+        {
+            return reference.GetFieldReference().DereferenceToRoot(this);
+        }
+
         public void AddDocumentContext(DocumentController document)
         {
             _documentContextList.Add(document);
         }
 
-        public void AddData(ReferenceFieldModelController reference, FieldModelController data)
-        {
-            _data[reference.FieldReference] = data;
-        }
+        //public void AddData(ReferenceFieldModelController reference, FieldControllerBase data)
+        //{
+        //    _data[reference.FieldReference] = data;
+        //}
 
-        public void AddData(FieldReference reference, FieldModelController data)
+        public void AddData(FieldReference reference, FieldControllerBase data)
         {
             _data[reference] = data;
         }
@@ -106,7 +120,7 @@ namespace Dash
             return false;
         }
 
-        public bool TryDereferenceToRoot(FieldReference reference, out FieldModelController data)
+        public bool TryDereferenceToRoot(FieldReference reference, out FieldControllerBase data)
         {
             if (_data.ContainsKey(reference))
             {
@@ -117,15 +131,28 @@ namespace Dash
             return false;
         }
 
+        /// <summary>
+        /// Returns the id of the deepest delegate of the document associated with the passed in id.
+        /// Returns the passed in id if there is no deeper delegate
+        /// </summary>
+        /// <param name="referenceDocId"></param>
+        /// <returns></returns>
         public string GetDeepestDelegateOf(string referenceDocId)
         {
-            var found = false;
-            foreach (var doc in _documentContextList.Reverse())
+            Debug.Assert(ContentController<DocumentModel>.GetController<DocumentController>(referenceDocId) != null, "the passed in documentId is not actually associated with any document in the system!");
+
+            // flag to say if we found a delegate
+            var found = false;    
+            foreach (var doc in _documentContextList)
+            {
+                // set the flag if we find a delegate or the document with the passed in id
                 if (doc.GetId() == referenceDocId || doc.IsDelegateOf(referenceDocId))
                 {
                     found = true;
                     referenceDocId = doc.GetId();
                 }
+            }
+
             return found ? referenceDocId : null;
         }
 
