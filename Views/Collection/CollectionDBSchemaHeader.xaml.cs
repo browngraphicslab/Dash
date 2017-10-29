@@ -17,6 +17,7 @@ using Dash.Controllers.Operators;
 using System.ComponentModel;
 using Windows.UI.Input;
 using static Windows.ApplicationModel.Core.CoreApplication;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -77,6 +78,10 @@ namespace Dash
             public KeyController FieldKey;
             public CollectionView.CollectionViewType ViewType;
         }
+
+        /// <summary>
+        /// Static bucket to hold drag data when the header is dragged, this is a total hack!
+        /// </summary>
         public static HeaderDragData DragModel = null;
         
         private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -90,6 +95,31 @@ namespace Dash
             };
             e.Handled = true;
             e.Complete();
+        }
+
+        double _startWidth = 0;
+        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var viewModel = (DataContext as HeaderViewModel);
+            viewModel.Width = Math.Max(12, _startWidth + e.Cumulative.Translation.X);
+            e.Handled = true;
+        }
+        private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            var viewModel = (DataContext as HeaderViewModel);
+            viewModel.SchemaView.xHeaderView.CanReorderItems = false;
+            viewModel.SchemaView.xHeaderView.CanDragItems = false;
+            _startWidth = viewModel.Width;
+            e.Handled = true;
+        }
+
+        private void Grid_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            var viewModel = (DataContext as HeaderViewModel);
+            viewModel.SchemaView.xHeaderView.CanReorderItems = true;
+            viewModel.SchemaView.xHeaderView.CanDragItems = true;
+            e.Handled = true;
+
         }
     }
 }

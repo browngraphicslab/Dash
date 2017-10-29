@@ -18,13 +18,17 @@
         </Grid.RowDefinitions>
         <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AccentGreen}">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*" MaxWidth="100"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
+                <!--<ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>-->
             </Grid.ColumnDefinitions>
-            <TextBlock HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Keys</TextBlock>
-            <TextBlock Grid.Column="1"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Values</TextBlock>
-            <TextBlock Grid.Column="2"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Type</TextBlock>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Keys</TextBlock>
+            <TextBlock Grid.Column="2"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Values</TextBlock>
+            <TextBlock Grid.Column="3"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Type</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
@@ -53,7 +57,7 @@
                             <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}"/>
                             <ColumnDefinition Width="*" MaxWidth="100"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/> 
+                            <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox Tag="{Binding}" IsChecked="{x:Bind Path=IsPrimary}" Width="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"></CheckBox>
                         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">

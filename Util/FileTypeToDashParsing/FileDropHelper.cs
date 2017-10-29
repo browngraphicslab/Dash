@@ -22,7 +22,8 @@ namespace Dash
         Image,
         Json,
         Csv,
-        Pdf
+        Pdf,
+        Text
     }
 
 
@@ -164,14 +165,19 @@ namespace Dash
         public static async Task HandleDropOnCollectionAsync(object sender, DragEventArgs e,
             ICollectionViewModel collectionViewModel)
         {
-            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>();
-            if (files.Any())
-            {
-                // the point where the items will be dropped
-                var where = sender is CollectionFreeformView
-                    ? Util.GetCollectionFreeFormPoint((CollectionFreeformView) sender, e.GetPosition(MainPage.Instance))
-                    : new Point();
 
+
+            // the point where the items will be dropped
+            var where = sender is CollectionFreeformView
+                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
+                : new Point();
+
+            // get all the files from the drag event
+            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+
+            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            if (files.Count == 1)
+            {
                 // for each file, get it's type, parse it, and add it to the collection in the proper position
                 foreach (var file in files)
                 {
@@ -183,6 +189,28 @@ namespace Dash
                         collectionViewModel.AddDocument(documentController, null);
                     }
                 }
+            }
+            else if (files.Any())
+            {
+                var outputCollection = new DocumentCollectionFieldModelController();
+
+                // for each file, get it's type, parse it, and add it to the output collection
+                foreach (var file in files)
+                {
+                    var fileType = GetSupportedFileType(file);
+                    var documentController = await ParseFileAsync(fileType, file, where, e);
+                    if (documentController != null)
+                    {
+                        outputCollection.AddDocument(documentController);
+                    }
+                }
+
+                // add the output collection to the workspace at the proper position
+                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), "File Input Collection"));
+                outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
+                outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceFieldController(outputDoc.GetId(), KeyStore.DataKey), where.X, where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
+                collectionViewModel.AddDocument(outputDoc, null);
+
             }
             else
             {
@@ -207,8 +235,11 @@ namespace Dash
                     return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                case FileType.Text:
+                    return await new TextToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null);
             }
-            throw new NotImplementedException("We need to implement the proper parser!");
         }
 
         /// <summary>
@@ -237,6 +268,8 @@ namespace Dash
                 storagePath.EndsWith(".png") ||
                 storagePath.EndsWith(".gif"))
                 return FileType.Image;
+            if (storagePath.EndsWith(".txt"))
+                return FileType.Text;
             throw new ArgumentException($"We do not support the file type for the passed in file: {storageItem.Path}");
         }
 

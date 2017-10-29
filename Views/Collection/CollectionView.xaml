@@ -47,7 +47,7 @@
                       ManipulationMode="None">
                     <Ellipse x:Name="ConnectionEllipseOutput"
                                 x:FieldModifier="public"
-                                Style="{StaticResource xLinkHandle}"
+                                Style="{StaticResource xOutputLinkHandle}"
                                 VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-2,0"/>
                 </Grid>
                 <Grid HorizontalAlignment="Left" 

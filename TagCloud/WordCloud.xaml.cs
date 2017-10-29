@@ -78,7 +78,9 @@ namespace NewControls
 
         async void processText(string text)
         {
+#pragma warning disable 1998
             await Task.Run(async () => {
+#pragma warning restore 1998
                 var blacklist = ComponentFactory.CreateBlacklist(ExcludeEnglishCommonWords); 
                 var customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
 

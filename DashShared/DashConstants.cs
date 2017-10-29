@@ -178,6 +178,7 @@ namespace DashShared
                 new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
             public static DocumentType FilterOperatorDocumentType = new DocumentType("30651C8A-C3EC-4CF6-999B-F8F1ED094D65", "Filter Operator Box");
             public static DocumentType MeltOperatorBoxDocumentType = new DocumentType("8A0E72A1-0FF4-4AAB-9C12-9DF09DCF39CA", "Melt Operator Box");
+            public static DocumentType ExtractSentencesDocumentType = new DocumentType("3B6B9420-FD08-4CBA-99AA-5FAA261266AE", "Extract Sentences Operator Box");
         }
     }
 }

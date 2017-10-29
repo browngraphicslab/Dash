@@ -47,8 +47,10 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <TextBox Grid.Row="4" x:Name="xNewVariableTextBox" PlaceholderText="Enter a name for the new variable column" TextChanged="xNewVariableTextChanged"></TextBox>
-        <TextBox Grid.Row="5" x:Name="xNewValueTextBox" PlaceholderText="Enter a name for the new value column" TextChanged="xNewValueTextChanged"></TextBox>
+        <TextBox Grid.Row="4" x:Name="xNewVariableTextBox" PlaceholderText="Enter a name for the new variable column"
+                 KeyDown="XAnyTextBoxOnKeyDown" KeyUp="XAnyTextBoxOnKeyUp"></TextBox>
+        <TextBox Grid.Row="5" x:Name="xNewValueTextBox" PlaceholderText="Enter a name for the new value column"
+                 KeyDown="XAnyTextBoxOnKeyDown" KeyUp="XAnyTextBoxOnKeyUp"></TextBox>
 
     </Grid>
 </UserControl>

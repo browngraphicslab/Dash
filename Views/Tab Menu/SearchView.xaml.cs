@@ -50,7 +50,6 @@ namespace Dash
             if (_searchList.List.SelectedIndex < 0)
             {
                 _searchList.List.SelectedIndex = 0;
-
             } 
             else if (_searchList.List.SelectedIndex != _searchList.List.Items.Count - 1)
             {
