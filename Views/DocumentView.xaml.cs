@@ -184,13 +184,13 @@ namespace Dash
             {
                 xKeyValPane.Width = KeyValPaneWidth;
                 ViewModel.Width += KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth, 0), new Point(0, 0), new Point(1, 1))); // breaks when you scale the outer thing 
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth*ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));  
             }
             else
             {
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth, 0), new Point(0, 0), new Point(1, 1)));
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth* ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)

@@ -244,8 +244,7 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var tp = Util.PointTransformFromVisual(e.Delta.Translation, _element, handleControl); 
-            //var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
@@ -253,7 +252,7 @@ namespace Dash
             ClampScale(newScale, ref scaleFactor);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(/*new Point(translate.X, translate.Y)*/tp,
+            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
                 e.Position, new Point(scaleFactor, scaleFactor)));
         }
 
@@ -267,21 +266,21 @@ namespace Dash
 
         private void ClampScale(double newScale, ref float scale)
         {
-            //if (newScale > MaxScale)
-            //{
-            //    scale = (float)(MaxScale / ElementScale);
-            //    ElementScale = MaxScale;
-            //}
-            //else if (newScale < MinScale)
-            //{
-            //    scale = (float)(MinScale / ElementScale);
-            //    ElementScale = MinScale;
-            //}
-            //else
-            //{
-            //    ElementScale = newScale;
-            //}
-            ElementScale = newScale;
+            if (newScale > MaxScale)
+            {
+                scale = (float)(MaxScale / ElementScale);
+                ElementScale = MaxScale;
+            }
+            else if (newScale < MinScale)
+            {
+                scale = (float)(MinScale / ElementScale);
+                ElementScale = MinScale;
+            }
+            else
+            {
+                ElementScale = newScale;
+            }
+            //ElementScale = newScale;
         }
     }
 }
