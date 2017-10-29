@@ -491,7 +491,7 @@
         </Style>
 
         <!-- app Titles -->
-        <Style TargetType="TextBlock" x:Key="xTitleStyle">
+        <Style TargetType="TextBox" x:Key="xTitleStyle">
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top"/>

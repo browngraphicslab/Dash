@@ -183,55 +183,14 @@ namespace Dash
         public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
 
 
-        string _displayName = "Document";
         private bool _isDraggerVisible = true;
-
-        public string DisplayName
-        {
-            get { return _displayName; }
-            set {
-                if (SetProperty<string>(ref _displayName, value)) {
-                    OnPropertyChanged("DisplayName");
-                }
-            }
-        }
 
         public void UpdateContent()
         {
             _content = null;
             OnPropertyChanged(nameof(Content));
-            this.DocumentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated1;
         }
 
-        private void DocumentController_DocumentFieldUpdated1(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            var context = args.Context;
-            var primKeys = sender.GetDereferencedField(KeyStore.PrimaryKeyKey, context)?.GetValue(context) as List<FieldControllerBase>;
-
-            if (primKeys != null && primKeys.Select((k) => (k as TextFieldModelController).Data).Contains(args.Reference.FieldKey.Model.Id))
-            {
-                updateDisplayName();
-            }
-        }
-
-        private void updateDisplayName()
-        {
-            var dataDoc = DocumentController.GetDataDocument(Context);
-            var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
-            var keys = keyList as ListFieldModelController<TextFieldModelController>;
-            if (keys != null)
-            {
-                var docString = "";
-                foreach (var k in keys.Data)
-                {
-                    var keyField = dataDoc.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
-                    if (keyField is TextFieldModelController)
-                        docString += (keyField as TextFieldModelController).Data + " ";
-                }
-                DisplayName = docString.TrimEnd(' ');
-            }
-        }
-        
 
         public Context Context { get; set; }
 
@@ -251,7 +210,6 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
-            _displayName = documentController.DocumentType.Type;
         }
 
         private void SetUpSmallIcon()

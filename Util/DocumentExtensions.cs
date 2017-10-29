@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -243,6 +244,33 @@ namespace Dash
             // set the active layout on the deepest prototype since its the first one
             var deepestPrototype = doc.GetDeepestPrototype();
             deepestPrototype.SetActiveLayout(activeLayout, forceMask: true, addToLayoutList: true);
+        }
+
+        public static TextFieldModelController GetTitleFieldOrSetDefault(this DocumentController doc, Context context = null)
+        {
+            doc = Util.GetDataDoc(doc);
+            context = Context.SafeInitAndAddDocument(context, doc);
+            var titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? doc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
+            if (titleKey == null)
+            {
+                doc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
+                titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController;
+            }
+            return titleKey;
+        }
+
+        public static void SetTitleField(this DocumentController doc, string newTitle, Context context = null)
+        {
+            doc = Util.GetDataDoc(doc);
+            context = Context.SafeInitAndAddDocument(context, doc);
+            var titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? doc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
+            if (titleKey == null)
+            {
+                doc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
+                titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController;
+            }
+            Debug.Assert(titleKey != null);
+            titleKey.Data = newTitle;
         }
 
         public static NumberFieldModelController GetHeightField(this DocumentController doc, Context context = null)
