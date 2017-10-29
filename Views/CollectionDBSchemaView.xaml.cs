@@ -29,8 +29,6 @@ namespace Dash
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
             xHeaderView.ItemsSource = SchemaHeaders;
-            Loaded   += CollectionDBSchemaView_Loaded1;
-            Unloaded += CollectionDBSchemaView_Unloaded1;
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
         }
 
@@ -88,16 +86,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void CollectionDBSchemaView_Unloaded1(object sender, RoutedEventArgs e)
-        {
-            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
-        }
-
-        private void CollectionDBSchemaView_Loaded1(object sender, RoutedEventArgs e)
-        {
-            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
-        }
 
         private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
         {
@@ -190,6 +178,8 @@ namespace Dash
             if (ParentDocument != null)
                 ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = null;
+
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
 
@@ -200,6 +190,8 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
+
+            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -301,7 +293,7 @@ namespace Dash
             {
                 records.Add(new CollectionDBSchemaRecordViewModel(
                     d,
-                    SchemaHeaders.Select((f) => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
+                    SchemaHeaders.Select(f => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
                     ));
                 recordCount++;
             }
