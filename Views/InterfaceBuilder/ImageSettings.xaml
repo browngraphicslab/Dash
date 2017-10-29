@@ -10,9 +10,6 @@
     d:DesignWidth="300">
 
     <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -45,7 +42,7 @@
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid>
-                                    <TextBox x:Name="xOpacityTextbox" BorderBrush="Transparent" Background="White" VerticalAlignment="Center" FontSize="12" LostFocus="XOpacityTextBox_OnLostFocus" TextAlignment="Center"/>
+                                    <TextBox x:Name="xOpacityTextbox" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center" FontSize="12" LostFocus="XOpacityTextBox_OnLostFocus" TextAlignment="Center"/>
                                     <Grid x:Name="xOpacityMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                                           Background="Transparent"
                                           VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -56,14 +53,14 @@
                                           ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
                                         <Border x:Name="xDeduct" Tag="Deduct" Width="25" Height="25"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
                                                        FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                        VerticalAlignment="Center">
                                             </TextBlock>
                                         </Border>
                                         <Border x:Name="xIncrement" Tag="Increment" Width="25" Height="25"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
                                                        FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                        VerticalAlignment="Center">
                                             </TextBlock>
