@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
         <Grid x:Name="xGrid" HorizontalAlignment="Stretch" Tapped="XTitle_OnTapped">
             <Grid.Background>
-                <SolidColorBrush Color="White" Opacity="0.2"></SolidColorBrush>
+                <SolidColorBrush Color="White" Opacity="0.1"></SolidColorBrush>
             </Grid.Background>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"/>
