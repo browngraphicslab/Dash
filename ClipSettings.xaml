@@ -22,9 +22,9 @@
                     </Grid.RowDefinitions>
                     <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,5,0">
                         <TextBox x:Name="xClipXTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,5"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,5"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipXTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Clip X" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Text="Clip X" FontSize="12" Foreground="White" HorizontalAlignment="Center" Padding="3"></TextBlock>
                             <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -57,9 +57,9 @@
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="0" Margin="5,0,0,0">
                         <TextBox x:Name="xClipYTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,5"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,5"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipYTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Clip Y" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Text="Clip Y" FontSize="12" Foreground="White" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -93,9 +93,9 @@
                     </Grid>
                     <Grid Grid.Column="0" Grid.Row="1" Margin="0,5,5,0">
                         <TextBox x:Name="xClipWidthTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipWidthTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Width Ratio" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Text="Width Ratio" FontSize="12" Foreground="White" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -128,11 +128,11 @@
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
                         <TextBox x:Name="xClipHeightTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipHeightTextBox_OnTextChanged"
                                  LostFocus="XTextBox_OnLostFocus" />
                         <TextBlock Text="Height Ratio" FontSize="12" Foreground="White"
-                                       HorizontalAlignment="Center"/>
+                                       HorizontalAlignment="Center" Padding="3"/>
                         <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
