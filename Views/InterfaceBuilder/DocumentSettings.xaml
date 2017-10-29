@@ -56,7 +56,7 @@
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->
-                                <Button x:Name="xAddLayoutButton" Grid.Column="1" Padding="3"  Background="{StaticResource DarkWindowsBlue}">
+                                <Button x:Name="xAddLayoutButton" Grid.Column="1" Padding="3" Height="30" Width="30" Background="{StaticResource DarkWindowsBlue}">
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>

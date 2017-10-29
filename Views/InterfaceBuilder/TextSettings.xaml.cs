@@ -53,7 +53,8 @@ namespace Dash
             {
                 Source = textAlignmentController,
                 Path = new PropertyPath(nameof(textAlignmentController.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                // Converter = new IntToTextAlignmentConverter()
             };
 
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);
@@ -284,5 +285,10 @@ namespace Dash
         }
 
         #endregion
+
+        private void SettingsPaneBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

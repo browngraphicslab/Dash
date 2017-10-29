@@ -156,64 +156,84 @@ namespace Dash
             e.Complete();
         }
 
+
+
+        #endregion
+
+        #region Connection input and output 
         private void ConnectionEllipseOutput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (ParentCollection == null) return;
-            // containing documents docId
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            // the ellipse which the link should attatch to
-            var el = (sender as Grid)?.Children[0] as Ellipse;
-            var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
+            FireEllipseInteraction(sender, e, isInput: false, isPressed: true);
+            //if (ParentCollection == null) return;
+            //// containing documents docId
+            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            //// the ellipse which the link should attatch to
+            //var el = (sender as Grid)?.Children[0] as Ellipse;
+            //var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
 
-            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform.CanLink = true;
-            freeform.StartDrag(ioRef);
+            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            //freeform.CanLink = true;
+            //freeform.StartDrag(ioRef);
         }
 
         private void ConnectionEllipseOutput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            var el = (sender as Grid).Children[0] as Ellipse;
-            var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
-
-            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform.EndDrag(ioRef, false);
+            FireEllipseInteraction(sender, e, isInput: false, isPressed: false);
         }
 
-        #endregion
-
-        #region Operator connection input
-
+        
         private void ConnectionEllipseInput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            var el = ConnectionEllipseInput;
-            var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+            FireEllipseInteraction(sender, e, isInput: true, isPressed: true);
+            //if (ParentCollection == null) return;
+            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            //var el = ConnectionEllipseInput;
+            //var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
+            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
 
-            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform.CanLink = true;
-            freeform.StartDrag(ioRef);
+            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            //freeform.CanLink = true;
+            //freeform.StartDrag(ioRef);
         }
 
         private void ConnectionEllipseInput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            FireEllipseInteraction(sender, e, isInput: true, isPressed: false);
+            //if (ParentCollection == null) return;
+            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            //var el = ConnectionEllipseInput;
+            //var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
+            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+
+            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
+            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
+            //freeform?.EndDrag(ioRef, false);
+        }
+
+        private void FireEllipseInteraction(object sender, PointerRoutedEventArgs e, bool isInput, bool isPressed)
+        {
             if (ParentCollection == null) return;
             var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            var el = ConnectionEllipseInput;
-            var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
+            var el = (sender as Grid).Children[0] as Ellipse;
+            KeyController refKey;
+            if (!isInput)
+                refKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
+            else
+                refKey = ViewModel.CollectionKey;
+
+            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.Collection, e, el, ParentDocument);
 
             var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            freeform?.EndDrag(ioRef, false);
+
+            freeform.CanLink = isPressed;
+            if (!isPressed)
+                freeform.EndDrag(ioRef, false);
+            else
+                freeform.StartDrag(ioRef);
         }
 
         #endregion

@@ -133,13 +133,13 @@ namespace Dash
                 if (e.VirtualKey == VirtualKey.Down)
                 {
 
-                    TabMenu.Instance.SearchView.MoveSelectedDown();
+                    TabMenu.Instance.MoveSelectedDown();
                 }
 
                 if (e.VirtualKey == VirtualKey.Up)
                 {
 
-                    TabMenu.Instance.SearchView.MoveSelectedUp();
+                    TabMenu.Instance.MoveSelectedUp();
                 }
             }
         }
@@ -154,10 +154,19 @@ namespace Dash
                 var x = pointerPosition.X - Window.Current.Bounds.X;
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
                 var pos = new Point(x, y);
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
-                    .FirstOrDefault();
-                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
-                TabMenu.ShowAt(xCanvas, pos);
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
+
+                // add tabitemviewmodels that directs user to documentviews within the current collection 
+                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
+                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.OriginalItems);
+                foreach (DocumentView dv in docViews)
+                {
+                    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+                }
+                TabMenu.Instance.TabItems = tabItems;
+
+                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
+                TabMenu.ShowAt(xCanvas);
                 TabMenu.Instance.SetTextBoxFocus();
             }
 
@@ -170,7 +179,7 @@ namespace Dash
 
                 if (e.VirtualKey == VirtualKey.Enter)
                 {
-                    TabMenu.Instance.SearchView.ActivateItem();
+                    TabMenu.Instance.ActivateItem();
                 }
             }
 
@@ -184,8 +193,8 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
-            TabMenu.ShowAt(xCanvas, pos, true);
+            TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
+            TabMenu.ShowAt(xCanvas, true);
             TabMenu.Instance.SetTextBoxFocus();
             e.Handled = true;
         }
