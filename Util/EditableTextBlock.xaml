@@ -7,6 +7,7 @@
     mc:Ignorable="d">
 
     <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
+
     <Grid Background="Transparent">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"

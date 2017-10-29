@@ -65,10 +65,7 @@ namespace Dash
             documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView == null)
                 return;
-
-            xTitle.Text = _operator.GetOperatorType();
-
-            documentView.StyleOperator(0);
+            documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
         }
 
 

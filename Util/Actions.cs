@@ -24,6 +24,7 @@ using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using static Dash.NoteDocuments;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {
@@ -47,21 +48,32 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
-        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
+        /// <summary>
+        /// Given a function that produces a document controller, visually displays the documents
+        /// on the selected FreeFormView, defaulting to the main canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="opController"></param>
+        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
         {
-            var freeForm = TabMenu.AddsToThisCollection;
+            // default to MainPage collection view
+            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
-            if (freeForm == null)
+            if (sender == TabMenu.Instance)
             {
-                return;
+                freeForm = TabMenu.AddsToThisCollection;
+                if (freeForm == null)
+                    return;
             }
-            
-            var searchView = TabMenu.Instance.SearchView;
+
+            // fetch the coordinates of the caller on canvas
+            var searchView = sender;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
+            translate = new Point(translate.X + 300, translate.Y + 100);
 
-            var opController = documentCreationFunc?.Invoke();
+            //var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
@@ -73,8 +85,14 @@ namespace Dash
             {
                 freeForm.ViewModel.AddDocument(opController, null);
             }
+            
         }
 
+        /// <summary>
+        /// Adds a document at the mouse's point in the given collection freeform view.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="e"></param>
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,

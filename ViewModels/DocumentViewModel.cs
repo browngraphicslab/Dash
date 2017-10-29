@@ -183,7 +183,7 @@ namespace Dash
         public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
 
 
-        string _displayName = "<doc>";
+        string _displayName = "Document";
         private bool _isDraggerVisible = true;
 
         public string DisplayName
@@ -231,8 +231,11 @@ namespace Dash
                 DisplayName = docString.TrimEnd(' ');
             }
         }
+        
 
         public Context Context { get; set; }
+
+        // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
@@ -248,7 +251,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
-            updateDisplayName();
+            _displayName = documentController.DocumentType.Type;
         }
 
         private void SetUpSmallIcon()
