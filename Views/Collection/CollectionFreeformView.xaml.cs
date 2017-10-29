@@ -74,6 +74,9 @@ namespace Dash
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
 
+        private List<Tuple<FieldReference, DocumentFieldReference>> _linksToRetry;
+        public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
+
         public CollectionFreeformView() {
 
             InitializeComponent();
@@ -149,6 +152,7 @@ namespace Dash
 
         public void LoadLines()
         {
+            _linksToRetry = new List<Tuple<FieldReference, DocumentFieldReference>>();
             foreach (var docVM in ViewModel.DocumentViewModels)
             {
                 var doc = docVM.DocumentController;
@@ -162,20 +166,43 @@ namespace Dash
                         var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
                         if (keyValuePair.Key != null)
                         {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), doc, keyValuePair.Key);
+                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), new DocumentFieldReference(doc.Id, keyValuePair.Key));
                         }
-                        
                     }
                 }
             }
+
+            //Hack to load links between operators; if loading fails the first time because the operators havent finished loading,
+            //we wait 500 milliseconds and try again.
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(500);
+            timer.Tick += (sender, o) =>
+            {
+                foreach (var linkData in _linksToRetry)
+                {
+                    var startRef = linkData.Item1;
+                    var endRef = linkData.Item2;
+                    AddLineFromData(startRef, endRef);
+                }
+                timer.Stop();
+            };
+            timer.Start();
         }
-
-
-        public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
+        
+        /// <summary>
+        /// loads a single connection 
+        /// </summary>
+        /// <param name="startReference"></param>
+        /// <param name="endReference"></param>
+        public void AddLineFromData(FieldReference startReference, DocumentFieldReference endReference)
         {
-            var docId = reference.GetDocumentId();
-            var referencedFieldKey = reference.FieldKey;
-            var fmController = reference.DereferenceToRoot(null);
+            if (RefToLine.ContainsKey(startReference) &&
+                itemsPanelCanvas.Children.Contains(RefToLine[startReference])) return;
+            DocumentController referencingDoc = endReference.GetDocumentController(null);
+            KeyController referencingFieldKey = endReference.FieldKey;
+            var docId = startReference.GetDocumentId();
+            var referencedFieldKey = startReference.FieldKey;
+            //var fmController = startReference.DereferenceToRoot(null);
             DocumentController referencedDoc = null;
             foreach (var document in ViewModel.DocumentViewModels.Select(vm => vm.DocumentController))
             {
@@ -186,29 +213,97 @@ namespace Dash
                 }
             }
             if (referencedDoc == null) return;
-            if (fmController == null)
-            {
-                var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
-                var type = op.Outputs[reference.FieldKey];
-                return; // gods this is a hack anna DELETE THIS BEFORE YOU PUSH
-                throw new NotImplementedException();
-                fmController = null; //TypeInfoHelper.CreateFieldModelController(type);
-            }
+            //TypeInfo type = 0;
+            //if (fmController == null)
+            //{
+            //    var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+            //    type = op.Outputs[startReference.FieldKey];
+            //}
+            //else
+            //{
+            //    type = fmController.TypeInfo;
+            //}
             var docView1 = GetDocView(referencedDoc);
+            if (!docView1.ViewModel.KeysToFrameworkElements.ContainsKey(referencedFieldKey))
+            {
+                _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
+                return;
+            }
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
             var docView2 = GetDocView(referencingDoc);
+            if (!docView2.ViewModel.KeysToFrameworkElements.ContainsKey(referencingFieldKey))
+            {
+                _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
+                return;
+            }
             var frameworkElement2 = docView2.ViewModel.KeysToFrameworkElements[referencingFieldKey];
             var document2 = docView2.ViewModel.DocumentController;
+            var inputRef = new DocumentFieldReference(document2.GetId(), referencingFieldKey);
 
-            IOReference outputtingReference = new IOReference(reference, true, fmController.TypeInfo, null, frameworkElement1, docView1);
-            IOReference inputtingReference = new IOReference(new DocumentFieldReference(document2.GetId(), referencingFieldKey), false, fmController.TypeInfo, null, frameworkElement2, docView2);
+            var link = new Path
+            {
+                IsHitTestVisible = false,
+                StrokeThickness = 5,
+                IsHoldingEnabled = false,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                CompositeMode = ElementCompositeMode.SourceOver
+            };
+            Canvas.SetZIndex(link, -1);
+            var converter = new BezierConverter(frameworkElement1, frameworkElement2, itemsPanelCanvas);
+            converter.Pos2 = new Point(0, 0);
+            _lineBinding = new MultiBinding<PathFigureCollection>(converter, null);
+            _lineBinding.AddBinding(docView1, RenderTransformProperty);
+            _lineBinding.AddBinding(docView1, WidthProperty);
+            _lineBinding.AddBinding(docView1, HeightProperty);
+            Binding lineBinding = new Binding
+            {
+                Source = _lineBinding,
+                Path = new PropertyPath("Property")
+            };
+            PathGeometry pathGeo = new PathGeometry();
+            BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
+            link.Data = pathGeo;
+            itemsPanelCanvas.Children.Add(link);
+            //binding line position 
+            _lineBinding.AddBinding(docView2, RenderTransformProperty);
+            _lineBinding.AddBinding(docView2, WidthProperty);
+            _lineBinding.AddBinding(docView2, HeightProperty);
+            CheckLinePresence(inputRef);
+            RefToLine.Add(startReference, link);
 
-            StartConnectionLine(outputtingReference, Util.PointTransformFromVisual(new Point(5,5), frameworkElement1, itemsPanelCanvas));
-            _currReference = outputtingReference;
-            EndDrag(inputtingReference, false, true);
+            if (!LineToConverter.ContainsKey(link)) LineToConverter.Add(link, converter);
+            converter.OnPathUpdated += UpdateGradient;
+            converter.setGradientAngle();
+            link.Stroke = converter.GradientBrush;
+
+            AddLineToKeysEntry(converter, link);
+
+
+            //DocumentController inputController = outputtingReference.FieldReference.GetDocumentController(null);
+            //var thisRef = (inputtingReference.ContainerView.DataContext as DocumentViewModel).DocumentController
+            //    .GetDereferencedField(KeyStore.ThisKey, null);
+            //if (inputController.DocumentType.Equals(DashConstants.TypeStore.OperatorType) &&
+            //    outputtingReference.FieldReference is DocumentFieldReference && thisRef != null)
+            //    inputController.SetField(outputtingReference.FieldReference.FieldKey, thisRef, true);
+            //else
+            //    inputController.SetField(outputtingReference.FieldReference.FieldKey,
+            //        new DocumentReferenceFieldController(inputtingReference.FieldReference.GetDocumentId(), inputtingReference.FieldReference.FieldKey), true);
         }
 
-        private DocumentView GetDocView(DocumentController doc)
+
+        private void AddLineToKeysEntry(BezierConverter converter, Path link)
+        {
+            var docView1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+            var docView2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+            var frameworkKey1 = docView1.ViewModel.KeysToFrameworkElements.Keys.FirstOrDefault(key => docView1.ViewModel
+                .KeysToFrameworkElements[key].Equals(converter.Element1));
+            var frameworkKey2 = docView2.ViewModel.KeysToFrameworkElements.Keys.FirstOrDefault(key => docView2.ViewModel
+                .KeysToFrameworkElements[key].Equals(converter.Element2));
+            LineToElementKeysDictionary.Add(link, new Tuple<KeyController, KeyController>(frameworkKey1, frameworkKey2));
+        }
+        
+        public DocumentView GetDocView(DocumentController doc)
         {
             foreach (var docVm in ViewModel.DocumentViewModels)
             {
@@ -226,29 +321,29 @@ namespace Dash
             return null;
         }
 
+        /// <summary>
+        /// Deletes a link between two fields
+        /// </summary>
+        /// <param name="reff"></param>
+        /// <param name="line"></param>
         public void DeleteLine(FieldReference reff, Path line)
         {
             //Remove references to user created links from the UserLinks field of the document into which this link is inputting.
-            var doc2 = LineToConverter[line].Element2.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
+            var converter = LineToConverter[line];
+            var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+            var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+            var doc2 = view2.ViewModel.DocumentController;
             var linksList =
                 doc2.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
             if (linksList != null)
             {
-                var fields = doc2.EnumFields().ToImmutableList();
-                foreach (var field in fields)
+                var field =
+                    view2.ViewModel.KeysToFrameworkElements.FirstOrDefault(kvp => kvp.Value.Equals(converter.Element2));
+                if (field.Key != null)
                 {
-                    var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
-                    if (referenceFieldModelController != null)
-                    {
-                        var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
-                            .Equals(reff.DereferenceToRoot(null));
-                        if (referencesEqual)
-                        {
-                            var keyId = field.Key.Id;
-                            var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
-                            if (textFMC != null) linksList.Remove(textFMC);
-                        }
-                    }
+                    var keyId = field.Key.Id;
+                    var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
+                    if (textFMC != null) linksList.Remove(textFMC);
                 }
             }
 
@@ -256,6 +351,7 @@ namespace Dash
             RefToLine.Remove(reff);
             LineToConverter[line].OnPathUpdated -= UpdateGradient;
             LineToConverter.Remove(line);
+            LineToElementKeysDictionary.Remove(line);
         }
 
         /// <summary>
@@ -263,8 +359,7 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var ToBeDeleted = new List<Path>();
-            foreach (var pair in LineToConverter)
+            foreach (var pair in LineToConverter.ToImmutableHashSet())
             {
                 var converter = pair.Value;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
@@ -272,15 +367,20 @@ namespace Dash
 
                 if (view1 == docView || view2 == docView)
                 {
-                    ToBeDeleted.Add(pair.Key);
+                    var fieldRef = RefToLine.FirstOrDefault(x => x.Value == pair.Key).Key;
+                    var doc2 = view2.ViewModel.DocumentController;
+                    var key = view2.ViewModel.KeysToFrameworkElements.FirstOrDefault(
+                        keyAndElement => keyAndElement.Value.Equals(converter.Element2)).Key;
+                    DeleteLine(fieldRef, pair.Key);
+                    RemoveReference(doc2, key, fieldRef);
                 }
             }
+        }
 
-            foreach (var line in ToBeDeleted)
-            {
-                var fieldRef = RefToLine.FirstOrDefault(x => x.Value == line).Key;
-                DeleteLine(fieldRef, line);
-            }
+        public void RemoveReference(DocumentController doc, KeyController fieldKey, FieldReference reference)
+        {
+            doc.SetField(fieldKey,
+                reference.DereferenceToRoot(null)?.GetCopy(), true);
         }
 
         public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
@@ -409,6 +509,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// When you start dragging from a link ellipses
+        /// </summary>
+        /// <param name="ioReference"></param>
         public void StartDrag(IOReference ioReference)
         {
             if (_currReference != null)
@@ -438,6 +542,7 @@ namespace Dash
             StartConnectionLine(ioReference, ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position);
         }
 
+
         private void StartConnectionLine(IOReference ioReference, Point pos2)
         {
             _connectionLine = new Path
@@ -448,30 +553,9 @@ namespace Dash
                 IsHoldingEnabled = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
+                IsTapEnabled = true,
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                                 //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
-            };
-
-            // set up for manipulation on lines 
-            _connectionLine.Tapped += (s, e) =>
-            {
-                e.Handled = true;
-                var line = s as Path;
-                var green = _converter.GradientBrush;
-                //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
-                line.IsHoldingEnabled = !line.IsHoldingEnabled;
-            };
-
-            _connectionLine.Holding += (s, e) =>
-            {
-                if (_connectionLine != null) return;
-                ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
-            };
-
-            _connectionLine.PointerPressed += (s, e) =>
-            {
-                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
-                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
             };
 
             Canvas.SetZIndex(_connectionLine, -1);
@@ -548,6 +632,7 @@ namespace Dash
                 return;
             }
 
+
             // get the document that has the input field
             var inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
@@ -563,18 +648,14 @@ namespace Dash
             }
                 
             //Add the key to the inputController's list of user created links
-            if (!isLoadedLink)
-            {
-                if (inputController.GetField(KeyStore.UserLinksKey) == null)
-                {
-                    inputController.SetField(KeyStore.UserLinksKey,
-                        new ListFieldModelController<TextFieldModelController>(), true);
-                }
-                var linksList =
-                    inputController.GetField(KeyStore.UserLinksKey) as
-                        ListFieldModelController<TextFieldModelController>;
-                linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-            }
+            if (inputController.GetField(KeyStore.UserLinksKey) == null)
+                inputController.SetField(KeyStore.UserLinksKey,
+                    new ListFieldModelController<TextFieldModelController>(), true);
+            var linksList =
+                inputController.GetField(KeyStore.UserLinksKey) as
+                    ListFieldModelController<TextFieldModelController>;
+            linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
+            
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -587,11 +668,17 @@ namespace Dash
                 CheckLinePresence(ioReference.FieldReference);
                 RefToLine.Add(ioReference.FieldReference, _connectionLine);
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
+                if (!LineToElementKeysDictionary.ContainsKey(_connectionLine))
+                {
+                    AddLineToKeysEntry(_converter, _connectionLine);
+                }
                 _converter.OnPathUpdated += UpdateGradient;
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
             _currReference = null;
+
+            
         }
 
         /// <summary>
@@ -841,8 +928,7 @@ namespace Dash
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Schema.ToString();
 
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
-
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);

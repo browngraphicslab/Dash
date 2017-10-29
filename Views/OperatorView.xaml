@@ -63,7 +63,7 @@
                     <DataTemplate>
 
                         <StackPanel Orientation="Horizontal" Padding="0,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left"/>
+                            <TextBlock Text="{Binding Key.Name}" FontSize="14" Foreground="#FFAAABB0" Padding="10,0,10,0" TextAlignment="Left"/>
 
                             <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">

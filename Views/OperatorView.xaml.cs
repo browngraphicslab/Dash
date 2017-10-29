@@ -30,6 +30,7 @@ namespace Dash
         private bool _isCompound;
         private IOReference _currOutputRef;
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return _keysToFrameworkElements;  } }
         private DocumentView documentView;
 
         /// <summary>

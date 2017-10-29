@@ -180,8 +180,8 @@ namespace Dash
             }
         }
 
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-
+        private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return keysToFrameworkElements; } set { keysToFrameworkElements = value; }  }
 
         string _displayName = "Document";
         private bool _isDraggerVisible = true;
