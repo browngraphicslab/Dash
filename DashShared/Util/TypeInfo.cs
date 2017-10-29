@@ -51,6 +51,8 @@ namespace DashShared
         Subtract,
         Multiply,
         Regex,
-        Melt
+        Melt,
+        ExtractSentences,
+        ExtractKeyWords
     }
 }

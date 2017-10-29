@@ -78,6 +78,10 @@ namespace Dash
             public KeyController FieldKey;
             public CollectionView.CollectionViewType ViewType;
         }
+
+        /// <summary>
+        /// Static bucket to hold drag data when the header is dragged, this is a total hack!
+        /// </summary>
         public static HeaderDragData DragModel = null;
         
         private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -97,8 +101,7 @@ namespace Dash
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var viewModel = (DataContext as HeaderViewModel);
-            viewModel.Width  =_startWidth + e.Cumulative.Translation.X;
-            Debug.WriteLine("start = " + _startWidth + " viewwidth = " + viewModel.Width + " cumu" + e.Cumulative.Translation.X);
+            viewModel.Width = Math.Max(12, _startWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
         private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

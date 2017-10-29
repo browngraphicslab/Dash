@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -73,7 +74,7 @@ namespace Dash
         private void OnInputCollectionChanged(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            // get sll the headers from a collection
+            // get all the headers from a collection
             var collection = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null);
             var typedHeaders = Util.GetTypedHeaders(collection);
 
@@ -84,20 +85,52 @@ namespace Dash
                 InputHeaders.Add(key);
         }
 
-
-
-        private void xNewValueTextChanged(object sender, TextChangedEventArgs e)
+        /// <summary>
+        /// When any textbox key down is pressed we capture the <see cref="VirtualKey.Enter"/> and <see cref="VirtualKey.Tab"/>
+        /// to avoid any unwanted side effects (i.e. tab menu opening)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XAnyTextBoxOnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            _operatorDoc.SetField(MeltOperatorFieldModelController.ValueName,
-                new TextFieldModelController(xNewValueTextBox.Text), true);
+            if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
+            {
+                e.Handled = true;
+            }
+
         }
 
-        private void xNewVariableTextChanged(object sender, TextChangedEventArgs e)
+        /// <summary>
+        /// When the enter key is released on a textbox we update the backend with the new value
+        /// in the textbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XAnyTextBoxOnKeyUp(object sender, KeyRoutedEventArgs e)
         {
-            _operatorDoc.SetField(MeltOperatorFieldModelController.VariableName,
-                new TextFieldModelController(xNewVariableTextBox.Text), true);
+            // if it wasn't the enter key don't update anything
+            if (e.Key != VirtualKey.Enter)
+            {
+                return;
+            }
+
+            // otherwise update the correct backend based on the sender
+            if (sender == xNewValueTextBox)
+            {
+                _operatorDoc.SetField(MeltOperatorFieldModelController.ValueName,
+                    new TextFieldModelController(xNewValueTextBox.Text), true);
+            } else if (sender == xNewVariableTextBox)
+            {
+                _operatorDoc.SetField(MeltOperatorFieldModelController.VariableName,
+                    new TextFieldModelController(xNewVariableTextBox.Text), true);
+            }
         }
 
+        /// <summary>
+        /// Fired when the value name is changed elsewhere, updates the text in the view
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnNewValueNameChanged(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
@@ -106,11 +139,14 @@ namespace Dash
             if (tfmc.Data.Equals(xNewValueTextBox.Text))
                 return;
 
-            xNewValueTextBox.TextChanged -= xNewValueTextChanged;
             xNewValueTextBox.Text = tfmc.Data;
-            xNewValueTextBox.TextChanged += xNewValueTextChanged;
         }
 
+        /// <summary>
+        /// Fired when the variable name is changed elsewhere, updates the text in the view
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnNewVariableNameChanged(DocumentController sender,
             DocumentController.DocumentFieldUpdatedEventArgs args)
         {
@@ -119,9 +155,7 @@ namespace Dash
             if (tfmc.Data.Equals(xNewVariableTextBox.Text))
                 return;
 
-            xNewVariableTextBox.TextChanged -= xNewVariableTextChanged;
             xNewVariableTextBox.Text = tfmc.Data;
-            xNewVariableTextBox.TextChanged += xNewVariableTextChanged;
         }
 
         #region HeaderlistDragandDrop
@@ -197,5 +231,7 @@ namespace Dash
         }
 
         #endregion
+
+
     }
 }

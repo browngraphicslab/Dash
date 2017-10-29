@@ -17,6 +17,7 @@ using Dash.Views;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using System.Collections.Specialized;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,7 +32,28 @@ namespace Dash
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
         private DocumentView documentView;
 
-        public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
+        /// <summary>
+        /// The operator field model controller backing this operator view
+        /// </summary>
+        private OperatorFieldModelController _operator { get; set; }
+
+        /// <summary>
+        /// Used to cache the last datacontext so that we don't rebind unecessarily
+        /// </summary>
+        private object _lastDataContext { get; set; } = null;
+
+        /// <summary>
+        /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
+        /// </summary>
+        public object OperatorContent
+        {
+            get => xOpContentPresenter.Content;
+            set => xOpContentPresenter.Content = value;
+        }
+
+
+
+        public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
             this.InitializeComponent();
             _keysToFrameworkElements = keysToFrameworkElements;
@@ -43,77 +65,94 @@ namespace Dash
             documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView == null)
                 return;
-            
+
             xTitle.Text = _operator.GetOperatorType();
 
             documentView.StyleOperator(0);
         }
 
-        public object OperatorContent
-        {
-            get { return xOpContentPresenter.Content; }
-            set { xOpContentPresenter.Content = value; }
-        }
 
-        private OperatorFieldModelController _operator;
 
-        private object _lastDataContext = null;
-        private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        /// <summary>
+        /// Called whenever the datacontext for the entire view changes
+        /// The datacontext should be a <see cref="DocumentFieldReference"/> to a <see cref="OperatorFieldModelController"/>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void OnUserControlDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (args.NewValue == _lastDataContext)
+            // cache datacontext updates so we don't update the operator when the data context
+            // updates to itself
+            if (DataContext == _lastDataContext)
             {
                 return;
             }
-            else
-            {
-                _lastDataContext = args.NewValue;
-            }
-            _operator = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
+            _lastDataContext = DataContext;
+
+            // get the operator field model controller form the data context
+            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
             _isCompound = _operator.IsCompound();
 
+            // bind the input and output lists (the things we link to)
             var inputsBinding = new Binding
             {
                 Source = _operator.Inputs,
             };
+            InputListView.SetBinding(ItemsControl.ItemsSourceProperty, inputsBinding);
             var outputsBinding = new Binding
             {
                 Source = _operator.Outputs,
             };
-            InputListView.SetBinding(ItemsControl.ItemsSourceProperty, inputsBinding);
             OutputListView.SetBinding(ItemsControl.ItemsSourceProperty, outputsBinding);
 
-            if (_isCompound)
+            // if the operator isn't a compound operator then we're done
+            if (!_isCompound)
             {
-                MakeCompoundEditor();
-                xOpContentPresenter.Content = _compoundOpEditor;
-                DoubleTapped += OnDoubleTapped;
-                _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true; 
-
-                var compoundFMCont = _operator as CompoundOperatorFieldController;
-
-                InputListView.PointerReleased += (s, e) =>
-                {
-                    if (xOpContentPresenter.Content == null) return;
-                    var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
-                    if (ioRef == null) return;
-                    if (ioRef.IsOutput) return;
-                    KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
-                    compoundFMCont.AddInputreference(newInput, ioRef);
-                };
-
-                OutputListView.PointerReleased += (s, e) =>
-                {
-                    if (xOpContentPresenter.Content == null) return;
-                    var ioRef = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
-                    if (ioRef == null) return;
-                    if (!ioRef.IsOutput) return;
-                    KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
-                    compoundFMCont.AddOutputreference(newOutput, ioRef);
-                    _currOutputRef = ioRef;
-                };
+                return;
             }
-
+            // otherwise set up the compound operator
+            OnDataContextChangedIfCompound();
         }
+
+        /// <summary>
+        /// Helper method to help finish setting up the view when the operator is a compound operator
+        /// </summary>
+        private void OnDataContextChangedIfCompound()
+        {
+            MakeCompoundEditor();
+            xOpContentPresenter.Content = _compoundOpEditor;
+            DoubleTapped -= OnCompoundOperatorDoubleTapped;
+            DoubleTapped += OnCompoundOperatorDoubleTapped;
+            _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true;
+
+            var compoundFMCont = _operator as CompoundOperatorFieldController;
+
+            InputListView.PointerReleased += (s, e) =>
+            {
+                if (xOpContentPresenter.Content == null) return;
+                var ioRef =
+                    (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
+                if (ioRef == null) return;
+                if (ioRef.IsOutput) return;
+                KeyController newInput = new KeyController(Guid.NewGuid().ToString(),
+                    "Input " + (compoundFMCont.Inputs.Count + 1));
+                compoundFMCont.AddInputreference(newInput, ioRef);
+            };
+
+            OutputListView.PointerReleased += (s, e) =>
+            {
+                if (xOpContentPresenter.Content == null) return;
+                var ioRef =
+                    (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
+                if (ioRef == null) return;
+                if (!ioRef.IsOutput) return;
+                KeyController newOutput = new KeyController(Guid.NewGuid().ToString(),
+                    "Output " + (compoundFMCont.Outputs.Count + 1));
+                compoundFMCont.AddOutputreference(newOutput, ioRef);
+                _currOutputRef = ioRef;
+            };
+        }
+
 
         /// <summary>
         /// Envokes handler for starting a link by dragging on a link ellipse handle.
@@ -124,21 +163,33 @@ namespace Dash
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
-            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var outputKey = ((DictionaryEntry) el.DataContext).Key as KeyController;
 
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             if (xOpContentPresenter.Content is CompoundOperatorEditor)
-                if (view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+                if (view == ((CompoundOperatorEditor) xOpContentPresenter.Content).xFreeFormEditor)
+                    isOutput = !isOutput;
+            var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, type, e, el,
+                this.GetFirstAncestorOfType<DocumentView>());
             view.CanLink = true;
             view.StartDrag(ioRef);
         }
 
+        /// <summary>
+        /// Fired whenever an input link is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             StartNewLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
 
+        /// <summary>
+        /// Fired whenever an ouput link is pressed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             StartNewLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
@@ -165,18 +216,19 @@ namespace Dash
 
             // get the keycontroller for where the end of this link was dropped
             var el = sender as FrameworkElement;
-            var linkedKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var linkedKey = ((DictionaryEntry) el.DataContext).Key as KeyController;
 
             // get the type of the key which was linked <see OperatorType>
             var type = isOutput ? _operator.Outputs[linkedKey] : _operator.Inputs[linkedKey].Type;
 
             var isCompound = false;
             if (xOpContentPresenter.Content is CompoundOperatorEditor)
-                if (isCompound = view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor)
+                if (isCompound = view == ((CompoundOperatorEditor) xOpContentPresenter.Content).xFreeFormEditor)
                     isOutput = !isOutput;
 
             // create a new ioref representing the entire action
-            var ioRef = new IOReference(new DocumentFieldReference(docId, linkedKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
+            var ioRef = new IOReference(new DocumentFieldReference(docId, linkedKey), isOutput, type, e, el,
+                this.GetFirstAncestorOfType<DocumentView>());
 
             view.EndDrag(ioRef, isCompound);
         }
@@ -186,7 +238,7 @@ namespace Dash
         {
             var view = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
             var ioref = view?.GetCurrentReference();
-            if (ioref != null)                                                              
+            if (ioref != null)
             {
                 view.CancelDrag(ioref.PointerArgs.Pointer);
                 StartNewLink(sender, ioref.PointerArgs, false, view);
@@ -206,7 +258,13 @@ namespace Dash
         }
 
         #region expandoflyout
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+
+        /// <summary>
+        /// Fired if the operator view is for a compound operator and the view is double tapped
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnCompoundOperatorDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (xOpContentPresenter.Content == null) ExpandView(null, null);
             else ContractView(null, null);
@@ -231,8 +289,8 @@ namespace Dash
 
             if (_isCompound)
             {
-                var expandItem = new MenuFlyoutItem { Text = "Expando" };
-                var contractItem = new MenuFlyoutItem { Text = "Contracto" };
+                var expandItem = new MenuFlyoutItem {Text = "Expando"};
+                var contractItem = new MenuFlyoutItem {Text = "Contracto"};
                 expandItem.Click += ExpandView;
                 contractItem.Click += ContractView;
                 _flyout.Items?.Add(expandItem);
@@ -244,7 +302,7 @@ namespace Dash
         private void ContractView(object sender, RoutedEventArgs e)
         {
             xOpContentPresenter.Content = null;
-            xOpContentPresenter.Background = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+            xOpContentPresenter.Background = (SolidColorBrush) Application.Current.Resources["WindowsBlue"];
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
@@ -252,22 +310,28 @@ namespace Dash
             xOpContentPresenter.Content = _compoundOpEditor;
         }
 
+        /// <summary>
+        /// Create the compound operator editor view in the center of the operator
+        /// </summary>
+        /// <param name="collectionField"></param>
         private void MakeCompoundEditor(FieldControllerBase collectionField = null)
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var documentController = ContentController<DocumentModel>.GetController<DocumentController>(docId);
-            var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
+            var operatorFieldModelController = (DataContext as FieldReference)
+                ?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor();
         }
+
         #endregion
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
             var el = sender as FrameworkElement;
             var key = ((DictionaryEntry?) el?.DataContext)?.Key as KeyController;
-            if(key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
+            if (key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
 
             if (!_isCompound) return;
             var view = (xOpContentPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
@@ -281,7 +345,7 @@ namespace Dash
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
             var el = sender as FrameworkElement;
-            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            var key = ((DictionaryEntry?) el?.DataContext)?.Key as KeyController;
             if (key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
 
             if (!_isCompound || _currOutputRef == null) return;
@@ -298,6 +362,75 @@ namespace Dash
                 return;
             }
             preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
+        }
+
+        /// <summary>
+        /// Hack to allow for the user to drop headers onto operator inputs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) &
+                                   (e.DataView.RequestedOperation == DataPackageOperation.None
+                                       ? DataPackageOperation.Copy
+                                       : e.DataView.RequestedOperation);
+            e.DragUIOverride.IsContentVisible = true;
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Hack to allopw for user to drop header onto operator inputs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UIElement_OnDrop(object sender, DragEventArgs e)
+        {
+            HandleHeaderDragOnEllipse(sender);
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Handle header being dragged onto operator inputs
+        /// </summary>
+        /// <param name="sender"></param>
+        private void HandleHeaderDragOnEllipse(object sender)
+        {
+            // if there is a header being dragged
+            var dm = CollectionDBSchemaHeader.DragModel;
+            if (dm != null)
+            {
+                // and the header has a field key
+                if (dm.FieldKey != null)
+                {
+                    // get the document containing the operator
+                    var refToOp = DataContext as FieldReference;
+                    var operatorDoc = refToOp?.GetDocumentController(null);
+
+                    // get the key from the sending ellipse
+                    var frameworkElement = sender as FrameworkElement;
+                    if (frameworkElement != null)
+                    {
+                        var key = ((DictionaryEntry) frameworkElement.DataContext).Key as KeyController;
+
+                        if (_operator.Inputs[key].Type == TypeInfo.Text)
+                        {
+                            // User selected an item from the suggestion list, take an action on it here.
+                            if (operatorDoc != null)
+                            {
+                                operatorDoc.SetField(key,
+                                    new TextFieldModelController(dm.FieldKey.Id), true);
+                                return;
+                            }
+
+                        }
+                    }
+                }
+
+            }
+            return;
         }
     }
 }

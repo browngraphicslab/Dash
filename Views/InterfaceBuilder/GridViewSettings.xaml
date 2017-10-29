@@ -11,9 +11,6 @@
 
 
     <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <!--"settings"-->

@@ -110,6 +110,8 @@
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
@@ -138,6 +140,7 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
@@ -224,6 +227,9 @@
     </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
+      <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
@@ -323,7 +329,7 @@
     <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
       <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\FilterView.xaml.cs">
+    <Compile Include="Views\Operators\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
@@ -706,6 +712,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Operators\ExtractSentencesOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Operators\MeltOperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -798,7 +808,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\FilterView.xaml">
+    <Page Include="Views\Operators\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

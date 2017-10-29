@@ -1149,6 +1149,10 @@ namespace Dash
             {
                 return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
+            {
+                return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
             if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
             {
                 return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);

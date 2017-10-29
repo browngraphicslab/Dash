@@ -31,6 +31,7 @@ namespace Dash
             [ExpressionKey]      = new IOInfo(TypeInfo.Text, true),
             [SplitExpressionKey] = new IOInfo(TypeInfo.Text, true)
         };
+
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [MatchesKey] = TypeInfo.Collection,
@@ -59,15 +60,13 @@ namespace Dash
             var ematch = new Regex(expr);
             var splits = rsplit.Split(text);
 
-            var collected = new List<DocumentController>();
+            var collected = new List<TextFieldModelController>();
             foreach (var s in splits)
                 if (ematch.IsMatch(s))
                 {
-                    var d = _prototype.MakeDelegate();
-                    d.SetField(TextKey, new TextFieldModelController(s), true);
-                    collected.Add(d);
+                    collected.Add(new TextFieldModelController(s));
                 }
-            outputs[MatchesKey] = new DocumentCollectionFieldModelController(collected);
+            outputs[MatchesKey] = new ListFieldModelController<TextFieldModelController>(collected);
         }
 
         public override FieldModelController<OperatorFieldModel> Copy()

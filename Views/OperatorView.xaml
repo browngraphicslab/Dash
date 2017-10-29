@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped"
+    d:DesignWidth="400" DataContextChanged="OnUserControlDataContextChanged" RightTapped="OnRightTapped"
     x:Name="OpView">
 
     <Grid>
@@ -47,7 +47,8 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" Grid.Column="1" VerticalAlignment="Center"/>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
-                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
+                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"
+                                     DragEnter="UIElement_OnDragEnter" Drop="UIElement_OnDrop"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -68,7 +69,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left"/>
-                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
+                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
                                 <ToolTipService.ToolTip>
                                     <local:FieldPreview Loading="FieldPreview_OnLoading"></local:FieldPreview>
