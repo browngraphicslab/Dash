@@ -383,8 +383,8 @@ namespace Dash
 
             };
 
-            if (ParentDocument.IsMainCollection == false)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+           //if (ParentDocument != MainPage.Instance.xMainDocView)
+                //collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
 
             var documentButtons = new List<MenuButton>
             {
