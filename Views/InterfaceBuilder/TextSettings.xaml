@@ -77,31 +77,30 @@
 
                 <!--ALIGNMENT-->
                 <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                    <local:SettingsPaneBlock>
+                    <local:SettingsPaneBlock Padding="0">
                         <local:SettingsPaneBlock.MainContent>
-                            <ListView x:Name="xAlignmentListView" Height="Auto"  HorizontalAlignment="Center"
+                            <ListView x:Name="xAlignmentListView" Height="Auto" HorizontalAlignment="Center"
                                           HorizontalContentAlignment="Center" SelectionMode="Single"
                                           ScrollViewer.HorizontalScrollMode="Disabled"
                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                          ScrollViewer.VerticalScrollMode="Disabled" Margin="-10,0,0,0">
+                                          ScrollViewer.VerticalScrollMode="Disabled" Margin="0,0,0,0">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
+                                        <StackPanel  Orientation="Horizontal" HorizontalAlignment="Center"/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
                                 <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="Width" Value="15"></Setter>
-                                        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
-                                        <Setter Property="Padding" Value="-2"></Setter>
-                                    </Style>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+                                        </Style>
                                 </ListView.ItemContainerStyle>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignLeft"/>
+                                    <SymbolIcon Symbol="AlignCenter" />
                                 </Border>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignCenter" />
+                                    <SymbolIcon Symbol="AlignLeft"/>
                                 </Border>
                                 <Border>
                                     <SymbolIcon Symbol="AlignRight" />

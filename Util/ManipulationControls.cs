@@ -254,7 +254,7 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
@@ -276,21 +276,21 @@ namespace Dash
 
         private void ClampScale(double newScale, ref float scale)
         {
-            //if (newScale > MaxScale)
-            //{
-            //    scale = (float)(MaxScale / ElementScale);
-            //    ElementScale = MaxScale;
-            //}
-            //else if (newScale < MinScale)
-            //{
-            //    scale = (float)(MinScale / ElementScale);
-            //    ElementScale = MinScale;
-            //}
-            //else
-            //{
-            //    ElementScale = newScale;
-            //}
-            ElementScale = newScale;
+            if (newScale > MaxScale)
+            {
+                scale = (float)(MaxScale / ElementScale);
+                ElementScale = MaxScale;
+            }
+            else if (newScale < MinScale)
+            {
+                scale = (float)(MinScale / ElementScale);
+                ElementScale = MinScale;
+            }
+            else
+            {
+                ElementScale = newScale;
+            }
+            //ElementScale = newScale;
         }
     }
 }
