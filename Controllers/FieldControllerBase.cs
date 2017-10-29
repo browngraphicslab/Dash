@@ -81,6 +81,10 @@ namespace Dash
             var tb = new TextingBox(this);
             tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
             tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true);
+            tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+            tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
+            tb.Document.SetHeight(Double.NaN);
+            tb.Document.SetWidth(Double.NaN);
             return tb.makeView(tb.Document, context);
         }
 
