@@ -594,11 +594,14 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
-            FadeOut.Begin();
+            if (ParentCollection != null)
+            {
+                (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
+                FadeOut.Begin();
 
-            if (useFixedMenu)
-                MainPage.Instance.HideDocumentMenu();
+                if (useFixedMenu)
+                    MainPage.Instance.HideDocumentMenu();
+            }
         }
 
         private void CopyDocument()
