@@ -294,18 +294,21 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
-            var currentTranslate = ViewModel.GroupTransform.Translate;
-            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+            if (ViewModel != null)
+            {
+                var currentTranslate = ViewModel.GroupTransform.Translate;
+                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
 
-            var deltaTranslate = delta.Translate;
-            var deltaScaleAmount = delta.ScaleAmount;
+                var deltaTranslate = delta.Translate;
+                var deltaScaleAmount = delta.ScaleAmount;
 
-            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(0, 0);
-            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+                var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
+                var scaleCenter = new Point(0, 0);
+                var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
-            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+                ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+            }
         }
 
         /// <summary>
@@ -318,13 +321,17 @@ namespace Dash
         public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
-            Debug.Assert(dvm != null, "dvm != null");
-            Debug.Assert(dvm.Width != double.NaN);
-            Debug.Assert(dvm.Height != double.NaN);
-            dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
-            dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
-            // should we allow documents with NaN's for width & height to be resized?
-            return new Size(dvm.Width, dvm.Height);
+            if (dvm != null)
+            {
+                Debug.Assert(dvm != null, "dvm != null");
+                Debug.Assert(dvm.Width != double.NaN);
+                Debug.Assert(dvm.Height != double.NaN);
+                dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
+                dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
+                // should we allow documents with NaN's for width & height to be resized?
+                return new Size(dvm.Width, dvm.Height);
+            }
+            return new Size();
         }
 
         /// <summary>
@@ -611,7 +618,7 @@ namespace Dash
         
         protected override void OnActivated(bool isSelected)
         {
-            ViewModel.SetSelected(this, isSelected);
+            ViewModel?.SetSelected(this, isSelected);
             // if we are being deselected
             if (!isSelected)
             {
@@ -641,7 +648,7 @@ namespace Dash
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
+            ViewModel?.SetLowestSelected(this, isLowestSelected);
 
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
             {
