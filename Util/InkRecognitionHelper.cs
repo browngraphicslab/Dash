@@ -183,14 +183,16 @@ namespace Dash
                     var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                     var doc2 = view2.ViewModel.DocumentController;
                     var fields = doc2.EnumFields().ToImmutableList();
+                    var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
+                    var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
                     foreach (var field in fields)
                     {
                         var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
                         if (referenceFieldModelController != null)
                         {
                             var referencesEqual =
-                            (view1.ViewModel.KeysToFrameworkElements[referenceFieldModelController.FieldKey].Equals(converter.Element1) && view2
-                                 .ViewModel.KeysToFrameworkElements[pair.Key.FieldKey].Equals(converter.Element2));
+                            (view1.ViewModel.KeysToFrameworkElements[pair.Key.FieldKey].Equals(converter.Element1) && view2
+                                 .ViewModel.KeysToFrameworkElements[field.Key].Equals(converter.Element2));
                             if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
                             {
                                 view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
@@ -205,6 +207,7 @@ namespace Dash
             }
             return lineDeleted;
         }
+        
 
         private bool PointBetween(Point testPoint, Point a, Point b)
         {
