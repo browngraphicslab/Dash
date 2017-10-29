@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -146,14 +147,16 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection)
             {
-                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DisplayName); // TODO: change this for tab menu
-                if (ViewModel.DisplayName != "operator")
+                TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
+                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
                 {
+                    // if we don't have a parent to add to then we can't add this to anything
                     if (ParentCollection != null)
                     {
+                        // if the tree contains the parent collection
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            treeMenuItem = new AddMenuItem(ViewModel.DisplayName, AddMenuTypes.Document, Choose); // TODO: change this line for tree menu
+                            treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                                     treeMenuItem);
                         }
@@ -512,6 +515,27 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
+
+            if (ViewModel != null)
+            {
+                var context = new Context(ViewModel.DocumentController);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
+                context.AddDocumentContext(dataDoc);
+
+                // set the default title
+                dataDoc.GetTitleFieldOrSetDefault(context);
+
+                var binding = new FieldBinding<TextFieldModelController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = dataDoc,
+                    Key = KeyStore.TitleKey,
+                    Context = context
+                };
+
+                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                xTooSmallViewText.AddFieldBinding(TextBox.TextProperty, binding);
+            }
             
             //initDocumentOnDataContext();
         }
@@ -525,11 +549,11 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-            if (Height < MinHeight + xTextView.Height + 5)
+            if (Height < MinHeight + xTooSmallView.Height + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
-                xTextView.Visibility = Visibility.Visible;
+                xTooSmallView.Visibility = Visibility.Visible;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
@@ -537,17 +561,17 @@ namespace Dash
                 updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
-                xTextView.Visibility = Visibility.Collapsed;
+                xTooSmallView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
             else if (xIcon.Visibility == Visibility.Visible ||
-                xTextView.Visibility == Visibility.Visible)
+                xTooSmallView.Visibility == Visibility.Visible)
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
-                xTextView.Visibility = Visibility.Collapsed;
+                xTooSmallView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
             }
@@ -619,7 +643,7 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             // KBTODO remove itself from tab menu 
-            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DisplayName);
+            if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault());
 
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
@@ -753,5 +777,14 @@ namespace Dash
             Debug.WriteLine(query);
 
         }
+
+        private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
+            {
+                e.Handled = true;
+            }
+        }
     }
+    
 }

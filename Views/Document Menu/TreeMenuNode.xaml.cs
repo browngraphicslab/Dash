@@ -34,10 +34,17 @@ namespace Dash.Views.Document_Menu
     /// Represents a draggable item in the item creation menu. Includes type, icon, and other
     /// display options.
     /// </summary>
-    public class AddMenuItem
+    public class AddMenuItem : ViewModelBase
     {
         // == MEMBERS ==
-        public String DocType { get; set; }
+        private string _docType;
+
+        public String DocType
+        {
+            get => _docType;
+            set => SetProperty(ref _docType, value);
+        }
+
         public String IconText { get; set; }
         public AddMenuTypes Type { get; set; }
         public TappedEventHandler TapAction { get; set; }
@@ -77,6 +84,32 @@ namespace Dash.Views.Document_Menu
         {
         }
 
+    }
+
+    public class DocumentAddMenuItem : AddMenuItem , IDisposable
+    {
+        private KeyController _key;
+        private DocumentController _documentController;
+        public DocumentAddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action, DocumentController documentController, KeyController key) : base(label, icon, action)
+        {
+            _key = key;
+            _documentController = documentController;
+            documentController.AddFieldUpdatedListener(key, TextChangedHandler);
+            TextChangedHandler(null, null);
+        }
+
+        public void Dispose()
+        {
+            _documentController.RemoveFieldUpdatedListener(_key, TextChangedHandler);
+        }
+
+        private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var textController = _documentController.GetField(_key) as TextFieldModelController;
+            DocType = textController?.Data ?? "";
+        }
+
+        
     }
 
     // defines the header style and indendation behavior

@@ -99,7 +99,8 @@ namespace Dash
 
         public void RemoveFromList(Func<DocumentController> func, string name = "")
         {
-            if (_titleToFuncDictionary[name] != func)
+            
+            if (!_titleToFuncDictionary.ContainsKey(name) || _titleToFuncDictionary[name] != func )
             {
                 string newName = name;
                 int i = 1;
@@ -107,6 +108,7 @@ namespace Dash
                     newName = name + i++;
                 name = newName;
             }
+            Debug.Assert(_titleToFuncDictionary.ContainsKey(name));
             _titleToFuncDictionary.Remove(name); 
             ListContent.Remove(name); 
         }
