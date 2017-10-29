@@ -53,12 +53,14 @@ namespace Dash
                 e.GetPosition(MainPage.Instance));
 
 
-            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-            newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
-            var newDoc = newDocProto.MakeDelegate();
-            newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
+            //var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+            //newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
+            //var newDoc = newDocProto.MakeDelegate();
+            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
+            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
-            collection.ViewModel.AddDocument(newDoc, null);
+            //collection.ViewModel.AddDocument(newDoc, null);
+            collection.ViewModel.AddDocument(Util.BlankDocWithPosition(where), null);
 
             //DBTest.DBDoc.AddChild(newDoc);
         }

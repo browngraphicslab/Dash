@@ -65,7 +65,7 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            DocumentFieldReference reference = obj as DocumentFieldReference;
+            var reference = obj as DocumentFieldReference;
             if (reference == null)
             {
                 return false;

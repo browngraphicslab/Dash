@@ -221,7 +221,9 @@ namespace Dash
                 var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
+                {
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
+                }
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
@@ -242,7 +244,8 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var tp = Util.PointTransformFromVisual(e.Delta.Translation, _element, handleControl); 
+            //var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
@@ -250,7 +253,7 @@ namespace Dash
             ClampScale(newScale, ref scaleFactor);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
+            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(/*new Point(translate.X, translate.Y)*/tp,
                 e.Position, new Point(scaleFactor, scaleFactor)));
         }
 

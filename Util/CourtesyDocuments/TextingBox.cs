@@ -32,7 +32,7 @@ namespace Dash
 
         public static string DefaultText = "Default Text";
         public static string DefaultFontWeight = "Normal"; // 100;
-        public static double DefaultTextAlignment = (int)TextAlignment.Left;
+        public static double DefaultTextAlignment = (int)TextAlignment.Center;
         public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 

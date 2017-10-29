@@ -114,8 +114,10 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
+            xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
             dc.Selected = true;
             xEditTextBox.SelectAll();
         }
@@ -254,8 +256,7 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument
-                .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
             var headerList = ParentDocument
                 .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -268,7 +269,7 @@ namespace Dash
                                                      FieldKey = ContentController<KeyModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs)
+                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? db))
                 {
                     //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -279,7 +280,7 @@ namespace Dash
                     //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController(".*"), true);
                     //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController("\\."), true);
                     //    rd.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
-                    //    d.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
+                    //    d.SetField(RegexOperatorFieldModelController.MatchesKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))

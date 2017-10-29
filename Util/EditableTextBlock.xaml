@@ -7,7 +7,7 @@
     mc:Ignorable="d">
 
     <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
-    <Grid Background="{StaticResource DocumentBackground}">
+    <Grid Background="Transparent">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"
                    Text="{x:Bind Text, Mode=OneWay}"
@@ -15,8 +15,10 @@
                    FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                    TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                    Foreground="{x:Bind Foreground}"
-                   VerticalAlignment="Center"
-                   TextWrapping="Wrap" DoubleTapped="XTextBlock_DoubleTapped"></TextBlock>
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Top"
+                   TextWrapping="Wrap" 
+                   DoubleTapped="XTextBlock_DoubleTapped"></TextBlock>
         <TextBox x:Name="XTextBox"
                  x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
                  FontSize="{x:Bind FontSize, Mode=OneWay}"
@@ -24,7 +26,10 @@
                  TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                  Foreground="{x:Bind Foreground}"
                  Background="{x:Bind Background}"
-                 HorizontalAlignment="Stretch" VerticalAlignment="Center" TextWrapping="Wrap" BorderThickness="0" 
+                 HorizontalAlignment="Stretch" 
+                 VerticalAlignment="Top" 
+                 TextWrapping="Wrap" 
+                 BorderThickness="0" 
                  PointerWheelChanged="XTextBox_OnPointerWheelChanged"
                  ManipulationDelta="XTextBox_OnManipulationDelta"
                  KeyDown="XTextBox_OnKeyDown"

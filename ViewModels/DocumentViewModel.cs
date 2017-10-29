@@ -114,13 +114,7 @@ namespace Dash
                 {
                     var context = new Context(DocumentController);
 
-                    // set position
-                    var posFieldModelController =
-                        LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
-                            PointFieldModelController;
-                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
-                    Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
-                    posFieldModelController.Data = value.Translate;
+                    
                     // set scale center
                     var scaleCenterFieldModelController =
                         LayoutDocument.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
@@ -133,6 +127,14 @@ namespace Dash
                             PointFieldModelController;
                     if (scaleAmountFieldModelController != null)
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
+
+                    // set position
+                    var posFieldModelController =
+                        LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
+                            PointFieldModelController;
+                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
+                    Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
+                    posFieldModelController.Data = value.Translate;
                 }
             }
         }

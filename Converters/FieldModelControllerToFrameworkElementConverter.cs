@@ -24,7 +24,8 @@ namespace Dash
         {
             if (data == null)
                 return new TextBox();
-            return data.FieldModelController.GetTableCellView(new Context(data.ContextDocumentController));
+            var convertDataToXaml = data.FieldModelController.GetTableCellView(new Context(data.ContextDocumentController));
+            return convertDataToXaml;
         }
 
         public override BoundFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)

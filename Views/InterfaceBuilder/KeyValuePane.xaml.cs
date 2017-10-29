@@ -363,7 +363,6 @@ namespace Dash
 
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
             var posInKVPane = e.GetPosition(xOuterGrid);
-
             var item = (xKeyValueListView.ContainerFromIndex(0) as ListViewItem);
             if (item == null)
                 return;
@@ -460,8 +459,8 @@ namespace Dash
         /// </summary>
         private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            for (int i = 0; i < 3; i++)
-                xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
+            //for (int i = 0; i < 3; i++)
+            //    xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
         }
 
         /// <summary>
