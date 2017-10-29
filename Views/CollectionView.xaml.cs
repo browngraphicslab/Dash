@@ -142,6 +142,7 @@ namespace Dash
                 CurrentView.InitializeAsRoot();
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
                 (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
+                ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
 
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 

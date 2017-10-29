@@ -48,10 +48,20 @@ namespace Dash
         {
             get
             {
+                // if we're on the lowest selecting document view then we can resize it with pointer wheel
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
+
+
                 var colView = _element as CollectionFreeformView;
-                return colView == null || colView.IsLowestSelected;
+
+                // hack to see if we're in the interface builder or in the compound operator editor
+                // these are outside of the normal selection hierarchy so we always return true
+                if (colView.ViewModel is SimpleCollectionViewModel) return true;
+
+                // if the collection view is a free form view, or it is the lowest
+                // selected element then use the pointer
+                return colView != null || colView.IsLowestSelected;
             }
         }
 
@@ -244,7 +254,7 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
@@ -266,21 +276,21 @@ namespace Dash
 
         private void ClampScale(double newScale, ref float scale)
         {
-            //if (newScale > MaxScale)
-            //{
-            //    scale = (float)(MaxScale / ElementScale);
-            //    ElementScale = MaxScale;
-            //}
-            //else if (newScale < MinScale)
-            //{
-            //    scale = (float)(MinScale / ElementScale);
-            //    ElementScale = MinScale;
-            //}
-            //else
-            //{
-            //    ElementScale = newScale;
-            //}
-            ElementScale = newScale;
+            if (newScale > MaxScale)
+            {
+                scale = (float)(MaxScale / ElementScale);
+                ElementScale = MaxScale;
+            }
+            else if (newScale < MinScale)
+            {
+                scale = (float)(MinScale / ElementScale);
+                ElementScale = MinScale;
+            }
+            else
+            {
+                ElementScale = newScale;
+            }
+            //ElementScale = newScale;
         }
     }
 }
