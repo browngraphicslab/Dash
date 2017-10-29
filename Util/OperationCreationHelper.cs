@@ -33,6 +33,7 @@ namespace Dash
             AddOperator(() => new CompoundOperatorFieldController(), "Compound");
             AddOperator(() => new MeltOperatorFieldModelController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
             AddOperator(() => new ExtractSentencesOperatorFieldModelController(), "Extract Sentences", rfmc => new ExtractSentencesOperatorBox(rfmc));
+            AddOperator(() => new ExtractKeywordsOperatorFieldModelController(), "Extract KeyWords");
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");

@@ -221,6 +221,9 @@ namespace Dash
                 case OperatorType.ExtractSentences:
                     controller = new ExtractSentencesOperatorFieldModelController(model);
                     break;
+                case OperatorType.ExtractKeyWords:
+                    controller = new ExtractKeywordsOperatorFieldModelController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
