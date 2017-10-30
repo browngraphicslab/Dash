@@ -56,8 +56,8 @@
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid>
-                                    <TextBox Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12" Text="{Binding ElementName=xFontSizeSlider, Path=Value, Mode=TwoWay}"/>
-                                    <TextBox x:Name="xFontSizeTextBox" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center" FontSize="12" LostFocus="xTextBox_OnLostFocus" TextAlignment="Center"/>
+                                    <TextBox Height="15" Width="Auto" Foreground="{StaticResource MainText}" BorderBrush="Transparent" FontSize="12" Text="{Binding ElementName=xFontSizeSlider, Path=Value, Mode=TwoWay}"/>
+                                    <TextBox x:Name="xFontSizeTextBox" BorderBrush="Transparent" Foreground="{StaticResource MainText}" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center" FontSize="12" LostFocus="xTextBox_OnLostFocus" TextAlignment="Center"/>
                                     <Grid x:Name="xFontSizeMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                                           Background="Transparent"
                                           VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"

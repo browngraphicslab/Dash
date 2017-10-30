@@ -16,5 +16,5 @@
     FontWeight="{Binding Selected,Converter={StaticResource BoolToBoldConverter}}"
     
     >
-    <TextBlock Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
+    <TextBlock Foreground ="DarkSlateGray"  Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
 </UserControl>

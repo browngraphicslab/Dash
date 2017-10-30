@@ -83,7 +83,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
                 var userInput = sender.Text;
-                sender.ItemsSource = _allHeaders.Where(kvp => kvp.Key.Name.ToLower().Contains(userInput.ToLower())).Select(kvp => kvp.Key);
+                sender.ItemsSource = _allHeaders?.Where(kvp => kvp.Key.Name.ToLower().Contains(userInput.ToLower())).Select(kvp => kvp.Key);
             }
         }
 

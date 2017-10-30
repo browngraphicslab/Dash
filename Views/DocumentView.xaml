@@ -46,19 +46,20 @@
             <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                    Fill="{StaticResource DocumentBackground}" >
-                <Rectangle.Resources>
-                    <!-- Animate background color -->
-                    <Storyboard x:Name="colorStoryboard">
-                        <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC303030" To="#CC414141" Duration="0:0:0.075"/>
-                    </Storyboard>
-                    <Storyboard x:Name="colorStoryboardOut">
-                        <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC414141" To="#CC303030" Duration="0:0:0.075"/>
-                    </Storyboard>
-                </Rectangle.Resources>
-            </Rectangle>
-            <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}"></Border>
+
+            <Rectangle.Resources>
+                <!-- Animate background color -->
+                <Storyboard x:Name="colorStoryboard">
+                    <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
+                                    From="#CCFFFFFF" To="#FFFFFFFF" Duration="0:0:0.075"/>
+                </Storyboard>
+                <Storyboard x:Name="colorStoryboardOut">
+                    <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
+                                    From="#CCFFFFFF" To="#FFFFFFFF" Duration="0:0:0.075"/>
+                </Storyboard>
+            </Rectangle.Resources>
+        </Rectangle>
+        <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}" Visibility="Collapsed"></Border>
 
 
             <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
