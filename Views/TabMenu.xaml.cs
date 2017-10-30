@@ -272,10 +272,24 @@ namespace Dash
             {
                 Hide();
             }
-
             if (e.VirtualKey == VirtualKey.Enter)
             {
                 ExecuteSelectedElement();
+            }
+        }
+
+        public void HandleKeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (e.VirtualKey == VirtualKey.Down)
+            {
+
+                MoveSelectedDown();
+            }
+
+            if (e.VirtualKey == VirtualKey.Up)
+            {
+
+                MoveSelectedUp();
             }
         }
     }
