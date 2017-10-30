@@ -21,7 +21,7 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-        public static readonly string DragPropertyKey = "key";
+        public static readonly string DragPropertyKey = "key_value_pane_drag_key 1893741";
 
         private DocumentController _documentControllerDataContext;
         /// <summary>
