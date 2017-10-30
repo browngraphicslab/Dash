@@ -47,52 +47,6 @@ namespace Dash
         {
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
-
-        /// <summary>
-        /// Given a function that produces a document controller, visually displays the documents
-        /// on the selected FreeFormView, defaulting to the main canvas.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="opController"></param>
-        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
-        {
-            // default to MainPage collection view
-            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-            if (sender == TabMenu.Instance)
-            {
-                freeForm = TabMenu.AddsToThisCollection;
-                if (freeForm == null)
-                    return;
-            }
-
-            // fetch the coordinates of the caller on canvas
-            var searchView = sender;
-            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-            Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point());
-            translate = new Point(translate.X + 300, translate.Y + 100);
-
-            //var opController = documentCreationFunc?.Invoke();
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-            };
-
-            if (opController != null)
-            {
-                freeForm.ViewModel.AddDocument(opController, null);
-            }
-            
-        }
-
-        /// <summary>
-        /// Adds a document at the mouse's point in the given collection freeform view.
-        /// </summary>
-        /// <param name="collection"></param>
-        /// <param name="e"></param>
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
@@ -274,6 +228,48 @@ namespace Dash
                 MainPage.Instance.UpdateLayout();
             }*/
         }
+
+
+        /// <summary>
+        /// Given a function that produces a document controller, visually displays the documents
+        /// on the selected FreeFormView, defaulting to the main canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="opController"></param>
+        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
+        {
+            // default to MainPage collection view
+            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+
+            if (sender == TabMenu.Instance)
+            {
+                freeForm = TabMenu.AddsToThisCollection;
+                if (freeForm == null)
+                    return;
+            }
+
+            // fetch the coordinates of the caller on canvas
+            var searchView = sender;
+            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+            Debug.Assert(transform != null);
+            var translate = transform.TransformPoint(new Point());
+            translate = new Point(translate.X + 300, translate.Y + 100);
+
+            //var opController = documentCreationFunc?.Invoke();
+
+            // using this as a setter for the transform massive hack - LM
+            var _ = new DocumentViewModel(opController)
+            {
+                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                freeForm.ViewModel.AddDocument(opController, null);
+            }
+
+        }
+
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {

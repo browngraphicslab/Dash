@@ -179,14 +179,20 @@ namespace Dash
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)
         {
-            var ind = PageDocumentViewModels.IndexOf(CurPage);
-            CurPage = PageDocumentViewModels[Math.Max(0,ind-1)];
+            if (CurPage != null)
+            {
+                var ind = PageDocumentViewModels.IndexOf(CurPage);
+                CurPage = PageDocumentViewModels[Math.Max(0, ind - 1)];
+            }
         }
 
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
-            var ind = PageDocumentViewModels.IndexOf(CurPage);
-            CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
+            if (CurPage != null)
+            {
+                var ind = PageDocumentViewModels.IndexOf(CurPage);
+                CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
+            }
         }
 
         private void FitPageButton_Click(object sender, RoutedEventArgs e)

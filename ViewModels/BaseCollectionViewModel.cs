@@ -162,12 +162,22 @@ namespace Dash
                             else if (i is DocumentController)
                                 items.Add(new DocumentFieldModelController((DocumentController)i));
                         }
-                        if (items.FirstOrDefault() is TextFieldModelController)
-                            doc.SetField(f.Key, new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController)), true);
-                        else if (items.FirstOrDefault() is NumberFieldModelController)
-                            doc.SetField(f.Key, new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController)), true);
-                        else if (items.FirstOrDefault() is DocumentFieldModelController)
-                            doc.SetField(f.Key, new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data)), true);
+                        if (items.Count > 0)
+                        {
+                            FieldControllerBase field = null;
+
+                            if (items.First() is TextFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new TextFieldModelController((items.First() as TextFieldModelController).Data) :
+                                                new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController));
+                            else if (items.First() is NumberFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new NumberFieldModelController((items.First() as NumberFieldModelController).Data) :
+                                                new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController));
+                            else if (items.First() is DocumentFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new DocumentFieldModelController((items.First() as DocumentFieldModelController).Data) :
+                                               new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data));
+                            if (field != null)
+                                doc.SetField(f.Key, field, true);
+                        }
                     }
                 pivoted.Add(doc);
             }

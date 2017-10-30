@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 
-namespace Dash.Controllers.Operators.Demo
+namespace Dash
 {
     public class ExtractSentencesOperatorFieldModelController : OperatorFieldModelController
     {
@@ -20,6 +20,8 @@ namespace Dash.Controllers.Operators.Demo
         // helper key to store sentences in the output
         public static readonly KeyController SentenceKey = new KeyController("528F8275-99FD-48A3-8B9D-71CEB0856078", "Sentence");
 
+        // helper key to store sentences in the output
+        public static readonly KeyController IndexKey = new KeyController("4e852433-b6cc-43f2-a37c-636e1e61cd8b", "Index");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
@@ -56,11 +58,16 @@ namespace Dash.Controllers.Operators.Demo
                 if (textInput != null)
                 {
                     var sentences = Regex.Split(textInput.Data, @"(?<=[\.!\?])\s+");
+
+                    var sentenceIndex = 0;
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
                     {
                         var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new TextFieldModelController(sentence), true);
+                        outputDoc.SetField(IndexKey, new NumberFieldModelController(sentenceIndex), true);
                         outputDocs.Add(outputDoc);
+
+                        sentenceIndex += sentence.Length;
                     }
 
                 }

@@ -185,7 +185,10 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\GoToTabItemViewModel.cs" />
+    <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
@@ -231,6 +234,7 @@
     <Compile Include="Views\DBFilterChartBar.xaml.cs">
       <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
@@ -384,9 +388,6 @@
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="Views\Tab Menu\SearchView.xaml.cs">
-      <DependentUpon>SearchView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
     <Compile Include="RadialMenu\Colors.cs" />
@@ -604,10 +605,7 @@
     <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Tab Menu\SearchCategoryItem.xaml.cs">
-      <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Tab Menu\TabMenu.xaml.cs">
+    <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
@@ -862,10 +860,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Tab Menu\SearchView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="RadialMenu\CenterButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1021,11 +1015,7 @@
     <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\Tab Menu\SearchCategoryItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\Tab Menu\TabMenu.xaml">
+    <Page Include="Views\TabMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

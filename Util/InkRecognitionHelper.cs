@@ -181,26 +181,33 @@ namespace Dash
                 {
                     var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                     var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                    var doc2 = view2.ViewModel.DocumentController;
-                    var fields = doc2.EnumFields().ToImmutableList();
+                    var layoutDoc2 = view2.ViewModel.DocumentController;
+                    var fields = layoutDoc2.EnumFields().ToImmutableList();
                     var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
                     var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
-                    foreach (var field in fields)
+                    var dataRef = layoutDoc2.GetField(key2) as ReferenceFieldModelController;
+                    var referencesEqual =
+                        view1.ViewModel.KeysToFrameworkElements[key1].Equals(converter.Element1) && view2
+                            .ViewModel.KeysToFrameworkElements[key2].Equals(converter.Element2);
+                    if (referencesEqual && view.RefToLine.ContainsKey(pair.Key) && dataRef != null)
                     {
-                        var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
-                        if (referenceFieldModelController != null)
+                        //Case where we have layout document and need to get dataDoc;
+                        view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
+                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceFieldModelController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
+                        if (dataDoc != null)
                         {
-                            var referencesEqual =
-                            (view1.ViewModel.KeysToFrameworkElements[pair.Key.FieldKey].Equals(converter.Element1) && view2
-                                 .ViewModel.KeysToFrameworkElements[field.Key].Equals(converter.Element2));
-                            if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
-                            {
-                                view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
-                                doc2.SetField(field.Key,
-                                    referenceFieldModelController.DereferenceToRoot(null)?.GetCopy(), true);
-                                lineDeleted = true;
-                            }
+                            dataDoc.SetField(key2, dataRef
+                                .DereferenceToRoot(new Context(dataDoc))
+                                ?.GetCopy(), true);
                         }
+                        else
+                        {
+                            //Case where what we thought was a layout doc is actually a data document with an active layout
+                            layoutDoc2.SetField(key2, dataRef.DereferenceToRoot(new Context(layoutDoc2))?.GetCopy(),
+                                true);
+                        }
+                        lineDeleted = true;
+
                     }
                     
                 }

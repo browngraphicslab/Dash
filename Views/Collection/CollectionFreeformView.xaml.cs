@@ -77,7 +77,8 @@ namespace Dash
         private List<Tuple<FieldReference, DocumentFieldReference>> _linksToRetry;
         public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
-        public CollectionFreeformView() {
+        public CollectionFreeformView()
+        {
 
             InitializeComponent();
             Loaded += Freeform_Loaded;
@@ -87,7 +88,8 @@ namespace Dash
             //DragEnter += Collection_DragEnter;
         }
 
-        public void setBackgroundDarkness(bool isDark) {
+        public void setBackgroundDarkness(bool isDark)
+        {
             if (isDark)
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
             else
@@ -188,12 +190,7 @@ namespace Dash
             };
             timer.Start();
         }
-        
-        /// <summary>
-        /// loads a single connection 
-        /// </summary>
-        /// <param name="startReference"></param>
-        /// <param name="endReference"></param>
+
         public void AddLineFromData(FieldReference startReference, DocumentFieldReference endReference)
         {
             if (RefToLine.ContainsKey(startReference) &&
@@ -291,7 +288,6 @@ namespace Dash
             //        new DocumentReferenceFieldController(inputtingReference.FieldReference.GetDocumentId(), inputtingReference.FieldReference.FieldKey), true);
         }
 
-
         private void AddLineToKeysEntry(BezierConverter converter, Path link)
         {
             var docView1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
@@ -302,7 +298,7 @@ namespace Dash
                 .KeysToFrameworkElements[key].Equals(converter.Element2));
             LineToElementKeysDictionary.Add(link, new Tuple<KeyController, KeyController>(frameworkKey1, frameworkKey2));
         }
-        
+
         public DocumentView GetDocView(DocumentController doc)
         {
             foreach (var docVm in ViewModel.DocumentViewModels)
@@ -321,11 +317,6 @@ namespace Dash
             return null;
         }
 
-        /// <summary>
-        /// Deletes a link between two fields
-        /// </summary>
-        /// <param name="reff"></param>
-        /// <param name="line"></param>
         public void DeleteLine(FieldReference reff, Path line)
         {
             //Remove references to user created links from the UserLinks field of the document into which this link is inputting.
@@ -509,10 +500,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// When you start dragging from a link ellipses
-        /// </summary>
-        /// <param name="ioReference"></param>
         public void StartDrag(IOReference ioReference)
         {
             if (_currReference != null)
@@ -542,7 +529,6 @@ namespace Dash
             StartConnectionLine(ioReference, ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position);
         }
 
-
         private void StartConnectionLine(IOReference ioReference, Point pos2)
         {
             _connectionLine = new Path
@@ -553,10 +539,31 @@ namespace Dash
                 IsHoldingEnabled = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-                IsTapEnabled = true,
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                                 //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+
+            //// set up for manipulation on lines 
+            //_connectionLine.Tapped += (s, e) =>
+            //{
+            //    e.Handled = true;
+            //    var line = s as Path;
+            //    var green = _converter.GradientBrush;
+            //    //line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+            //    line.IsHoldingEnabled = !line.IsHoldingEnabled;
+            //};
+
+            //_connectionLine.Holding += (s, e) =>
+            //{
+            //    if (_connectionLine != null) return;
+            //    ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
+            //};
+
+            //_connectionLine.PointerPressed += (s, e) =>
+            //{
+            //    if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
+            //    ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference);
+            //};
 
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
@@ -601,7 +608,7 @@ namespace Dash
             _currReference = null;
         }
 
-        public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink=false)
+        public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink = false)
         {
             // called when we release on a link, thus if the ioReference is output the _currReference
             // is the input since the _currReference must have been dragged from an input
@@ -632,7 +639,6 @@ namespace Dash
                 return;
             }
 
-
             // get the document that has the input field
             var inputController = inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController
@@ -642,11 +648,13 @@ namespace Dash
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
             {
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-            } else {
+            }
+            else
+            {
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             }
-                
+
             //Add the key to the inputController's list of user created links
             if (inputController.GetField(KeyStore.UserLinksKey) == null)
                 inputController.SetField(KeyStore.UserLinksKey,
@@ -655,7 +663,7 @@ namespace Dash
                 inputController.GetField(KeyStore.UserLinksKey) as
                     ListFieldModelController<TextFieldModelController>;
             linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-            
+
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -678,7 +686,7 @@ namespace Dash
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
             _currReference = null;
 
-            
+
         }
 
         /// <summary>
@@ -727,17 +735,18 @@ namespace Dash
         #endregion
 
         #region Manipulation
+        public Rect ClipRect { get { return xClippingRect.Rect; } }
         public void Move(TranslateTransform translate)
         {
-            var composite = new TransformGroup();
+            if (!IsHitTestVisible) return;
             var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+
+            var composite = new TransformGroup();
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
+
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
         }
-
-        public Rect ClipRect { get { return xClippingRect.Rect; } }
-
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
@@ -748,7 +757,7 @@ namespace Dash
             Debug.Assert(canvas != null);
             var delta = transformationDelta.Translate;
 
-           //Create initial translate and scale transforms
+            //Create initial translate and scale transforms
             //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
@@ -766,11 +775,11 @@ namespace Dash
 
             //Create initial composite transform
             var composite = new TransformGroup();
+
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(scale);
-
             composite.Children.Add(translate);
-            
+
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             //ParentCollection.SetTransformOnBackground(composite);
             var matrix = new MatrixTransform { Matrix = composite.Value };
@@ -872,7 +881,7 @@ namespace Dash
         }
 
 
-#endregion
+        #endregion
 
         #region Clipping
         /// <summary>
@@ -927,8 +936,14 @@ namespace Dash
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
                 var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Schema.ToString();
 
-                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetId(), droppedField.FieldKey), true);
+
+                var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
+                var collType =
+                    (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType),
+                        sourceViewType);
+                var cnote = new CollectionNote(where, collType);
+                //TODO: using data document might cause problems
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
@@ -942,7 +957,8 @@ namespace Dash
                 // bcz: hack to find the CollectionView for the newly created collection so that we can wire up the connection line as if it it had already been there
                 UpdateLayout();
                 for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
-                    if (itemsPanelCanvas.Children[i] is ContentPresenter) {
+                    if (itemsPanelCanvas.Children[i] is ContentPresenter)
+                    {
                         var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
                         EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.Collection, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
@@ -987,7 +1003,7 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private bool _singleTapped; 
+        private bool _singleTapped;
 
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -997,7 +1013,7 @@ namespace Dash
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
             await Task.Delay(100);
-            if (!_singleTapped) return; 
+            if (!_singleTapped) return;
 
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
@@ -1008,7 +1024,7 @@ namespace Dash
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            _singleTapped = false; 
+            _singleTapped = false;
             e.Handled = true;
             ChooseLowest(e);
         }
@@ -1027,11 +1043,11 @@ namespace Dash
             }
 
             // in the lowest possible collectionfreeform 
-            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>(); 
+            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>();
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                { 
+                {
                     view.OnTapped(view, null); // hack to set selection on the lowest view
                     return;
                 }
@@ -1039,7 +1055,7 @@ namespace Dash
 
             // if no docview to select, select the current collectionview 
             var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView?.OnTapped(parentView, null); 
+            parentView?.OnTapped(parentView, null);
         }
 
         #endregion

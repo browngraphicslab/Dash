@@ -114,7 +114,7 @@ namespace Dash
                 {
                     var context = new Context(DocumentController);
 
-                    // set position
+                     // set position
                     var posFieldModelController =
                         LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;

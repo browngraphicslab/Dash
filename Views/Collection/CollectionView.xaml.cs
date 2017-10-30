@@ -148,6 +148,7 @@ namespace Dash
                 CurrentView.InitializeAsRoot();
                 _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
                 (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
+                ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
 
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
@@ -388,8 +389,8 @@ namespace Dash
 
             };
 
-            if (ParentDocument.IsMainCollection == false)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+           //if (ParentDocument != MainPage.Instance.xMainDocView)
+                //collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
 
             var documentButtons = new List<MenuButton>
             {

@@ -71,7 +71,7 @@ namespace Dash
                         t = TypeInfo.Image;
                         //Todo: needs to be fixed bc the images wont display if you use the system uri (i.e. storageFile.Path)
                         var localFolder = ApplicationData.Current.LocalFolder;
-                        var file = await localFolder.CreateFileAsync("filename.jpg",
+                        var file = await localFolder.CreateFileAsync(storageFile.DisplayName+storageFile.FileType,
                             CreationCollisionOption.ReplaceExisting);
                         await storageFile.CopyAndReplaceAsync(file);
                         data = new Uri(file.Path);
