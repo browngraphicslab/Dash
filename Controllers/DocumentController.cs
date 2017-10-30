@@ -1095,7 +1095,7 @@ namespace Dash
             }
             if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
             {
-                return KeyValueDocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
+                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType.Equals(StackLayout.DocumentType))
             {

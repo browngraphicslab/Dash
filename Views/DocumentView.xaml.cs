@@ -536,7 +536,10 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-            xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+            if (ViewModel != null)
+            {
+                xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+            }
             //initDocumentOnDataContext();
         }
 
