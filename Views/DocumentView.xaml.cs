@@ -127,6 +127,11 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
+                if (double.IsNaN(ViewModel.Width) &&
+                    (ParentCollection?.CurrentView is CollectionFreeformView)) {
+                    ViewModel.Width = 50;
+                    ViewModel.Height = 50;
+                }
                 //if (Parent == null)
                 //    ViewModel.Width = ActualWidth;
                 //else ViewModel.Width = double.NaN;
@@ -206,8 +211,7 @@ namespace Dash
         {
             // if the drop wasn't from the key value pane, then return
             // if the view is in the interface builder return
-            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null ||
-                (ViewModel?.IsInInterfaceBuilder ?? true)) return;
+            if (e.Data?.Properties[KeyValuePane.DragPropertyKey] == null || (ViewModel?.IsInInterfaceBuilder ?? true)) return;
 
             // get data variables from the DragArgs
             var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
