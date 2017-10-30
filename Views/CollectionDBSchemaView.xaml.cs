@@ -91,13 +91,19 @@ namespace Dash
         private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
         {
             var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
-            var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-            if (column != -1)
+            var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
+            if (recordCollection.Contains(dc))
             {
-                FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
-                updateEditBox(dc);
-                xEditField.ShowAt(this);
+                var column = recordCollection.IndexOf(dc);
+                if (column != -1)
+                {
+                    FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
+                    updateEditBox(dc);
+                    xEditField.ShowAt(this);
+                }
+
             }
+
         }
 
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
