@@ -73,7 +73,7 @@ namespace Dash
                 }
                 foreach (var inkAnalysisNode in _shapeRegions)
                 {
-                    var region = (InkAnalysisInkDrawing) inkAnalysisNode;
+                    var region = (InkAnalysisInkDrawing)inkAnalysisNode;
                     //Only recognize shapes if the region was just drawn and contains a new stroke
                     if (RegionContainsNewStroke(region))
                     {
@@ -102,7 +102,7 @@ namespace Dash
             NewStrokes.Clear();
         }
 
-        
+
 
         #region Delete with line
 
@@ -209,12 +209,12 @@ namespace Dash
                         lineDeleted = true;
 
                     }
-                    
+
                 }
             }
             return lineDeleted;
         }
-        
+
 
         private bool PointBetween(Point testPoint, Point a, Point b)
         {
@@ -264,7 +264,7 @@ namespace Dash
                 var dist = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
                 var currAngle = Math.Atan2(dy, dx);
                 if (dx < 0) currAngle += Math.PI;
-                var newPoint = new Point(Math.Cos(currAngle + Math.PI/4) * dist + ctrPoint.X, Math.Sin(currAngle + Math.PI/4) * dist + ctrPoint.Y);
+                var newPoint = new Point(Math.Cos(currAngle + Math.PI / 4) * dist + ctrPoint.X, Math.Sin(currAngle + Math.PI / 4) * dist + ctrPoint.Y);
                 newPoints.Add(newPoint);
             }
             return newPoints;
@@ -392,25 +392,29 @@ namespace Dash
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
-            foreach (var rect in TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r)))
-                {
-                    DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
-                    var str = TextBoundsDictionary[rect].Item1;
-                    TryGetText(str, out string text, out KeyController key);
-                    var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                    doc.ParseDocField(key, text);
-                    var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
-                        relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-                    (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
-                        rect.Height / 1.5;
-                    layoutDocs.Add(textBox.Document);
-                    keysToRemove.Add(rect);
-                }
+            int fieldIndex = 0;
+            var stringFields = TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r));
+            var enumerable = stringFields as IList<Rect> ?? stringFields.ToList();
+            foreach (var rect in enumerable)
+            {
+                DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
+                var str = TextBoundsDictionary[rect].Item1;
+                TryGetText(str, out string text, out KeyController key,
+                    enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
+                var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
+                doc.ParseDocField(key, text);
+                var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                    relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
+                (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                    rect.Height / 1.5;
+                layoutDocs.Add(textBox.Document);
+                keysToRemove.Add(rect);
+            }
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
-            if(addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
+            if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
             return doc;
         }
 
@@ -485,10 +489,8 @@ namespace Dash
             return textBoundsDictionary;
         }
 
-        private void TryGetText(string str, out string value, out KeyController key)
+        private void TryGetText(string str, out string value, out KeyController key, string suffix)
         {
-            value = str;
-            key = new KeyController(Guid.NewGuid().ToString(), str);
             if (str.Contains(':'))
             {
                 var splitstring = str.Split(':');
@@ -496,7 +498,12 @@ namespace Dash
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
                 key = new KeyController(Guid.NewGuid().ToString(), keystring);
             }
-            
+            else
+            {
+                value = str;
+                key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
+            }
+
         }
 
         private bool RectContainsRect(Rect outer, Rect inner)
