@@ -590,7 +590,7 @@ namespace Dash
         }
 
 
-        private void LightTheme(object sender, TappedRoutedEventArgs e)
+        private void ChangeTheme(object sender, TappedRoutedEventArgs e)
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         }

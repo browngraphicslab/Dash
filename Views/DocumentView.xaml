@@ -45,11 +45,11 @@
                 <!-- Animate background color -->
                 <Storyboard x:Name="colorStoryboard">
                     <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC303030" To="#CC414141" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentBackgroundColor}" To="{ThemeResource DocumentBackgroundHighlightColor}" Duration="0:0:0.075"/>
                 </Storyboard>
                 <Storyboard x:Name="colorStoryboardOut">
                     <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC414141" To="#CC303030" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentBackgroundHighlightColor}" To="{ThemeResource DocumentBackgroundColor}" Duration="0:0:0.075"/>
                 </Storyboard>
             </Rectangle.Resources>
         </Rectangle>

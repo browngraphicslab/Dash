@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
 using static Dash.NoteDocuments;
@@ -736,6 +737,7 @@ namespace Dash
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
+            //var backgroundPath = (App.Instance.Resources["CollectionBackgroundImage"] as BitmapImage)?.UriSource;
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it

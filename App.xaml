@@ -41,33 +41,41 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <Color x:Key="MainTextColor">#FFAAABB0</Color>
+                    <Color x:Key="MainTextColor">#FF666666</Color>
+                    <Color x:Key="DocumentBackgroundHighlightColor">#FFFFFFFF</Color>
+                    <Color x:Key="DocumentBackgroundColor">#CCFFFFFF</Color>
+                    <Color x:Key="WindowsBlueColor">#FF068484</Color>
                     <!--general colors-->
-                    <SolidColorBrush x:Key="WindowsBlue">#FF17477E</SolidColorBrush>
-                    <SolidColorBrush x:Key="TranslucentWindowsBlue">#CC17477E</SolidColorBrush>
-                    <SolidColorBrush x:Key="DarkWindowsBlue">#cc103a6a</SolidColorBrush>
-                    <SolidColorBrush x:Key="AccentGreen">#FF265C49</SolidColorBrush>
+                    <SolidColorBrush x:Key="WindowsBlue">#FF068484</SolidColorBrush>
+                    <SolidColorBrush x:Key="TranslucentWindowsBlue">#B295AED3</SolidColorBrush>
+                    <SolidColorBrush x:Key="DarkWindowsBlue">#FF7B91B1</SolidColorBrush>
+                    <SolidColorBrush x:Key="AccentGreen">#FF000000</SolidColorBrush>
                     <SolidColorBrush x:Key="TranslucentWhite">#E5FFFFFF</SolidColorBrush>
-                    <SolidColorBrush x:Key="DocumentBackgroundSelected">#FF414141</SolidColorBrush>
-                    <SolidColorBrush x:Key="MainText">#FFAAABB0</SolidColorBrush>
-                    <SolidColorBrush x:Key="OutputHandleColor">#FF265C49</SolidColorBrush>
-                    <SolidColorBrush x:Key="InputHandleColor">#FF17477E</SolidColorBrush>
+                    <SolidColorBrush x:Key="DocumentBackgroundSelected">#FF000000</SolidColorBrush>
+                    <SolidColorBrush x:Key="MainText">#FF666666</SolidColorBrush>
+                    <SolidColorBrush x:Key="OutputHandleColor">#FF000000</SolidColorBrush>
+                    <SolidColorBrush x:Key="InputHandleColor">#FF068484</SolidColorBrush>
                     <SolidColorBrush x:Key="DragHighlight">#33A2A2A2</SolidColorBrush>
                     <!-- background colors -->
+                    <BitmapImage x:Key="CollectionBackgroundImage" UriSource="ms-appx:///Assets/gridbg.jpg"></BitmapImage>
                     <SolidColorBrush x:Key="OperatorBackground">#FF132D4B</SolidColorBrush>
-                    <SolidColorBrush x:Key="RadialMenuBackground">#CC303030</SolidColorBrush>
+                    <SolidColorBrush x:Key="RadialMenuBackground">#CCFFFFFF</SolidColorBrush>
                     <SolidColorBrush x:Key="DraggerLineStroke">#66007AFF</SolidColorBrush>
-                    <SolidColorBrush x:Key="CollectionViewBackground">DeepPink</SolidColorBrush>
-                    <SolidColorBrush x:Key="DocumentBackground" Opacity="{StaticResource DocumentOpacity}">Pink</SolidColorBrush>
-                    <SolidColorBrush x:Key="DocumentBackgroundOpaque">#FF303030</SolidColorBrush>
-                    <SolidColorBrush x:Key="DocumentHighlightBackground" Opacity="{StaticResource DocumentOpacity}">#FF414141</SolidColorBrush>
-                    <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
+                    <SolidColorBrush x:Key="CollectionViewBackground">#FFFFFFFF</SolidColorBrush>
+                    <SolidColorBrush x:Key="DocumentBackground" Opacity="{StaticResource DocumentOpacity}">#FFFFFFFF</SolidColorBrush>
+                    <SolidColorBrush x:Key="DocumentBackgroundOpaque">#FFFFFFFF</SolidColorBrush>
+                    <SolidColorBrush x:Key="DocumentHighlightBackground" Opacity="{StaticResource DocumentOpacity}">#FF000000</SolidColorBrush>
+                    <SolidColorBrush x:Key="TransluscentDocumentBackground">#CCFFFFFF</SolidColorBrush>
+                    <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0">
                         <GradientStop Color="Transparent" Offset="0" />
                         <GradientStop Color="#FFFFFFFF" Offset="1" />
                     </LinearGradientBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <Color x:Key="MainTextColor">#FFAAABB0</Color>
+                    <Color x:Key="DocumentBackgroundHighlightColor">#CC414141</Color>
+                    <Color x:Key="DocumentBackgroundColor">#CC303030</Color>
+                    <Color x:Key="WindowsBlueColor">#FF17477E</Color>
                     <!--general colors-->
                     <SolidColorBrush x:Key="WindowsBlue">#FF17477E</SolidColorBrush>
                     <SolidColorBrush x:Key="TranslucentWindowsBlue">#CC17477E</SolidColorBrush>
@@ -80,6 +88,7 @@
                     <SolidColorBrush x:Key="InputHandleColor">#FF17477E</SolidColorBrush>
                     <SolidColorBrush x:Key="DragHighlight">#33A2A2A2</SolidColorBrush>
                     <!-- background colors -->
+                    <BitmapImage x:Key="CollectionBackgroundImage" UriSource="ms-appx:///Assets/gridbg2.jpg"></BitmapImage>
                     <SolidColorBrush x:Key="OperatorBackground">#FF132D4B</SolidColorBrush>
                     <SolidColorBrush x:Key="RadialMenuBackground">#CC303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DraggerLineStroke">#66007AFF</SolidColorBrush>
@@ -87,6 +96,7 @@
                     <SolidColorBrush x:Key="DocumentBackground" Opacity="{StaticResource DocumentOpacity}">#FF303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DocumentBackgroundOpaque">#FF303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DocumentHighlightBackground" Opacity="{StaticResource DocumentOpacity}">#FF414141</SolidColorBrush>
+                    <SolidColorBrush x:Key="TransluscentDocumentBackground">#CC303030</SolidColorBrush>
                     <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
                         <GradientStop Color="Transparent" Offset="0" />
                         <GradientStop Color="#FFFFFFFF" Offset="1" />

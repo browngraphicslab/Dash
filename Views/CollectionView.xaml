@@ -20,7 +20,7 @@
             </Grid.ColumnDefinitions>
 
             <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
 
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>

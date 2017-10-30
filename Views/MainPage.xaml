@@ -19,7 +19,7 @@
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
-            <Button Tapped="LightTheme" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">THEME</Button>
+            <Button Tapped="ChangeTheme" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">THEME</Button>
         </StackPanel>
         
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->

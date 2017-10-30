@@ -128,7 +128,6 @@ namespace Dash
         }
 
 #endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
         /// </summary>
@@ -153,29 +152,27 @@ namespace Dash
         MenuButton copyButton;
         private void SetUpMenu()
         {
-            var bgcolor = bgbrush.Color;
-            bgcolor.A = 0;
             var red = new Color();
             red.A = 204;
             red.R = 190;
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy,         "Copy", bgcolor, CopyDocument);
-            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
-            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
+            copyButton = new MenuButton(Symbol.Copy,         "Copy", CopyDocument);
+            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
+            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
+            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
+                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
                 moveButton,
                 copyButton,
                // delegateButton,
                // copyDataButton
                 instanceDataButton,
                 copyViewButton,
-                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
+                new MenuButton(Symbol.Delete, "Delete",DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };

@@ -24,6 +24,7 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -79,7 +80,7 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -346,34 +347,33 @@ namespace Dash
         
         private void MakeMenu()
         {
-            var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.TouchPointer, "Select", menuColor, MakeSelectionModeMultiple)
+                new MenuButton(Symbol.TouchPointer, "Select", MakeSelectionModeMultiple)
                 {
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, 
                     new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
+                new MenuButton(Symbol.Camera, "ScrCap", ScreenCap)
 
 
             };
 
             if (ParentDocument.IsMainCollection == false)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", DeleteCollection));
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", menuColor, MakeSelectionModeNone)
+                new MenuButton(Symbol.Back, "Back", MakeSelectionModeNone)
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.Edit, "Interface", menuColor, null),
-                new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
-                new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
+                new MenuButton(Symbol.Edit, "Interface", null),
+                new MenuButton(Symbol.SelectAll, "All", SelectAllItems),
+                new MenuButton(Symbol.Delete, "Delete", DeleteSelection),
             };
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
         }
@@ -447,6 +447,7 @@ namespace Dash
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
+            //var backgroundPath = (App.Instance.Resources["CollectionBackgroundImage"] as BitmapImage)?.UriSource;
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
