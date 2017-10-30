@@ -480,10 +480,10 @@ namespace Dash
 
         private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var newField = new KeyFieldContainer(new KeyController(),
-                new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false,
-                TypeColumnWidth);
-            ListItemSource.Add(newField);
+            //var newField = new KeyFieldContainer(new KeyController(),
+            //    new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false,
+            //    TypeColumnWidth);
+            //ListItemSource.Add(newField);
         }
     }
 }

@@ -395,6 +395,7 @@ namespace Dash
             int fieldIndex = 0;
             var stringFields = TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r));
             var enumerable = stringFields as IList<Rect> ?? stringFields.ToList();
+            ListFieldModelController<TextFieldModelController> list = enumerable.Count == 0 ? null : new ListFieldModelController<TextFieldModelController>();
             foreach (var rect in enumerable)
             {
                 DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
@@ -403,12 +404,21 @@ namespace Dash
                     enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                 var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
                 doc.ParseDocField(key, text);
+                var field = doc.GetField(key);
+                if (field != null)
+                {
+                    list.Add(field);
+                }
                 var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
                     relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                 (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
                     rect.Height / 1.5;
                 layoutDocs.Add(textBox.Document);
                 keysToRemove.Add(rect);
+            }
+            if (list != null)
+            {
+                doc.SetField(KeyStore.ParsedFieldKey, list, true);
             }
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             var layout = new FreeFormDocument(layoutDocs,
