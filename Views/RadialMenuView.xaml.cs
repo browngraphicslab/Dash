@@ -53,7 +53,7 @@ namespace Dash
         public Symbol? FilePickerSymbol = Symbol.Add;
         public Symbol? SearchSymbol = Symbol.Find;
         public Symbol? NoteSymbol = Symbol.Page;
-
+       
         /// <summary>
         /// Get or set the Diameter of the radial menu
         /// </summary>
@@ -194,10 +194,12 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
+            
             xRadialMenu.Diameter = 215;
             xRadialMenu.StartAngle = 0;
             xRadialMenu.CenterButtonIcon = "🛠️";
             xRadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
+            xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Gray);
             xRadialMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
             xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
             xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);

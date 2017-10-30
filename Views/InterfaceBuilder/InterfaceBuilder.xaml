@@ -50,16 +50,16 @@
 
                     <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1"></local:CollectionFreeformView>
 
-                    <Grid Grid.Column="2">
+                    <Grid Grid.Column="2" >
                         <Grid x:Name="xSettingsPane"
-                      Background="Transparent" BorderThickness="1,0,0,0" HorizontalAlignment="Stretch">
-                        </Grid>
+                      Background="Transparent" BorderThickness="1,0,0,0" HorizontalAlignment="Stretch" >
+                        </Grid >
                         <StackPanel x:Name="xLayoutNamePanel"  Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5" >
-                            <TextBlock Padding="0,0,8,0" VerticalAlignment="Top" FontWeight="Medium" >Layout: </TextBlock>
-                            <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" VerticalAlignment="Top" Padding="0,0,0,3" IsTabStop="False"></TextBox>
+                            <TextBlock  Padding="0,0,8,0" VerticalAlignment="Top" FontWeight="Medium" >Layout: </TextBlock>
+                            <TextBox x:Name="xLayoutTextBox"  Background="Transparent" BorderThickness="0" VerticalAlignment="Top" Padding="0,0,0,3" IsTabStop="False"></TextBox>
                         </StackPanel>
                         <Button x:Name="ChromeButton" Height="32" Width="32" Margin="1,0,0,0" Padding="5" VerticalAlignment="Bottom" Tapped="ChromeButton_OnTapped">
-                            <Viewbox Margin="0,2,0,0">
+                            <Viewbox Margin="0,2,0,0" >
                                 <SymbolIcon VerticalAlignment="Bottom" Opacity=".9" Symbol="View"/>
                             </Viewbox>
                         </Button>

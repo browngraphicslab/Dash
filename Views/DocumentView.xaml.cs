@@ -250,7 +250,8 @@ namespace Dash
         MenuButton copyButton;
         private void SetUpMenu()
         {
-            var bgcolor = bgbrush.Color;
+            var bgcolor = bgbrush.Color;// TODO: change back later
+            //var bgcolor = Colors.DarkSlateGray;
             bgcolor.A = 0;
             var red = new Color();
             red.A = 204;
