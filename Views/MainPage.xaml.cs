@@ -130,17 +130,7 @@ namespace Dash
         {
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
-                if (e.VirtualKey == VirtualKey.Down)
-                {
-
-                    TabMenu.Instance.MoveSelectedDown();
-                }
-
-                if (e.VirtualKey == VirtualKey.Up)
-                {
-
-                    TabMenu.Instance.MoveSelectedUp();
-                }
+                TabMenu.Instance.HandleKeyDown(sender, e);
             }
         }
 
