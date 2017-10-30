@@ -255,8 +255,13 @@ namespace Dash
             ExecuteSelectedElement();
         }
 
+        /// <summary>
+        /// Execute the currently selected elemtn in the xListView
+        /// </summary>
         private void ExecuteSelectedElement()
         {
+            // TODO fix this for when enter key is pressed, selected index is always -1, and selecteditem is always null
+            var selectedIndex = xListView.SelectedIndex;
             var selectedItem = xListView.SelectedItem as ITabItemViewModel;
             selectedItem?.ExecuteFunc();
             Hide();

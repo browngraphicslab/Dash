@@ -228,6 +228,7 @@
     <Compile Include="Views\DBFilterChartBar.xaml.cs">
       <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
