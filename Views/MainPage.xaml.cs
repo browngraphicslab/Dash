@@ -158,32 +158,28 @@ namespace Dash
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
                 var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
-                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.OriginalItems);
+
+                // TODO write a method called (AddItemToTabMenu) which takes in a view model, limit your publicly available variables
+                // TODO when you have publicly accessible variables that are changed from anywhere you create spaghetti
+                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.AllTabItems);
+                // TODO why are we adding the document views when we press tab, are they goin to be added over and over again?
                 foreach (DocumentView dv in docViews)
                 {
                     tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
                 }
-                TabMenu.Instance.TabItems = tabItems;
 
                 TabMenu.Configure(topCollection as CollectionFreeformView, pos);
                 TabMenu.ShowAt(xCanvas);
                 TabMenu.Instance.SetTextBoxFocus();
             }
 
+            // TODO propogate the event to the tab menu
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
-                if (e.VirtualKey == VirtualKey.Escape)
-                {
-                    xCanvas.Children.Remove(TabMenu.Instance);
-                }
-
-                if (e.VirtualKey == VirtualKey.Enter)
-                {
-                    TabMenu.Instance.ActivateItem();
-                }
+                TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
-            
+
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -198,32 +194,6 @@ namespace Dash
             TabMenu.Instance.SetTextBoxFocus();
             e.Handled = true;
         }
-
-        private void OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Tab)
-            {
-                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition.X - Window.Current.Bounds.X;
-                var y = pointerPosition.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x,y);
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
-                    .FirstOrDefault();
-                TabMenu.AddsToThisCollection = topCollection as CollectionFreeformView;
-                if (xCanvas.Children.Contains(TabMenu.Instance)) return;
-                xCanvas.Children.Add(TabMenu.Instance);
-                Canvas.SetLeft(TabMenu.Instance, pos.X);
-                Canvas.SetTop(TabMenu.Instance, pos.Y);
-                TabMenu.Instance.SetTextBoxFocus();
-            }
-
-            if (e.Key == VirtualKey.Escape)
-            {
-                xCanvas.Children.Remove(TabMenu.Instance);
-            }
-
-        }
-
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
