@@ -149,8 +149,8 @@ namespace Dash
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
                 var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
-                TabMenu.Instance?.AddGoToTabItems(docViews.ToList()); 
                 TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                TabMenu.Instance?.AddGoToTabItems(docViews.ToList());
             }
 
             // TODO propogate the event to the tab menu
@@ -197,12 +197,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
-            xCanvas.Children.Add(TabMenu.Instance);
-            Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(TabMenu.Instance, absPos.X);
-            Canvas.SetTop(TabMenu.Instance, absPos.Y);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas); 
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)

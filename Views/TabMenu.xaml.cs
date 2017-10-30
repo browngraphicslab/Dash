@@ -35,32 +35,29 @@ namespace Dash
         /// </summary>
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
 
-        // TODO make this private, comment what it is
-        public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-        // TODO make this private, comment what it is
-        public static Point WhereToAdd;
-
-
+        // The CollectionFreeformView to which items from tab menu will be added 
+        private static CollectionFreeformView _addsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+        // The position relative to the collectionfreeformview in which items from tab menu will be added 
+        private static Point _whereToAdd;
         #endregion
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
         public static void ConfigureAndShow(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
         {
-            AddsToThisCollection = col;
-            WhereToAdd = p;
+            _addsToThisCollection = col;
+            _whereToAdd = p;
             ShowAt(canvas, isTouch); 
         }
 
-        // 
         public void AddGoToTabItems(List<DocumentView> docViews)
         {
-            var tabItems = new List<ITabItemViewModel>(AllTabItems);
-            foreach (DocumentView dv in docViews)
-            {
-                tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-            }
-            //AllTabItems = tabItems;               //TODO figure this out later 
+            //var tabItems = new List<ITabItemViewModel>(AllTabItems);
+            //foreach (DocumentView dv in docViews)
+            //{
+            //    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+            //}
+            //DisplayedTabItems = tabItems;             
         }
 
         private static void ShowAt(Canvas canvas, bool isTouch = false)
@@ -81,9 +78,7 @@ namespace Dash
         // private backing fields
         private List<ITabItemViewModel> _allTabItems;
         private List<ITabItemViewModel> _displayedTabItems;
-
         private int _selectedIndex = -1;
-        //private ITabItemViewModel _selectedTabItem; 
 
         /// <summary>
         /// All the tab items in the list they are automatically sorted by Title
