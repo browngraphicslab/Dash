@@ -140,6 +140,7 @@ namespace Dash
                 return;
             if (e.VirtualKey == VirtualKey.Tab)
             {
+
                 var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
                 var x = pointerPosition.X - Window.Current.Bounds.X;
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
@@ -148,17 +149,8 @@ namespace Dash
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
                 var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
-
-                // TODO write a method called (AddItemToTabMenu) which takes in a view model, limit your publicly available variables
-                // TODO when you have publicly accessible variables that are changed from anywhere you create spaghetti
-                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.AllTabItems);
-                // TODO why are we adding the document views when we press tab, are they goin to be added over and over again?
-                foreach (DocumentView dv in docViews)
-                {
-                    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-                }
-
-                TabMenu.Configure(topCollection as CollectionFreeformView, pos, xCanvas);
+                TabMenu.Instance?.AddGoToTabItems(docViews.ToList()); 
+                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
             }
 
             // TODO propogate the event to the tab menu
@@ -177,7 +169,7 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.Configure(topCollection as CollectionFreeformView, pos, xCanvas, true); 
+            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
             e.Handled = true;
         }
 

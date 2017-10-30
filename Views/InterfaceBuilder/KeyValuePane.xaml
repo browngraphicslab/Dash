@@ -32,7 +32,7 @@
         </Grid>
         
         <!--column values-->
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting" 
                   IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick" Tapped="xKeyValueListView_Tapped"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0">
@@ -48,7 +48,7 @@
             <!--template for list rows-->
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyFieldContainer">
-                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged" Loaded="xContentGrid_Loaded">
+                    <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}"/>
                             <ColumnDefinition Width="*" MaxWidth="100"/>
@@ -76,7 +76,7 @@
                 <Grid Background="SteelBlue">
                     <TextBlock HorizontalAlignment="Center" Foreground="White">CREATE FIELD</TextBlock>
                 </Grid>
-                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Stretch" Margin="5,10,5,0" Height="30" SelectionChanged="xTypeComboBox_SelectionChanged"></ComboBox>
+                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Stretch" Margin="5,10,5,0" Height="30" SelectionChanged="xTypeComboBox_SelectionChanged" SelectedItem ="None"></ComboBox>
                 <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>

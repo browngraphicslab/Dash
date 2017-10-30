@@ -45,11 +45,22 @@ namespace Dash
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
-        public static void Configure(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
+        public static void ConfigureAndShow(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
         {
             AddsToThisCollection = col;
             WhereToAdd = p;
             ShowAt(canvas, isTouch); 
+        }
+
+        // 
+        public void AddGoToTabItems(List<DocumentView> docViews)
+        {
+            var tabItems = new List<ITabItemViewModel>(AllTabItems);
+            foreach (DocumentView dv in docViews)
+            {
+                tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+            }
+            //AllTabItems = tabItems;               //TODO figure this out later 
         }
 
         private static void ShowAt(Canvas canvas, bool isTouch = false)
@@ -70,6 +81,9 @@ namespace Dash
         // private backing fields
         private List<ITabItemViewModel> _allTabItems;
         private List<ITabItemViewModel> _displayedTabItems;
+
+        private int _selectedIndex = -1;
+        //private ITabItemViewModel _selectedTabItem; 
 
         /// <summary>
         /// All the tab items in the list they are automatically sorted by Title
@@ -121,7 +135,6 @@ namespace Dash
         /// </summary>
         private void GetSearchItems()
         {
-            
             var list = new List<ITabItemViewModel>
             {
                 new CreateOpTabItemViewModel("Document", Util.BlankDoc),
@@ -134,7 +147,6 @@ namespace Dash
         }
 
         #region xSEARCH
-        // TODO make this private, set it when the tab menu opens itself
         private void SetTextBoxFocus()
         {
             xSearch.Focus(FocusState.Programmatic);
@@ -216,18 +228,17 @@ namespace Dash
             if (xListView.SelectedIndex < 0)
             {
                 xListView.SelectedIndex = 0;
-
             }
             // if the selected index is not the last item in the list
             else if (xListView.SelectedIndex != xListView.Items.Count - 1)
             {
                 // increment the selected index
                 xListView.SelectedIndex = xListView.SelectedIndex + 1;
-
             }
 
             // scroll the newly selected item into view
             xListView.ScrollIntoView(xListView.SelectedItem);
+            _selectedIndex = xListView.SelectedIndex;
         }
 
         /// <summary>
@@ -248,6 +259,7 @@ namespace Dash
             }
             // scroll the newly selected item into view
             xListView.ScrollIntoView(xListView.SelectedItem);
+            _selectedIndex = xListView.SelectedIndex;
         }
 
         private void xListView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -260,9 +272,9 @@ namespace Dash
         /// </summary>
         private void ExecuteSelectedElement()
         {
-            // TODO fix this for when enter key is pressed, selected index is always -1, and selecteditem is always null
-            var selectedIndex = xListView.SelectedIndex;
-            var selectedItem = xListView.SelectedItem as ITabItemViewModel;
+            var selectedItem = xListView.SelectedIndex < 0
+                ? xListView.Items.ElementAt(_selectedIndex) as ITabItemViewModel
+                : xListView.SelectedItem as ITabItemViewModel;  
             selectedItem?.ExecuteFunc();
             Hide();
         }
@@ -289,13 +301,11 @@ namespace Dash
         {
             if (e.VirtualKey == VirtualKey.Down)
             {
-
                 MoveSelectedDown();
             }
 
             if (e.VirtualKey == VirtualKey.Up)
             {
-
                 MoveSelectedUp();
             }
         }
