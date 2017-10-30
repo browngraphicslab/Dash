@@ -204,7 +204,10 @@ namespace Dash
 
         private void OnKeyValueDrop(DragEventArgs e)
         {
-            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null) return;
+            // if the drop wasn't from the key value pane, then return
+            // if the view is in the interface builder return
+            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null ||
+                (ViewModel?.IsInInterfaceBuilder ?? true)) return;
 
             // get data variables from the DragArgs
             var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
