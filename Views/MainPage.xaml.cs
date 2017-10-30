@@ -158,9 +158,7 @@ namespace Dash
                     tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
                 }
 
-                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
-                TabMenu.ShowAt(xCanvas);
-                TabMenu.Instance.SetTextBoxFocus();
+                TabMenu.Configure(topCollection as CollectionFreeformView, pos, xCanvas);
             }
 
             // TODO propogate the event to the tab menu
@@ -179,9 +177,7 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
-            TabMenu.ShowAt(xCanvas, true);
-            TabMenu.Instance.SetTextBoxFocus();
+            TabMenu.Configure(topCollection as CollectionFreeformView, pos, xCanvas, true); 
             e.Handled = true;
         }
 

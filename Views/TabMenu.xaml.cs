@@ -45,10 +45,26 @@ namespace Dash
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
-        public static void Configure(CollectionFreeformView col, Point p)
+        public static void Configure(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
         {
             AddsToThisCollection = col;
             WhereToAdd = p;
+            ShowAt(canvas, isTouch); 
+        }
+
+        private static void ShowAt(Canvas canvas, bool isTouch = false)
+        {
+            if (Instance != null)
+            {
+                if (!canvas.Children.Contains(Instance))
+                    canvas.Children.Add(Instance);
+
+                if (isTouch) Instance.ConfigureForTouch();
+                Canvas.SetLeft(Instance, WhereToAdd.X);
+                Canvas.SetTop(Instance, WhereToAdd.Y);
+                Instance.ResetList();
+                Instance.SetTextBoxFocus();
+            }
         }
 
         // private backing fields
@@ -119,7 +135,7 @@ namespace Dash
 
         #region xSEARCH
         // TODO make this private, set it when the tab menu opens itself
-        public void SetTextBoxFocus()
+        private void SetTextBoxFocus()
         {
             xSearch.Focus(FocusState.Programmatic);
         }
@@ -184,23 +200,9 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        // TODO make this part of configure, then make this private
-        public static void ShowAt(Canvas canvas, bool isTouch = false)
-        {
-            if (Instance != null)
-            {
-                if (!canvas.Children.Contains(Instance))
-                    canvas.Children.Add(Instance);
+        
 
-                if (isTouch) Instance.ConfigureForTouch();
-                Canvas.SetLeft(Instance, WhereToAdd.X);
-                Canvas.SetTop(Instance, WhereToAdd.Y);
-                Instance.ResetList();
-            }
-        }
-
-        // TODO make this private if possible
-        public void ConfigureForTouch()
+        private void ConfigureForTouch()
         {
             xListView.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
         }
