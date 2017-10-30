@@ -52,16 +52,17 @@ namespace Dash
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
 
-
+                /*
                 var colView = _element as CollectionFreeformView;
 
                 // hack to see if we're in the interface builder or in the compound operator editor
                 // these are outside of the normal selection hierarchy so we always return true
-                if (colView.ViewModel is SimpleCollectionViewModel) return true;
+                if (colView?.ViewModel is SimpleCollectionViewModel) return true;
 
                 // if the collection view is a free form view, or it is the lowest
                 // selected element then use the pointer
-                return colView != null || colView.IsLowestSelected;
+                return colView != null || colView.IsLowestSelected;*/
+                return _element is CollectionFreeformView;
             }
         }
 
