@@ -22,6 +22,7 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
+        private ObjectToStringConverter converter = new ObjectToStringConverter();
         public CollectionDBSchemaView()
         {
             this.InitializeComponent();
@@ -103,7 +104,7 @@ namespace Dash
         {
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
             var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
             xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
             dc.Selected = true;
