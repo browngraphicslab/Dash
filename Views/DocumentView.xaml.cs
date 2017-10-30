@@ -616,7 +616,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
+            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()
