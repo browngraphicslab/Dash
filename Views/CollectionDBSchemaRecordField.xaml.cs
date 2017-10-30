@@ -77,7 +77,7 @@ namespace Dash
             var tfmc = DataReference.DereferenceToRoot<TextFieldModelController>(null);
             if (tfmc != null)
             {
-                var neededWidth = tfmc.Data.Length * 3.0;
+                var neededWidth = Math.Max(headerViewModel.Width, tfmc.Data.Length * 3.0);
                 HeaderViewModel.Width = Math.Min(300, neededWidth);
             }
 

@@ -126,6 +126,7 @@
             <Setter Property="Background" Value="{StaticResource DocumentBackground}"/>
             <Setter Property="Foreground" Value="#FFDADADA"></Setter>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="1"/>
 
             <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
             <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>

@@ -28,6 +28,7 @@ namespace Dash
         public class HeaderViewModel : ViewModelBase
         {
             double _width;
+            double _minWidth = 30;
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
@@ -36,7 +37,12 @@ namespace Dash
             public double Width
             {
                 get => _width;
-                set => SetProperty(ref _width, value); 
+                set => SetProperty(ref _width, value);
+            }
+            public double MinWidth
+            {
+                get => _minWidth;
+                set => SetProperty(ref _minWidth, value);
             }
         }
         public CollectionDBSchemaHeader()
@@ -101,7 +107,7 @@ namespace Dash
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var viewModel = (DataContext as HeaderViewModel);
-            viewModel.Width = Math.Max(12, _startWidth + e.Cumulative.Translation.X);
+            viewModel.Width = Math.Max(viewModel.MinWidth, _startWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
         private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
