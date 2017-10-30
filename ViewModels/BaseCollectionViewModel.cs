@@ -172,6 +172,9 @@ namespace Dash
                             else if (items.First() is NumberFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new NumberFieldModelController((items.First() as NumberFieldModelController).Data) :
                                                 new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController));
+                            else if (items.First() is RichTextFieldModelController  )
+                                field = (items.Count == 1) ? (FieldControllerBase)new RichTextFieldModelController((items.First() as RichTextFieldModelController).Data) :
+                                                new ListFieldModelController<RichTextFieldModelController>(items.Where((i) => i is RichTextFieldModelController).Select((i) => i as RichTextFieldModelController));
                             else if (items.First() is DocumentFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new DocumentFieldModelController((items.First() as DocumentFieldModelController).Data) :
                                                new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data));
@@ -200,6 +203,10 @@ namespace Dash
                     if (obj is string)
                     {
                         pivotDoc.SetField(pivotKey, new TextFieldModelController(obj as string), true);
+                    }
+                    else if (obj is RichTextFieldModel.RTD)
+                    {
+                        pivotDoc.SetField(pivotKey, new RichTextFieldModelController(obj as RichTextFieldModel.RTD), true);
                     }
                     else if (obj is double)
                     {
@@ -366,6 +373,11 @@ namespace Dash
                         newDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
                     if (double.IsNaN(newDoc.GetHeightField().Data))
                         newDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+                    if (e.DataView.Properties.ContainsKey("SelectedText"))
+                    {
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null)?.Data;
+
+                    }
                     return newDoc;
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);

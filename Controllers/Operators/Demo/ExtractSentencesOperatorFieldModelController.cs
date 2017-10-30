@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -59,13 +60,13 @@ namespace Dash
                 {
                     var sentences = Regex.Split(textInput.Data, @"(?<=[\.!\?])\s+");
 
-                    var protoLayout = new TextingBox(new DocumentReferenceFieldController(dataDoc.GetId(), SentenceKey)).Document;
+                    var protoLayout = new RichTextBox(new DocumentReferenceFieldController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
                     var sentenceIndex = 0;
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
                     {
                         var outputDoc = dataDoc.MakeDelegate();
-                        outputDoc.SetField(SentenceKey, new TextFieldModelController(sentence), true);
+                        outputDoc.SetField(SentenceKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(sentence)), true);
                         outputDoc.SetField(IndexKey, new NumberFieldModelController(sentenceIndex), true);
                         var docLayout = protoLayout.MakeDelegate();
                         docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(outputDoc), true);

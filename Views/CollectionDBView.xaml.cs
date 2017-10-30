@@ -39,12 +39,27 @@ namespace Dash
         void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
             var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null).Data;
-            var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
+            var pattern = ParentDocument.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
             if (dbDocs != null && pattern != null && pattern.Count() > 0)
             {
-                var collection = dbDocs.Where((d) => testPatternMatch(d.GetDataDocument(null), pattern, term));
+                var collection = dbDocs.Select((d) =>
+                {
+                    var key =  testPatternMatch(d.GetDataDocument(null), pattern, term);
+                    if (key != null)
+                    {
+                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+                        var derefField = d.GetDataDocument(null).GetDereferencedField(key, null);
+                        if (derefField is TextFieldModelController)
+                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController( new RichTextFieldModel.RTD((derefField as TextFieldModelController).Data)), true);
+                        else if (derefField is RichTextFieldModelController)
+                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD((derefField as RichTextFieldModelController).Data.ReadableString)), true);
+                        rnote.SetField(DBFilterOperatorFieldModelController.SelectedKey, new TextFieldModelController(term), true);
+                        return rnote;
+                    }
+                    return null;
+                });
+                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, term, 200, 300, collection.Where((c)=> c != null).ToList()).Document;
                 
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, term, 200, 300, collection.ToList()).Document;
                 args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
             }
         }
@@ -257,10 +272,10 @@ namespace Dash
             return newBuckets;
         }
 
-        static bool testPatternMatch(DocumentController dmc, string[] pattern, string term)
+        static KeyController testPatternMatch(DocumentController dmc, string[] pattern, string term)
         {
             if ((pattern != null && pattern.Count() == 0) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
-                return false;
+                return null;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && (pattern == null || pf.Key.Name == pattern[0])))
             {
@@ -275,18 +290,24 @@ namespace Dash
                     else if (pvalue is DocumentCollectionFieldModelController)
                     {
                         foreach (var nestedDoc in (pvalue as DocumentCollectionFieldModelController).Data.Select((d) => d.GetDataDocument(null)))
-                            if (testPatternMatch(nestedDoc, null, term))
-                                return true;
+                            if (testPatternMatch(nestedDoc, null, term) != null)
+                                return pfield.Key;
+                    }
+                    else if (pvalue is RichTextFieldModelController)
+                    {
+                        var text = (pvalue as RichTextFieldModelController).Data.ReadableString;
+                        if (text != null && text.Contains(term))
+                            return pfield.Key;
                     }
                     else if (pvalue is TextFieldModelController)
                     {
                         var text = (pvalue as TextFieldModelController).Data;
                         if (text != null && text.Contains(term))
-                            return true;
+                            return pfield.Key;
                     }
                 }
             }
-            return false;
+            return null;
         }
 
         List<double> filterDocuments(List<DocumentController> dbDocs, List<FieldControllerBase> bars, List<string> pattern,
