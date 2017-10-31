@@ -62,6 +62,15 @@ namespace Dash
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
+            var selected = GetSelected();
+            if (selected != null)
+            {
+                xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                UpdateDocument();
+            }
             xRichEditBox.Document.Selection.SetRange(LastS1, LastS2);
         }
         private void UnLoaded(object sender, RoutedEventArgs e)
@@ -76,6 +85,15 @@ namespace Dash
             return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextFieldModel.RTD;
         }
 
+        string GetSelected()
+        {
+            var parentDoc =  this.GetFirstAncestorOfType<DocumentView>();
+            if (parentDoc != null)
+            {
+                return parentDoc.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+            }
+            return null;
+        }
 
         private async Task<string> LoadText()
         {
@@ -89,6 +107,7 @@ namespace Dash
             
             if (GetText() != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+        
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
         }
@@ -233,6 +252,15 @@ namespace Dash
             else
             {
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+            }
+            var selected = GetSelected();
+            if (selected != null)
+            {
+                xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                UpdateDocument();
             }
             //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
             UpdateDocument();

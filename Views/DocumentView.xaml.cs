@@ -127,6 +127,11 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ViewModel != null)
             {
+                if (double.IsNaN(ViewModel.Width) &&
+                    (ParentCollection?.CurrentView is CollectionFreeformView)) {
+                    ViewModel.Width = 50;
+                    ViewModel.Height = 50;
+                }
                 //if (Parent == null)
                 //    ViewModel.Width = ActualWidth;
                 //else ViewModel.Width = double.NaN;
@@ -204,7 +209,9 @@ namespace Dash
 
         private void OnKeyValueDrop(DragEventArgs e)
         {
-            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null) return;
+            // if the drop wasn't from the key value pane, then return
+            // if the view is in the interface builder return
+            if (e.Data?.Properties[KeyValuePane.DragPropertyKey] == null || (ViewModel?.IsInInterfaceBuilder ?? true)) return;
 
             // get data variables from the DragArgs
             var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
@@ -243,7 +250,8 @@ namespace Dash
         MenuButton copyButton;
         private void SetUpMenu()
         {
-            var bgcolor = bgbrush.Color;
+            var bgcolor = bgbrush.Color;// TODO: change back later
+            //var bgcolor = Colors.DarkSlateGray;
             bgcolor.A = 0;
             var red = new Color();
             red.A = 204;
@@ -537,7 +545,9 @@ namespace Dash
         {
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
+            {
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+            }
             //initDocumentOnDataContext();
         }
 
@@ -614,7 +624,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
+            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()

@@ -22,7 +22,7 @@ namespace Dash
 
         public override bool SetValue(object value)
         {
-            if (Data is List<FieldControllerBase>)
+            if (value is List<FieldControllerBase>)
             {
                 Data = value as List<FieldControllerBase>;
                 return true;

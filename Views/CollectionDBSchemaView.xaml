@@ -15,10 +15,10 @@
     Tapped="OnTapped"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CC303030" >
+    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CCFFFFFF" >
         <Grid.Resources>
             <Flyout x:Name="xEditField" Closing="xEditField_Closing">
-                <TextBox x:Name="xEditTextBox" Width="250" Height="50"  KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="True"> </TextBox>
+                <TextBox x:Name="xEditTextBox" Width="250" Height="50"   Foreground="Black" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="True"> </TextBox>
             </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>
@@ -32,11 +32,13 @@
                 <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Column="1"
+            <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Column="1" 
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
+                     
                       Style="{StaticResource xSchemaListView}"
+                      
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                       >
                 <!--header list-->
@@ -58,7 +60,7 @@
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
                   SelectionMode="Single"
-                  Background="#CC303030"
+                  Background="#CCDDDDDD"
                   CanDragItems="False"
                   Height="100"
                   Loaded="XRecordsView_OnLoaded">

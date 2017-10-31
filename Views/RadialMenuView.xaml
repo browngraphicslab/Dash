@@ -13,7 +13,7 @@
 
 
     <userControl:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
-        <Grid>
+        <Grid Visibility="Visible">
                 <local:InkSettingsPane x:Name="SettingsPane" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Center" ManipulationMode="None" x:DeferLoadStrategy="Lazy"></local:InkSettingsPane>
                 <userControl:RadialMenu x:Name="xRadialMenu" Diameter="250" StartAngle="-90" OuterThickness="15" IsCenterButtonNavigationEnabled="True" IsMenuChangeAnimated="True" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,0,0" CenterButtonTapped="RadialMenu_OnCenterButtonTapped">
                     <userControl:RadialMenu.Buttons>

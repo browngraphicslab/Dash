@@ -19,6 +19,6 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions >
         <Grid  x:Name="xBar" x:FieldModifier="public" Background="{Binding IsSelected,ElementName=Root,Converter={StaticResource BoolToHighlightConverter}}" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-        <TextBox x:Name="xDomain" x:FieldModifier="public" FontSize="10" Grid.Row="1" TextChanged="xDomain_TextChanged"   />
+        <TextBox x:Name="xDomain" x:FieldModifier="public" Foreground="{StaticResource MainText}"  FontSize="10" Grid.Row="1" TextChanged="xDomain_TextChanged"   />
     </Grid>
 </UserControl>

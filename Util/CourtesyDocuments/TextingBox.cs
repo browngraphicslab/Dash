@@ -153,7 +153,7 @@ namespace Dash
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                return new StringToDoubleConverter(0);
+                return new StringToDoubleConverter();
             }
             else if (fieldModelController is ReferenceFieldModelController)
             {
@@ -175,6 +175,7 @@ namespace Dash
             };
             element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
         }
+
         protected static void BindBackgroundColor(EditableTextBlock element, DocumentController docController, Context context)
         {
             var backgroundBinding = new FieldBinding<TextFieldModelController>()

@@ -21,7 +21,7 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -61,7 +61,7 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(border, docController);
+                return new SelectableContainer(border, docController, dataDocument);
             }
             return border;
         }

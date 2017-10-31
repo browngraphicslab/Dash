@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Input;
@@ -53,18 +54,46 @@ namespace Dash
             var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
             args.Data.Properties.Add("View", true);
-            args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
+            args.Data.RequestedOperation = DataPackageOperation.Link;
+            GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
+        }
+
+        // TODO lsm wrote this here it's a hack we probably want to do this in places other than the schema record
+        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
+        {
             var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data?.DocumentType;
-            if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
+            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data
+                ?.DocumentType;
+            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
                     dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);
-                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc =
+                    new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
                 dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
+            }
+
+            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null).Data;
+        }
+
+        /// <summary>
+        /// Called whenever a record field is tapped, updates the SelectedSchemaRow in the maintained collection
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnRecordFieldTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var vm = (DataContext as CollectionDBSchemaRecordViewModel);
+            if (vm != null)
+            {
+                var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                // TODO parent doc is the data doc we might want to set this on the layout instead
+                // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
+                // TODO assumes a data doc
+                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new DocumentFieldModelController(recordDoc), true);
             }
         }
     }
@@ -75,16 +104,32 @@ namespace Dash
     public class CollectionDBSchemaRecordViewModel
     {
         /// <summary>
+        /// Document containing the collection this record is in, this is the DataDocument
+        /// </summary>
+        public DocumentController ParentDoc { get; }
+
+        /// <summary>
+        /// The backing document for this record
+        /// </summary>
+        public DocumentController Document { get; }
+
+        /// <summary>
+        /// All the different fields on this record
+        /// </summary>
+        public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; }
+
+        /// <summary>
         /// 
         /// </summary>
+        /// <param name="parentDoc">The document which contains this list of records, basically the doc containing the collection this record is a part of</param>
         /// <param name="document">The document that this record is going to represent (think of the document as a row in a database table)</param>
         /// <param name="fields">List of view models for fields that are in this row (think cell in a database table)</param>
-        public CollectionDBSchemaRecordViewModel(DocumentController document, IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
+        public CollectionDBSchemaRecordViewModel(DocumentController parentDoc, DocumentController document, IEnumerable<CollectionDBSchemaRecordFieldViewModel> fields)
         {
+            ParentDoc = parentDoc;
             Document = document;
             RecordFields = new ObservableCollection<CollectionDBSchemaRecordFieldViewModel>(fields);
         }
-        public DocumentController Document;
-        public ObservableCollection<CollectionDBSchemaRecordFieldViewModel> RecordFields { get; set; }
+
     }
 }

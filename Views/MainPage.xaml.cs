@@ -140,7 +140,6 @@ namespace Dash
                 return;
             if (e.VirtualKey == VirtualKey.Tab)
             {
-
                 var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
                 var x = pointerPosition.X - Window.Current.Bounds.X;
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
@@ -148,9 +147,8 @@ namespace Dash
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
-                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
                 TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems(docViews.ToList());
+                TabMenu.Instance?.AddGoToTabItems(topCollection as CollectionFreeformView);
             }
 
             // TODO propogate the event to the tab menu

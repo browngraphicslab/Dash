@@ -172,6 +172,9 @@ namespace Dash
                             else if (items.First() is NumberFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new NumberFieldModelController((items.First() as NumberFieldModelController).Data) :
                                                 new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController));
+                            else if (items.First() is RichTextFieldModelController  )
+                                field = (items.Count == 1) ? (FieldControllerBase)new RichTextFieldModelController((items.First() as RichTextFieldModelController).Data) :
+                                                new ListFieldModelController<RichTextFieldModelController>(items.Where((i) => i is RichTextFieldModelController).Select((i) => i as RichTextFieldModelController));
                             else if (items.First() is DocumentFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new DocumentFieldModelController((items.First() as DocumentFieldModelController).Data) :
                                                new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data));
@@ -200,6 +203,10 @@ namespace Dash
                     if (obj is string)
                     {
                         pivotDoc.SetField(pivotKey, new TextFieldModelController(obj as string), true);
+                    }
+                    else if (obj is RichTextFieldModel.RTD)
+                    {
+                        pivotDoc.SetField(pivotKey, new RichTextFieldModelController(obj as RichTextFieldModel.RTD), true);
                     }
                     else if (obj is double)
                     {
@@ -344,6 +351,35 @@ namespace Dash
                 }
             }
 
+            // collection dynamic previews
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
+            {
+                // the collection view which should control the new doc
+                var sendingView = e.DataView.Properties[CollectionView.CollectionPreviewDragKey] as CollectionView;
+
+                // the doc controlling the new doc
+                var sendingDoc = sendingView?.ParentDocument.ViewModel.DocumentController;
+                // get the data part out of it
+                sendingDoc = sendingDoc?.GetDataDocument(null);
+
+                //var previewDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType());
+                //previewDoc.SetField(KeyStore.ActiveLayoutKey, 
+                //    new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), true);
+
+                //AddDocument(previewDoc, null);
+
+                if (sendingDoc != null)
+                {
+                    var previewDoc =
+                        new PreviewDocument(
+                            new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
+                    AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document)
+                    }, new DocumentType()), null);
+                }
+            }
+
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
                 var collectionViewModel = e.DataView.Properties.ContainsKey(nameof(BaseCollectionViewModel)) == true ?
@@ -366,6 +402,11 @@ namespace Dash
                         newDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
                     if (double.IsNaN(newDoc.GetHeightField().Data))
                         newDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+                    if (e.DataView.Properties.ContainsKey("SelectedText"))
+                    {
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null)?.Data;
+
+                    }
                     return newDoc;
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
