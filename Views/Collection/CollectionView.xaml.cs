@@ -482,8 +482,6 @@ namespace Dash
 
         #endregion
 
-
-
         private void SetInitialTransformOnBackground()
         {
             var composite = new TransformGroup();
@@ -522,7 +520,6 @@ namespace Dash
                 SetInitialTransformOnBackground();
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
 
         public void SetTransformOnBackground(TransformGroup composite)
         {

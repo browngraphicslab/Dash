@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
-using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
 
 namespace Dash
@@ -48,23 +41,6 @@ namespace Dash
                             var documents = _collectionFieldModelController.GetDocuments();
                             DocumentViewModels.Clear();
                             AddViewModels(documents, args.Context);
-                            //TODO tfs: I don't think we actually want to do this...
-                            //bool newDoc = DocumentViewModels.Count != documents.Count;
-                            //if (!newDoc)
-                            //    foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
-                            //        if (!documents.Contains(d))
-                            //        {
-                            //            newDoc = true;
-                            //            break;
-                            //        }
-                            //if (newDoc)
-                            //{
-                            //    if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                            //        DocumentViewModels.Clear();
-                            //    if (cargs == null)
-                            //        cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                            //    UpdateViewModels(cargs, copiedContext);
-                            //}
                         }
                     });
             }
@@ -169,6 +145,8 @@ namespace Dash
             {
                 return;
             }
+
+
 
             // just update the collection, the colllection will update our view automatically
             _collectionFieldModelController.AddDocument(doc);

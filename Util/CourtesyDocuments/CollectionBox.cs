@@ -67,7 +67,7 @@ namespace Dash
 
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
-
+            
             var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(KeyStore.InkDataKey) as InkFieldModelController};
 
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextFieldModelController).Data;

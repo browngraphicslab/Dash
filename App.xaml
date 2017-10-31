@@ -51,6 +51,7 @@
         <Color x:Key="DocumentBackgroundSelectedColor">#FFCCCCCC</Color>
         <Color x:Key="MainTextColor">#FF666666</Color>
         <Color x:Key="TitleTextColor">#FF454545</Color>
+        <Color x:Key="ActivationColor">#f4aa42</Color>
         
 
         <!-- SOLID COLOR BRUSHES -->
@@ -62,6 +63,7 @@
         <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentBackgroundSelectedColor}" />
         <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
         <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
+        <SolidColorBrush x:Key="SelectionHandleColor" Color="{StaticResource ActivationColor}"/>
         <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="BorderHighlight" Color="Gray"/>
@@ -641,6 +643,14 @@
             <Setter Property="Fill" Value="{StaticResource InputHandleColor}" />
             <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
             <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+            <Setter Property="ManipulationMode" Value="All"></Setter>
+            <Setter Property="Stroke" Value="Transparent"></Setter>
+            <Setter Property="AllowDrop" Value="True"/>
+        </Style>
+        <Style TargetType="Ellipse" x:Key="xSelectionLinkHandle">
+            <Setter Property="Fill" Value="{StaticResource SelectionHandleColor}" />
+            <Setter Property="Height" Value="20"></Setter>
+            <Setter Property="Width" Value="20"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
             <Setter Property="AllowDrop" Value="True"/>

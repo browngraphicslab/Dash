@@ -208,6 +208,13 @@ namespace Dash
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
+            var width = 20;
+
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xTitle.Text = "Collection (" + CollectionCount + ")";

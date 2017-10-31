@@ -261,7 +261,7 @@ namespace Dash
                 return FileType.Ppt;
             if (storagePath.EndsWith(".pptx"))
                 return FileType.Ppt;
-            if (storagePath.EndsWith(".url"))
+            if (storageItem.FileType.EndsWith(".url"))
                 return FileType.Web;
             if (storagePath.EndsWith(".jpg") ||
                 storagePath.EndsWith(".jpeg") ||
