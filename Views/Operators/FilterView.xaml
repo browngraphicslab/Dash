@@ -37,10 +37,10 @@
                     <ComboBoxItem x:Name="xFieldEquals" Tapped="fieldContainsOrEquals_Tapped" Content="Field equals" />
                 </ComboBox>
             </Grid>
-            <Grid  x:Name="xFieldBoxGrid" Width="200" Height="32" VerticalAlignment="Center" Background="White">
-                <AutoSuggestBox x:Name="xFieldBox" PlaceholderText="Enter field here"
-                                    Height="32" Width="200" BorderBrush="LightSlateGray" AutoMaximizeSuggestionArea="False"
-                                    TextChanged="XFieldBox_OnTextChanged" Background="White" />
+            <Grid x:Name="xFieldBoxGrid" Width="200" Height="32" VerticalAlignment="Center" >
+                <AutoSuggestBox x:Name="xFieldBox" PlaceholderText="Enter field here" 
+                                    Height="32" Width="200" AutoMaximizeSuggestionArea="False"
+                                    TextChanged="XFieldBox_OnTextChanged" TextBoxStyle="{StaticResource xForceTextBoxStyle}" />
             </Grid>
             <Grid x:Name="xSearchGrid" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="White" Width="200">
                 <TextBox x:Name="xSearchBox" PlaceholderText="Search" VerticalAlignment="Stretch" Height="30"
