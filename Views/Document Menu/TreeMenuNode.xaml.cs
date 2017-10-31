@@ -304,7 +304,7 @@ namespace Dash.Views.Document_Menu
             var dc = (uiElement as FrameworkElement).DataContext as DocumentAddMenuItem;
             if (dc != null)
             {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
+                e.Data.RequestedOperation = DataPackageOperation.Copy;
                 e.Data.Properties.Add(TreeNodeDragKey, dc.LayoutDoc);
 
                 return;
