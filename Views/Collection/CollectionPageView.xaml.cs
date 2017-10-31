@@ -56,11 +56,11 @@ namespace Dash
                 pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
                 CurPage = new DocumentViewModel(pageViewDoc);
-                PageDocumentViewModels.Insert(0,CurPage);
+                PageDocumentViewModels.Insert(0, CurPage);
 
                 var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
-                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,xThumbs.ActualHeight);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc));
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN, xThumbs.ActualHeight);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
             }
         }
 
