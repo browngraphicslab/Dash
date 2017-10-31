@@ -138,6 +138,8 @@ namespace Dash
                 newStroke.Selected = true;
                 FreeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                 Analyzer.RemoveDataForStroke(newStroke.Id);
+                FreeformInkControl.UpdateInkFieldModelController();
+
             }
             return deleted;
         }
