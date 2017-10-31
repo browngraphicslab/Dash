@@ -573,7 +573,7 @@ namespace RadialMenuControl.UserControl
             InnerPieSlicePath.Radius = Radius - OuterArcThickness;
             InnerPieSlicePath.StartAngle = StartAngle;
             InnerPieSlicePath.Angle = Angle;
-            InnerPieSlicePath.Fill = new SolidColorBrush(InnerNormalColor);
+            InnerPieSlicePath.Fill = new SolidColorBrush(Color.FromArgb(44,00,66,33));
 
             // Setup textbox for custom type RadialMenuButton
             if (OriginalRadialMenuButton.Type == RadialMenuButton.ButtonType.Custom) CreateCustomTextBox();

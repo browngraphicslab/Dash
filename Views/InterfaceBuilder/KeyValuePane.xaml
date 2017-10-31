@@ -26,9 +26,9 @@
                 <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text=" "></TextBlock>
-            <TextBlock Grid.Column="1" HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Keys</TextBlock>
-            <TextBlock Grid.Column="2"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Values</TextBlock>
-            <TextBlock Grid.Column="3"  HorizontalAlignment="Right" Style="{StaticResource xTitleStyle}">Type</TextBlock>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Left">Keys</TextBlock>
+            <TextBlock Grid.Column="2"  HorizontalAlignment="Left">Values</TextBlock>
+            <TextBlock Grid.Column="3"  HorizontalAlignment="Right">Type</TextBlock>
         </Grid>
         
         <!--column values-->

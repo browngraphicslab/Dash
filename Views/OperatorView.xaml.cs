@@ -30,6 +30,7 @@ namespace Dash
         private bool _isCompound;
         private IOReference _currOutputRef;
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return _keysToFrameworkElements;  } }
         private DocumentView documentView;
 
         /// <summary>
@@ -65,10 +66,7 @@ namespace Dash
             documentView = this.GetFirstAncestorOfType<DocumentView>();
             if (documentView == null)
                 return;
-
-            xTitle.Text = _operator.GetOperatorType();
-
-            documentView.StyleOperator(0);
+            documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
         }
 
 

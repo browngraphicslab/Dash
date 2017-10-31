@@ -77,7 +77,8 @@ namespace Dash
         private List<Tuple<FieldReference, DocumentFieldReference>> _linksToRetry;
         public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
-        public CollectionFreeformView() {
+        public CollectionFreeformView()
+        {
 
             InitializeComponent();
             Loaded += Freeform_Loaded;
@@ -89,14 +90,16 @@ namespace Dash
 
         }
 
-        public void setBackgroundDarkness(bool isDark) {
+        public void setBackgroundDarkness(bool isDark)
+        {
+            _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
             if (isDark)
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                xDarkenBackground.Opacity = .1;
             else
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+                xDarkenBackground.Opacity = 0;
         }
 
-        
+
 
         public IOReference GetCurrentReference()
         {
@@ -608,7 +611,7 @@ namespace Dash
             _currReference = null;
         }
 
-        public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink=false)
+        public void EndDrag(IOReference ioReference, bool isCompoundOperator, bool isLoadedLink = false)
         {
             // called when we release on a link, thus if the ioReference is output the _currReference
             // is the input since the _currReference must have been dragged from an input
@@ -648,11 +651,13 @@ namespace Dash
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
             {
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-            } else {
+            }
+            else
+            {
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             }
-                
+
             //Add the key to the inputController's list of user created links
             if (inputController.GetField(KeyStore.UserLinksKey) == null)
                 inputController.SetField(KeyStore.UserLinksKey,
@@ -661,7 +666,7 @@ namespace Dash
                 inputController.GetField(KeyStore.UserLinksKey) as
                     ListFieldModelController<TextFieldModelController>;
             linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-            
+
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -684,7 +689,7 @@ namespace Dash
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
             _currReference = null;
 
-            
+
         }
 
         /// <summary>
@@ -755,7 +760,7 @@ namespace Dash
             Debug.Assert(canvas != null);
             var delta = transformationDelta.Translate;
 
-           //Create initial translate and scale transforms
+            //Create initial translate and scale transforms
             //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
@@ -879,7 +884,7 @@ namespace Dash
         }
 
 
-#endregion
+        #endregion
 
         #region Clipping
         /// <summary>
@@ -937,7 +942,7 @@ namespace Dash
 
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
                 var collType =
-                    (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType),
+                    (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType),
                         sourceViewType);
                 var cnote = new CollectionNote(where, collType);
                 //TODO: using data document might cause problems
@@ -955,7 +960,8 @@ namespace Dash
                 // bcz: hack to find the CollectionView for the newly created collection so that we can wire up the connection line as if it it had already been there
                 UpdateLayout();
                 for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
-                    if (itemsPanelCanvas.Children[i] is ContentPresenter) {
+                    if (itemsPanelCanvas.Children[i] is ContentPresenter)
+                    {
                         var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
                         EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.Collection, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
@@ -1000,7 +1006,7 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private bool _singleTapped; 
+        private bool _singleTapped;
 
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -1010,7 +1016,7 @@ namespace Dash
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
             await Task.Delay(100);
-            if (!_singleTapped) return; 
+            if (!_singleTapped) return;
 
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
 
@@ -1021,7 +1027,7 @@ namespace Dash
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            _singleTapped = false; 
+            _singleTapped = false;
             e.Handled = true;
             ChooseLowest(e);
         }
@@ -1040,11 +1046,11 @@ namespace Dash
             }
 
             // in the lowest possible collectionfreeform 
-            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>(); 
+            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>();
             foreach (DocumentView view in docViews)
             {
                 if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                { 
+                {
                     view.OnTapped(view, null); // hack to set selection on the lowest view
                     return;
                 }
@@ -1052,7 +1058,7 @@ namespace Dash
 
             // if no docview to select, select the current collectionview 
             var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView?.OnTapped(parentView, null); 
+            parentView?.OnTapped(parentView, null);
         }
 
         #endregion

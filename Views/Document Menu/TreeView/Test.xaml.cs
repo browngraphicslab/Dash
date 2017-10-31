@@ -15,15 +15,13 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Document_Menu
+namespace Dash.Views.Document_Menu.TreeView
 {
-    public sealed partial class MainMenu : UserControl
+    public sealed partial class Test : UserControl
     {
-        public MainMenu()
+        public Test()
         {
             this.InitializeComponent();
-
         }
-        
     }
 }
