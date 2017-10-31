@@ -34,7 +34,7 @@
                                                          ManipulationMode="All"
                                                          ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
                                                          PointerPressed="CollectionDBSchemaRecordField_PointerPressed"
-                                                         Tapped="OnRecordFieldTapped"/>
+                                                         />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

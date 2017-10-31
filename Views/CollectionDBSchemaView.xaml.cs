@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
+using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -413,6 +414,40 @@ namespace Dash
         private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
         {
             Util.FixListViewBaseManipulationDeltaPropagation(xRecordsView);
+        }
+
+        private void XRecordsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
+            if (vm != null)
+            {
+                var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                // TODO parent doc is the data doc we might want to set this on the layout instead
+                // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
+                // TODO assumes a data doc
+                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new DocumentFieldModelController(recordDoc), true);
+            }
+        }
+
+        // TODO lsm wrote this here it's a hack we should definitely remove this
+        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
+        {
+            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
+            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data
+                ?.DocumentType;
+            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
+            {
+                if (dataDoc.GetField(KeyStore.ThisKey) == null)
+                    dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);
+                var layoutDoc =
+                    new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
+
+                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
+                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
+                dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
+            }
+
+            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null).Data;
         }
     }
 }

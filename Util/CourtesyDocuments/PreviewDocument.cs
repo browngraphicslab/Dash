@@ -30,6 +30,8 @@ namespace Dash
                 [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
                 [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                [KeyStore.WidthFieldKey] = new NumberFieldModelController(400),
+                [KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
                 [KeyStore.DataKey] = refToLayout
             };
             Document.SetFields(fields, true);
@@ -44,22 +46,27 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, 
             bool isInterfaceBuilderLayout = false)
         {
-            var layout = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, context).Data;
-            var innerContent = layout.MakeViewUI(context, false);
-            Debug.WriteLine("The preview document inner content's render transform is being changed" +
-                            "other than that this view needs a couple more bindings but it should be easy to finish");
+            var layout = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, context)?.Data;
+            FrameworkElement innerContent = null;
+            if (layout != null)
+            {
+                innerContent = layout.MakeViewUI(context, false);
+            }
+            
+
             var returnContent = new ContentPresenter()
             {
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                VerticalContentAlignment = VerticalAlignment.Stretch,
                 Content = innerContent       
             };
 
-
             docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args) =>
             {
-                returnContent.Content = args.NewValue.DereferenceToRoot<DocumentFieldModelController>(args.Context).Data.MakeViewUI(args.Context, false);
+                var innerLayout = args.NewValue.DereferenceToRoot<DocumentFieldModelController>(args.Context).Data;
+                var innerCont = innerLayout.MakeViewUI(args.Context, false);
+                returnContent.Content = innerCont;
             });
-
-            BindPosition(returnContent, docController, context);
 
             return returnContent;
         }
