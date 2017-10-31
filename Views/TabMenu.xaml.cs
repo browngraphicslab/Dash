@@ -40,7 +40,30 @@ namespace Dash
         // The position relative to the collectionfreeformview in which items from tab menu will be added 
         private static Point _whereToAdd;
         #endregion
+        private TabMenu()
+        {
+            InitializeComponent();
+            GetSearchItems();
 
+            xSearch.TextChanged += XSearch_TextChanged;
+            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
+            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
+
+            // hide the tab menu when we lose focus
+            LostFocus += (sender, args) => Hide();
+        }
+
+        // returns the relative point of WhereToAdd to the collectionfreeformview it is added in  
+        public Point GetRelativePoint()
+        {
+            return Util.GetCollectionFreeFormPoint(_addsToThisCollection, _whereToAdd);
+        }
+
+        public void AddToFreeform(DocumentController controller, Context context = null)
+        {
+            _addsToThisCollection.ViewModel.AddDocument(controller, context); 
+        }
+        
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
         public static void ConfigureAndShow(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
@@ -50,14 +73,18 @@ namespace Dash
             ShowAt(canvas, isTouch); 
         }
 
-        public void AddGoToTabItems(List<DocumentView> docViews)
+        //Adds the immediate documents contained in the collectionfreeformview that contains the tabmenu 
+        //Recalculated every time tabmenu is opened (otherwise CollectionFreeformview would need to keep track of all the documentviews as well as the viewmodels) 
+        //TODO curtail this in case collectionview contains too many documents
+        public void AddGoToTabItems(CollectionFreeformView topCollection)
         {
-            //var tabItems = new List<ITabItemViewModel>(AllTabItems);
-            //foreach (DocumentView dv in docViews)
-            //{
-            //    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-            //}
-            //DisplayedTabItems = tabItems;             
+            var docViews = topCollection.GetImmediateDescendantsOfType<DocumentView>(); 
+            var tabItems = new List<ITabItemViewModel>(AllTabItems);
+            foreach (DocumentView dv in docViews)
+            {
+                tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+            }
+            DisplayedTabItems = tabItems;
         }
 
         private static void ShowAt(Canvas canvas, bool isTouch = false)
@@ -68,8 +95,8 @@ namespace Dash
                     canvas.Children.Add(Instance);
 
                 if (isTouch) Instance.ConfigureForTouch();
-                Canvas.SetLeft(Instance, WhereToAdd.X);
-                Canvas.SetTop(Instance, WhereToAdd.Y);
+                Canvas.SetLeft(Instance, _whereToAdd.X);
+                Canvas.SetTop(Instance, _whereToAdd.Y);
                 Instance.ResetList();
                 Instance.SetTextBoxFocus();
             }
@@ -112,18 +139,7 @@ namespace Dash
             }
         }
 
-        private TabMenu()
-        {
-            InitializeComponent();
-            GetSearchItems();
-
-            xSearch.TextChanged += XSearch_TextChanged;
-            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
-            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
-
-            // hide the tab menu when we lose focus
-            LostFocus += (sender, args) => Hide();
-        }
+        
 
         /// <summary>
         /// Create the list of items to be displayed in the tab menu
