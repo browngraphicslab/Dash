@@ -86,15 +86,15 @@ namespace Dash
         /// <param name="e"></param>
         private void OnRecordFieldTapped(object sender, TappedRoutedEventArgs e)
         {
-            var vm = (DataContext as CollectionDBSchemaRecordViewModel);
-            if (vm != null)
-            {
-                var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
-                // TODO parent doc is the data doc we might want to set this on the layout instead
-                // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
-                // TODO assumes a data doc
-                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new DocumentFieldModelController(recordDoc), true);
-            }
+            //var vm = (DataContext as CollectionDBSchemaRecordViewModel);
+            //if (vm != null)
+            //{
+            //    var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            //    // TODO parent doc is the data doc we might want to set this on the layout instead
+            //    // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
+            //    // TODO assumes a data doc
+            //    vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new DocumentFieldModelController(recordDoc), true);
+            //}
         }
     }
 

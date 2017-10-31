@@ -63,6 +63,7 @@
                   Background="#CCDDDDDD"
                   CanDragItems="False"
                   Height="100"
+                  SelectionChanged ="XRecordsView_OnSelectionChanged"
                   Loaded="XRecordsView_OnLoaded">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
