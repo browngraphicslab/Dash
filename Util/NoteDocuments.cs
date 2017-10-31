@@ -119,7 +119,7 @@ namespace Dash
         }
         public class RichTextNote : NoteDocument
         {
-            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
+            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "Rich Text");
             
             public override DocumentController CreatePrototype()
             {

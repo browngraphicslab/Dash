@@ -138,8 +138,9 @@ namespace Dash
             IsMainCollection = (this == MainPage.Instance.MainDocView);
 
             // add corresponding instance of this to hierarchical view
-            if (!IsMainCollection)
+            if (!IsMainCollection && ViewModel != null)
             {
+                
                 //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
                 if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
                 {
@@ -323,7 +324,7 @@ namespace Dash
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
-              //  moveButton,
+                moveButton,
                 copyButton,
                // delegateButton,
                // copyDataButton

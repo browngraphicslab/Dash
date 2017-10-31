@@ -90,7 +90,8 @@ namespace Dash
             var parentDoc =  this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.Data?.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
             }
             return null;
         }

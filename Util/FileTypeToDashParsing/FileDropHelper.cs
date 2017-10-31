@@ -263,10 +263,10 @@ namespace Dash
                 return FileType.Ppt;
             if (storageItem.FileType.EndsWith(".url"))
                 return FileType.Web;
-            if (storagePath.EndsWith(".jpg") ||
-                storagePath.EndsWith(".jpeg") ||
-                storagePath.EndsWith(".png") ||
-                storagePath.EndsWith(".gif"))
+            if (storagePath.EndsWith(".jpg") || storageItem.FileType.EndsWith(".jpg") ||
+                storagePath.EndsWith(".jpeg") || storageItem.FileType.EndsWith(".jpeg") ||
+                storagePath.EndsWith(".png") || storageItem.FileType.EndsWith(".png") ||
+                storagePath.EndsWith(".gif") || storageItem.FileType.EndsWith(".gif"))
                 return FileType.Image;
             if (storagePath.EndsWith(".txt"))
                 return FileType.Text;
