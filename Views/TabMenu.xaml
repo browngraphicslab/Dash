@@ -26,13 +26,13 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Border Margin="10" BorderThickness="1" BorderBrush="#66FFFFFF" CornerRadius="7">
-                <AutoSuggestBox x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
+                <AutoSuggestBox RequestedTheme="Dark" x:Name="xSearch" TextBoxStyle="{StaticResource xSearchTextBox}"
                                 BorderBrush="Transparent" Margin="5" PlaceholderText="Search all..."/>
             </Border>
         </Grid>
         
         <ListView x:Name="xListView" Grid.Row="1" Background="{StaticResource DarkBackground}"
-                  ItemsSource="{x:Bind DisplayedTabItems}" Tapped="xListView_Tapped" MaxHeight="320" VerticalContentAlignment="Top">
+                  ItemsSource="{x:Bind DisplayedTabItems}" RequestedTheme="Dark" Tapped="xListView_Tapped" MaxHeight="320" VerticalContentAlignment="Top">
             
             <ListView.ItemContainerStyle>
                 <!-- TODO: abstract this bs out-->

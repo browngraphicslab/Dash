@@ -323,7 +323,7 @@ namespace Dash
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
-                moveButton,
+              //  moveButton,
                 copyButton,
                // delegateButton,
                // copyDataButton

@@ -92,10 +92,11 @@ namespace Dash
 
         public void setBackgroundDarkness(bool isDark)
         {
+            _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
             if (isDark)
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                xDarkenBackground.Opacity = .1;
             else
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+                xDarkenBackground.Opacity = 0;
         }
 
 

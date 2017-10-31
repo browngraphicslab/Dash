@@ -92,6 +92,7 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\gridbg2.jpg" />
     <Content Include="Assets\pokemon_species.csv" />
     <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
@@ -651,7 +652,6 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
-    <Content Include="Assets\gridbg2.jpg" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
