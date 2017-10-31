@@ -78,13 +78,13 @@ namespace Dash
         //TODO curtail this in case collectionview contains too many documents
         public void AddGoToTabItems(CollectionFreeformView topCollection)
         {
-            var docViews = topCollection.GetImmediateDescendantsOfType<DocumentView>(); 
-            var tabItems = new List<ITabItemViewModel>(AllTabItems);
-            foreach (DocumentView dv in docViews)
-            {
-                tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-            }
-            DisplayedTabItems = tabItems;
+            //var docViews = topCollection.GetImmediateDescendantsOfType<DocumentView>(); 
+            //var tabItems = new List<ITabItemViewModel>(AllTabItems);
+            //foreach (DocumentView dv in docViews)
+            //{
+            //    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+            //}
+            //DisplayedTabItems = tabItems;
         }
 
         private static void ShowAt(Canvas canvas, bool isTouch = false)

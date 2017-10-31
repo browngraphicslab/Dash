@@ -10,7 +10,7 @@
     d:DesignWidth="300">
 
     <Grid x:Name="xOuterGrid" Background="{StaticResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
-        <Grid.RowDefinitions>
+        <Grid.RowDefinitions>   
             <RowDefinition Height="Auto"/> <!--column headers-->
             <RowDefinition Height="7*"/> <!--column values-->
             <RowDefinition Height="*"/> <!--random space-->
