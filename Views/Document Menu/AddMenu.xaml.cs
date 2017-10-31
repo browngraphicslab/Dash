@@ -139,7 +139,7 @@ namespace Dash.Views.Document_Menu
             xHierarchyMenu.Visibility = Visibility.Collapsed;
             xAddMenu.Visibility = Visibility.Visible;
             xAddTab.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
-            xHierarchyTab.Background = Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush;
+            xHierarchyTab.Background = Application.Current.Resources["DarkBackground"] as SolidColorBrush;
         }
 
         private void xHierarchyTab_Tapped(object sender, TappedRoutedEventArgs e)
@@ -147,7 +147,7 @@ namespace Dash.Views.Document_Menu
             xAddMenu.Visibility = Visibility.Collapsed;
             xHierarchyMenu.Visibility = Visibility.Visible;
             xHierarchyTab.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
-            xAddTab.Background = Application.Current.Resources["DocumentBackgroundOpaque"] as SolidColorBrush;
+            xAddTab.Background = Application.Current.Resources["DarkBackground"] as SolidColorBrush;
         }
     }
 }

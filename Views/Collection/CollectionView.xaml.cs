@@ -58,6 +58,12 @@ namespace Dash
         /// </summary>
         public DocumentView ParentDocument;
 
+        /// <summary>
+        /// Used as the key to identify when a drag even has started on the preview button
+        /// </summary>
+        public static string CollectionPreviewDragKey = "CE1ACD38-FB99-4018-A9B5-0430C9089B14";
+
+
         public enum CollectionViewType
         {
             Freeform, List, Grid, Page, Text, DB, Schema
@@ -79,7 +85,7 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -222,7 +228,7 @@ namespace Dash
         private void FireEllipseInteraction(object sender, PointerRoutedEventArgs e, bool isInput, bool isPressed)
         {
             if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetDataDocument(null).GetId();
             var el = (sender as Grid).Children[0] as Ellipse;
             KeyController refKey;
             if (!isInput)
@@ -389,8 +395,20 @@ namespace Dash
 
             };
 
-           //if (ParentDocument != MainPage.Instance.xMainDocView)
-                //collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+            // Create preview button with special properties so the user can drag off of it
+            var previewButton = new MenuButton(Symbol.Preview, "Preview", menuColor, null);
+            var previewButtonView = previewButton.View;
+            previewButtonView.CanDrag = true;
+            previewButton.ManipulationMode = ManipulationModes.All;
+            previewButton.ManipulationDelta += (s, e) => e.Handled = true;
+            previewButton.ManipulationStarted += (s, e) => e.Handled = true;
+            previewButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                e.Data.Properties.Add(CollectionPreviewDragKey, this);
+            };
+            previewButtonView.DropCompleted += PreviewButtonView_DropCompleted;
+            collectionButtons.Add(previewButton);
 
             var documentButtons = new List<MenuButton>
             {
@@ -401,8 +419,16 @@ namespace Dash
                 new MenuButton(Symbol.Edit, "Interface", menuColor, null),
                 new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
                 new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
+
             };
+
+
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+        }
+
+        private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            // TODO fill this in
         }
 
         private void OpenMenu()
@@ -477,7 +503,7 @@ namespace Dash
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
-                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                    _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
                 _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
                     Opacity = _backgroundOpacity

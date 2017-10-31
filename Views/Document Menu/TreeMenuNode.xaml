@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="350">
-    <Grid x:Name="xContainerGrid"  Background="{StaticResource DocumentBackgroundOpaque}">
+    d:DesignWidth="350" >
+    <Grid x:Name="xContainerGrid" Background="{StaticResource DarkBackground}">
         <Grid.Resources>
             <local:MenuTypeToIcon x:Key="IconConverter"/>
         </Grid.Resources>
@@ -16,7 +16,7 @@
             <!-- header -->
             <Grid x:Name="xHeader" Tapped="xHeader_Tapped" Style="{StaticResource xMenuItemHeaderContainer}" >
                 <TextBlock x:Name="xLeftIcon" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{x:Bind HeaderIcon, Mode=OneWay}" />
-                <TextBlock x:Name="xCollapsedArrow"  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
+                <TextBlock x:Name="xCollapsedArrow"  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" Foreground="White" />
                 <TextBlock x:Name="xHeaderLabel" Text="{x:Bind HeaderLabel, Mode=OneWay}" Style="{StaticResource xMenuItemHeader}"></TextBlock>
             </Grid>
             <!-- leafs / content -->
@@ -44,7 +44,6 @@
                     <Setter Property="Margin" Value="0"></Setter>
                     <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
                     <Setter Property="BorderBrush" Value="#FF444444"></Setter>
-                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
                 </Style>
                 </ListView.ItemContainerStyle>
                 </ListView>

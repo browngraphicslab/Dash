@@ -40,8 +40,7 @@
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted" DragEnter="UIElement_OnDragEnter" 
                                      Drop="UIElement_OnDrop"/>
-                            <local:EditableTextBlock Grid.Column="1"  Margin="0,0,0,0" Background="Transparent"
-                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" />
+                            <TextBlock Grid.Column="1"  Margin="10,0,0,0" VerticalAlignment="Top" Foreground="{StaticResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
@@ -61,10 +60,8 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-
-                        <StackPanel Orientation="Horizontal" Padding="0,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Key.Name}" FontSize="14" Foreground="#FFAAABB0" Padding="10,0,10,0" TextAlignment="Left"/>
-
+                        <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left" Foreground="{StaticResource MainText}"/>
                             <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
                                 <ToolTipService.ToolTip>

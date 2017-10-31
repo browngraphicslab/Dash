@@ -31,7 +31,7 @@ namespace Dash
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
-            this.InstantiateButton(icon, name, background);
+            this.InstantiateButton(icon, name, Color.FromArgb(255,6,132,132));
             this.CreateAndRunInstantiationAnimation(false);
             IsComposite = false;
         }

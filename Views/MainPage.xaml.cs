@@ -59,12 +59,10 @@ namespace Dash
         public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public MainPage()
         {
-
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["CollectionBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
-
+            coreTitleBar.ExtendViewIntoTitleBar = false;
             InitializeComponent();
 
             // create the collection document model using a request

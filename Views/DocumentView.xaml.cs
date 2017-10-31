@@ -156,6 +156,17 @@ namespace Dash
                         }
                     }
                 }
+                if (double.IsNaN(ViewModel.Width) &&
+                    (ParentCollection?.CurrentView is CollectionFreeformView)) {
+                    ViewModel.Width = 50;
+                    ViewModel.Height = 50;
+                }
+                //if (Parent == null)
+                //    ViewModel.Width = ActualWidth;
+                //else ViewModel.Width = double.NaN;
+                //if (Parent == null)
+                //    ViewModel.Height = ActualHeight;
+                //else ViewModel.Height = double.NaN;
             }
             new ManipulationControls(xKeyValuePane, false, false);
         }
@@ -179,8 +190,11 @@ namespace Dash
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
+                ViewModel.DocumentController.SetTitleField(title);
+                treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Operator, Choose,
+                    ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                new AddMenuItem(title, AddMenuTypes.Operator, Choose)); // adds op view to menu
+                        treeMenuItem);
             }
         }
     
@@ -250,7 +264,9 @@ namespace Dash
 
         private void OnKeyValueDrop(DragEventArgs e)
         {
-            if (e.Data.Properties[KeyValuePane.DragPropertyKey] == null) return;
+            // if the drop wasn't from the key value pane, then return
+            // if the view is in the interface builder return
+            if (e.Data?.Properties[KeyValuePane.DragPropertyKey] == null || (ViewModel?.IsInInterfaceBuilder ?? true)) return;
 
             // get data variables from the DragArgs
             var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
@@ -289,7 +305,8 @@ namespace Dash
         MenuButton copyButton;
         private void SetUpMenu()
         {
-            var bgcolor = bgbrush.Color;
+            var bgcolor = bgbrush.Color;// TODO: change back later
+            //var bgcolor = Colors.DarkSlateGray;
             bgcolor.A = 0;
             var red = new Color();
             red.A = 204;
@@ -557,7 +574,6 @@ namespace Dash
             }
             else
             {
-
                 ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
@@ -582,9 +598,27 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-
             if (ViewModel != null)
-                xKeyValuePane?.SetDataContextToDocumentController(ViewModel?.DocumentController);
+            {
+                // binds the display title of the document to the back end representation
+                var context = new Context(ViewModel.DocumentController);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
+                context.AddDocumentContext(dataDoc);
+
+                // set the default title
+                dataDoc.GetTitleFieldOrSetDefault(context);
+
+                var binding = new FieldBinding<TextFieldModelController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = dataDoc,
+                    Key = KeyStore.TitleKey,
+                    Context = context
+                };
+
+                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+            }
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -615,7 +649,7 @@ namespace Dash
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
-                xDragImage.Opacity = 1;
+                xDragImage.Opacity = .25;
                 UpdateBinding(false);
             }
         }
@@ -658,7 +692,7 @@ namespace Dash
         {
             _moveTimer.Stop();
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
+            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
         private void CopyDataDocument()

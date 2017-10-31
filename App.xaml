@@ -38,17 +38,19 @@
     
     -->
     <Application.Resources>
-        <!-- NUMBERS, THICKNESSES --> 
-        <x:Double x:Key="DocumentOpacity">.8</x:Double>
+        <!-- NUMBERS, THICKNESSES -->
+        <x:Double x:Key="DocumentOpacity">.9</x:Double>
         <x:Double x:Key="DefaultFontSize">14</x:Double>
         <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
         <!-- COLORS -->
-        <Color x:Key="WindowsBlueColor">#FF17477E</Color>
-        <Color x:Key="AccentGreenColor">#FF265C49</Color>
-        <Color x:Key="DocumentBackgroundColor">#FF303030</Color>
-        <Color x:Key="DocumentBackgroundSelectedColor">#FF414141</Color>
-        <Color x:Key="MainTextColor">#FFAAABB0</Color>
+        <Color x:Key="WindowsBlueColor">#FF068484</Color>
+        <Color x:Key="AccentGreenColor">#FF3D7AAC</Color>
+        <Color x:Key="AccentBlueColor">#FF338899</Color>
+        <Color x:Key="DocumentBackgroundColor">#FFFFFFFF</Color>
+        <Color x:Key="DocumentBackgroundSelectedColor">#FFCCCCCC</Color>
+        <Color x:Key="MainTextColor">#FF666666</Color>
+        <Color x:Key="TitleTextColor">#FF454545</Color>
         
 
         <!-- SOLID COLOR BRUSHES -->
@@ -65,21 +67,23 @@
         <SolidColorBrush x:Key="BorderHighlight" Color="#FF444444"/>
         <SolidColorBrush x:Key="CollectionBackground" Color="#FF0C0C0C"/>
         <SolidColorBrush x:Key="GreenText" Color="#FFBAC6E4" ></SolidColorBrush>
+        <SolidColorBrush x:Key="DarkBackground" Color="#FF494949"></SolidColorBrush>
 
 
         <!-- global colors-->
         <SolidColorBrush x:Key="MainText" Color="{StaticResource MainTextColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="TitleText" Color="{StaticResource TitleTextColor}"></SolidColorBrush>
 
         <!-- background colors -->
         <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
-        <Color x:Key="TranslucentDocumentBackgroundColor">#CC303030</Color>
+        <Color x:Key="TranslucentDocumentBackgroundColor">#CCFFFFFF</Color>
         <SolidColorBrush x:Key="RadialMenuBackground" Color="{StaticResource TranslucentDocumentBackgroundColor}" />
         <SolidColorBrush x:Key="DraggerLineStroke" Color="#66007AFF"/>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{StaticResource DocumentBackgroundColor}" Opacity="{StaticResource DocumentOpacity}" />
         <SolidColorBrush x:Key="DocumentBackgroundOpaque" Color="{StaticResource DocumentBackgroundColor}"  />
-        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="{StaticResource DocumentBackgroundSelectedColor}" Opacity="{StaticResource DocumentOpacity}" ></SolidColorBrush>
-        <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
+        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="{StaticResource DocumentBackgroundSelectedColor}" Opacity=".3" ></SolidColorBrush>
+        <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0">
             <GradientStop Color="Transparent" Offset="0"/>
             <GradientStop Color="#FFFFFFFF" Offset="1" />
         </LinearGradientBrush>
@@ -92,6 +96,7 @@
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
             <Setter Property="Height" Value="Auto"></Setter>
             <Setter Property="FontSize" Value="16"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
         </Style>
 
         <!-- fontawesome icon mappings -->
@@ -131,7 +136,7 @@
                 </Setter.Value>
             </Setter>
             <Setter Property="Background" Value="{StaticResource DocumentBackground}"/>
-            <Setter Property="Foreground" Value="#FFDADADA"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="MinWidth" Value="1"/>
 
@@ -238,7 +243,6 @@
         </Style>
 
         <!-- GLOBAL STYLES -->
-
         <Style TargetType="TextBox" x:Key="xSearchTextBox">
             <Setter Property="Background" Value="Transparent"></Setter>
             <Setter Property="BorderThickness" Value="0"></Setter>
@@ -493,17 +497,17 @@
 
         <!-- app Titles -->
         <Style TargetType="TextBox" x:Key="xTitleStyle">
-            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Left" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Foreground" Value="#FFCACBCF"></Setter>
-            <Setter Property="Padding" Value="{StaticResource TextPadding}"></Setter>
-            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource TitleText}"></Setter>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="BorderThickness" Value="0"></Setter>
+            <Setter Property="FontSize" Value="15"></Setter>
+            <Setter Property="Background" Value="Transparent"></Setter>
             <Setter Property="FontFamily" Value="Segoe UI"></Setter>
         </Style>
         
-        
-
         <!-- for forcing text styles to apply -->
         <Style TargetType="TextBlock" x:Key="xForceTextBlockDefault">
             <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
@@ -592,7 +596,7 @@
             <Setter Property="HorizontalAlignment" Value="Left"></Setter>
         </Style>
         <Style TargetType="TextBlock" x:Key="xMenuItemExpandRight">
-            <Setter Property="Foreground" Value="White"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
             <Setter Property="FontSize" Value="12"></Setter>
             <Setter Property="Width" Value="18"></Setter>
             <Setter Property="VerticalAlignment" Value="Center"></Setter>

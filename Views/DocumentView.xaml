@@ -43,9 +43,8 @@
                 <ColumnDefinition Width="0"/>
             </Grid.ColumnDefinitions>
 
-
             <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
-                <TextBox x:Name="xDocumentDisplay" Text="{Binding DisplayName, Mode=TwoWay}" ></TextBox>
+                <!--TextBox x:Name="xDocumentDisplay" Text="{Binding DisplayName, Mode=TwoWay}" ></-->
             </Viewbox>
             <!-- Container for Icon view -->
             <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -59,7 +58,7 @@
                     <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
                           HorizontalAlignment="Center"
                           TextAlignment="Center"
-                          Background="Transparent" Text="{Binding DisplayName}" BorderThickness="0"/>
+                          Background="Transparent"  BorderThickness="0"/>
                 </StackPanel>
             </Grid>
 
@@ -73,20 +72,20 @@
                     <!-- Animate background color -->
                     <Storyboard x:Name="colorStoryboard">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC303030" To="#CC414141" Duration="0:0:0.075"/>
+                                    From="#EFFFFFFF" To="#FFe8f0f6" Duration="0:0:0.075"/>
                     </Storyboard>
                     <Storyboard x:Name="colorStoryboardOut">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#CC414141" To="#CC303030" Duration="0:0:0.075"/>
+                                    From="#FFe8f0f6" To="#EFFFFFFF" Duration="0:0:0.075"/>
                     </Storyboard>
                 </Rectangle.Resources>
             </Rectangle>
-            <Border x:Name="xGradientOverlay" Grid.RowSpan="2" Grid.ColumnSpan="2" Background="{StaticResource DocumentGradient}" Opacity=".8"></Border>
+            <Border x:Name="xGradientOverlay" Grid.RowSpan="2" Grid.ColumnSpan="2" Background="{StaticResource DocumentGradient}" Opacity=".2"></Border>
 
-            <Border x:Name="xTitleBorder" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
+            <Border x:Name="xTitleBorder" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
-                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Padding="0" Margin="0,3,4,0" Text="{StaticResource DocumentPlainIcon}" />
-                    <TextBox x:Name="xTitle" Style="{StaticResource xTitleStyle}" Padding="0" KeyDown="XTitle_OnKeyDown"></TextBox>
+                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{StaticResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
+                    <TextBox RequestedTheme="Light" Padding="0" Foreground="{StaticResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown"></TextBox>
                 </StackPanel>
             </Border>
 
@@ -120,7 +119,7 @@
                         </ControlTemplate>
                     </Button.Template>
                     <Border Padding="10,10,20,20" Background="Transparent">
-                        <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
+                        <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
                            HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                     </Border>
                 </Button>
@@ -147,9 +146,7 @@
                         </TransformGroup>
                     </Canvas.RenderTransform>
                 </Canvas>
-                <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
             </Grid>
         </Grid>
     </Grid>
-
 </local:SelectionElement>

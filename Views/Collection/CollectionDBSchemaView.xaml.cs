@@ -22,6 +22,7 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
+        private ObjectToStringConverter converter = new ObjectToStringConverter();
         public CollectionDBSchemaView()
         {
             this.InitializeComponent();
@@ -64,10 +65,7 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
-                    {
-                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
-                    }
+                    _parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
@@ -90,20 +88,26 @@ namespace Dash
         private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
         {
             var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
-            var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-            if (column != -1)
+            var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
+            if (recordCollection.Contains(dc))
             {
-                FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
-                updateEditBox(dc);
-                xEditField.ShowAt(this);
+                var column = recordCollection.IndexOf(dc);
+                if (column != -1)
+                {
+                    FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
+                    updateEditBox(dc);
+                    xEditField.ShowAt(this);
+                }
+
             }
+
         }
 
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
             var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-            xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+            xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
             var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
             xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
             dc.Selected = true;
@@ -292,6 +296,7 @@ namespace Dash
             foreach (var d in dbDocs)
             {
                 records.Add(new CollectionDBSchemaRecordViewModel(
+                    ParentDocument,
                     d,
                     SchemaHeaders.Select(f => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
                     ));

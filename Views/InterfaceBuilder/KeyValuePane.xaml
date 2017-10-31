@@ -86,7 +86,7 @@
                     <TextBox x:Name="xNewValueField" TextChanged="xNewValueField_TextChanged" KeyDown="XNewValueField_OnKeyDown" Height="30" Grid.Column="1" Margin="5,10,5,10" Background="White" Opacity=".75" HorizontalAlignment="Stretch" PlaceholderText="Value" Foreground="Black"></TextBox>
                 </Grid>
                 <Image Height="75"  x:Name="xDefaultImage" Source="Assets/DefaultImage.png" HorizontalAlignment ="Stretch" Visibility="Collapsed"/>
-                <Grid Background="Transparent">
+                <Grid Background="SteelBlue">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>

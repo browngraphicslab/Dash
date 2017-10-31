@@ -240,27 +240,8 @@ namespace Dash
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             }
-            //if (_addKVPaneOpen)
-            //{
-            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Accept) };
-            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    FocusOn(xNewKeyField);
-            //}
-            //else
-            //{
-            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Add) };
-            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xTypeComboBox.IsEnabled = false;
-            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xNewValueField.IsEnabled = false;
-            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xImageGrid.BorderThickness = new Thickness(0);
-            //}
         }
-
+        
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
@@ -499,10 +480,10 @@ namespace Dash
 
         private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var newField = new KeyFieldContainer(new KeyController(),
-                new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false,
-                TypeColumnWidth);
-            ListItemSource.Add(newField);
+            //var newField = new KeyFieldContainer(new KeyController(),
+            //    new BoundFieldModelController(new TextFieldModelController(""), RealDataContext), false,
+            //    TypeColumnWidth);
+            //ListItemSource.Add(newField);
         }
     }
 }

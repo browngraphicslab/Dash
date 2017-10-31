@@ -86,6 +86,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
             //DragEnter += Collection_DragEnter;
+
+
         }
 
         public void setBackgroundDarkness(bool isDark)

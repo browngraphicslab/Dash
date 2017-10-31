@@ -19,7 +19,7 @@
                     <ColumnDefinition Width="auto"></ColumnDefinition>
                     <ColumnDefinition Width="auto"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Border Tapped="xAddTab_Tapped" x:Name="xAddTab" Grid.Column="0" 
+                <Border Visibility="Collapsed" Tapped="xAddTab_Tapped" x:Name="xAddTab" Grid.Column="0" 
                         Background="{StaticResource WindowsBlue}" HorizontalAlignment="Left" Height="55" Width="60" Padding="3,0" Margin="0,0,1,0">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <SymbolIcon x:Name="xSymbol1" Foreground="White" HorizontalAlignment="Center" Symbol="Add" RenderTransformOrigin="0.5,0.5">
@@ -31,8 +31,8 @@
                            ,0,1" HorizontalAlignment="Center">create</TextBlock>
                         </StackPanel>
                 </Border>
-                <Border x:Name="xHierarchyTab" Tapped="xHierarchyTab_Tapped"  Grid.Column="1" 
-                        Background="{StaticResource DocumentBackgroundOpaque}" HorizontalAlignment="Right"  Height="55" Width="70" Padding="3,0">
+                <Border Visibility="Collapsed" x:Name="xHierarchyTab" Tapped="xHierarchyTab_Tapped"  Grid.Column="1" 
+                        Background="{StaticResource WindowsBlue}" HorizontalAlignment="Right"  Height="55" Width="70" Padding="3,0">
                     <StackPanel  Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <SymbolIcon x:Name="xSymbol" Foreground="White" HorizontalAlignment="Center" Symbol="AllApps" RenderTransformOrigin="0.5,0.5">
                             <SymbolIcon.RenderTransform>
@@ -44,16 +44,17 @@
                     </StackPanel>
                 </Border>
             </Grid>
-            <Grid x:Name="xAddMenu" Background="{StaticResource DocumentBackgroundOpaque}">
+            <Grid x:Name="xAddMenu" Visibility="Collapsed" Background="{StaticResource DocumentBackgroundOpaque}">
+                <!-- holds the add menu -->
                 <StackPanel Orientation="Vertical" x:Name="xAddMenuStackPanel">
                 <!--local:TreeMenuNode HeaderIcon="{StaticResource FavoriteIcon}" HeaderLabel="Favourites"></-->
                 <local:TreeMenuNode x:Name="xOperatorTree" HeaderIcon="{StaticResource OperatorIcon}" HeaderLabel="Operators"></local:TreeMenuNode>
                 <local:TreeMenuNode x:Name="xDocumentTree" HeaderIcon="{StaticResource DocumentPlainIcon}" HeaderLabel="Documents"></local:TreeMenuNode>
                 </StackPanel>
             </Grid>
-            <StackPanel Visibility="Collapsed" x:Name="xHierarchyMenu" Background="{StaticResource DocumentBackgroundOpaque}">
-                
-            </StackPanel>
+            
+            <!-- holds the hierarchy menu-->
+            <StackPanel x:Name="xHierarchyMenu" Background="{StaticResource DocumentBackgroundOpaque}"></StackPanel>
         </StackPanel>
         </ScrollViewer>
 </UserControl>
