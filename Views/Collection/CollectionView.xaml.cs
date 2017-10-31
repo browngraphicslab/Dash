@@ -24,6 +24,7 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
+using Dash.Views.Document_Menu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -568,14 +569,46 @@ namespace Dash
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             var datacontext = docView?.DataContext as DocumentViewModel;
-
             if (datacontext == null) return;
+
             var visibilityBinding = new Binding
             {
                 Source = datacontext,
                 Path = new PropertyPath(nameof(datacontext.IsSelected)) 
             };
+
+            datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
+
+
+
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
+
+        private void OnCollectionUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {/*
+            var collFieldArgs =
+                  args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+            if (collFieldArgs == null) return; 
+            if (collFieldArgs.CollectionAction == DocumentCollectionFieldModelController
+                    .CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add)
+            {
+                if (sender.GetField(KeyStore.OperatorKey) == null)
+                    {
+                        // if we don't have a parent to add to then we can't add this to anything
+                        if (ParentCollection != null)
+                        {
+                            // if the tree contains the parent collection
+                            if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                            {
+                            var treeMenuItem = new DocumentAddMenuItem(sender.Title, AddMenuTypes.Document, this.ParentDocument.Choose,
+                                sender, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
+                            
+                                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[this],
+                                        treeMenuItem);
+                            }
+                        }
+                    }
+                }*/
         }
     }
 }

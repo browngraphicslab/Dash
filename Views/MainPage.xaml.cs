@@ -107,18 +107,18 @@ namespace Dash
                 {
                     MainDocument = ContentController<DocumentModel>.GetController<DocumentController>(doc.Id);
 
-                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
                 else
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
+                        [KeyStore.DataKey] = new DocumentCollectionFieldModelController()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
 
-                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
                 xMainDocView.DataContext = new DocumentViewModel(MainDocument);

@@ -452,7 +452,7 @@ namespace Dash
                     }
                 }
             BeenThere.Add(new SeenIt(sender, args));
-            DBDoc.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
+            DBDoc.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(MainPage.Instance.MainDocument.GetId(), KeyStore.DataKey), true);
             return;
         }
     }
