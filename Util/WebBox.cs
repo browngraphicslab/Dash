@@ -91,14 +91,14 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch
             };
             grid.Children.Add(web);
-            //var overgrid = new Grid
-            //{
-            //    HorizontalAlignment = HorizontalAlignment.Stretch,
-            //    VerticalAlignment = VerticalAlignment.Stretch,
-            //    Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-            //    Name="overgrid"
-            //};
-            //grid.Children.Add(overgrid);
+            var overgrid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+                Name = "overgrid"
+            };
+            grid.Children.Add(overgrid);
 
             SetupBindings(web, docController, context);
 
