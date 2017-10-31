@@ -66,8 +66,8 @@
                         <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="75" Background="White" BorderThickness="0,1,0,0" BorderBrush="DarkGray">
                             <GridView x:Name="ButtonsView" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,5,0,0"  CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting">
                                 <!--<StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Padding="0" HorizontalAlignment="Center">-->
-                                    <StackPanel>
-                                    <Button Background="Transparent" IsHitTestVisible="False" x:Name="GridButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
+                                <StackPanel x:Name="GridButton">
+                                    <Button Background="Transparent" IsHitTestVisible="False"  HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
                                         <ContentControl>
                                             <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
                                                 <SymbolIcon Symbol="ViewAll" Foreground="White"></SymbolIcon>
@@ -76,30 +76,28 @@
                                     </Button>
                                     <TextBlock FontSize="10" HorizontalAlignment="Center" Padding="3">GRID</TextBlock>
                                     </StackPanel>
-                                <StackPanel>
-                                    <Button x:Name="ListButton" IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
+                                <StackPanel x:Name="ListButton">
+                                    <Button  IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
                                         <ContentControl>
                                             <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
                                                 <SymbolIcon Symbol="List" Foreground="White"></SymbolIcon>
                                             </Border>
-
                                         </ContentControl>
                                     </Button>
                                     <TextBlock FontSize="10" HorizontalAlignment="Center" Padding="3">LIST</TextBlock>
                                 </StackPanel>
-                                <StackPanel>
-                                    <Button x:Name="FreeformButton" IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
-                                    <ContentControl>
-                                        <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
-                                                    <SymbolIcon Symbol="View" Foreground="White"></SymbolIcon>
-                                                </Border>
-                                        
-                                    </ContentControl>
+                                <StackPanel x:Name="FreeformButton">
+                                    <Button  IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
+                                        <ContentControl>
+                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                                <SymbolIcon Symbol="View" Foreground="White"></SymbolIcon>
+                                            </Border>
+                                        </ContentControl>
                                     </Button>
                                     <TextBlock FontSize="10" HorizontalAlignment="Center" Padding="3">FREEFORM</TextBlock>
                                 </StackPanel>
                                 <StackPanel>
-                                    <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Width="50">
+                                    <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Width="50" Opacity=".5">
                                         <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="#FFE60404">
                                             <TextBlock VerticalAlignment="Center" FontSize="16" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
                                                     <Run Text="🗑️"/>

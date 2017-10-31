@@ -251,6 +251,17 @@ namespace Dash
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             _selectedContainer = sender;
+            
+            // change visual opacity of delete button so it looks like it is activated or deactivated
+            if (_selectedContainer.ParentContainer != null)
+            {
+                xDeleteButton.Opacity = 1;
+            }
+            else
+            {
+                xDeleteButton.Opacity = .5;
+            }
+
             if (newSettingsPane == null) return;
             // if newSettingsPane is a general document setting, bind the layoutname textbox 
             if (newSettingsPane is FreeformSettings)
@@ -306,6 +317,7 @@ namespace Dash
             var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
             data?.RemoveDocument(_selectedContainer.LayoutDocument);
             _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            xDeleteButton.Opacity = .5;
         }
         
         private void ChromeButton_OnTapped(object sender, TappedRoutedEventArgs e)
