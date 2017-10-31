@@ -65,6 +65,7 @@ namespace Dash
             coreTitleBar.ExtendViewIntoTitleBar = false;
             InitializeComponent();
 
+            /*
             // create the collection document model using a request
             var fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
@@ -79,6 +80,7 @@ namespace Dash
 
             // set the main view's datacontext to be the collection
             xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+            */
 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");

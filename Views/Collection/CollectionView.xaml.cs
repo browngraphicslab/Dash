@@ -56,7 +56,7 @@ namespace Dash
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public DocumentView ParentDocument;
+        public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
         /// <summary>
         /// Used as the key to identify when a drag even has started on the preview button
@@ -73,10 +73,11 @@ namespace Dash
         
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
+            Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            Loaded += CollectionView_Loaded;
+            
             Unloaded += CollectionView_Unloaded;
 
         }
@@ -106,7 +107,7 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            //ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentDocument.StyleCollection(this);
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
