@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -63,16 +64,17 @@ namespace Dash.Views.Document_Menu
             Type = icon;
 
             // handles clicking of the item in the menu
-            TappedEventHandler tapped = (sender, e) => {
+            void Tapped(object sender, TappedRoutedEventArgs e)
+            {
                 if (action != null)
                 {
                     DocumentController docCont = action.Invoke();
                     if (docCont != null)
                         Actions.AddDocFromFunction(MainPage.Instance.AddMenu, docCont);
                 }
-            };
+            }
 
-            TapAction = tapped;
+            TapAction = Tapped;
         }
 
         public AddMenuItem(String label, String icon)
@@ -89,26 +91,26 @@ namespace Dash.Views.Document_Menu
     public class DocumentAddMenuItem : AddMenuItem , IDisposable
     {
         private KeyController _key;
-        private DocumentController _documentController;
-        public DocumentAddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action, DocumentController documentController, KeyController key) : base(label, icon, action)
+        public DocumentController LayoutDoc;
+        public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController layoutDoc, KeyController key) : base(label, icon, action)
         {
             _key = key;
-            _documentController = documentController;
-            documentController.AddFieldUpdatedListener(key, TextChangedHandler);
-            TextChangedHandler(null, null);
+            LayoutDoc = layoutDoc;
+            var dataDoc = layoutDoc.GetDataDocument(null);
+            dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
+            TextChangedHandler(dataDoc, null); 
         }
 
         public void Dispose()
         {
-            _documentController.RemoveFieldUpdatedListener(_key, TextChangedHandler);
+            LayoutDoc.RemoveFieldUpdatedListener(_key, TextChangedHandler);
         }
 
         private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var textController = _documentController.GetField(_key) as TextFieldModelController;
+            var textController = documentController.GetField(_key) as TextFieldModelController;
             DocType = textController?.Data ?? "";
         }
-
         
     }
 
@@ -296,5 +298,22 @@ namespace Dash.Views.Document_Menu
             }
             xItemsList.SelectedItem = null;
         }
+
+        private void TreeNodeOnDragStarting(UIElement uiElement, DragStartingEventArgs e)
+        {
+            var dc = (uiElement as FrameworkElement).DataContext as DocumentAddMenuItem;
+            if (dc != null)
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Copy;
+                e.Data.Properties.Add(TreeNodeDragKey, dc.LayoutDoc);
+
+                return;
+            }
+            e.Data.RequestedOperation = DataPackageOperation.None;;
+
+
+        }
+
+        public static readonly string TreeNodeDragKey = "5CD5E435-B5BF-4C85-B5D3-401D73CD8223";
     }
 }

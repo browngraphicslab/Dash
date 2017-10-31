@@ -194,6 +194,8 @@ namespace Dash
 
         public Context Context { get; set; }
 
+        public bool Undecorated { get; set; }
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {

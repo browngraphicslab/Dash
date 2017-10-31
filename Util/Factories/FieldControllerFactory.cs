@@ -217,10 +217,10 @@ namespace Dash
                 case OperatorType.Melt:
                     controller = new MeltOperatorFieldModelController(model);
                     break;
-                case OperatorType.ExtractSentences:
+                case OperatorType.Sentence_Analyzer:
                     controller = new ExtractSentencesOperatorFieldModelController(model);
                     break;
-                case OperatorType.ExtractKeyWords:
+                case OperatorType.Extract_Keywords:
                     controller = new ExtractKeywordsOperatorFieldModelController(model);
                     break;
                 default:

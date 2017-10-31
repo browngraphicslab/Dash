@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views.Document_Menu;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -376,9 +377,16 @@ namespace Dash
                             new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
                     AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document)
+                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document),
+                        [KeyStore.TitleKey] = new TextFieldModelController("Preview Document")
                     }, new DocumentType()), null);
                 }
+            }
+
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(TreeMenuNode.TreeNodeDragKey))
+            {
+                var draggedLayout = e.DataView.Properties[TreeMenuNode.TreeNodeDragKey] as DocumentController;
+                AddDocument(draggedLayout.GetViewCopy(where), null);
             }
 
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))

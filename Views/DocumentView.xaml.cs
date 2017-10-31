@@ -150,8 +150,9 @@ namespace Dash
                         // if the tree contains the parent collection
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, 
-                                ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
+                            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                            var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                                     treeMenuItem);
                         }
@@ -191,11 +192,13 @@ namespace Dash
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
-                ViewModel.DocumentController.SetTitleField(title);
-                treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Operator, Choose,
-                    ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
+                //ViewModel.DocumentController.SetTitleField(title);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                dataDoc.SetTitleField(title);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                        treeMenuItem);
+                    treeMenuItem);
             }
         }
     
@@ -618,7 +621,10 @@ namespace Dash
                 };
 
                 xTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
         }
 
