@@ -182,8 +182,8 @@ namespace Dash.Views
         /// <param name="e"></param>
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            _freeformView.InkControl.InkRecognitionHelper.AddStrokeData(new List<InkStroke>(_strokeContainer
-                .GetStrokes().Where(s => s.Selected)));
+            //_freeformView.InkControl.InkRecognitionHelper.AddNewStrokeData(new List<InkStroke>(_strokeContainer
+            //    .GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
@@ -235,7 +235,7 @@ namespace Dash.Views
         private void Delete()
         {
             _strokeContainer.DeleteSelected();
-            _freeformView.InkControl.ClearSelection();
+            _freeformView.InkControl.UndoSelection();
         }
 
         private void Cut()
@@ -273,7 +273,7 @@ namespace Dash.Views
 
         private void RecognizeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            _freeformView.InkControl.RecognizeSelected();
+            _freeformView.InkControl.RecognizeSelectedStrokes();
         }
 
         private void CopyAttributesButton_OnClick(object sender, RoutedEventArgs e)

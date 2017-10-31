@@ -222,7 +222,7 @@ namespace Dash
         private void FireEllipseInteraction(object sender, PointerRoutedEventArgs e, bool isInput, bool isPressed)
         {
             if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetDataDocument(null).GetId();
             var el = (sender as Grid).Children[0] as Ellipse;
             KeyController refKey;
             if (!isInput)

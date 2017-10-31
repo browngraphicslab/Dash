@@ -53,7 +53,7 @@ namespace Dash
                             rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController( new RichTextFieldModel.RTD((derefField as TextFieldModelController).Data)), true);
                         else if (derefField is RichTextFieldModelController)
                             rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD((derefField as RichTextFieldModelController).Data.ReadableString)), true);
-                        rnote.SetField(DBFilterOperatorFieldModelController.SelectedKey, new TextFieldModelController(term), true);
+                        rnote.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.SelectedKey, new TextFieldModelController(term), true);
                         return rnote;
                     }
                     return null;
