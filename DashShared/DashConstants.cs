@@ -1,4 +1,5 @@
 ﻿
+
 using Windows.Storage;
 
 namespace DashShared
