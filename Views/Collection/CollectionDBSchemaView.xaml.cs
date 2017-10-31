@@ -88,19 +88,27 @@ namespace Dash
 
         private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
         {
-            var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
-            var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
-            if (recordCollection.Contains(dc))
+            try
             {
-                var column = recordCollection.IndexOf(dc);
-                if (column != -1)
+                var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
+                var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
+                if (recordCollection.Contains(dc))
                 {
-                    FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
-                    updateEditBox(dc);
-                    xEditField.ShowAt(this);
-                }
+                    var column = recordCollection.IndexOf(dc);
+                    if (column != -1)
+                    {
+                        FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
+                        updateEditBox(dc);
+                        xEditField.ShowAt(this);
+                    }
 
+                }
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
 
         }
 
@@ -117,48 +125,64 @@ namespace Dash
         
         private void xEditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            try
             {
-                if (xEditTextBox.Text == "\r")
+                if (e.Key == Windows.System.VirtualKey.Enter)
                 {
-                    var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
-                    var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
-                    xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
-                    dc.Selected = false;
-                    var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
-                    updateEditBox(recordViewModel.RecordFields[column]); 
+                    if (xEditTextBox.Text == "\r")
+                    {
+                        var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                        var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+                        xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
+                        dc.Selected = false;
+                        var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                        var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                        var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                        updateEditBox(recordViewModel.RecordFields[column]);
+                    }
+                    e.Handled = true;
                 }
-                e.Handled = true;
-            }   
-            if (e.Key == Windows.System.VirtualKey.Tab)
+                if (e.Key == Windows.System.VirtualKey.Tab)
+                {
+                    e.Handled = true;
+                }
+            }
+            catch (Exception exception)
             {
                 e.Handled = true;
+
             }
+
         }
 
         private void xEditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-            if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
+            try
             {
-                direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
-                var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
-                SetFieldValue(dc);
-                var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
-                updateEditBox(recordViewModel.RecordFields[column]);
-            }
+                var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
+                {
+                    direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
+                    var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                    SetFieldValue(dc);
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    updateEditBox(recordViewModel.RecordFields[column]);
+                }
 
-            if (e.Key == Windows.System.VirtualKey.Tab || e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.Left)
+                if (e.Key == Windows.System.VirtualKey.Tab || e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.Left)
+                {
+                    direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
+                    var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
+                    SetFieldValue(dc);
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var recordViewModel = xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel;
+                    updateEditBox(recordViewModel.RecordFields[Math.Max(0, Math.Min(recordViewModel.RecordFields.Count - 1, column + direction))]);
+                }
+            }
+            catch (Exception exception)
             {
-                direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
-                var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
-                SetFieldValue(dc);
-                var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                var recordViewModel = xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel;
-                updateEditBox(recordViewModel.RecordFields[Math.Max(0,Math.Min(recordViewModel.RecordFields.Count - 1, column + direction))]);
+                Console.WriteLine(exception);
             }
             e.Handled = true;
         }

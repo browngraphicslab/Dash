@@ -315,10 +315,11 @@ namespace Dash
             this.RemoveDragDropIndication(sender as SelectionElement);
 
             // true if dragged from key value pane in interfacebuilder
-            var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
+            var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
 
             // true if dragged from layoutbar in interfacebuilder
-            var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
+            var isDraggedFromLayoutBar = (e.DataView?.Properties.ContainsKey(InterfaceBuilder.LayoutDragKey) ?? false) && 
+                e.DataView?.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
 
             //return if it's an operator dragged from compoundoperatoreditor listview 
@@ -430,7 +431,8 @@ namespace Dash
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            
+            var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
             if (sourceIsRadialMenu)
             {
                e.DragUIOverride.Clear();

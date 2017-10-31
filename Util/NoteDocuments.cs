@@ -137,9 +137,9 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype(); 
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var richTextLayout = new RichTextBox(new DocumentReferenceFieldController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
+                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ richTextLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -196,9 +196,9 @@ namespace Dash
             {
                 var prototype = GetDocumentPrototype();
 
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
                 var imageLayout = new ImageBox(new DocumentReferenceFieldController(prototype.GetId(), ImageFieldKey), 0, 50, 200, 200);
-                var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
+                var prototpeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
             }
@@ -241,9 +241,9 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype();
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var textLayout  = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, textLayout.Document });
+                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ textLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
