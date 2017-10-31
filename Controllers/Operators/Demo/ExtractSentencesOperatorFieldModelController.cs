@@ -37,7 +37,7 @@ namespace Dash
                 [OutputCollection] = TypeInfo.Collection
             };
 
-        public ExtractSentencesOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.ExtractSentences))
+        public ExtractSentencesOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Sentence_Analyzer))
         {
         }
 

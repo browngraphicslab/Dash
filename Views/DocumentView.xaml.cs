@@ -151,7 +151,8 @@ namespace Dash
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
                             var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
-                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, dataDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                            var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                                     treeMenuItem);
                         }
@@ -191,11 +192,13 @@ namespace Dash
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
-                ViewModel.DocumentController.SetTitleField(title);
-                treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Operator, Choose,
-                    ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
+                //ViewModel.DocumentController.SetTitleField(title);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                dataDoc.SetTitleField(title);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                        treeMenuItem);
+                    treeMenuItem);
             }
         }
     
