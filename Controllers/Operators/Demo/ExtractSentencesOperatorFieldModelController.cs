@@ -55,10 +55,11 @@ namespace Dash
             foreach (var inputDoc in collection.Data)
             {
                 var dataDoc = Util.GetDataDoc(inputDoc, null);
-                var textInput = dataDoc.GetField(textFieldKey) as TextFieldModelController;
+                var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextFieldModelController)?.Data ??
+                                (dataDoc.GetDereferencedField(textFieldKey, null) as RichTextFieldModelController)?.Data?.ReadableString;
                 if (textInput != null)
                 {
-                    var sentences = Regex.Split(textInput.Data, @"(?<=[\.!\?])\s+");
+                    var sentences = Regex.Split(textInput, @"(?<=[\.!\?])\s+");
 
                     var protoLayout = new RichTextBox(new DocumentReferenceFieldController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
