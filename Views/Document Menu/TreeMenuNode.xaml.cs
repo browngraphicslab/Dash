@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -63,16 +64,17 @@ namespace Dash.Views.Document_Menu
             Type = icon;
 
             // handles clicking of the item in the menu
-            TappedEventHandler tapped = (sender, e) => {
+            void Tapped(object sender, TappedRoutedEventArgs e)
+            {
                 if (action != null)
                 {
                     DocumentController docCont = action.Invoke();
                     if (docCont != null)
                         Actions.AddDocFromFunction(MainPage.Instance.AddMenu, docCont);
                 }
-            };
+            }
 
-            TapAction = tapped;
+            TapAction = Tapped;
         }
 
         public AddMenuItem(String label, String icon)
@@ -108,7 +110,6 @@ namespace Dash.Views.Document_Menu
             var textController = _documentController.GetField(_key) as TextFieldModelController;
             DocType = textController?.Data ?? "";
         }
-
         
     }
 
@@ -296,5 +297,13 @@ namespace Dash.Views.Document_Menu
             }
             xItemsList.SelectedItem = null;
         }
+
+        private void TreeNodeOnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Link;
+            e.Data.Properties.Add(TreeNodeDragKey, this);
+        }
+
+        public string TreeNodeDragKey = "5CD5E435-B5BF-4C85-B5D3-401D73CD8223";
     }
 }

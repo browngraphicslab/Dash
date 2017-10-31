@@ -375,7 +375,8 @@ namespace Dash
                             new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
                     AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document)
+                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document),
+                        [KeyStore.TitleKey] = new TextFieldModelController("Preview Document")
                     }, new DocumentType()), null);
                 }
             }
