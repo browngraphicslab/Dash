@@ -1165,6 +1165,10 @@ namespace Dash
             {
                 return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
             }
+            if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
+            {
+                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)

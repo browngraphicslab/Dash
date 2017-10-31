@@ -58,6 +58,12 @@ namespace Dash
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
+        /// <summary>
+        /// Used as the key to identify when a drag even has started on the preview button
+        /// </summary>
+        public static string CollectionPreviewDragKey = "CE1ACD38-FB99-4018-A9B5-0430C9089B14";
+
+
         public enum CollectionViewType
         {
             Freeform, List, Grid, Page, Text, DB, Schema
@@ -383,8 +389,20 @@ namespace Dash
 
             };
 
-           //if (ParentDocument != MainPage.Instance.xMainDocView)
-                //collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
+            // Create preview button with special properties so the user can drag off of it
+            var previewButton = new MenuButton(Symbol.Preview, "Preview", menuColor, null);
+            var previewButtonView = previewButton.View;
+            previewButtonView.CanDrag = true;
+            previewButton.ManipulationMode = ManipulationModes.All;
+            previewButton.ManipulationDelta += (s, e) => e.Handled = true;
+            previewButton.ManipulationStarted += (s, e) => e.Handled = true;
+            previewButtonView.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                e.Data.Properties.Add(CollectionPreviewDragKey, this);
+            };
+            previewButtonView.DropCompleted += PreviewButtonView_DropCompleted;
+            collectionButtons.Add(previewButton);
 
             var documentButtons = new List<MenuButton>
             {
@@ -395,8 +413,16 @@ namespace Dash
                 new MenuButton(Symbol.Edit, "Interface", menuColor, null),
                 new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
                 new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
+
             };
+
+
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+        }
+
+        private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            // TODO fill this in
         }
 
         private void OpenMenu()
