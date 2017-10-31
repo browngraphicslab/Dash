@@ -48,12 +48,11 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-            xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
-            xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>
-        /// Bind the textbox that shows the layout's name to the current layout being used 
+        /// Bind the textbox that shows the layout's name to the current layout being used
+        /// ** deprecated?? 
         /// </summary>
         private void BindLayoutText(DocumentController currentLayout)
         {
@@ -63,7 +62,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay
             };
-            xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
+            //xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
