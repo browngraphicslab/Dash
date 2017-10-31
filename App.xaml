@@ -64,7 +64,7 @@
         <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
         <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
-        <SolidColorBrush x:Key="BorderHighlight" Color="#FF444444"/>
+        <SolidColorBrush x:Key="BorderHighlight" Color="Gray"/>
         <SolidColorBrush x:Key="CollectionBackground" Color="{StaticResource DocumentBackgroundColor}"/>
         <SolidColorBrush x:Key="GreenText" Color="#FFBAC6E4" ></SolidColorBrush>
         <SolidColorBrush x:Key="DarkBackground" Color="#FF494949"></SolidColorBrush>

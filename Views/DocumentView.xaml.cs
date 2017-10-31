@@ -197,6 +197,8 @@ namespace Dash
                         treeMenuItem);
             }
         }
+
+        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
     
         #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
@@ -208,7 +210,8 @@ namespace Dash
         {
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection";
+            xTitle.Text = "Collection (" + CollectionCount + ")";
+            CollectionCount++;
 
             // add item to menu
             if (ParentCollection != null)
@@ -219,7 +222,7 @@ namespace Dash
 
                 TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
                 tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
-                tree.HeaderLabel = "Collection";
+                tree.HeaderLabel = xTitle.Text;
 
                 // if nested, add to parent collection, otherwise add to main collection
                 if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
@@ -323,7 +326,7 @@ namespace Dash
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
-              //  moveButton,
+                moveButton,
                 copyButton,
                // delegateButton,
                // copyDataButton
