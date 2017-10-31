@@ -65,7 +65,7 @@
         <SolidColorBrush x:Key="SelectionHandleColor" Color="{StaticResource ActivationColor}"/>
         <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
-
+        <SolidColorBrush x:Key="TranslucentBlue" Color="#55006633"/>
 
         <!-- global colors-->
         <SolidColorBrush x:Key="MainText" Color="{StaticResource MainTextColor}"></SolidColorBrush>

@@ -18,7 +18,7 @@
     <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CCFFFFFF" >
         <Grid.Resources>
             <Flyout x:Name="xEditField" Closing="xEditField_Closing">
-                <TextBox x:Name="xEditTextBox" Width="250" Height="50"  KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="True"> </TextBox>
+                <TextBox x:Name="xEditTextBox" Width="250" Height="50"   Foreground="Black" KeyDown="xEditTextBox_KeyDown" KeyUp="xEditTextBox_KeyUp"  AcceptsReturn="True"> </TextBox>
             </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>
