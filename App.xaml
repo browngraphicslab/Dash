@@ -70,7 +70,7 @@
         <SolidColorBrush x:Key="CollectionBackground" Color="{StaticResource DocumentBackgroundColor}"/>
         <SolidColorBrush x:Key="GreenText" Color="#FFBAC6E4" ></SolidColorBrush>
         <SolidColorBrush x:Key="DarkBackground" Color="#FF494949"></SolidColorBrush>
-
+        <SolidColorBrush x:Key="TranslucentBlue" Color="#55006633"/>
 
         <!-- global colors-->
         <SolidColorBrush x:Key="MainText" Color="{StaticResource MainTextColor}"></SolidColorBrush>
@@ -214,6 +214,10 @@
             <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
             <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>
             <Setter Property="FontFamily" Value="Segoe UI"></Setter>
+        </Style>
+
+        <Style TargetType="SymbolIcon">
+            <Setter Property="RequestedTheme" Value="Dark"></Setter>
         </Style>
 
         <!-- blue (default) button with white text -->
