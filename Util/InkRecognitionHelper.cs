@@ -12,6 +12,7 @@ using Dash.Controllers;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using NewControls.Geometry;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -20,7 +21,7 @@ namespace Dash
     {
         private List<IInkAnalysisNode> _shapeRegions;
         public FreeformInkControl FreeformInkControl { get; set; }
-        public Dictionary<Rect, Tuple<string, IEnumerable<uint>>> TextBoundsDictionary { get; set; }
+        public Dictionary<Rect, InkAnalysisLine> TextBoundsDictionary { get; set; }
         public InkAnalyzer Analyzer { get; set; }
         public List<Point> DoubleTappedPoints { get; set; }
         public List<InkStroke> NewStrokes { get; set; }
@@ -242,16 +243,15 @@ namespace Dash
 
         #region Add collection, doc, operator
 
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetTextBoundsAndRemoveData()
+        private Dictionary<Rect, InkAnalysisLine> GetTextBoundsAndRemoveData()
         {
             var textLineRegions = new List<InkAnalysisLine>(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
                 .Select(o => o as InkAnalysisLine));
-            var textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+            var textBoundsDictionary = new Dictionary<Rect, InkAnalysisLine>();
             foreach (var textLine in textLineRegions)
             {
-                textBoundsDictionary[textLine.BoundingRect] =
-                    new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
-                Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+                textBoundsDictionary[textLine.BoundingRect] = textLine;
+                //Analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
                 var textIds = textLine.GetStrokeIds();
                 NewStrokes.RemoveAll(stroke => textIds.Contains(stroke.Id));
             }
@@ -343,14 +343,14 @@ namespace Dash
             ListFieldModelController<TextFieldModelController> list = enumerable.Count == 0 ? null : new ListFieldModelController<TextFieldModelController>();
             foreach (var rect in enumerable)
             {
-                DeleteStrokesByID(TextBoundsDictionary[rect].Item2.ToImmutableHashSet());
-                var str = TextBoundsDictionary[rect].Item1;
+                DeleteStrokesByID(TextBoundsDictionary[rect].GetStrokeIds().ToImmutableHashSet());
+                var str = TextBoundsDictionary[rect].RecognizedText;
                 TryGetText(str, out string text, out KeyController key,
                     enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                 var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
                 doc.ParseDocField(key, text);
                 var field = doc.GetField(key);
-                if (field != null)
+                if (field != null && field is TextFieldModelController)
                 {
                     list.Add(field);
                 }
@@ -361,16 +361,63 @@ namespace Dash
                 layoutDocs.Add(textBox.Document);
                 keysToRemove.Add(rect);
             }
+            //now try making fields from only partially intersected lines
+            var intersectedLines = TextBoundsDictionary.Keys.Where(r => r.IntersectsWith(region.BoundingRect) && !keysToRemove.Contains(r));
+            var intersectionEnumerable = intersectedLines as IList<Rect> ?? intersectedLines.ToList();
+            if (list == null && intersectionEnumerable.Count > 0) list = new ListFieldModelController<TextFieldModelController>();
+            foreach (var rect in intersectionEnumerable)
+            {
+                var containedWords = GetContainedWords(rect, region.BoundingRect);
+                if (containedWords.Count > 0)
+                {
+                    string containedLine = "";
+                    Rect containedRect = containedWords[0].BoundingRect;
+                    foreach (var word in containedWords)
+                    {
+                        containedLine += " " + word.RecognizedText;
+                        DeleteStrokesByID(word.GetStrokeIds().ToImmutableHashSet());
+                        containedRect.Union(word.BoundingRect);
+                        containedRect.X = Math.Min(containedRect.X, word.BoundingRect.X);
+                        containedRect.Y = Math.Min(containedRect.Y, word.BoundingRect.Y);
+                    }
+                    if (containedLine != "")
+                    {
+                        TryGetText(containedLine, out string text, out KeyController key,
+                            enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
+                        var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
+                        doc.ParseDocField(key, text);
+                        var field = doc.GetField(key);
+                        if (field != null)
+                        {
+                            list.Add(field);
+                        }
+                        var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                            relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
+                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                            containedRect.Height / 1.5;
+                        layoutDocs.Add(textBox.Document);
+                    }
+                }
+            }
+            foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             if (list != null)
             {
                 doc.SetField(KeyStore.ParsedFieldKey, list, true);
             }
-            foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
             if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
             return doc;
+        }
+
+        private List<InkAnalysisInkWord> GetContainedWords(Rect lineRect, Rect docBounds)
+        {
+            InkAnalysisLine line = TextBoundsDictionary[lineRect];
+            List<InkAnalysisInkWord> containedWords = new List<InkAnalysisInkWord>();
+            containedWords.AddRange(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord).OfType<InkAnalysisInkWord>()
+                .Where(word => docBounds.Contains(word.BoundingRect) && word.Parent.Id == line.Id).ToList());
+            return containedWords;
         }
 
         #endregion
