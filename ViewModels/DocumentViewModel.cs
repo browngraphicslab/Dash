@@ -446,7 +446,6 @@ namespace Dash
             MenuOpen = true;
         }
         
-
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, BaseCollectionViewModel collectionViewModel)
         {
             var docView = sender as DocumentView;

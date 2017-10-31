@@ -44,5 +44,10 @@ namespace Dash
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+
+        /// <summary>
+        /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
+        /// </summary>
+        public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
     }
 }

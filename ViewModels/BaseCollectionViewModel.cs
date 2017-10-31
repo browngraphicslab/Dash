@@ -351,6 +351,35 @@ namespace Dash
                 }
             }
 
+            // collection dynamic previews
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
+            {
+                // the collection view which should control the new doc
+                var sendingView = e.DataView.Properties[CollectionView.CollectionPreviewDragKey] as CollectionView;
+
+                // the doc controlling the new doc
+                var sendingDoc = sendingView?.ParentDocument.ViewModel.DocumentController;
+                // get the data part out of it
+                sendingDoc = sendingDoc?.GetDataDocument(null);
+
+                //var previewDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType());
+                //previewDoc.SetField(KeyStore.ActiveLayoutKey, 
+                //    new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), true);
+
+                //AddDocument(previewDoc, null);
+
+                if (sendingDoc != null)
+                {
+                    var previewDoc =
+                        new PreviewDocument(
+                            new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
+                    AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document)
+                    }, new DocumentType()), null);
+                }
+            }
+
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
                 var collectionViewModel = e.DataView.Properties.ContainsKey(nameof(BaseCollectionViewModel)) == true ?

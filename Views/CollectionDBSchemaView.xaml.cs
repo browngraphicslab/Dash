@@ -65,10 +65,7 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
-                    {
-                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
-                    }
+                    _parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
@@ -299,6 +296,7 @@ namespace Dash
             foreach (var d in dbDocs)
             {
                 records.Add(new CollectionDBSchemaRecordViewModel(
+                    ParentDocument,
                     d,
                     SchemaHeaders.Select(f => new CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
                     ));
