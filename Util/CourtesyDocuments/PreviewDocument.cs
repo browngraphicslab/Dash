@@ -45,13 +45,19 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             var layout = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, context).Data;
-            var innerContent = layout.MakeViewUI(context, true);
+            var innerContent = layout.MakeViewUI(context, false);
             Debug.WriteLine("The preview document inner content's render transform is being changed" +
                             "other than that this view needs a couple more bindings but it should be easy to finish");
             var returnContent = new ContentPresenter()
             {
                 Content = innerContent       
             };
+
+
+            docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args) =>
+            {
+                returnContent.Content = args.NewValue.DereferenceToRoot<DocumentFieldModelController>(args.Context).Data.MakeViewUI(args.Context, false);
+            });
 
             BindPosition(returnContent, docController, context);
 
