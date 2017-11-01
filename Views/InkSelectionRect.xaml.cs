@@ -50,7 +50,7 @@ namespace Dash.Views
         {
             return new Point(Canvas.GetLeft(this) + 25, Canvas.GetTop(this) + 25);
         }
-        
+
         public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
         {
             this.InitializeComponent();
@@ -120,8 +120,8 @@ namespace Dash.Views
             double scale = _freeformView?.Zoom ?? _scroller.ZoomFactor;
             var translate = new Point(e.Delta.Translation.X / scale, e.Delta.Translation.Y / scale);
             var dragger = sender as Grid;
-            float xScale = (float) ((Width - 50) / _startSize.Width);
-            float yScale = (float) ((Height - 50) / _startSize.Height);
+            float xScale = (float)((Width - 50) / _startSize.Width);
+            float yScale = (float)((Height - 50) / _startSize.Height);
             if (dragger.Name == "CenterDragger" || dragger.Name == "Grid")
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
@@ -141,12 +141,12 @@ namespace Dash.Views
             }
             if (Width + translate.X > MinWidth || translate.X > 0)
             {
-                xScale = (float) ((Width - 50 + translate.X) / _startSize.Width);
+                xScale = (float)((Width - 50 + translate.X) / _startSize.Width);
                 Width += translate.X;
             }
             if (Height + translate.Y > MinHeight || translate.Y > 0)
             {
-                yScale = (float) ((Height - 50 + translate.Y) / _startSize.Height);
+                yScale = (float)((Height - 50 + translate.Y) / _startSize.Height);
                 Height += translate.Y;
             }
 
@@ -163,9 +163,9 @@ namespace Dash.Views
         {
             var totalTranslation = new Point(Position().X - _startPosition.X, Position().Y - _startPosition.Y);
             Matrix3x2 translationMatrix =
-                Matrix3x2.CreateTranslation(new Vector2((float) totalTranslation.X, (float) totalTranslation.Y));
+                Matrix3x2.CreateTranslation(new Vector2((float)totalTranslation.X, (float)totalTranslation.Y));
             Matrix3x2 scaleMatrix = Matrix3x2.CreateScale(xScale, yScale,
-                new Vector2((float) InnerTopLeft().X, (float) InnerTopLeft().Y));
+                new Vector2((float)InnerTopLeft().X, (float)InnerTopLeft().Y));
             foreach (var stroke in _startingTransforms.Keys)
             {
                 var startingTransform = _startingTransforms[stroke];
@@ -182,8 +182,6 @@ namespace Dash.Views
         /// <param name="e"></param>
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            _freeformView.InkControl.InkRecognitionHelper.AddStrokeData(new List<InkStroke>(_strokeContainer
-                .GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
@@ -195,8 +193,6 @@ namespace Dash.Views
         /// <param name="e"></param>
         private void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            _freeformView.InkControl.InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(_strokeContainer
-                .GetStrokes().Where(s => s.Selected)));
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
             e.Handled = true;
@@ -235,7 +231,7 @@ namespace Dash.Views
         private void Delete()
         {
             _strokeContainer.DeleteSelected();
-            _freeformView.InkControl.ClearSelection();
+            _freeformView.InkControl.UndoSelection();
         }
 
         private void Cut()
@@ -273,7 +269,7 @@ namespace Dash.Views
 
         private void RecognizeButton_OnClick(object sender, RoutedEventArgs e)
         {
-            _freeformView.InkControl.RecognizeSelected();
+            _freeformView.InkControl.RecognizeSelectedStrokes();
         }
 
         private void CopyAttributesButton_OnClick(object sender, RoutedEventArgs e)
