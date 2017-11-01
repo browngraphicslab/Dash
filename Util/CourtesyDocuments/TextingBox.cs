@@ -186,7 +186,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context
             };
-            element.AddFieldBinding(EditableTextBlock.BackgroundProperty, backgroundBinding);
+            element.TextBackground.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
         }
 
         protected static void BindFontWeight(EditableTextBlock element, DocumentController docController, Context context)

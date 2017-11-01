@@ -128,7 +128,7 @@ namespace Dash
                         Mode = BindingMode.TwoWay,
                         Document = ParentDocument,
                         Key = DBFilterOperatorFieldModelController.AvgResultKey,
-                        Converter = new DoubleToStringConverter(),
+                        Converter = new StringToDoubleConverter(),
                         Context = new Context(ParentDocument)
                     });
                 }

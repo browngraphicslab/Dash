@@ -59,7 +59,7 @@ namespace Dash
             {
                 Source = clipRect,
                 Path = new PropertyPath(path),
-                Converter = new DoubleToStringConverter()
+                Converter = new StringToDoubleConverter()
             };
             tb.SetBinding(TextBox.TextProperty, binding);
         }

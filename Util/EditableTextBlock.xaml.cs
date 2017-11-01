@@ -54,6 +54,8 @@ namespace Dash
             }
         }
 
+        public Grid TextBackground {  get { return xBackground; } }
+
         private bool Not(bool b)
         {
             return b != true;
