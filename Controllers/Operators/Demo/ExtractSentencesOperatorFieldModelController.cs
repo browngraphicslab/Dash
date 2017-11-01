@@ -71,7 +71,7 @@ namespace Dash
                         var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(sentence)), true);
                         outputDoc.SetField(SentenceLengthKey, new NumberFieldModelController(sentence.Length), true);
-                        outputDoc.SetField(SentenceScoreKey, new NumberFieldModelController((int) new Random().NextDouble() * 100), true);
+                        outputDoc.SetField(SentenceScoreKey, new NumberFieldModelController((int) (new Random().NextDouble() * 100)), true);
 
                         var docLayout = protoLayout.MakeDelegate();
                         docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(outputDoc), true);

@@ -937,7 +937,9 @@ namespace Dash
             {
                 var droppedField = _currReference.FieldReference;
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Schema.ToString();
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                                     droppedSrcDoc.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                                     CollectionView.CollectionViewType.Schema.ToString();
 
 
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);

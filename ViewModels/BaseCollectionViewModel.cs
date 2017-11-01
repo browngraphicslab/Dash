@@ -331,7 +331,7 @@ namespace Dash
 
             // if we are dragging and dropping from the radial menu
             // if we drag from radial menu
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            var sourceIsRadialMenu = e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) ?? false;
             if (sourceIsRadialMenu)
             {
                 var action =
@@ -440,14 +440,14 @@ namespace Dash
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             
-            var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
-            if (sourceIsRadialMenu)
-            {
-               e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
-            }
+            //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
+            //if (sourceIsRadialMenu)
+            //{
+            //   e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
+            //}
             
             e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             e.DragUIOverride.IsContentVisible = true;

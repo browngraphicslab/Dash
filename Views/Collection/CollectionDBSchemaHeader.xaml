@@ -19,7 +19,8 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
 
-            <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="White" Text="{Binding}" Height="25"/>
+            <!--TODO move foreground to static resources-->
+            <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}" Height="25"/>
 
          </Grid>
          <Grid Background="{StaticResource WindowsBlue}" Opacity=".5" Grid.Column="1" ManipulationMode="All" CanDrag="False" 

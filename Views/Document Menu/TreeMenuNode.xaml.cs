@@ -97,6 +97,8 @@ namespace Dash.Views.Document_Menu
             _key = key;
             LayoutDoc = layoutDoc;
             var dataDoc = layoutDoc.GetDataDocument(null);
+            // set the default title
+            dataDoc.GetTitleFieldOrSetDefault(null);
             dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
             TextChangedHandler(dataDoc, null); 
         }
@@ -108,8 +110,10 @@ namespace Dash.Views.Document_Menu
 
         private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            var textController = documentController.GetField(_key) as TextFieldModelController;
-            DocType = textController?.Data ?? "";
+            
+
+            //var textController = documentController.GetField(_key) as TextFieldModelController;
+            DocType = documentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data ?? "";
         }
         
     }

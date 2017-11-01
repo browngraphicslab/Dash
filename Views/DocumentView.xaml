@@ -127,7 +127,7 @@
             <ProgressRing x:Name="xProgressRing" Grid.Row="1" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
 
             <!--Rectangles that indicate whether document is a delegate or a copy-->
-            <Grid x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" Margin="0,-20,0,0"
+            <!--<Grid x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" Margin="0,-20,0,0"
             Visibility="{Binding Path=DocumentController.HasDelegatesOrPrototype, Converter={StaticResource BoolToVisibilityConverter}}" >
                 <Canvas HorizontalAlignment="Right" Width="50" Canvas.Top="0">
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
@@ -146,7 +146,7 @@
                         </TransformGroup>
                     </Canvas.RenderTransform>
                 </Canvas>
-            </Grid>
+            </Grid>-->
         </Grid>
     </Grid>
 </local:SelectionElement>
