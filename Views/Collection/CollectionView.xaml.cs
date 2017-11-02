@@ -46,12 +46,12 @@ namespace Dash
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+        public CollectionView ParentCollection;
 
         /// <summary>
         /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CompoundOperatorEditor CompoundFreeform => this.GetFirstAncestorOfType<CompoundOperatorEditor>();
+        public CompoundOperatorEditor CompoundFreeform;
 
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
@@ -73,10 +73,11 @@ namespace Dash
         
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
+            Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            Loaded += CollectionView_Loaded;
+            
             Unloaded += CollectionView_Unloaded;
 
         }
@@ -106,10 +107,16 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
+            //ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ParentDocument.StyleCollection(this);
+
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
+            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
+            
             if (_collectionMenu == null)
                 MakeMenu();
             // set the top-level viewtype to be freeform by default
-            if (ParentDocument == MainPage.Instance.xMainDocView)
+            if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 _viewType = CollectionViewType.Freeform;
             }
@@ -141,7 +148,7 @@ namespace Dash
 
             // use a fully dark gridbg for the parent-level, nested collectionviews
             // use a lighter background
-            if (ParentDocument == MainPage.Instance.xMainDocView)
+            if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
@@ -251,6 +258,8 @@ namespace Dash
             CurrentView = new CollectionFreeformView() { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+
             ViewModes?.HighlightAction(SetFreeformView);
         }
 
@@ -260,6 +269,8 @@ namespace Dash
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+
             ViewModes?.HighlightAction(SetTextView);
         }
 
@@ -269,6 +280,8 @@ namespace Dash
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+
             ViewModes?.HighlightAction(SetDBView);
         }
         private void SetSchemaView()
@@ -277,6 +290,8 @@ namespace Dash
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+
             ViewModes?.HighlightAction(SetSchemaView);
         }
 
@@ -293,6 +308,8 @@ namespace Dash
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+
             ViewModes?.HighlightAction(SetBrowseView);
         }
 
@@ -302,6 +319,8 @@ namespace Dash
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+
             ViewModes?.HighlightAction(SetGridView);
         }
 

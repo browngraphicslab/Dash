@@ -23,6 +23,8 @@ namespace Dash
 
         // helper key to store sentences in the output
         public static readonly KeyController IndexKey = new KeyController("4e852433-b6cc-43f2-a37c-636e1e61cd8b", "Index");
+        public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
+        public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
@@ -37,7 +39,7 @@ namespace Dash
                 [OutputCollection] = TypeInfo.Collection
             };
 
-        public ExtractSentencesOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.ExtractSentences))
+        public ExtractSentencesOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Sentence_Analyzer))
         {
         }
 
@@ -63,17 +65,20 @@ namespace Dash
 
                     var protoLayout = new RichTextBox(new DocumentReferenceFieldController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
-                    var sentenceIndex = 0;
+                    //var sentenceIndex = 0;
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
                     {
                         var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(sentence)), true);
-                        outputDoc.SetField(IndexKey, new NumberFieldModelController(sentenceIndex), true);
+                        outputDoc.SetField(SentenceLengthKey, new NumberFieldModelController(sentence.Length), true);
+                        outputDoc.SetField(SentenceScoreKey, new NumberFieldModelController((int) (new Random().NextDouble() * 100)), true);
+
                         var docLayout = protoLayout.MakeDelegate();
                         docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(outputDoc), true);
                         outputDocs.Add(docLayout);
 
-                        sentenceIndex += sentence.Length;
+
+                        //sentenceIndex += sentence.Length;
                     }
 
                 }
@@ -81,6 +86,11 @@ namespace Dash
 
             outputs[OutputCollection] = new DocumentCollectionFieldModelController(outputDocs);
         }
+
+
+
+
+
         public override FieldModelController<OperatorFieldModel> Copy()
         {
             return new ExtractSentencesOperatorFieldModelController();

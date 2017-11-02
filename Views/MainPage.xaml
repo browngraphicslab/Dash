@@ -6,47 +6,55 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:Dash"
+    xmlns:local1="using:Dash.Views.Document_Menu"
     mc:Ignorable="d">
 
+    <!-- negative margin here hides the collection's output dot-->
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
-
         <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
-        <StackPanel Visibility="Collapsed"  Width="200" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
+        <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
         </StackPanel>
-        
+        <Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <local1:AddMenu Margin="0,0,0,0" x:Name="xAddMenu" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>
+            <Border Grid.Row="1" Background="{StaticResource DarkBackground}"></Border>
+        </Grid>
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
         <Grid Margin="0,0,-5,0" HorizontalAlignment="Right">
             <Grid.RenderTransform>
                 <CompositeTransform x:Name="xMenuCanvasTransform" TranslateX="0"/>
             </Grid.RenderTransform>
-        <StackPanel x:Name="xRightSideMenu" Orientation="Horizontal" HorizontalAlignment="Right">
-            <StackPanel.Resources>
+            <StackPanel x:Name="xRightSideMenu" Orientation="Horizontal" HorizontalAlignment="Right">
+                <StackPanel.Resources>
 
-                <!-- Animate background color -->
-                <Storyboard x:Name="slideIn">
-                    <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
+                    <!-- Animate background color -->
+                    <Storyboard x:Name="slideIn">
+                        <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
                          To="0" Duration="0:0:0.075"/>
-                </Storyboard>
-                <Storyboard x:Name="slideOut">
-                    <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
+                    </Storyboard>
+                    <Storyboard x:Name="slideOut">
+                        <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
                          To="-55" Duration="0:0:0.075"/>
-                </Storyboard>
-            </StackPanel.Resources>
-            
-            <!-- fixed document menu -->
+                    </Storyboard>
+                </StackPanel.Resources>
+
+                <!-- fixed document menu -->
                 <Border Visibility="Collapsed" Tapped="Border_Tapped" HorizontalAlignment="Right" Padding="8,15" VerticalAlignment="Center" Background="#FF303030">
-                <Image Source="ms-appx:///Assets/docmenu.png" Stretch="None" Opacity=".75"></Image>
-            </Border>
-            <ScrollViewer x:Name="xMenuCanvas" RelativePanel.AlignVerticalCenterWithPanel="True" Width="55" Margin="0" Padding="0" Background="#CC0850A0"  HorizontalAlignment="Right"  VerticalAlignment="Center" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5">
-            </ScrollViewer>
-        </StackPanel>
+                    <Image Source="ms-appx:///Assets/docmenu.png" Stretch="None" Opacity=".75"></Image>
+                </Border>
+                <ScrollViewer x:Name="xMenuCanvas" RelativePanel.AlignVerticalCenterWithPanel="True" Width="55" Margin="0" Padding="0" Background="#CC0850A0"  HorizontalAlignment="Right"  VerticalAlignment="Center" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" RenderTransformOrigin="0.5,0.5">
+                </ScrollViewer>
+            </StackPanel>
             <TextBlock Padding="0" Margin="23,0,0,0" Foreground="#FF303030" FontFamily="Arial" HorizontalAlignment="Left" VerticalAlignment="Center" RenderTransformOrigin="0,0.5">
                 <TextBlock.RenderTransform>
                     <CompositeTransform ScaleX="0.6"/>

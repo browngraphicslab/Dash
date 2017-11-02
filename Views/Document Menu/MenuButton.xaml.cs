@@ -82,7 +82,7 @@ namespace Dash
                 var symbol = new SymbolIcon()
                 {
                     Symbol = icon,
-                    Foreground = new SolidColorBrush(Colors.White)
+                    Foreground = new SolidColorBrush(Colors.Black) // TODO move this to static resources
                 };
                 // create rounded(circular) border to hold the symbol
                 _border = new Border()

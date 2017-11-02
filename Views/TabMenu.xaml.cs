@@ -167,7 +167,7 @@ namespace Dash
             DisplayedTabItems = AllTabItems;
             xSearch.Text = string.Empty;
         }
-
+        
         #endregion
 
 

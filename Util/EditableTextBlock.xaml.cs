@@ -67,7 +67,6 @@ namespace Dash
         public EditableTextBlock()
         {
             InitializeComponent();
-
             RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 

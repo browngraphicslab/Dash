@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Views.Document_Menu;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -14,7 +15,9 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -44,6 +47,13 @@ namespace Dash
 
         public static int dvCount = 0;
 
+        private Storyboard _storyboard;
+
+        // == CONSTRUCTORs ==
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+        }
 
         public DocumentView()
         {
@@ -79,13 +89,9 @@ namespace Dash
             //handles drop from keyvaluepane 
             OnKeyValueDrop(e);
         }
+        
 
-        public DocumentView(DocumentViewModel documentViewModel) : this()
-        {
-            DataContext = documentViewModel;
-        }
-
-        public void Choose()
+        public DocumentController Choose()
         {
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
             if (ParentCollection != null)
@@ -103,8 +109,9 @@ namespace Dash
                 var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
                 mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
             }
+            return null;
         }
-
+        
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
@@ -112,8 +119,8 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
-
-
+        
+        private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -125,8 +132,32 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            if (ViewModel != null)
+
+            // Adds a function to tabmenu, which brings said DocumentView to focus 
+            // this gets the hierarchical view of the document, clicking on this will shimmy over to this
+            IsMainCollection = (this == MainPage.Instance.MainDocView);
+
+            // add corresponding instance of this to hierarchical view
+            if (!IsMainCollection && ViewModel != null)
             {
+                
+                //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
+                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
+                {
+                    // if we don't have a parent to add to then we can't add this to anything
+                    if (ParentCollection != null)
+                    {
+                        // if the tree contains the parent collection
+                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                        {
+                            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                            var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                                    treeMenuItem);
+                        }
+                    }
+                }
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView)) {
                     ViewModel.Width = 50;
@@ -142,44 +173,72 @@ namespace Dash
             new ManipulationControls(xKeyValuePane, false, false);
         }
 
-
-        #region Xaml Styling Methods (used by operator view)
+        #region Xaml Styling Methods (used by operator/colelction view)
         private bool isOperator = false;
+        private bool addItem = false;
         /// <summary>
-        /// Applies custom override styles to the operator view
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        public void StyleOperator(double borderRadiusAmount)
+        public void StyleOperator(double width, string title)
         {
             isOperator = true;
-            xShadowTarget.RadiusX = borderRadiusAmount;
-            xShadowTarget.RadiusY = borderRadiusAmount;
-
-            var brush = (Application.Current.Resources["OperatorBackground"] as SolidColorBrush);
-            Color c = brush.Color;
-            c.A = 204;
-            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
+            xShadowTarget.Margin = new Thickness(width,0,width,0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            xTitle.Text = title;
+            xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+            if (ParentCollection != null)
+            {
+                //ViewModel.DocumentController.SetTitleField(title);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                dataDoc.SetTitleField(title);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
+                    treeMenuItem);
+            }
         }
-
+    
         #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
-        /// When a field is dragged onto documentview, adds that field to the document 
+        /// Applies custom override styles to the operator view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
-        //{
+        public void StyleCollection(CollectionView view)
+        {
+            addItem = false;
+            xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+            xTitle.Text = "Collection";
 
-        //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-        //if (view == null) return; // we can't always assume we're on a collection		
+            // add item to menu
+            if (ParentCollection != null)
+                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
+            
+            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
+            {
 
-        //view.CanLink = false;
-        //args.Handled = true;
+                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
+                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
+                tree.HeaderLabel = "Collection";
 
-        //view.CancelDrag(args.Pointer); 
+                // if nested, add to parent collection, otherwise add to main collection
+                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
+                {
 
-        //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-        //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-        //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
+                } else
+                {
+                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
+                }
+            }
+            
+            
+        }
+    
         //}
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
@@ -519,7 +578,6 @@ namespace Dash
             }
             else
             {
-
                 ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
@@ -546,9 +604,28 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
+                // binds the display title of the document to the back end representation
+                var context = new Context(ViewModel.DocumentController);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
+                context.AddDocumentContext(dataDoc);
+
+                // set the default title
+                dataDoc.GetTitleFieldOrSetDefault(context);
+
+                var binding = new FieldBinding<TextFieldModelController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = dataDoc,
+                    Key = KeyStore.TitleKey,
+                    Context = context
+                };
+
+                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
-            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -560,11 +637,10 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-            if (Height < MinHeight + xTextView.Height + 5)
+            if (Height < MinHeight + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
-                xTextView.Visibility = Visibility.Visible;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
@@ -572,18 +648,15 @@ namespace Dash
                 updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
-                xTextView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible ||
-                xTextView.Visibility == Visibility.Visible)
+            else if (xIcon.Visibility == Visibility.Visible )
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
-                xTextView.Visibility = Visibility.Collapsed;
-                xDragImage.Opacity = 1;
+                xDragImage.Opacity = .25;
                 UpdateBinding(false);
             }
         }
@@ -609,6 +682,8 @@ namespace Dash
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
+
+                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(treeMenuItem);
 
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
@@ -653,6 +728,9 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
+            // KBTODO remove itself from tab menu 
+            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault());
+
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();
@@ -709,7 +787,7 @@ namespace Dash
                     if (e != null)
                         e.Handled = true;
                     OnSelected();
-
+                    
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
                 }
@@ -739,7 +817,7 @@ namespace Dash
                     if (useFixedMenu)
                     {
                         MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.xMainDocView != this)
+                        if (MainPage.Instance.MainDocView != this)
                             MainPage.Instance.ShowDocumentMenu();
                     }
                 }
@@ -785,5 +863,14 @@ namespace Dash
             Debug.WriteLine(query);
 
         }
+
+        private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
+            {
+                e.Handled = true;
+            }
+        }
     }
+    
 }

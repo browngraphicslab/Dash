@@ -90,7 +90,19 @@ namespace Dash
             var parentDoc =  this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.Data?.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+            }
+            return null;
+        }
+
+        DocumentController GetDoc()
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            if (parentDoc != null)
+            {
+                var doc =  parentDoc.ViewModel.DocumentController;
+                return doc.GetActiveLayout()?.Data ?? doc;
             }
             return null;
         }
@@ -360,11 +372,14 @@ namespace Dash
                 // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
                 if (this.xRichEditBox.Document.Selection.Link.Length > 1)
                 {
+                    var doc = GetDoc();
+                    var point = doc.GetPositionField().Data;
+
                     var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
                     var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
                     if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
-                        var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                        var pt = point;
                         pt.X -= 150;
                         pt.Y -= 50;
                         MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
@@ -374,7 +389,7 @@ namespace Dash
                         theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
                         if (theDoc != null && theDoc != DBTest.DBNull)
                         {
-                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var pt = point;
                             pt.X -= 150;
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(theDoc, pt);
@@ -382,7 +397,7 @@ namespace Dash
                         else
                         {
                             var WebDoc = DBTest.CreateWebPage(target);
-                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var pt = point;
                             pt.X -= 150;
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(WebDoc, pt);
