@@ -62,6 +62,15 @@ namespace Dash
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
+            var selected = GetSelected();
+            if (selected != null)
+            {
+                xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                UpdateDocument();
+            }
             xRichEditBox.Document.Selection.SetRange(LastS1, LastS2);
         }
         private void UnLoaded(object sender, RoutedEventArgs e)
@@ -76,6 +85,27 @@ namespace Dash
             return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextFieldModel.RTD;
         }
 
+        string GetSelected()
+        {
+            var parentDoc =  this.GetFirstAncestorOfType<DocumentView>();
+            if (parentDoc != null)
+            {
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.Data?.GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+            }
+            return null;
+        }
+
+        DocumentController GetDoc()
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            if (parentDoc != null)
+            {
+                var doc =  parentDoc.ViewModel.DocumentController;
+                return doc.GetActiveLayout()?.Data ?? doc;
+            }
+            return null;
+        }
 
         private async Task<string> LoadText()
         {
@@ -89,6 +119,7 @@ namespace Dash
             
             if (GetText() != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+        
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
         }
@@ -234,6 +265,15 @@ namespace Dash
             {
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             }
+            var selected = GetSelected();
+            if (selected != null)
+            {
+                xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                UpdateDocument();
+            }
             //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
             UpdateDocument();
         }
@@ -332,11 +372,14 @@ namespace Dash
                 // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
                 if (this.xRichEditBox.Document.Selection.Link.Length > 1)
                 {
+                    var doc = GetDoc();
+                    var point = doc.GetPositionField().Data;
+
                     var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
                     var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
                     if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
-                        var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                        var pt = point;
                         pt.X -= 150;
                         pt.Y -= 50;
                         MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
@@ -346,7 +389,7 @@ namespace Dash
                         theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
                         if (theDoc != null && theDoc != DBTest.DBNull)
                         {
-                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var pt = point;
                             pt.X -= 150;
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(theDoc, pt);
@@ -354,7 +397,7 @@ namespace Dash
                         else
                         {
                             var WebDoc = DBTest.CreateWebPage(target);
-                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var pt = point;
                             pt.X -= 150;
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(WebDoc, pt);

@@ -44,7 +44,7 @@ namespace Dash
         {
         }
 
-        public ExtractKeywordsOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.ExtractKeyWords))
+        public ExtractKeywordsOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Extract_Keywords))
         {
         }
 
@@ -98,7 +98,7 @@ namespace Dash
 
         public override FieldModelController<OperatorFieldModel> Copy()
         {
-            return new ExtractKeywordsOperatorFieldModelController(new OperatorFieldModel(OperatorType.ExtractKeyWords));
+            return new ExtractKeywordsOperatorFieldModelController(new OperatorFieldModel(OperatorType.Extract_Keywords));
         }
 
         public override bool SetValue(object value)

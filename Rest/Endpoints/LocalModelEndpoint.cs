@@ -40,6 +40,7 @@ namespace Dash
                     var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\" + _fileName);
                     _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
+                    File.Copy(DashConstants.LocalStorageFolder.Path + "\\" + _fileName, DashConstants.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
                 }
                 else
                 {

@@ -91,6 +91,12 @@ namespace Dash
                                 RelativePanel.SetRightOf(item, prev);
                             else RelativePanel.SetBelow(item, prev);
                         }
+                        else
+                        {
+                            if (horizontal)
+                                RelativePanel.SetAlignLeftWithPanel(item, true);
+                            else RelativePanel.SetAlignTopWithPanel(item, true);
+                        }
                         prev = item;
                     }
                 }

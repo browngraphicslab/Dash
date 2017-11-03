@@ -18,14 +18,14 @@
             <VisualStateGroup>
                 <VisualState x:Name="InnerNormal">
                     <Storyboard SpeedRatio="2" x:Name="InnerNormalStoryBoard">
-                        <ColorAnimation To="{Binding Path=InnerNormalColor}" Duration="0:00:00.2"
+                        <ColorAnimation To="#33006633" Duration="0:00:00.2"
                                         Storyboard.TargetName="InnerPieSlicePath"
                                         Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="InnerHover">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=InnerHoverColor}" Duration="0:00:00.2"
+                        <ColorAnimation To="#22006633" Duration="0:00:00.2"
                                         Storyboard.TargetName="InnerPieSlicePath"
                                         Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
@@ -78,6 +78,7 @@
                                        PointerEntered="innerPieSlicePath_PointerEntered"
                                        PointerExited="innerPieSlicePath_PointerExited"
                                        DragStarting="InnerPieSlicePath_OnDragStarting"
+                                       
                                        CanDrag="True">
         </userControl:InnerPieSlicePath>
         <Path x:Name="IndicationArcPath" Canvas.ZIndex="100" Canvas.Top="0" Canvas.Left="0">
@@ -88,7 +89,7 @@
                             <PathFigure x:Name="IndicationArcPathFigure">
                                 <PathFigure.Segments>
                                     <PathSegmentCollection>
-                                        <ArcSegment x:Name="IndicationArc" SweepDirection="Clockwise" ></ArcSegment>
+                                        <ArcSegment x:Name="IndicationArc" SweepDirection="Clockwise"></ArcSegment>
                                     </PathSegmentCollection>
                                 </PathFigure.Segments>
                             </PathFigure>
@@ -133,7 +134,7 @@
                 VerticalAlignment="Center"
                 FontSize="{Binding IconSize}"
                 Text="{Binding Icon}"
-                Foreground="{Binding IconForegroundBrush}"
+                Foreground="Black"
                 IsHitTestVisible="False"
                 Visibility="{Binding TextBlockVisibility}"
                 Margin="0, -25, 0, 0">
@@ -150,6 +151,8 @@
             </Image>
             <SymbolIcon
                 x:Name="IconSymbolElement"
+                                Foreground="Black"
+
                 x:FieldModifier="public"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -161,6 +164,9 @@
             </SymbolIcon>
             <TextBlock
                 x:Name="LabelTextElement"
+                Foreground="DarkSlateGray"
+                Opacity=".8"
+                FontWeight="Medium"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 TextAlignment="Center"

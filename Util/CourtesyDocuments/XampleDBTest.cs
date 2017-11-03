@@ -240,11 +240,14 @@ namespace Dash
         {
             var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
             WebDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
+            WebDoc.SetField(KeyStore.TitleKey, new TextFieldModelController("Web Doc"), true);
             WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
             WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                 new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
 
             var webLayout = new WebBox(new DocumentReferenceFieldController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
+            webLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(WebDoc), true);
+
             webLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
             webLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
             webLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(@where ?? new Point()), true);

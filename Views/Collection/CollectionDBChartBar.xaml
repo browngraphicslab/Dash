@@ -1,0 +1,24 @@
+﻿<UserControl
+    x:Class="Dash.CollectionDBChartBar"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid x:Name="OuterGrid" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Tapped="Grid_Tapped">
+        <Grid.Resources>
+            <local:BoolToHighlightConverter x:Key="BoolToHighlightConverter"></local:BoolToHighlightConverter>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions >
+        <Grid  x:Name="xBar" x:FieldModifier="public" Background="{Binding IsSelected,ElementName=Root,Converter={StaticResource BoolToHighlightConverter}}" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+        <TextBox x:Name="xDomain" x:FieldModifier="public" Foreground="{StaticResource MainText}"  FontSize="10" Grid.Row="1" TextChanged="xDomain_TextChanged"   />
+    </Grid>
+</UserControl>
