@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 using Gma.CodeCloud.Controls.TextAnalyses.Blacklist;
 using Gma.CodeCloud.Controls.TextAnalyses.Extractors;
 using Gma.CodeCloud.Controls.TextAnalyses.Processing;
@@ -52,7 +53,7 @@ namespace Dash
         {
             var collection = inputs[InputCollection] as DocumentCollectionFieldModelController;
             var textFieldKeyId = (inputs[TextField] as TextFieldModelController).Data;
-            var textFieldKey = ContentController<KeyModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
 
             // get all the text from the input documents
             var allText = "";

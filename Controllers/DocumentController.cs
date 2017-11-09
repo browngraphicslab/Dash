@@ -171,14 +171,14 @@ namespace Dash
             // put the field controllers in an observable dictionary
             var fields = Model.Fields.Select(kvp =>
                 new KeyValuePair<KeyController, FieldControllerBase>(
-                    ContentController<KeyModel>.GetController<KeyController>(kvp.Key),
+                    ContentController<FieldModel>.GetController<KeyController>(kvp.Key),
                     ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value)));
 
             SetFields(fields, true);
         }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
-            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.Model, kv => kv.Value.Model), type, id))
+            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
             if (saveOnServer)
             {

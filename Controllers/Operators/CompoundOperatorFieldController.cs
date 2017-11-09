@@ -26,7 +26,7 @@ namespace Dash
         {
             var fm = Model as CompoundOperatorFieldModel;
             InputFieldReferences = fm.InputFieldReferences.ToDictionary(
-                k => ContentController<KeyModel>.GetController<KeyController>(k.Key),
+                k => ContentController<FieldModel>.GetController<KeyController>(k.Key),
                 k => k.Value.Select(ContentController<FieldModel>
                     .GetController<ReferenceFieldModelController>).ToList());
 

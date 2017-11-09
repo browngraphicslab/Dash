@@ -17,7 +17,8 @@ namespace Dash
             [typeof(PointFieldModelController)] = TypeInfo.Point,
             [typeof(ListFieldModelController<>)] = TypeInfo.List,
             [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
-            [typeof(DocumentFieldModelController)] = TypeInfo.Document
+            [typeof(DocumentFieldModelController)] = TypeInfo.Document,
+            [typeof(KeyController)] = TypeInfo.Key
         };
 
         /*

@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers.Operators.Demo;
 using DashShared;
+using DashShared.Models;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -61,7 +62,7 @@ namespace Dash
         private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var tfmc = args.NewValue.DereferenceToRoot<TextFieldModelController>(null);
-            XTextFieldBox.Text = ContentController<KeyModel>.GetController<KeyController>(tfmc.Data).Name;
+            XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
 
         }
 

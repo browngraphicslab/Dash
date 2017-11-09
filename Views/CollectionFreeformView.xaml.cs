@@ -157,16 +157,15 @@ namespace Dash
             {
                 var doc = docVM.DocumentController;
                 var linksListFMC =
-                    doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<TextFieldModelController>;
+                    doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<KeyController>;
                 if (linksListFMC != null)
                 {
-                    foreach (var textFMC in linksListFMC.TypedData)
+                    foreach (var key in linksListFMC.TypedData)
                     {
-                        var keyID = textFMC.Data;
-                        var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
-                        if (keyValuePair.Key != null)
+                        var field = doc.GetField(key);
+                        if (field != null)
                         {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), new DocumentFieldReference(doc.Id, keyValuePair.Key));
+                            AddLineFromData((field as ReferenceFieldModelController).GetFieldReference(), new DocumentFieldReference(doc.Id, key));
                         }
                     }
                 }
@@ -323,16 +322,14 @@ namespace Dash
             var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
             var doc2 = view2.ViewModel.DocumentController;
             var linksList =
-                doc2.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+                doc2.GetField(KeyStore.UserLinksKey) as ListFieldModelController<KeyController>;
             if (linksList != null)
             {
                 var field =
                     view2.ViewModel.KeysToFrameworkElements.FirstOrDefault(kvp => kvp.Value.Equals(converter.Element2));
                 if (field.Key != null)
                 {
-                    var keyId = field.Key.Id;
-                    var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
-                    if (textFMC != null) linksList.Remove(textFMC);
+                    linksList.Remove(field.Key);
                 }
             }
 
@@ -654,11 +651,11 @@ namespace Dash
             //Add the key to the inputController's list of user created links
             if (inputController.GetField(KeyStore.UserLinksKey) == null)
                 inputController.SetField(KeyStore.UserLinksKey,
-                    new ListFieldModelController<TextFieldModelController>(), true);
+                    new ListFieldModelController<KeyController>(), true);
             var linksList =
                 inputController.GetField(KeyStore.UserLinksKey) as
-                    ListFieldModelController<TextFieldModelController>;
-            linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
+                    ListFieldModelController<KeyController>;
+            linksList.Add(inputReference.FieldReference.FieldKey);
             
 
             //binding line position 

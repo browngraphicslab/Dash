@@ -26,6 +26,7 @@ namespace DashShared
         Ink = 0x200,
         RichTextField = 0x400,
         Rectangle = 0x800,
+        Key = 0x2000,
         Reference = PointerReference | DocumentReference,
         Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink | RichTextField | Rectangle
     }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash.Controllers.Operators.Demo
 {
@@ -46,7 +47,7 @@ namespace Dash.Controllers.Operators.Demo
         {
             var collection = inputs[InputCollection] as DocumentCollectionFieldModelController;
             var textFieldKeyId = (inputs[TextField] as TextFieldModelController).Data;
-            var textFieldKey = ContentController<KeyModel>.GetController<KeyController>(textFieldKeyId);
+            var textFieldKey = ContentController<FieldModel>.GetController<KeyController>(textFieldKeyId);
 
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.Data)

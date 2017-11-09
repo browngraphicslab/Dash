@@ -41,7 +41,7 @@ namespace Dash
 
         public static KeyController GetController(this KeyModel model)
         {
-            return ContentController<KeyModel>.GetController<KeyController>(model.Id);
+            return ContentController<FieldModel>.GetController<KeyController>(model.Id);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Dash
         }
         public override void Init()
         {
-            FieldKey = ContentController<KeyModel>.GetController<KeyController>(((ReferenceFieldModel)Model).KeyId);
+            FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceFieldModel)Model).KeyId);
             var docController = GetDocumentController(null);
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
             

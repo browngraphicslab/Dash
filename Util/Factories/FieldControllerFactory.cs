@@ -147,6 +147,9 @@ namespace Dash
                 case TypeInfo.Reference:
                     controller = new ListFieldModelController<ReferenceFieldModelController>(model);
                     break;
+                case TypeInfo.Key:
+                    controller = new ListFieldModelController<KeyController>(model);
+                    break;
                 case TypeInfo.Any:
                     Debug.Fail("idk why you got here");
                     break;

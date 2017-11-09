@@ -76,9 +76,9 @@ namespace Dash
             var collection = inputs[InputCollection] as DocumentCollectionFieldModelController;;
             var variableName = inputs[VariableName] as TextFieldModelController;
             var valueName = inputs[ValueName] as TextFieldModelController;
-            var columnVariables = inputs[ColumnVariables] as ListFieldModelController<TextFieldModelController>;
+            var columnVariables = inputs[ColumnVariables] as ListFieldModelController<KeyController>;
             Debug.Assert(columnVariables != null);
-            var columnKeys = columnVariables.Data.Cast<TextFieldModelController>().Select(tfm => tfm.Data).Select(keyId => ContentController<KeyModel>.GetController<KeyController>(keyId)).ToList();
+            var columnKeys = columnVariables.TypedData;
             var allHeaderKeys = Util.GetTypedHeaders(collection);
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
