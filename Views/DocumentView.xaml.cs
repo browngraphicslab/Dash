@@ -161,12 +161,6 @@ namespace Dash
                     ViewModel.Width = 50;
                     ViewModel.Height = 50;
                 }
-                //if (Parent == null)
-                //    ViewModel.Width = ActualWidth;
-                //else ViewModel.Width = double.NaN;
-                //if (Parent == null)
-                //    ViewModel.Height = ActualHeight;
-                //else ViewModel.Height = double.NaN;
             }
             new ManipulationControls(xKeyValuePane, false, false);
         }
@@ -208,14 +202,14 @@ namespace Dash
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
-            /*
+            
             var width = 20;
             
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            */
+            
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xTitle.Text = "Collection (" + CollectionCount + ")";
