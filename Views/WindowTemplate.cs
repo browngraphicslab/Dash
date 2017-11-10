@@ -163,7 +163,7 @@ namespace Dash
         private TranslateTransform AdjustPosition(TranslateTransform translate)
         {
             var topLeft = Util.PointTransformFromVisual(new Point(translate.X, translate.Y), this); // position in screenspace after translate
-            Rect windowsRect = new Rect(200, 0, Window.Current.Bounds.Width - _container.ActualWidth, Window.Current.Bounds.Height - _container.ActualHeight-200);
+            Rect windowsRect = new Rect(200, 0, Window.Current.Bounds.Width - _container.ActualWidth-200, Window.Current.Bounds.Height - _container.ActualHeight);
 
             if (topLeft.X < windowsRect.Left || topLeft.X > windowsRect.Right)
             {

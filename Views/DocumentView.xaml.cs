@@ -738,7 +738,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0, 0), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(500, 272), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
