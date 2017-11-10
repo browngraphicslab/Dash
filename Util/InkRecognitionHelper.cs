@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.Media.Devices;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml;
@@ -19,12 +21,13 @@ namespace Dash
 {
     public sealed class InkRecognitionHelper
     {
-        private List<InkAnalysisInkDrawing> _shapeRegions;
         public FreeformInkControl FreeformInkControl { get; set; }
         public Dictionary<Rect, InkAnalysisLine> TextBoundsDictionary { get; set; }
         public InkAnalyzer Analyzer { get; set; }
         public List<Point> DoubleTappedPoints { get; set; }
         private InkStroke NewStroke;
+
+        private RecognizedInkTree RecognizedInkTree;
 
         public InkRecognitionHelper()
         {
@@ -40,109 +43,82 @@ namespace Dash
         {
             FreeformInkControl = inkControl;
             NewStroke = newStroke;
-            Analyzer.ClearDataForAllStrokes();
             //Tries to delete with a line stroke, so long as we're not doing forced recognition from selected strokes.
             if (newStroke != null && !onlySelectedStrokes && TryDeleteWithStroke(newStroke))
                 return;
-            //If we're not only analyzing selected strokes, we want to analyze all strokes within the range of the most recent stroke
+            //if we're not only analyzing selected strokes, we want to analyze all strokes within the range of the most recent stroke
+            //else only analyze selected strokes
+            Analyzer.ClearDataForAllStrokes();
+            List<DocumentController> recognizedDocs;
             if (!onlySelectedStrokes)
             {
-                foreach (var inkStroke in inkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes())
-                {
-                    if (newStroke.BoundingRect.Contains(inkStroke.BoundingRect))
-                    {
-                        Analyzer.AddDataForStroke(inkStroke);
-                    }
-                }
+                recognizedDocs = await GetDocsFromNewStroke();
             }
-            //Otherwise only analyze selected strokes
             else
             {
-                AddDataForSelectedStrokes();
+                recognizedDocs = await GetDocsFromSelection();
+            }
+            FreeformInkControl.FreeformView.ViewModel.AddDocuments(recognizedDocs, null);
+            FreeformInkControl.UpdateInkFieldModelController();
+        }
+
+        private async Task<List<DocumentController>> GetDocsFromNewStroke()
+        {
+            var docs = new List<DocumentController>();
+            foreach (var inkStroke in FreeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes().Where(inkStroke => NewStroke.BoundingRect.Contains(inkStroke.BoundingRect)))
+            {
+                Analyzer.AddDataForStroke(inkStroke);
             }
             var result = await Analyzer.AnalyzeAsync();
             if (result.Status == InkAnalysisStatus.Updated)
             {
-                //Gets a dictionary mapping the rect bounds of all recognized text to lists of the corresponding stroke ids, and removes the data for those strokes.
-                TextBoundsDictionary = GetTextBoundsAndRemoveData();
-                Rect boundaries = newStroke?.BoundingRect ?? FreeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer
-                                      .MoveSelected(new Point(0,0));
-                _shapeRegions = new List<InkAnalysisInkDrawing>(Analyzer.AnalysisRoot
-                    .FindNodes(InkAnalysisNodeKind.InkDrawing).Where(drawing => boundaries.Contains(drawing.BoundingRect))
-                    .OrderBy(stroke => stroke.Id).Reverse().OfType<InkAnalysisInkDrawing>());
-                FreeformInkControl.FreeformView.ViewModel.AddDocuments(GetDocumentsFromInk(newStroke), null);
-                //foreach (var inkAnalysisNode in new List<IInkAnalysisNode>(_shapeRegions))
-                //{
-                //    var region = (InkAnalysisInkDrawing)inkAnalysisNode;
-                //    //Only recognize shapes if the region was just drawn and contains a new stroke
-                //    if (RegionContainsNewStroke(region) && (region.DrawingKind == InkAnalysisDrawingKind.Circle ||
-                //                                            region.DrawingKind == InkAnalysisDrawingKind.Ellipse))
-                //    {
-                //        //ellipses ==> collections
-                //            GetCollectionFromShapeRegion(region);
-                //    }
-                //}
-                //foreach (var inkAnalysisNode in _shapeRegions)
-                //{
-                //    var region = (InkAnalysisInkDrawing)inkAnalysisNode;
-                //    //Only recognize shapes if the region was just drawn and contains a new stroke
-                //    if (RegionContainsNewStroke(region) && (region.DrawingKind == InkAnalysisDrawingKind.Rectangle ||
-                //                                            region.DrawingKind == InkAnalysisDrawingKind.Square))
-                //    {
-                //        //rectangles ==> documents
-                //            GetDocumentFromShapeRegion(region);
-                //    }
-                //}
+                var root = Analyzer.AnalysisRoot;
+                RecognizedInkTree = new RecognizedInkTree(root);
+                foreach (var child in RecognizedInkTree.Root.Children)
+                {
+                    var doc = GetDocFromRecognizedNode(child);
+                    if (doc != null) docs.Add(doc);
+                }
             }
-            FreeformInkControl.UpdateInkFieldModelController();
+            return docs;
         }
 
-        private List<DocumentController> GetDocumentsFromInk(InkStroke newStroke)
+        private async Task<List<DocumentController>> GetDocsFromSelection()
         {
-            List<DocumentController> returnedDocs = new List<DocumentController>();
-            if (newStroke != null)
+            var docs = new List<DocumentController>();
+            AddDataForSelectedStrokes();
+            var result = await Analyzer.AnalyzeAsync();
+            if (result.Status == InkAnalysisStatus.Updated)
             {
-                var newRegion = _shapeRegions.FirstOrDefault(region => region.GetStrokeIds().Contains(newStroke.Id));
-                if (newRegion == null) return null;
-                switch (newRegion.DrawingKind)
+                var root = Analyzer.AnalysisRoot;
+                RecognizedInkTree = new RecognizedInkTree(root);
+                foreach (var child in RecognizedInkTree.Root.Children)
                 {
-                    case InkAnalysisDrawingKind.Ellipse:
-                    case InkAnalysisDrawingKind.Circle:
-                        returnedDocs.Add(GetCollectionFromShapeRegion(newRegion));
-                        break;
-                    case InkAnalysisDrawingKind.Rectangle:
-                    case InkAnalysisDrawingKind.Square:
-                        returnedDocs.Add(GetDocumentFromShapeRegion(newRegion));
-                        break;
+                    var doc = GetDocFromRecognizedNode(child);
+                    if (doc != null) docs.Add(doc);
                 }
             }
-            else
-            {
-                bool hasCircle = true;
-                while (hasCircle)
-                {
-                    var circleRegion = _shapeRegions.FirstOrDefault(
-                        r => r.DrawingKind == InkAnalysisDrawingKind.Circle ||
-                             r.DrawingKind == InkAnalysisDrawingKind.Ellipse);
-                    if (circleRegion != null) returnedDocs.Add(GetCollectionFromShapeRegion(circleRegion));
-                    else
-                    {
-                        hasCircle = false;
-                    }
-                }
-                
-                foreach (var region in _shapeRegions.ToImmutableList().Where(
-                    r => r.DrawingKind == InkAnalysisDrawingKind.Square ||
-                         r.DrawingKind == InkAnalysisDrawingKind.Rectangle))
-                {
-                    returnedDocs.Add(GetDocumentFromShapeRegion(region));
-                }
-            }
-
-            return returnedDocs;
+            return docs;
         }
 
-
+        private DocumentController GetDocFromRecognizedNode(RecognizedInkNode node)
+        {
+            var drawing = node.InkRegion as InkAnalysisInkDrawing;
+            if (drawing != null)
+            {
+                if (drawing.DrawingKind == InkAnalysisDrawingKind.Circle ||
+                    drawing.DrawingKind == InkAnalysisDrawingKind.Ellipse)
+                {
+                    return GetCollectionFromShapeRegion(node);
+                }
+                if (drawing.DrawingKind == InkAnalysisDrawingKind.Square ||
+                    drawing.DrawingKind == InkAnalysisDrawingKind.Rectangle)
+                {
+                    return GetDocumentFromShapeRegion(node);
+                }
+            }
+            return null;
+        }
 
         #region Delete with line
 
@@ -256,9 +232,7 @@ namespace Dash
                                 true);
                         }
                         lineDeleted = true;
-
                     }
-
                 }
             }
             return lineDeleted;
@@ -283,20 +257,25 @@ namespace Dash
             return textBoundsDictionary;
         }
 
-        private DocumentController GetCollectionFromShapeRegion(InkAnalysisInkDrawing region)
+        private DocumentController GetCollectionFromShapeRegion(RecognizedInkNode node)
         {
-            _shapeRegions.Remove(region);
             List<DocumentController> recognizedDocuments = new List<DocumentController>();
             //Look for rectangles inside ellipse and add them as docs to collection
-            recognizedDocuments.AddRange(GetDocumentsFromInk(null));
-            var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
-                .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
-                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
-            var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(lassoPoints);
+            var region = node.InkRegion as InkAnalysisInkDrawing;
+            if (region == null) return null;
+            if (node.Children != null)
+            {
+                foreach (var child in node.Children)
+                {
+                    var doc = GetDocFromRecognizedNode(child);
+                    if(doc != null) recognizedDocuments.Add(doc);
+                }
+            }
+
+            recognizedDocuments.AddRange(GetContainedDocuments(region));
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
                 FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-            recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
             foreach (var doc in recognizedDocuments)
             {
                 var ogPos = doc.GetPositionField().Data;
@@ -324,10 +303,21 @@ namespace Dash
             return documentController;
         }
 
-        private DocumentController GetDocumentFromShapeRegion(InkAnalysisInkDrawing region)
+        private List<DocumentController> GetContainedDocuments(InkAnalysisInkDrawing region)
         {
+            //var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
+            //                .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
+            //                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
+            var lassoPoints = region.Points.ToList();
+            var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(lassoPoints).Select(view => view.ViewModel.DocumentController).ToList();
+            return selectedDocuments;
+        }
+
+        private DocumentController GetDocumentFromShapeRegion(RecognizedInkNode node)
+        {
+            var region = node.InkRegion as InkAnalysisInkDrawing;
+            if (region == null) return null;
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
-            _shapeRegions.Remove(region);
             Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
@@ -336,16 +326,27 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
-            var keysToRemove = new List<Rect>();
             int fieldIndex = 0;
             ListFieldModelController<TextFieldModelController> list = null;
             // try making fields from at least partially intersected lines
-            var intersectedLines = TextBoundsDictionary.Keys.Where(r => r.IntersectsWith(region.BoundingRect));
-            var intersectionEnumerable = intersectedLines as IList<Rect> ?? intersectedLines.ToList();
-            if (intersectionEnumerable.Count > 0) list = new ListFieldModelController<TextFieldModelController>();
-            foreach (var rect in intersectionEnumerable)
+            var intersectionEnumerable = new List<InkAnalysisLine>();
+            foreach (var writing in node.Children.Where(child => child.IsWriting).Select(child => child.InkRegion).OfType<InkAnalysisWritingRegion>())
             {
-                var containedWords = GetContainedWords(rect, region.BoundingRect);
+                foreach (var paragraph in writing.Children.OfType<InkAnalysisParagraph>())
+                {
+                    foreach (var line in paragraph.Children.OfType<InkAnalysisLine>())
+                    {
+                        if (node.InkRegion.BoundingRect.IntersectsWith(line.BoundingRect))
+                        {
+                            intersectionEnumerable.Add(line);   
+                        }
+                    }
+                }
+            }
+            if (intersectionEnumerable.Count > 0) list = new ListFieldModelController<TextFieldModelController>();
+            foreach (var inkLine in intersectionEnumerable)
+            {
+                var containedWords = GetContainedWords(inkLine, region.BoundingRect);
                 if (containedWords.Count > 0)
                 {
                     string containedLine = "";
@@ -375,11 +376,9 @@ namespace Dash
                         (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
                             containedRect.Height / 1.5;
                         layoutDocs.Add(textBox.Document);
-                        keysToRemove.Add(rect);
                     }
                 }
             }
-            foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             if (list != null)
             {
                 doc.SetField(KeyStore.ParsedFieldKey, list, true);
@@ -391,12 +390,11 @@ namespace Dash
             return doc;
         }
 
-        private List<InkAnalysisInkWord> GetContainedWords(Rect lineRect, Rect docBounds)
+        private List<InkAnalysisInkWord> GetContainedWords(InkAnalysisLine writing, Rect docBounds)
         {
-            InkAnalysisLine line = TextBoundsDictionary[lineRect];
-            List<InkAnalysisInkWord> containedWords = new List<InkAnalysisInkWord>();
+            var containedWords = new List<InkAnalysisInkWord>();
             containedWords.AddRange(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord).OfType<InkAnalysisInkWord>()
-                .Where(word => docBounds.Contains(word.BoundingRect) && word.Parent.Id == line.Id).ToList());
+                .Where(word => docBounds.Contains(word.BoundingRect) && word.Parent.Id == writing.Id).ToList());
             return containedWords;
         }
 
@@ -555,6 +553,81 @@ namespace Dash
         }
 
         #endregion
+
+        
+
+    }
+    public class RecognizedInkTree
+    {
+        public RecognizedInkNode Root;
+        public RecognizedInkTree(InkAnalysisRoot root)
+        {
+            var nodeDict = new Dictionary<IInkAnalysisNode, RecognizedInkNode>();
+            var orderedNodes = root.Children.OrderBy(node => node.BoundingRect.Width * node.BoundingRect.Height).ToList();
+            for (int i = 0; i < orderedNodes.Count; i++)
+            {
+                var node = orderedNodes[i];
+                var recognizedNode = new RecognizedInkNode(node);
+                nodeDict[node] = recognizedNode;
+                if (recognizedNode.IsEllipse || recognizedNode.IsRectangle)
+                {
+                    foreach (var smallerNode in orderedNodes.GetRange(0, i))
+                    {
+                        if (nodeDict[smallerNode].Parent != null) continue;
+                        if (recognizedNode.IsRectangle && nodeDict[smallerNode].IsWriting && node.BoundingRect.IntersectsWith(smallerNode.BoundingRect))
+                        {
+                            recognizedNode.Children.Add(nodeDict[smallerNode]);
+                        }
+                        if(recognizedNode.IsEllipse && (nodeDict[smallerNode].IsRectangle || nodeDict[smallerNode].IsEllipse) && node.BoundingRect.Contains(smallerNode.BoundingRect))
+                        {
+                            recognizedNode.Children.Add(nodeDict[smallerNode]);
+                            nodeDict[smallerNode].Parent = recognizedNode;
+                        }
+                    }
+                }
+            }
+            Root = new RecognizedInkNode(root);
+            Root.Children.AddRange(nodeDict.Values.Where(n => n.Parent == null && !n.IsWriting));
+        }
+
+
+    }
+
+    public class RecognizedInkNode
+    {
+        public List<RecognizedInkNode> Children;
+        public IInkAnalysisNode InkRegion;
+        public RecognizedInkNode Parent;
+
+        public bool IsRectangle
+        {
+            get
+            {
+                var drawing = InkRegion as InkAnalysisInkDrawing;
+                return drawing != null && (drawing.DrawingKind == InkAnalysisDrawingKind.Square ||
+                       drawing.DrawingKind == InkAnalysisDrawingKind.Rectangle);
+            }
+        }
+
+        public bool IsEllipse
+        {
+            get
+            {
+                var drawing = InkRegion as InkAnalysisInkDrawing;
+                return drawing != null && (drawing.DrawingKind == InkAnalysisDrawingKind.Circle ||
+                                           drawing.DrawingKind == InkAnalysisDrawingKind.Ellipse);
+            }
+        }
+
+        public bool IsWriting => InkRegion is InkAnalysisInkWord || InkRegion is InkAnalysisLine ||
+                                 InkRegion is InkAnalysisParagraph || InkRegion is InkAnalysisWritingRegion;
+
+        public RecognizedInkNode(IInkAnalysisNode inkRegion)
+        {
+            InkRegion = inkRegion;
+            Children = new List<RecognizedInkNode>();
+        }
+
 
     }
 }
