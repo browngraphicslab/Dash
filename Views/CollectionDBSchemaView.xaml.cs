@@ -69,7 +69,7 @@ namespace Dash
                 {
                     if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
                     {
-                        _parentDocument = _parentDocument.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data;
+                        _parentDocument = _parentDocument.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
                     }
                     ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
@@ -236,7 +236,7 @@ namespace Dash
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
             var dbDocs = ParentDocument
-                   .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+                   .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null)?.Data?.Select((d) => d.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? d);
 
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
@@ -270,7 +270,7 @@ namespace Dash
                                                      FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? db))
+                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
                 {
                     //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -338,10 +338,10 @@ namespace Dash
                 return false;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields()
-                .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentFieldModelController))
-                if (pfield.Value is DocumentFieldModelController)
+                .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentController))
+                if (pfield.Value is DocumentController)
                 {
-                    var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
+                    var nestedDoc = pfield.Value as DocumentController;
                     if (!visited.Contains(nestedDoc))
                     {
                         visited.Add(nestedDoc);

@@ -85,14 +85,14 @@ namespace Dash
         {
             //return GetViewCopy(doc, where);
             var del = doc;
-            var activeLayout = doc.GetActiveLayout()?.Data;
-            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            var activeLayout = doc.GetActiveLayout();
+            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc));
             DocumentController newDoc = null;
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey })); // copy the data and skip any layouts
                 activeLayout = doc.MakeDelegate(); // inherit the layout
-                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(copiedData), true); // point the inherited layout at the copied document
+                activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 docContext = copiedData;
                 newDoc = activeLayout;
             }
@@ -100,7 +100,7 @@ namespace Dash
             {
                 var copiedLayout = activeLayout.MakeDelegate(); // inherit the layout (so we can at least override location ... maybe width, height, too)
                 docContext = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }));// copy the data but skip the layout
-                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true); // add the inherited layout back
+                docContext.SetField(KeyStore.ActiveLayoutKey, copiedLayout, true); // add the inherited layout back
                 activeLayout = copiedLayout;
                 newDoc = docContext;
             }
@@ -122,21 +122,22 @@ namespace Dash
         {
             //return GetViewCopy(doc, where);
             var del = doc;
-            var activeLayout = doc.GetActiveLayout()?.Data;
-            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            var activeLayout = doc.GetActiveLayout();
+            var docContext =
+                doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc));
             DocumentController newDoc = null;
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
                 activeLayout = GetViewCopy(doc, where);
-                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(copiedData), true); // point the inherited layout at the copied document
+                activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 docContext = copiedData;
                 newDoc = activeLayout;
             }
             else if (docContext == null && activeLayout != null) // has a layout
             {
                 docContext = GetViewCopy(doc, where);
-                activeLayout = docContext.GetActiveLayout()?.Data;
+                activeLayout = docContext.GetActiveLayout();
                 activeLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where== null ? new Point() : (Point)where), true);
                 activeLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(activeLayout.GetDereferencedField<NumberFieldModelController>(KeyStore.WidthFieldKey, null).Data), true);
                 activeLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(activeLayout.GetDereferencedField<NumberFieldModelController>(KeyStore.HeightFieldKey, null).Data), true);
@@ -154,14 +155,14 @@ namespace Dash
         }
         public static DocumentController GetSameCopy(this DocumentController doc, Point where)
         {
-            var activeLayout = doc.GetActiveLayout()?.Data ?? doc;
+            var activeLayout = doc.GetActiveLayout() ?? doc;
             activeLayout?.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
             return doc;
         }
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
-            var activeLayout = doc.GetActiveLayout()?.Data;
-            var docContext = doc.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(doc))?.Data;
+            var activeLayout = doc.GetActiveLayout();
+            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc));
             var newDoc = doc;
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
@@ -172,14 +173,14 @@ namespace Dash
             {
                 docContext = doc.MakeDelegate(); // inherit the document so we can override its layout
                 var copiedLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
-                docContext.SetField(KeyStore.ActiveLayoutKey, new DocumentFieldModelController(copiedLayout), true);
+                docContext.SetField(KeyStore.ActiveLayoutKey, copiedLayout, true);
                 newDoc = docContext;
                 activeLayout = copiedLayout;
             }
             else
             {
                 activeLayout = new KeyValueDocumentBox(null).Document;
-                activeLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(doc), true);
+                activeLayout.SetField(KeyStore.DocumentContextKey, doc, true);
                 activeLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), false);
                 if (where != null)
                 {
@@ -207,19 +208,19 @@ namespace Dash
             }
 
             // set the layout on the document that was calling this
-            var layoutWrapper = new DocumentFieldModelController(activeLayout);
+            var layoutWrapper = activeLayout;
             doc.SetField(KeyStore.ActiveLayoutKey, layoutWrapper, forceMask);
         }
 
 
-        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context = null)
+        public static DocumentController GetActiveLayout(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
-            return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
+            return doc.GetDereferencedField<DocumentController>(KeyStore.ActiveLayoutKey, context);
         }
         public static void SetLayoutDimensions(this DocumentController doc, double ? width=null, double ? height=null, Point ? pos = null)
         {
-            var layoutDelegateDoc = (doc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data ?? doc;
+            var layoutDelegateDoc = (doc.GetField(KeyStore.ActiveLayoutKey) as DocumentController) ?? doc;
             if (layoutDelegateDoc != null)
             {
                 if (width.HasValue)
@@ -249,7 +250,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var heightField = activeLayout?.Data?.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+            var heightField = activeLayout?.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
             if (heightField == null)
             {
                 heightField = doc.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
@@ -262,7 +263,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var widthField =  activeLayout?.Data?.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            var widthField =  activeLayout?.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
             if (widthField == null)
             {
                 widthField = doc.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
@@ -274,7 +275,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var posField = activeLayout?.Data?.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
+            var posField = activeLayout?.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
             if (posField == null)
             {
                 posField = doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
@@ -285,7 +286,7 @@ namespace Dash
 
         public static PointFieldModelController GetScaleCenterField(this DocumentController doc, Context context = null)
         {
-            var activeLayout = doc.GetActiveLayout()?.Data;
+            var activeLayout = doc.GetActiveLayout();
             var scaleCenterField = activeLayout?.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
                                        new Context(context)) as PointFieldModelController ?? doc.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as PointFieldModelController;
             return scaleCenterField;
@@ -293,7 +294,7 @@ namespace Dash
 
         public static PointFieldModelController GetScaleAmountField(this DocumentController doc, Context context = null)
         {
-            var activeLayout = doc.GetActiveLayout()?.Data;
+            var activeLayout = doc.GetActiveLayout();
             var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
                                        new Context(context)) as PointFieldModelController ??
                                    doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
@@ -340,11 +341,11 @@ namespace Dash
             foreach (var kvp in doc.EnumFields(true))
             {
                 if (kvp.Key.Equals(KeyStore.ThisKey))
-                    fields[kvp.Key] = new DocumentFieldModelController(copy);
+                    fields[kvp.Key] = copy;
                 else if (excludeKeys.Contains(kvp.Key))
                     fields[kvp.Key] = kvp.Value.GetCopy();
-                else if (kvp.Value is DocumentFieldModelController)
-                    fields[kvp.Key] = new DocumentFieldModelController(kvp.Value.DereferenceToRoot<DocumentFieldModelController>(new Context(doc)).Data.makeCopy(ref refs, ref docs, excludeKeys));
+                else if (kvp.Value is DocumentController)
+                    fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys);
                 else if (kvp.Value is DocumentCollectionFieldModelController)
                 {
                     var docList = new List<DocumentController>();

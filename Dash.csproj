@@ -452,7 +452,6 @@
     <Compile Include="Controllers\IController.cs" />
     <Compile Include="Controllers\DocumentCollectionFieldModelController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
-    <Compile Include="Controllers\DocumentFieldModelController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
     <Compile Include="Controllers\ImageFieldModelController.cs" />
     <Compile Include="Controllers\ListFieldModelController.cs" />
@@ -476,7 +475,6 @@
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
-    <Compile Include="Models\DocumentFieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />

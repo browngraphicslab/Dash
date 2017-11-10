@@ -17,7 +17,7 @@ namespace Dash
             [typeof(PointFieldModelController)] = TypeInfo.Point,
             [typeof(ListFieldModelController<>)] = TypeInfo.List,
             [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
-            [typeof(DocumentFieldModelController)] = TypeInfo.Document,
+            [typeof(DocumentController)] = TypeInfo.Document,
             [typeof(KeyController)] = TypeInfo.Key
         };
 
@@ -45,7 +45,9 @@ namespace Dash
                     case TypeInfo.Collection:
                         return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()));
                     case TypeInfo.Document:
-                        return new DocumentFieldModel(data.ToString());
+                        //TODO FIX THIS
+                        throw new NotImplementedException();
+                        //return new DocumentFieldModel(data.ToString());
                     case TypeInfo.DocumentReference:
                         DocumentFieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
                         return new DocumentReferenceFieldModel(docFieldRefence.DocumentId, docFieldRefence.FieldKey.Model.Id);

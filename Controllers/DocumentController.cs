@@ -20,7 +20,7 @@ using DashShared.Models;
 
 namespace Dash
 {
-    public class DocumentController : IController<DocumentModel>
+    public class DocumentController : FieldModelController<DocumentModel>
     {
         public bool HasDelegatesOrPrototype { get; private set; }
 
@@ -48,7 +48,7 @@ namespace Dash
             get
             {
                 return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey) &&
-                                        (_fields[KeyStore.PrototypeKey] as DocumentFieldModelController)?.Data
+                                        (_fields[KeyStore.PrototypeKey] as DocumentController)
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
             }
             set
@@ -169,13 +169,15 @@ namespace Dash
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
-            var fields = Model.Fields.Select(kvp =>
+            var fields = DocumentModel.Fields.Select(kvp =>
                 new KeyValuePair<KeyController, FieldControllerBase>(
                     ContentController<FieldModel>.GetController<KeyController>(kvp.Key),
                     ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value)));
 
             SetFields(fields, true);
         }
+
+        public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
@@ -252,16 +254,19 @@ namespace Dash
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
 
-        public string LayoutName { get { return Model.DocumentType.Type; } }
+        public string LayoutName => DocumentModel.DocumentType.Type;
+
         /// <summary>
         ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public DocumentType DocumentType
         {
-            get { return Model.DocumentType; }
-            set { Model.DocumentType = value; }
+            get => DocumentModel.DocumentType;
+            set => DocumentModel.DocumentType = value;
         }
+
+        public DocumentModel DocumentModel => Model as DocumentModel;
 
 
         public override bool Equals(object obj)
@@ -280,11 +285,16 @@ namespace Dash
 
         public DocumentController GetDataDocument(Context context)
         {
-            return GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context)?.Data ?? this;
+            return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
         }
         public override int GetHashCode()
         {
             return GetId().GetHashCode();
+        }
+
+        public override FieldModelController<DocumentModel> Copy()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -294,7 +304,7 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
+            foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
                 if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
                     var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
@@ -453,10 +463,15 @@ namespace Dash
                         (curField as TextFieldModelController).Data = textInput;
                     else if (curField is ImageFieldModelController)
                         ((curField as ImageFieldModelController).Data as BitmapImage).UriSource = new Uri(textInput);
-                    else if (curField is DocumentFieldModelController)
-                        (curField as DocumentFieldModelController).Data = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
+                    else if (curField is DocumentController)
+                    {
+                        //TODO fix this
+                        throw new NotImplementedException();
+                        curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
+                    }
                     else if (curField is DocumentCollectionFieldModelController)
-                        (curField as DocumentCollectionFieldModelController).Data = new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                        (curField as DocumentCollectionFieldModelController).Data =
+                            new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
                     else return false;
                 }
                 else
@@ -505,11 +520,11 @@ namespace Dash
 
             // otherwise try to convert the field associated with the prototype key into a DocumentFieldModelController
             var documentFieldModelController =
-                _fields[KeyStore.PrototypeKey] as DocumentFieldModelController;
+                _fields[KeyStore.PrototypeKey] as DocumentController;
 
 
             // if the field contained a DocumentFieldModelController return its data, otherwise return null
-            return documentFieldModelController?.Data;
+            return documentFieldModelController;
         }
 
 
@@ -549,7 +564,7 @@ namespace Dash
 
             if (key.Id == KeyStore.PrototypeKey.Id)
             {
-                var oldPrototype = (oldField as DocumentFieldModelController)?.Data;
+                var oldPrototype = oldField as DocumentController;
                 if (oldPrototype != null)
                 {
                     DocumentFieldUpdated -= delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
@@ -558,7 +573,7 @@ namespace Dash
                                             };
                 }
 
-                var prototype = (field as DocumentFieldModelController)?.Data;
+                var prototype = field as DocumentController;
                 if (prototype != null)
                 {
                     DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
@@ -580,7 +595,7 @@ namespace Dash
                 oldField?.DisposeField();
 
                 proto._fields[key] = field;
-                proto.Model.Fields[key.Id] = field == null ? "" : field.Model.Id;
+                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 SetupNewFieldListeners(key, field, oldField, new Context(proto));
 
@@ -760,7 +775,7 @@ namespace Dash
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
-            var prototypeFieldController = new DocumentFieldModelController(this);
+            var prototypeFieldController = this;
             delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
 
             // add the delegate to our delegates field
@@ -1169,20 +1184,20 @@ namespace Dash
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
-                var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+                var doc = fieldModelController.DereferenceToRoot<DocumentController>(context);
 
-                if (doc.Data.DocumentType.Equals(DefaultLayout.DocumentType))
+                if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
                 {
                     if (isInterfaceBuilder)
                     {
-                        var activeLayout = this.GetActiveLayout(context).Data;
+                        var activeLayout = this.GetActiveLayout(context);
                         return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
                     }
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
 
-                return doc.Data.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
+                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
             }
             if (isInterfaceBuilder)
             {
@@ -1234,6 +1249,22 @@ namespace Dash
             base.DeleteOnServer(success, error);
 
             DocumentDeleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        public override TypeInfo TypeInfo { get; }
+        public override bool SetValue(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetValue(Context context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new DocumentController();
         }
     }
 }

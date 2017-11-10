@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared.Models;
 
 namespace Dash.Converters
 {
@@ -30,7 +31,7 @@ namespace Dash.Converters
             var context = _context;
             if (keys == null)
             {
-                var docContext = data.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, new Context(data))?.Data;
+                var docContext = data.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(data));
                 if (docContext != null)
                 {
                     context = new Context(docContext);
@@ -46,9 +47,9 @@ namespace Dash.Converters
                     var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
-                    else if (keyField is DocumentFieldModelController)
+                    else if (keyField is DocumentController)
                     {
-                        docString += GetPrimaryKeyString((keyField as DocumentFieldModelController).Data);
+                        docString += GetPrimaryKeyString(keyField as DocumentController);
                     }
                 }
                 return docString.TrimEnd(' ') + ">";
@@ -124,7 +125,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
@@ -163,20 +164,20 @@ namespace Dash.Converters
             return null;
         }
     }
-    public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentFieldModelController, string>
+    public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentController, string>
     {
         public DocumentFieldModelToStringConverter()
         {
         }
 
-        public override string ConvertDataToXaml(DocumentFieldModelController data, object parameter = null)
+        public override string ConvertDataToXaml(DocumentController data, object parameter = null)
         {
-            return new DocumentControllerToStringConverter().ConvertDataToXaml(data.Data);
+            return new DocumentControllerToStringConverter().ConvertDataToXaml(data);
         }
 
-        public override DocumentFieldModelController ConvertXamlToData(string xaml, object parameter = null)
+        public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
         {
-            return new DocumentFieldModelController(new DocumentControllerToStringConverter().ConvertXamlToData(xaml));
+            return new DocumentControllerToStringConverter().ConvertXamlToData(xaml);
         }
     }
     public class DocumentViewModelToStringConverter : SafeDataToXamlConverter<DocumentViewModel, string>
@@ -218,7 +219,7 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var dmc in ContentController<DocumentModel>.GetControllers<DocumentController>())
+                foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;

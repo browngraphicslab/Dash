@@ -35,7 +35,7 @@ namespace Dash.Controllers
 
         public override DocumentController GetDocumentController(Context context)
         {
-            return DocumentReference.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            return DocumentReference.DereferenceToRoot<DocumentController>(context);
         }
 
         public override FieldReference GetFieldReference()

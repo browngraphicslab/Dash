@@ -31,7 +31,7 @@ namespace Dash
 
         public static DocumentController GetController(this DocumentModel model)
         {
-            return ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
+            return ContentController<FieldModel>.GetController<DocumentController>(model.Id);
         }
 
         public static FieldControllerBase GetController(this FieldModel model)

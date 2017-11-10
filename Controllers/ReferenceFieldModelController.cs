@@ -80,7 +80,6 @@ namespace Dash
         }
         
         public DocumentCollectionFieldModelController DocumentCollectionFieldModelController => DereferenceToRoot<DocumentCollectionFieldModelController>(null);
-        public DocumentFieldModelController DocumentFieldModelController => DereferenceToRoot<DocumentFieldModelController>(null);
 
         private void BindTextOrSetOnce(TextBlock textBlock, Context context)
         {

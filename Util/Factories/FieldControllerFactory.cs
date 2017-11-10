@@ -54,7 +54,7 @@ namespace Dash
                     controller = MakeListFieldController(model as ListFieldModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentFieldModelController(model as DocumentFieldModel);
+                    controller = new DocumentController(model as DocumentModel);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkFieldModelController(model as InkFieldModel);
@@ -118,7 +118,7 @@ namespace Dash
                     controller = new ListFieldModelController<DocumentCollectionFieldModelController>(model);
                     break;
                 case TypeInfo.Document:
-                    controller = new ListFieldModelController<DocumentFieldModelController>(model);
+                    controller = new ListFieldModelController<DocumentController>(model);
                     break;
                 case TypeInfo.PointerReference:
                     controller = new ListFieldModelController<PointerReferenceFieldController>(model);
@@ -257,7 +257,7 @@ namespace Dash
                 case TypeInfo.List:
                     throw new NotImplementedException();
                 case TypeInfo.Document:
-                    controller = new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType));
+                    controller = new DocumentController();
                     break;
                 case TypeInfo.Ink:
                     controller = new InkFieldModelController();

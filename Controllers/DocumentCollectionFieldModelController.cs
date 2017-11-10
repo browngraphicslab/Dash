@@ -81,7 +81,7 @@ namespace Dash
 
         public override void Init()
         {
-            AddDocuments((Model as DocumentCollectionFieldModel).Data.Select(i => ContentController<DocumentModel>.GetController<DocumentController>(i)).ToList());
+            AddDocuments((Model as DocumentCollectionFieldModel).Data.Select(i => ContentController<FieldModel>.GetController<DocumentController>(i)).ToList());
         }
 
         /// <summary>

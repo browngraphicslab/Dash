@@ -18,6 +18,7 @@ using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using System.Collections.Specialized;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using DashShared.Models;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -318,7 +319,7 @@ namespace Dash
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
-            var documentController = ContentController<DocumentModel>.GetController<DocumentController>(docId);
+            var documentController = ContentController<FieldModel>.GetController<DocumentController>(docId);
             var operatorFieldModelController = (DataContext as FieldReference)
                 ?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
