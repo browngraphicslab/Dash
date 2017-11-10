@@ -179,8 +179,8 @@ namespace Dash
 
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
-            dc.Document.ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, new Context(dc.Document)));
-            dc.DataReference = new DocumentReferenceFieldController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
+            dc.Document.GetDataDocument(null).ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            dc.DataReference = new DocumentReferenceFieldController(dc.Document.GetDataDocument(null).GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 

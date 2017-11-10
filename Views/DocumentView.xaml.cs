@@ -445,29 +445,34 @@ namespace Dash
         {
             ViewModel = DataContext as DocumentViewModel;
 
-            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
-            var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null);
-            var keys = keyList as ListFieldModelController<TextFieldModelController>;
-
-            if (keys?.Data?.Count == 1)
+            if (ViewModel != null)
             {
-                var key = new KeyController((keys.Data.First() as TextFieldModelController).Data);
-                var Binding = new FieldBinding<TextFieldModelController>()
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null);
+                var keys = keyList as ListFieldModelController<TextFieldModelController>;
+
+                if (keys?.Data?.Count == 1)
                 {
-                    Mode = BindingMode.TwoWay,
-                    Document = dataDoc,
-                    Key = key,
-                };
-                xTitleName.AddFieldBinding(TextBox.TextProperty, Binding);
-            } else
-            {
-                var Binding = new Binding() {
-                    Source = ViewModel,
-                    Path = new PropertyPath("DisplayName"),
-                    Mode = BindingMode.OneWay
-                };
+                    var key = new KeyController((keys.Data.First() as TextFieldModelController).Data);
+                    var Binding = new FieldBinding<TextFieldModelController>()
+                    {
+                        Mode = BindingMode.TwoWay,
+                        Document = dataDoc,
+                        Key = key,
+                    };
+                    xTitleName.AddFieldBinding(TextBox.TextProperty, Binding);
+                }
+                else
+                {
+                    var Binding = new Binding()
+                    {
+                        Source = ViewModel,
+                        Path = new PropertyPath("DisplayName"),
+                        Mode = BindingMode.OneWay
+                    };
 
-                xTitleName.SetBinding(TextBox.TextProperty, Binding);
+                    xTitleName.SetBinding(TextBox.TextProperty, Binding);
+                }
             }
 
             //initDocumentOnDataContext();
