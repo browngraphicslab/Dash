@@ -51,6 +51,8 @@ namespace Dash
                     var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
                     if (xamlData != null)
                     {
+                        if (element.Tag != null)
+                            Debug.WriteLine("Tag = " + element.Tag);
                         element.SetValue(property, xamlData);
                     }
                 }

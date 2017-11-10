@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -189,7 +190,17 @@ namespace Dash
         public string DisplayName
         {
             get { return _displayName; }
-            set {
+            set
+            {
+                var dataDoc = DocumentController.GetDataDocument(Context);
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
+                var keys = keyList as ListFieldModelController<TextFieldModelController>;
+                if (keys != null && keys.Data.Count == 1)
+                {
+                    var curName = (dataDoc.GetField(new KeyController((keys.Data.First() as TextFieldModelController).Data)) as TextFieldModelController)?.Data;
+                    if (curName != value)
+                        dataDoc.SetField(new KeyController((keys.Data.First() as TextFieldModelController).Data), new TextFieldModelController(value), true);
+                }
                 if (SetProperty<string>(ref _displayName, value)) {
                     OnPropertyChanged("DisplayName");
                 }
@@ -219,7 +230,7 @@ namespace Dash
             var dataDoc = DocumentController.GetDataDocument(Context);
             var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
-            if (keys != null)
+            if (keys != null && keys.Data.Count() > 1)
             {
                 var docString = "";
                 foreach (var k in keys.Data)
@@ -233,6 +244,7 @@ namespace Dash
         }
 
         public Context Context { get; set; }
+        public DocumentViewModel():base(false) { }
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
@@ -248,6 +260,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
+
             updateDisplayName();
         }
 

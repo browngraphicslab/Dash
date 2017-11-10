@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -443,12 +444,39 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
-            
+
+            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+            var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+
+            if (keys?.Data?.Count == 1)
+            {
+                var key = new KeyController((keys.Data.First() as TextFieldModelController).Data);
+                var Binding = new FieldBinding<TextFieldModelController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = dataDoc,
+                    Key = key,
+                };
+                xTitleName.AddFieldBinding(TextBox.TextProperty, Binding);
+            } else
+            {
+                var Binding = new Binding() {
+                    Source = ViewModel,
+                    Path = new PropertyPath("DisplayName"),
+                    Mode = BindingMode.OneWay
+                };
+
+                xTitleName.SetBinding(TextBox.TextProperty, Binding);
+            }
+
             //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+
+           DocumentView_DataContextChanged(sender as FrameworkElement, null);
             if (ViewModel != null)
             {
                 xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
