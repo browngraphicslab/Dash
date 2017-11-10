@@ -421,7 +421,7 @@ namespace Dash
                             if (operatorDoc != null)
                             {
                                 operatorDoc.SetField(key,
-                                    new TextFieldModelController(dm.FieldKey.Id), true);
+                                    dm.FieldKey, true);
                                 return;
                             }
 
