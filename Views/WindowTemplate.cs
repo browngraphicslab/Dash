@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.Foundation; 
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -144,12 +145,35 @@ namespace Dash
 
         public void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var group = new TransformGroup();          
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this); 
+            var group = new TransformGroup();
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
             group.Children.Add(RenderTransform);
-            group.Children.Add(translate);
+            group.Children.Add(AdjustPosition(translate));
             RenderTransform = new MatrixTransform { Matrix = group.Value };
-            e.Handled = true; 
+
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Determines whether the input TranslateTransform moves the WindowTemplate outside of screenspace
+        /// If so, return a new TranslateTransform that keeps it within bounds 
+        /// </summary>
+        /// <param name="translate"></param>
+        /// <returns></returns>
+        private TranslateTransform AdjustPosition(TranslateTransform translate)
+        {
+            var topLeft = Util.PointTransformFromVisual(new Point(translate.X, translate.Y), this); // position in screenspace after translate
+            Rect windowsRect = new Rect(200, 0, Window.Current.Bounds.Width - _container.ActualWidth, Window.Current.Bounds.Height - _container.ActualHeight-200);
+
+            if (topLeft.X < windowsRect.Left || topLeft.X > windowsRect.Right)
+            {
+                translate.X = 0;
+            }
+            if (topLeft.Y < windowsRect.Top || topLeft.Y > windowsRect.Bottom)
+            {
+                translate.Y = 0;
+            }
+            return translate;
         }
 
         /// <summary>
