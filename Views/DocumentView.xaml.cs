@@ -122,6 +122,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Returns true if a document view is already linked to another, false if not
+        /// </summary>
+        /// <param name="docView"></param>
+        /// <returns></returns>
         private bool IsConnected(DocumentView docView)
         {
             var userLinks = docView.ViewModel.DocumentController.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
@@ -134,13 +139,18 @@ namespace Dash
 
 
 
-
+        /// <summary>
+        /// Changes the connections to connect the dropped document with the documents connected by the link
+        /// </summary>
+        /// <param name="ffView"></param>
+        /// <param name="docView"></param>
+        /// <param name="link"></param>
         private void ChangeConnections(CollectionFreeformView ffView, DocumentView docView, KeyValuePair<FieldReference, Path> link)
         {
             // the old connection is [referencedDoc] -> [referencingDoc]
-            // the new connection is [referencedDoc] -> [droppedDoc] -> [referencingDoc]
+            // the new connections are [referencedDoc] -> [droppedDoc] -> [referencingDoc]
 
-
+            // get all the ingredients
             var droppedDoc = docView.ViewModel.DocumentController;
             var opFMController = droppedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
             var droppedDocInputKey = opFMController.Inputs.Keys.FirstOrDefault();
@@ -153,6 +163,7 @@ namespace Dash
 
             var referencedKey = fieldRef.FieldKey;
             var docId = fieldRef.GetDocumentId();
+
             //find the document containing the referenced field, if it is in this collection
             var referencedDoc = ffView.ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
 
@@ -166,20 +177,30 @@ namespace Dash
             MakeConnection(ffView, referencedDoc, referencedKey, droppedDoc, droppedDocInputKey);
         }
 
-        private static FieldModelController MakeConnection(CollectionFreeformView ffView, DocumentController DroppedDoc, KeyController DroppedDocOutputKey, DocumentController referencingDoc, KeyController referencingKey)
+        /// <summary>
+        /// Makes a link between 2 documents
+        /// </summary>
+        /// <param name="ffView"></param>
+        /// <param name="referencedDoc"></param>
+        /// <param name="referencedKey"></param>
+        /// <param name="referencingDoc"></param>
+        /// <param name="referencingKey"></param>
+        /// <returns></returns>
+        private static FieldModelController MakeConnection(CollectionFreeformView ffView, DocumentController referencedDoc, KeyController referencedKey, DocumentController referencingDoc, KeyController referencingKey)
         {
-            var fieldRef2 = new DocumentFieldReference(DroppedDoc.GetId(), DroppedDocOutputKey);
-            var thisRef = (DroppedDoc.GetDereferencedField(KeyStore.ThisKey, null));
-            if (DroppedDoc.DocumentType == OperatorDocumentModel.OperatorType &&
-                fieldRef2 is DocumentFieldReference && thisRef != null)
-                referencingDoc.SetField(DroppedDocOutputKey, thisRef, true);
+            var fieldRef = new DocumentFieldReference(referencedDoc.GetId(), referencedKey);
+            var thisRef = (referencedDoc.GetDereferencedField(KeyStore.ThisKey, null));
+            if (referencedDoc.DocumentType == OperatorDocumentModel.OperatorType &&
+                fieldRef is DocumentFieldReference && thisRef != null)
+                referencingDoc.SetField(referencedKey, thisRef, true);
             else
             {
-                referencingDoc.SetField(DroppedDocOutputKey,
-                    new ReferenceFieldModelController(fieldRef2), true);
+                referencingDoc.SetField(referencedKey,
+                    new ReferenceFieldModelController(fieldRef), true);
             }
 
-            ffView.AddLineFromData(fieldRef2, referencingDoc, referencingKey);
+            // add line visually
+            ffView.AddLineFromData(fieldRef, referencingDoc, referencingKey);
             return thisRef;
         }
 
