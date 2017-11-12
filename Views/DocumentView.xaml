@@ -133,7 +133,7 @@
                     </TransformGroup>
                 </Canvas.RenderTransform>
             </Canvas>
-            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
+            <TextBox x:Name="xTitleName" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
         </Canvas>
     </Grid>
 </local:SelectionElement>

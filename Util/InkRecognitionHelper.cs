@@ -85,15 +85,6 @@ namespace Dash
                             AddDocumentFromShapeRegion(region);
                             recognized = true;
                         }
-                        //triangles ==> operator menu
-                        if (region.DrawingKind == InkAnalysisDrawingKind.Triangle &&
-                            region.DrawingKind == InkAnalysisDrawingKind.EquilateralTriangle &&
-                            region.DrawingKind == InkAnalysisDrawingKind.IsoscelesTriangle &&
-                            region.DrawingKind == InkAnalysisDrawingKind.RightTriangle)
-                        {
-                            AddOperatorFromRegion(region);
-                            recognized = true;
-                        }
                         if (!recognitionFromSelectedStrokes && recognized) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                     }
                 }
@@ -189,28 +180,34 @@ namespace Dash
                     PointBetween(intersectionPoint, curvePoint1, curvePoint2))
                 {
                     var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                    var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                     var doc2 = view2.ViewModel.DocumentController;
                     var fields = doc2.EnumFields().ToImmutableList();
+                    var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
+                    var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
                     foreach (var field in fields)
                     {
                         var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
                         if (referenceFieldModelController != null)
                         {
-                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null)
-                                .Equals(pair.Key.DereferenceToRoot(null));
+                            var referencesEqual =
+                            (view1.ViewModel.KeysToFrameworkElements[pair.Key.FieldKey].Equals(converter.Element1) && view2
+                                 .ViewModel.KeysToFrameworkElements[field.Key].Equals(converter.Element2));
                             if (referencesEqual && view.RefToLine.ContainsKey(pair.Key))
                             {
                                 view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
                                 doc2.SetField(field.Key,
-                                    referenceFieldModelController.DereferenceToRoot(null).GetCopy(), true);
+                                    referenceFieldModelController.DereferenceToRoot(null)?.GetCopy(), true);
+                                lineDeleted = true;
                             }
                         }
                     }
-                    lineDeleted = true;
+                    
                 }
             }
             return lineDeleted;
         }
+        
 
         private bool PointBetween(Point testPoint, Point a, Point b)
         {
@@ -342,6 +339,11 @@ namespace Dash
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
+                DocumentView documentView = FreeformInkControl.FreeformView.GetDocView(doc);
+                if (documentView != null)
+                {
+                    FreeformInkControl.FreeformView.DeleteConnections(documentView);
+                }
             }
 
             var documentController = Util.BlankCollection();
@@ -389,15 +391,6 @@ namespace Dash
                     var str = TextBoundsDictionary[rect].Item1;
                     TryGetText(str, out string text, out KeyController key);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                    //bool isNumbers = double.TryParse(text, out double n);
-                    //if (isNumbers)
-                    //{
-                    //    doc.SetField(key, new NumberFieldModelController(n), true);
-                    //}
-                    //else
-                    //{
-                    //    doc.SetField(key, new TextFieldModelController(text), true);
-                    //}
                     doc.ParseDocField(key, text);
                     var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
                         relativePosition.X, relativePosition.Y, rect.Width, rect.Height);

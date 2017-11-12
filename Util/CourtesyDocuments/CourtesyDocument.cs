@@ -76,7 +76,7 @@ namespace Dash
         private static int loaded = 0, unloaded = 0;
 
         
-
+        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
