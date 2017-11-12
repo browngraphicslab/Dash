@@ -268,10 +268,18 @@ namespace Dash
             xMainDocView.Height = e.NewSize.Height;
         }
 
-        public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
+        public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
-            //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
             var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
+            // make sure elementToDisplay is never cut from screen 
+            if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
+            {
+                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50; 
+            }
+            if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
+            {
+                dropPoint.Y = xCanvas.ActualHeight - elementToDisplay.Height - 10;
+            }
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
