@@ -10,7 +10,12 @@
     mc:Ignorable="d"
     d:DesignHeight="327"
     d:DesignWidth="547">
-
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="RadialMenuBackground" Color="{ThemeResource RadialMenuBackgroundColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="WindowsBlue" Color="{ThemeResource WindowsBlueColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="DocumentBackgroundSelected" Color="{ThemeResource DocumentBackgroundSelectedColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="RadialCenterForeground" Color="{ThemeResource RadialCenterForegroundColor}"></SolidColorBrush>
+    </UserControl.Resources>
 
     <userControl:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
         <Grid>

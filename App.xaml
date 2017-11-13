@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
-    RequestedTheme="Dark">
+    >
 
     <!-- Application-wide XAML stylesheet-->
 
@@ -45,6 +45,11 @@
                     <Color x:Key="DocumentBackgroundHighlightColor">#FFFFFFFF</Color>
                     <Color x:Key="DocumentBackgroundColor">#CCFFFFFF</Color>
                     <Color x:Key="WindowsBlueColor">#FF068484</Color>
+                    <Color x:Key="RadialMenuBackgroundColor">#CCFFFFFF</Color>
+                    <Color x:Key="DocumentBackgroundSelectedColor">#FF000000</Color>
+                    <Color x:Key="RadialCenterForegroundColor">#FFFFFFFF</Color>
+                    <Color x:Key="ButtonForegroundColor">#FF666666</Color>
+                    <Color x:Key="ButtonForegroundColor2">#FFFFFFFF</Color>
                     <!--general colors-->
                     <SolidColorBrush x:Key="WindowsBlue">#FF068484</SolidColorBrush>
                     <SolidColorBrush x:Key="TranslucentWindowsBlue">#B295AED3</SolidColorBrush>
@@ -56,6 +61,7 @@
                     <SolidColorBrush x:Key="OutputHandleColor">#FF000000</SolidColorBrush>
                     <SolidColorBrush x:Key="InputHandleColor">#FF068484</SolidColorBrush>
                     <SolidColorBrush x:Key="DragHighlight">#33A2A2A2</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForeground">#FF666666</SolidColorBrush>
                     <!-- background colors -->
                     <BitmapImage x:Key="CollectionBackgroundImage" UriSource="ms-appx:///Assets/gridbg.jpg"></BitmapImage>
                     <SolidColorBrush x:Key="OperatorBackground">#FF132D4B</SolidColorBrush>
@@ -76,6 +82,11 @@
                     <Color x:Key="DocumentBackgroundHighlightColor">#CC414141</Color>
                     <Color x:Key="DocumentBackgroundColor">#CC303030</Color>
                     <Color x:Key="WindowsBlueColor">#FF17477E</Color>
+                    <Color x:Key="RadialMenuBackgroundColor">#CC303030</Color>
+                    <Color x:Key="DocumentBackgroundSelectedColor">#FF414141</Color>
+                    <Color x:Key="RadialCenterForegroundColor">#FF414141</Color>
+                    <Color x:Key="ButtonForegroundColor">#FFFFFFFF</Color>
+                    <Color x:Key="ButtonForegroundColor2">#FF000000</Color>
                     <!--general colors-->
                     <SolidColorBrush x:Key="WindowsBlue">#FF17477E</SolidColorBrush>
                     <SolidColorBrush x:Key="TranslucentWindowsBlue">#CC17477E</SolidColorBrush>
@@ -87,12 +98,13 @@
                     <SolidColorBrush x:Key="OutputHandleColor">#FF265C49</SolidColorBrush>
                     <SolidColorBrush x:Key="InputHandleColor">#FF17477E</SolidColorBrush>
                     <SolidColorBrush x:Key="DragHighlight">#33A2A2A2</SolidColorBrush>
+                    <SolidColorBrush x:Key="ButtonForeground">#FFFFFFFF</SolidColorBrush>
                     <!-- background colors -->
-                    <BitmapImage x:Key="CollectionBackgroundImage" UriSource="ms-appx:///Assets/gridbg2.jpg"></BitmapImage>
+                    <!--<BitmapImage x:Key="CollectionBackgroundImage" UriSource="ms-appx:///Assets/gridbg2.jpg"></BitmapImage>-->
                     <SolidColorBrush x:Key="OperatorBackground">#FF132D4B</SolidColorBrush>
                     <SolidColorBrush x:Key="RadialMenuBackground">#CC303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DraggerLineStroke">#66007AFF</SolidColorBrush>
-                    <SolidColorBrush x:Key="CollectionViewBackground">Transparent</SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionViewBackground">#FF000000</SolidColorBrush>
                     <SolidColorBrush x:Key="DocumentBackground" Opacity="{StaticResource DocumentOpacity}">#FF303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DocumentBackgroundOpaque">#FF303030</SolidColorBrush>
                     <SolidColorBrush x:Key="DocumentHighlightBackground" Opacity="{StaticResource DocumentOpacity}">#FF414141</SolidColorBrush>
@@ -301,7 +313,7 @@
                 <!-- prevents node from moving while mouse is over UI element-->
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="Background" Value="{ThemeResource WindowsBlue}" />
-                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Foreground" Value="{ThemeResource MainText}" />
                 <Setter Property="BorderThickness" Value="0,0,0,0" />
 
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}"></Setter>

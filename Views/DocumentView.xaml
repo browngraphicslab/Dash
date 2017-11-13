@@ -26,7 +26,7 @@
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
 
-          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue">
+          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue" Background="{ThemeResource DocumentBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -134,7 +134,7 @@
                     </TransformGroup>
                 </Canvas.RenderTransform>
             </Canvas>
-            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
+            <TextBox Text="{Binding DisplayName, Mode=TwoWay}" BorderBrush="Transparent" Background="Transparent" Foreground="{ThemeResource ButtonForeground}"  Canvas.Left="21" Canvas.Top="-13" IsHitTestVisible="{Binding IsSelected}"></TextBox>
         </Canvas>
     </Grid>
 </local:SelectionElement>

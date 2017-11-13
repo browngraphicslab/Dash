@@ -33,6 +33,7 @@ namespace Dash.Views.Document_Menu
         public Symbol Symbol { get { return xSymbol.Symbol; } set { xSymbol.Symbol = value; } }
         public TextBlock Label { get { return xLabel; } }
         public Button Button { get { return xButton; } }
+        // background binding to themeresource in menubutton makes buttons circular
         public Border Border { get { return xBorder; } set { xBorder = value; } }
     }
 }

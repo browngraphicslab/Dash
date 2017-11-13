@@ -80,7 +80,8 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -141,7 +142,8 @@ namespace Dash
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
                 (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
             }
 
@@ -447,7 +449,6 @@ namespace Dash
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
-            //var backgroundPath = (App.Instance.Resources["CollectionBackgroundImage"] as BitmapImage)?.UriSource;
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it

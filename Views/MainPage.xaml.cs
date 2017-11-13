@@ -35,6 +35,7 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.UI;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -59,7 +60,8 @@ namespace Dash
         {
 
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
 

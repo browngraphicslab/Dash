@@ -143,6 +143,7 @@ namespace Dash
             content = new MenuButtonContainer(icon, name);
             _descriptionText = content.Label;
             _border = content.Border;
+            // makes buttons appear circular 
             content.Border.Background = Resources["MenuBackground"] as SolidColorBrush;
             ;
 

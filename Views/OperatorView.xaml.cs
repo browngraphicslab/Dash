@@ -235,7 +235,7 @@ namespace Dash
         private void ContractView(object sender, RoutedEventArgs e)
         {
             xOpContentPresenter.Content = null;
-            xOpContentPresenter.Background = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+            xOpContentPresenter.Background = (SolidColorBrush)Resources["WindowsBlue"];
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)

@@ -10,14 +10,14 @@
     d:DesignWidth="400">
 
     <Button x:Name="xButton" Background="Transparent" Padding="0" Margin="0" HorizontalAlignment="Stretch">
-        <Border x:Name="xBorder" CornerRadius="50" Background="#CCBE1919" HorizontalAlignment="Stretch" Height="45" Width="45" Padding="6,0">
+        <Border x:Name="xBorder" CornerRadius="50" Background="Transparent" HorizontalAlignment="Stretch" Height="45" Width="45" Padding="6,0">
             <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <SymbolIcon x:Name="xSymbol" Foreground="White" HorizontalAlignment="Center" Symbol="GoToToday" RenderTransformOrigin="0.5,0.5">
+                <SymbolIcon x:Name="xSymbol" HorizontalAlignment="Center" Symbol="GoToToday" RenderTransformOrigin="0.5,0.5">
                     <SymbolIcon.RenderTransform>
                         <CompositeTransform ScaleX="0.8" ScaleY="0.8"/>
                     </SymbolIcon.RenderTransform>
                 </SymbolIcon>
-                <TextBlock x:Name="xLabel" Padding="0" Foreground="White" FontSize="9" Margin="0,-1
+                <TextBlock x:Name="xLabel" Padding="0" FontSize="9" Foreground="White" Margin="0,-1
                            ,0,2" HorizontalAlignment="Center">delegate</TextBlock>
             </StackPanel>
         </Border>

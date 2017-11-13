@@ -9,7 +9,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped"
     x:Name="OpView">
-
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="WindowsBlue" Color="{ThemeResource WindowsBlueColor}"></SolidColorBrush>
+    </UserControl.Resources>
     <Grid>
         <!-- Makes the blue background shape-->
 
@@ -45,7 +47,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" 
+                            <local:EditableTextBlock Grid.Column="1"  Margin="-10,0,0,0" Foreground="{ThemeResource ButtonForeground}"
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
@@ -68,7 +70,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Foreground="White" Margin="0,0,-10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
+                            <local:EditableTextBlock Grid.Column="0" Foreground="{ThemeResource ButtonForeground}" Margin="0,0,-10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse x:Name="OutputEllipse" Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
                                 <ToolTipService.ToolTip>
