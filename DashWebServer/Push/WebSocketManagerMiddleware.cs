@@ -33,7 +33,6 @@ namespace DashWebServer
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
                     await _webSocketHandler.ReceiveAsync(socket, result, serializedInvocationDescriptor).ConfigureAwait(false);
-                    return;
                 }
 
                 else if (result.MessageType == WebSocketMessageType.Close)
@@ -47,8 +46,6 @@ namespace DashWebServer
                     {
                         throw; //let's not swallow any exception for now
                     }
-
-                    return;
                 }
 
             });

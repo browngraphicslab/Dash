@@ -36,7 +36,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -122,6 +122,10 @@ namespace Dash
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
+            };
+            listView.Loaded += (s, e) =>
+            {
+                Util.FixListViewBaseManipulationDeltaPropagation(listView);
             };
             listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
 

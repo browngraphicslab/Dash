@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using DashShared;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -46,8 +46,24 @@ namespace DashWebServer.Controllers
             return Ok(Key);
         }
 
+        // POST api/Key/batch, adds the complete list of fields
+        [HttpPost("batch")]
+        public async Task<IActionResult> Post([FromBody]IEnumerable<KeyModel> keyModels)
+        {
+            try
+            {
+                keyModels = await _documentRepository.AddItemsAsync(keyModels);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return Ok(keyModels);
+        }
+
         // PUT api/Key/5, updates a given Key Key
-        [HttpPut()]
+        [HttpPut]
         public async Task<IActionResult> Put([FromBody]KeyModel Key)
         {
             try

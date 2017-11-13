@@ -7,14 +7,14 @@ using DashShared;
 
 namespace Dash
 {
-    class ZipOperatorFieldController : OperatorFieldModelController
+    public class ZipOperatorFieldController : OperatorFieldModelController
     {
         public static readonly KeyController AKey = new KeyController("0252A0F7-E6A3-498E-A728-8B23B16FA0E5", "Input A");
         public static readonly KeyController BKey = new KeyController("BC72A0FF-C707-488E-A03A-29A6515AB441", "Input B");
 
         public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
 
-        public ZipOperatorFieldController() : base(new OperatorFieldModel("zip"))
+        public ZipOperatorFieldController() : base(new OperatorFieldModel(OperatorType.Zip))
         {
         }
 
@@ -22,11 +22,12 @@ namespace Dash
         {
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<OperatorFieldModel> Copy()
         {
             //return new ZipOperatorFieldController(OperatorFieldModel);
             return new ZipOperatorFieldController();
         }
+
         public override object GetValue(Context context)
         {
             throw new System.NotImplementedException();
@@ -48,7 +49,7 @@ namespace Dash
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var aDocs = (inputs[AKey] as DocumentCollectionFieldModelController).GetDocuments();
             var bDocs = (inputs[BKey] as DocumentCollectionFieldModelController).GetDocuments();
@@ -59,7 +60,7 @@ namespace Dash
             {
                 var aDoc = aDocs[i];
                 var bDoc = bDocs[i];
-                var fields = new Dictionary<KeyController, FieldModelController>();
+                var fields = new Dictionary<KeyController, FieldControllerBase>();
                 AddFields(fields, aDoc);
                 AddFields(fields, bDoc);
                 var newDoc = new DocumentController(fields, DocumentType.DefaultType);
@@ -69,7 +70,7 @@ namespace Dash
             outputs[OutputKey] = new DocumentCollectionFieldModelController(newDocs);
         }
 
-        private void AddFields(Dictionary<KeyController, FieldModelController> fields, DocumentController doc)
+        private void AddFields(Dictionary<KeyController, FieldControllerBase> fields, DocumentController doc)
         {
             foreach (var field in doc.EnumFields())
             {

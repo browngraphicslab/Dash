@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -23,7 +24,7 @@ namespace Dash
         public Numbers(string id = null)
         {
             // create a document with two images
-            var fields = new Dictionary<KeyController, FieldModelController>();
+            var fields = new Dictionary<KeyController, FieldControllerBase>();
             fields.Add(Number1FieldKey, new NumberFieldModelController(789));
             fields.Add(Number2FieldKey, new NumberFieldModelController(23));
             fields.Add(Number3FieldKey, new NumberFieldModelController(8));
@@ -32,17 +33,17 @@ namespace Dash
 
             Document = id != null ? new DocumentController(fields, NumbersType, id) : new DocumentController(fields, NumbersType);
 
-            var tBox1 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number1FieldKey), 0,
+            var tBox1 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number1FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number2FieldKey), 0,
+            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number2FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox3 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
+            var tBox3 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox4 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number4FieldKey), 0,
+            var tBox4 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number4FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox5 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number5FieldKey), 0,
+            var tBox5 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number5FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox6 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
+            var tBox6 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
 
             var gridPanel = new GridLayout().Document;

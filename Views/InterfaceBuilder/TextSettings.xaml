@@ -10,9 +10,6 @@
     d:DesignWidth="300">
 
     <Grid HorizontalAlignment="Stretch" MinHeight="300" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -48,7 +45,7 @@
                     <local:SettingsPaneBlock>
                         <local:SettingsPaneBlock.MainContent>
                             <Grid Grid.Column="0">
-                                <TextBox x:Name="xFontSizeTextBox" BorderBrush="Transparent" Background="White" VerticalAlignment="Center" TextAlignment="Center" FontSize="12" LostFocus="XFontSizeTextBox_OnLostFocus"/>
+                                <TextBox x:Name="xFontSizeTextBox" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center" TextAlignment="Center" FontSize="12" LostFocus="XFontSizeTextBox_OnLostFocus"/>
                                     <Grid x:Name="xFontSizeMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                                           Background="Transparent"
                                           VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -59,14 +56,14 @@
                                           ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
                                         <Border x:Name="xDeduct" Tag="Deduct" Width="25" Height="25"
                                                 HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
                                                        FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                        VerticalAlignment="Center">
                                             </TextBlock>
                                         </Border>
                                         <Border x:Name="xIncrement" Tag="Increment" Width="25" Height="25"
                                                 HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
                                                        FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                        VerticalAlignment="Center">
                                             </TextBlock>
@@ -80,31 +77,30 @@
 
                 <!--ALIGNMENT-->
                 <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                    <local:SettingsPaneBlock>
+                    <local:SettingsPaneBlock Padding="0">
                         <local:SettingsPaneBlock.MainContent>
-                            <ListView x:Name="xAlignmentListView" Height="Auto"  HorizontalAlignment="Center"
+                            <ListView x:Name="xAlignmentListView" Height="Auto" HorizontalAlignment="Center"
                                           HorizontalContentAlignment="Center" SelectionMode="Single"
                                           ScrollViewer.HorizontalScrollMode="Disabled"
                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                          ScrollViewer.VerticalScrollMode="Disabled" Margin="-10,0,0,0">
+                                          ScrollViewer.VerticalScrollMode="Disabled" Margin="0,0,0,0">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal" />
+                                        <StackPanel  Orientation="Horizontal" HorizontalAlignment="Center"/>
                                     </ItemsPanelTemplate>
                                 </ListView.ItemsPanel>
                                 <ListView.ItemContainerStyle>
-                                    <Style TargetType="ListViewItem">
-                                        <Setter Property="Width" Value="15"></Setter>
-                                        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
-                                        <Setter Property="Padding" Value="-2"></Setter>
-                                    </Style>
+                                        <Style TargetType="ListViewItem">
+                                            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"></Setter>
+                                        </Style>
                                 </ListView.ItemContainerStyle>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignLeft"/>
+                                    <SymbolIcon Symbol="AlignCenter" />
                                 </Border>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignCenter" />
+                                    <SymbolIcon Symbol="AlignLeft"/>
                                 </Border>
                                 <Border>
                                     <SymbolIcon Symbol="AlignRight" />
@@ -129,25 +125,25 @@
                 <Grid Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                     <local:SettingsPaneBlock>
                         <local:SettingsPaneBlock.MainContent>
-                            <ComboBox x:Name="xBackgroundColorComboBox" Background="White" BorderBrush="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="auto" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
-                                                <Rectangle.Fill>
-                                                    <SolidColorBrush Color="{Binding Color}" />
-                                                </Rectangle.Fill>
-                                            </Rectangle>
-                                            <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xBackgroundColorComboBox" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="15" Width="15" Margin="2" VerticalAlignment="Center" Stroke="Transparent">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </local:SettingsPaneBlock.MainContent>
                         <local:SettingsPaneBlock.Title>TEXT COLOR</local:SettingsPaneBlock.Title>
                     </local:SettingsPaneBlock>
                 </Grid>

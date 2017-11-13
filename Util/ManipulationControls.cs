@@ -48,10 +48,21 @@ namespace Dash
         {
             get
             {
+                // if we're on the lowest selecting document view then we can resize it with pointer wheel
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
+
+                /*
                 var colView = _element as CollectionFreeformView;
-                return colView == null || colView.IsLowestSelected;
+
+                // hack to see if we're in the interface builder or in the compound operator editor
+                // these are outside of the normal selection hierarchy so we always return true
+                if (colView?.ViewModel is SimpleCollectionViewModel) return true;
+
+                // if the collection view is a free form view, or it is the lowest
+                // selected element then use the pointer
+                return colView != null || colView.IsLowestSelected;*/
+                return _element is CollectionFreeformView;
             }
         }
 
@@ -196,22 +207,39 @@ namespace Dash
 
         public void FitToParent()
         {
-            var par = _element.Parent as ContentControl;
             var ff = _element as CollectionFreeformView;
+            var par = ff?.Parent as FrameworkElement;
+            if (par == null || ff == null)
+                return;
 
-            var rect = par.GetBoundingRect();
-            Rect r = Rect.Empty;
-            foreach (var i in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => ic as ContentPresenter))
+            var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight)); //  par.GetBoundingRect();
+
+            //if (ff.ViewModel.DocumentViewModels.Count == 1)
+            //{
+            //    ff.ViewModel.DocumentViewModels[0].GroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
+            //    var aspect = rect.Width / rect.Height;
+            //    var ffHeight = ff.ViewModel.DocumentViewModels[0].Height;
+            //    var ffwidth = ff.ViewModel.DocumentViewModels[0].Width;
+            //    var ffAspect = ffwidth / ffHeight;
+            //    ff.ViewModel.DocumentViewModels[0].Width  = aspect > ffAspect ? rect.Height * ffAspect : rect.Width;
+            //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
+            //    return;
+            //}
+            
+            var r = Rect.Empty;
+            foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
             {
-                if (i != null)
-                    r.Union((i.Content as DocumentViewModel).Content.GetBoundingRect(par));
+                r.Union(dvm?.Content?.GetBoundingRect(par) ?? r);
             }
+
             if (r != Rect.Empty)
             {
                 var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
                 var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
                 if (rect.Width / rect.Height > r.Width / r.Height)
+                {
                     scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
+                }
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
@@ -232,7 +260,7 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
@@ -268,6 +296,7 @@ namespace Dash
             {
                 ElementScale = newScale;
             }
+            //ElementScale = newScale;
         }
     }
 }

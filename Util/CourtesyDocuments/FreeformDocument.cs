@@ -29,7 +29,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -41,7 +41,7 @@ namespace Dash
         {
             var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-            var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormDocumentLayout, PrototypeId);
+            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.FreeFormDocumentLayout, PrototypeId);
             return prototypeDocument;
         }
 
@@ -81,12 +81,10 @@ namespace Dash
             };
             grid.Loaded += delegate
             {
-                Debug.WriteLine($"Add freeform listener {++i}");
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
             };
             grid.Unloaded += delegate
             {
-                Debug.WriteLine($"Remove freeform listener {--i}");
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
             };
             if (isInterfaceBuilderLayout)
@@ -105,9 +103,9 @@ namespace Dash
                 
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
-                // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
+            
             return grid;
         }
 
@@ -132,20 +130,19 @@ namespace Dash
             AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder, keysToFrameworkElementsIn);
         }
 
-        private static int i = 0;
         private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             foreach (var layoutDocument in docs)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
-                layoutView.HorizontalAlignment = HorizontalAlignment.Left;
-                layoutView.VerticalAlignment = VerticalAlignment.Top;
-
-                var positionField = layoutDocument.GetPositionField(context);
-                BindTranslation(layoutView, positionField);
-
-                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
-
+                // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
+                // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
+                // TODO it helps the freeformdocument position elements correctly
+                layoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+                layoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
+                BindPosition(layoutView, layoutDocument, context);
+                if (isInterfaceBuilder)
+                    SetupBindings(layoutView, layoutDocument, context);
                 grid.Children.Add(layoutView);
             }
         }

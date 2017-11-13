@@ -1,4 +1,5 @@
-﻿using DashShared;
+﻿using Dash.Controllers.Operators;
+using DashShared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views.Document_Menu;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -33,7 +35,7 @@ namespace Dash
         private ListViewSelectionMode _itemSelectionMode;
         private static SelectionElement _previousDragEntered;
 
-        public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+        public virtual KeyController CollectionKey => KeyStore.CollectionKey;
         public KeyController OutputKey
         {
             get; set;
@@ -123,6 +125,150 @@ namespace Dash
                 RemoveDocuments(e.Items.Select((i)=>(i as DocumentViewModel).DocumentController).ToList());
         }
 
+
+        List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
+        {
+            var dictionary      = new Dictionary<object, Dictionary<KeyController, List<object>>>();
+            var pivotDictionary = new Dictionary<object, DocumentController>();
+
+            foreach (var d in docs.Select((dd) => dd.GetDataDocument(null)))
+            {
+                var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
+                foreach (var f in d.EnumFields())
+                    if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
+                    {
+                        if (!fieldDict.ContainsKey(f.Key))
+                        {
+                            fieldDict.Add(f.Key, new List<object>());
+                        }
+                        fieldDict[f.Key].Add(f.Value.GetValue(new Context(d)));
+                    }
+            }
+
+            var pivoted = new List<DocumentController>();
+            foreach (var d in dictionary)
+            {
+                var doc = pivotDictionary.ContainsKey(d.Key) ? pivotDictionary[d.Key] : null;
+                if (doc == null)
+                    continue;
+                foreach (var f in d.Value)
+                    if (doc.GetField(f.Key) == null) {
+                        var items = new List<FieldControllerBase>();
+                        foreach (var i in f.Value)
+                        {
+                            if (i is string)
+                                items.Add(new TextFieldModelController(i as string));
+                            else if (i is double)
+                                items.Add(new NumberFieldModelController((double) i));
+                            else if (i is DocumentController)
+                                items.Add(new DocumentFieldModelController((DocumentController)i));
+                        }
+                        if (items.Count > 0)
+                        {
+                            FieldControllerBase field = null;
+
+                            if (items.First() is TextFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new TextFieldModelController((items.First() as TextFieldModelController).Data) :
+                                                new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController));
+                            else if (items.First() is NumberFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new NumberFieldModelController((items.First() as NumberFieldModelController).Data) :
+                                                new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController));
+                            else if (items.First() is RichTextFieldModelController  )
+                                field = (items.Count == 1) ? (FieldControllerBase)new RichTextFieldModelController((items.First() as RichTextFieldModelController).Data) :
+                                                new ListFieldModelController<RichTextFieldModelController>(items.Where((i) => i is RichTextFieldModelController).Select((i) => i as RichTextFieldModelController));
+                            else if (items.First() is DocumentFieldModelController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new DocumentFieldModelController((items.First() as DocumentFieldModelController).Data) :
+                                               new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data));
+                            if (field != null)
+                                doc.SetField(f.Key, field, true);
+                        }
+                    }
+                pivoted.Add(doc);
+            }
+            return pivoted;
+        }
+
+        Dictionary<KeyController, List<object>> setupPivotDoc(KeyController pivotKey, Dictionary<object, Dictionary<KeyController, List<object>>> dictionary, Dictionary<object, DocumentController> pivotDictionary, DocumentController d)
+        {
+            var obj = d.GetDataDocument(null).GetDereferencedField(pivotKey, null).GetValue(null);
+            DocumentController pivotDoc = null;
+            if (!dictionary.ContainsKey(obj))
+            {
+                var pivotField = d.GetDataDocument(null).GetField(pivotKey);
+                pivotDoc = (pivotField as ReferenceFieldModelController)?.GetDocumentController(null);
+                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+                {
+                    pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
+                        [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(pivotKey.Id) })
+                        }, DocumentType.DefaultType);
+                    if (obj is string)
+                    {
+                        pivotDoc.SetField(pivotKey, new TextFieldModelController(obj as string), true);
+                    }
+                    else if (obj is RichTextFieldModel.RTD)
+                    {
+                        pivotDoc.SetField(pivotKey, new RichTextFieldModelController(obj as RichTextFieldModel.RTD), true);
+                    }
+                    else if (obj is double)
+                    {
+                        pivotDoc.SetField(pivotKey, new NumberFieldModelController((double)obj), true);
+                    }
+                    else if (obj is DocumentController)
+                    {
+                        pivotDoc = obj as DocumentController;
+                    }
+                    else if (obj is DocumentCollectionFieldModelController)
+                    {
+                        pivotDoc.SetField(pivotKey, new DocumentCollectionFieldModelController(obj as List<DocumentController>), true);
+                    }
+                    DBTest.DBDoc.AddChild(pivotDoc);
+                    d.SetField(pivotKey, new DocumentReferenceFieldController(pivotDoc.GetId(), pivotKey), true);
+                }
+                pivotDictionary.Add(obj, pivotDoc);
+                dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
+            }
+
+            d.SetField(pivotKey, new DocumentReferenceFieldController(pivotDictionary[obj].GetId(), pivotKey), true);
+            var fieldDict = dictionary[obj];
+            return fieldDict;
+        }
+        
+        KeyController expandCollection(CollectionDBSchemaHeader.HeaderDragData dragData, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
+        {
+            foreach (var d in (getDocs as DocumentCollectionFieldModelController).Data)
+            {
+                var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
+                if (fieldData is DocumentCollectionFieldModelController)
+                    foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
+                    {
+                        var dataDoc = dd.GetDataDocument(null);
+                        
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
+                        expandedDoc.SetField(showField, new DocumentFieldModelController(dataDoc), true);
+                        subDocs.Add(expandedDoc);
+                    }
+                else if (fieldData is ListFieldModelController<TextFieldModelController>)
+                    foreach (var dd in (fieldData as ListFieldModelController<TextFieldModelController>).Data)
+                    {
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
+                        expandedDoc.SetField(showField, new TextFieldModelController((dd as TextFieldModelController).Data), true);
+                        subDocs.Add(expandedDoc);
+                    }
+                else if (fieldData is ListFieldModelController<NumberFieldModelController>)
+                    foreach (var dd in (fieldData as ListFieldModelController<NumberFieldModelController>).Data)
+                    {
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
+                        expandedDoc.SetField(showField, new NumberFieldModelController((dd as NumberFieldModelController).Data), true);
+                        subDocs.Add(expandedDoc);
+                    }
+            }
+
+            return showField;
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -130,16 +276,51 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            var where = sender is CollectionFreeformView ?
+                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                new Point();
+            if (e.DataView != null &&
+                  (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
+            {
+                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
+                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
+
+                // bcz: testing stuff out here...
+                var cnote = new CollectionNote(where, dragData.ViewType);
+                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceFieldController).DereferenceToRoot(null);
+
+                var subDocs = new List<DocumentController>();
+                var showField = dragData.FieldKey;
+                if ((getDocs as DocumentCollectionFieldModelController).Data.Any())
+                {
+                    var firstDocValue = (getDocs as DocumentCollectionFieldModelController).Data.First().GetDataDocument(null).GetDereferencedField(showField, null);
+                    if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<FieldControllerBase>)
+                        showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    else subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
+                }
+                if (subDocs != null)
+                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(subDocs), true);
+                else cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(showField.Name), true);
+
+                AddDocument(cnote.Document, null);
+                DBTest.DBDoc.AddChild(cnote.Document);
+                CollectionDBSchemaHeader.DragModel = null;
+                return;
+            }
+
+            // first check for things we don't want to allow dropped onto the collection
             //restore previous conditions 
             if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
             this.RemoveDragDropIndication(sender as SelectionElement);
 
             // true if dragged from key value pane in interfacebuilder
-            var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
+            var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
 
             // true if dragged from layoutbar in interfacebuilder
-            var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
+            var isDraggedFromLayoutBar = (e.DataView?.Properties.ContainsKey(InterfaceBuilder.LayoutDragKey) ?? false) && 
+                e.DataView?.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
 
             //return if it's an operator dragged from compoundoperatoreditor listview 
@@ -148,8 +329,9 @@ namespace Dash
             // from now on we are handling this event!
             e.Handled = true;
 
+            // if we are dragging and dropping from the radial menu
             // if we drag from radial menu
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            var sourceIsRadialMenu = e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) ?? false;
             if (sourceIsRadialMenu)
             {
                 var action =
@@ -157,7 +339,6 @@ namespace Dash
                         Action<ICollectionView, DragEventArgs>;
                 action?.Invoke(sender as ICollectionView, e);
             }
-
             // if we drag from the file system
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
             if (sourceIsFileSystem)
@@ -172,25 +353,70 @@ namespace Dash
                 }
             }
 
+            // collection dynamic previews
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
+            {
+                // the collection view which should control the new doc
+                var sendingView = e.DataView.Properties[CollectionView.CollectionPreviewDragKey] as CollectionView;
+
+                // the doc controlling the new doc
+                var sendingDoc = sendingView?.ParentDocument.ViewModel.DocumentController;
+                // get the data part out of it
+                sendingDoc = sendingDoc?.GetDataDocument(null);
+
+                //var previewDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType());
+                //previewDoc.SetField(KeyStore.ActiveLayoutKey, 
+                //    new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), true);
+
+                //AddDocument(previewDoc, null);
+
+                if (sendingDoc != null)
+                {
+                    var previewDoc =
+                        new PreviewDocument(
+                            new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
+                    AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(previewDoc.Document),
+                        [KeyStore.TitleKey] = new TextFieldModelController("Preview Document")
+                    }, new DocumentType()), null);
+                }
+            }
+
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(TreeMenuNode.TreeNodeDragKey))
+            {
+                var draggedLayout = e.DataView.Properties[TreeMenuNode.TreeNodeDragKey] as DocumentController;
+                AddDocument(draggedLayout.GetViewCopy(where), null);
+            }
+
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
-                var collectionViewModel = e.DataView.Properties.ContainsKey("CollectionViewModel") == true ?
-                          e.DataView.Properties["CollectionViewModel"] as CollectionViewModel : null;
+                var collectionViewModel = e.DataView.Properties.ContainsKey(nameof(BaseCollectionViewModel)) == true ?
+                          e.DataView.Properties[nameof(BaseCollectionViewModel)] as BaseCollectionViewModel : null;
 
                 var items = e.DataView.Properties.ContainsKey("DocumentControllerList") == true ?
                           e.DataView.Properties["DocumentControllerList"] as List<DocumentController> : null;
 
-                var where = sender is CollectionFreeformView ?
-                    Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                    new Point();
+                var width = e.DataView.Properties.ContainsKey("Width") == true ? (double)e.DataView.Properties["Width"] : double.NaN;
+                var height = e.DataView.Properties.ContainsKey("Height") == true ? (double)e.DataView.Properties["Height"] : double.NaN;
 
                 var payloadLayoutDelegates = items.Select((p) =>
                 {
                     if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
-                    return e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
+                    var newDoc = e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataCopy(where) : p.GetCopy(where);
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
+                    if (double.IsNaN(newDoc.GetWidthField().Data))
+                        newDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+                    if (double.IsNaN(newDoc.GetHeightField().Data))
+                        newDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+                    if (e.DataView.Properties.ContainsKey("SelectedText"))
+                    {
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null)?.Data;
+
+                    }
+                    return newDoc;
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
@@ -198,7 +424,8 @@ namespace Dash
                     e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
                 }
             }
-            
+
+            // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
@@ -212,14 +439,15 @@ namespace Dash
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-            if (sourceIsRadialMenu)
-            {
-               e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
-            }
+            
+            //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
+            //if (sourceIsRadialMenu)
+            //{
+            //   e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
+            //}
             
             e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             e.DragUIOverride.IsContentVisible = true;
@@ -238,11 +466,8 @@ namespace Dash
         {
             Debug.WriteLine("CollectionViewOnDragLeave Base");
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = CollectionView.GetParentCollectionView(CollectionView.GetParentCollectionView(sender as DependencyObject));
-            if (parentCollection != null)
-            {
-                parentCollection.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
-            }
+            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as SelectionElement;
             if (element != null)

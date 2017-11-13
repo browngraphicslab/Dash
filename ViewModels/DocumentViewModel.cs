@@ -66,6 +66,8 @@ namespace Dash
             get { return _width; }
             set
             {
+                //Debug.Assert(double.IsNaN(value) == false);
+
                 if (SetProperty(ref _width, value))
                 {
                     var widthFieldModelController =
@@ -84,6 +86,8 @@ namespace Dash
             get { return _height; }
             set
             {
+                //Debug.Assert(double.IsNaN(value) == false);
+
                 if (SetProperty(ref _height, value))
                 {
                     var heightFieldModelController =
@@ -97,7 +101,7 @@ namespace Dash
 
         public TransformGroupData GroupTransform
         {
-            get { return IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform; }
+            get => IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform;
             set
             {
                 if (IsInInterfaceBuilder)
@@ -109,7 +113,8 @@ namespace Dash
                 if (SetProperty(ref _normalGroupTransform, value))
                 {
                     var context = new Context(DocumentController);
-                    // set position
+
+                     // set position
                     var posFieldModelController =
                         LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
@@ -168,73 +173,37 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder, KeysToFrameworkElements);
+                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder, KeysToFrameworkElements);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
             }
         }
 
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
+        private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return keysToFrameworkElements; } set { keysToFrameworkElements = value; }  }
 
-
-        string _displayName = "<doc>";
         private bool _isDraggerVisible = true;
-
-        public string DisplayName
-        {
-            get { return _displayName; }
-            set {
-                if (SetProperty<string>(ref _displayName, value)) {
-                    OnPropertyChanged("DisplayName");
-                }
-            }
-        }
 
         public void UpdateContent()
         {
             _content = null;
             OnPropertyChanged(nameof(Content));
-            this.DocumentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated1;
         }
 
-        private void DocumentController_DocumentFieldUpdated1(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-        {
-            var context = args.Context;
-            var primKeys = sender.GetDereferencedField(KeyStore.PrimaryKeyKey, context)?.GetValue(context) as List<FieldModelController>;
-
-            if (primKeys != null && primKeys.Select((k) => (k as TextFieldModelController).Data).Contains(args.Reference.FieldKey.KeyModel.Id))
-            {
-                updateDisplayName();
-            }
-        }
-
-        private void updateDisplayName()
-        {
-            var dataDoc = DocumentController.GetDataDocument(Context);
-            var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, Context);
-            var keys = keyList as ListFieldModelController<TextFieldModelController>;
-            if (keys != null)
-            {
-                var docString = "";
-                foreach (var k in keys.Data)
-                {
-                    var keyField = dataDoc.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), Context);
-                    if (keyField is TextFieldModelController)
-                        docString += (keyField as TextFieldModelController).Data + " ";
-                }
-                DisplayName = docString.TrimEnd(' ');
-            }
-        }
 
         public Context Context { get; set; }
+
+        public bool Undecorated { get; set; }
+
+        // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            DocumentController = documentController;
+            DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
 
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-            DataBindingSource.Add(documentController.DocumentModel);
+            DataBindingSource.Add(documentController.Model);
 
             SetUpSmallIcon();
             _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
@@ -243,7 +212,6 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
-            updateDisplayName();
         }
 
         private void SetUpSmallIcon()
@@ -375,7 +343,7 @@ namespace Dash
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
 
-        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var heightFieldModelController = sender as NumberFieldModelController;
             if (heightFieldModelController != null)
@@ -384,7 +352,7 @@ namespace Dash
             }
         }
 
-        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var widthFieldModelController = sender as NumberFieldModelController;
             if (widthFieldModelController != null)
@@ -393,7 +361,7 @@ namespace Dash
             }
         }
 
-        private void IconFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void IconFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var iconFieldModelController = sender as NumberFieldModelController;
             if (iconFieldModelController != null)
@@ -402,7 +370,7 @@ namespace Dash
             }
         }
 
-        private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+        private void PosFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var posFieldModelController = sender as PointFieldModelController;
             if (posFieldModelController != null)
@@ -411,7 +379,7 @@ namespace Dash
             }
         }
 
-        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var scaleCenterFieldModelController = sender as PointFieldModelController;
             if (scaleCenterFieldModelController != null)
@@ -420,7 +388,7 @@ namespace Dash
             }
         }
 
-        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var scaleAmountFieldModelController = sender as PointFieldModelController;
             if (scaleAmountFieldModelController != null)
@@ -441,8 +409,7 @@ namespace Dash
             MenuOpen = true;
         }
         
-
-        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, CollectionViewModel collectionViewModel)
+        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, BaseCollectionViewModel collectionViewModel)
         {
             var docView = sender as DocumentView;
             DocumentView.DragDocumentView = docView;
@@ -451,10 +418,11 @@ namespace Dash
             if (docView != null)
                 docView.OuterGrid.BorderThickness = new Thickness(5);
 
-            args.Data.Properties.Add("CollectionViewModel", collectionViewModel);
+            args.Data.Properties.Add(nameof(BaseCollectionViewModel), collectionViewModel);
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
                 // different sources based on whether it's a collection or a document 
-            docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
+            if (docView != null)
+                docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void OnCollectionSelectedChanged(bool isCollectionSelected)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using DashShared;
 using Newtonsoft.Json;
 
 namespace Dash
@@ -47,12 +48,6 @@ namespace Dash
             storage = value;
             OnPropertyChanged(propertyName);
             return true;
-        }
-
-        public T Clone<T>(T source)
-        {
-            var serialized = JsonConvert.SerializeObject(source);
-            return JsonConvert.DeserializeObject<T>(serialized);
         }
     }
 }

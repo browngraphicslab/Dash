@@ -15,6 +15,7 @@ using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -47,12 +48,11 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-            xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
-            xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>
-        /// Bind the textbox that shows the layout's name to the current layout being used 
+        /// Bind the textbox that shows the layout's name to the current layout being used
+        /// ** deprecated?? 
         /// </summary>
         private void BindLayoutText(DocumentController currentLayout)
         {
@@ -62,7 +62,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay
             };
-            xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
+            //xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
@@ -84,7 +84,7 @@ namespace Dash
         private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            if (documentView.ViewModel == null || documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            if (documentView.ViewModel == null /*|| documentView.ViewModel.DocumentController.GetId() != editingDocumentId*/)
             {
                 return;
             }
@@ -154,12 +154,12 @@ namespace Dash
                     return;
 
                 // apply position if we are dropping on a freeform
-                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+                if (layoutContainer.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -192,45 +192,45 @@ namespace Dash
                 }
                 if (newLayoutDocument != null)
                 {
-                    var col = layoutContainer.LayoutDocument.GetField(KeyStore.DataKey) as
-                        DocumentCollectionFieldModelController;
+                    var context = new Context(newLayoutDocument);
+                    var col = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                     col?.AddDocument(newLayoutDocument);
                 }
             }
         }
 
-        private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
+        public static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is DocumentFieldModelController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is InkFieldModelController)
             {
-                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new InkBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }
@@ -251,6 +251,17 @@ namespace Dash
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             _selectedContainer = sender;
+            
+            // change visual opacity of delete button so it looks like it is activated or deactivated
+            if (_selectedContainer.ParentContainer != null)
+            {
+                xDeleteButton.Opacity = 1;
+            }
+            else
+            {
+                xDeleteButton.Opacity = .5;
+            }
+
             if (newSettingsPane == null) return;
             // if newSettingsPane is a general document setting, bind the layoutname textbox 
             if (newSettingsPane is FreeformSettings)
@@ -263,9 +274,9 @@ namespace Dash
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
-                   layoutDocument.DocumentType == GridViewLayout.DocumentType ||
-                   layoutDocument.DocumentType == ListViewLayout.DocumentType;
+            return layoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout) ||
+                   layoutDocument.DocumentType.Equals(GridViewLayout.DocumentType) ||
+                   layoutDocument.DocumentType.Equals(ListViewLayout.DocumentType);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -306,6 +317,7 @@ namespace Dash
             var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
             data?.RemoveDocument(_selectedContainer.LayoutDocument);
             _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            xDeleteButton.Opacity = .5;
         }
         
         private void ChromeButton_OnTapped(object sender, TappedRoutedEventArgs e)

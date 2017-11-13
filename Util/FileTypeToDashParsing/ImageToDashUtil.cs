@@ -18,7 +18,7 @@ namespace Dash
             var localFile = await localFolder.CreateFileAsync(Path.GetFileName(sFile.Path), CreationCollisionOption.ReplaceExisting);
             await sFile.CopyAndReplaceAsync(localFile);
 
-            return new AnnotatedImage(new Uri(localFile.Path), null, localFile.Path, 300, 300).Document;
+            return new AnnotatedImage(new Uri(localFile.Path), null, localFile.Name, 300, 300).Document;
         }
     }
 }

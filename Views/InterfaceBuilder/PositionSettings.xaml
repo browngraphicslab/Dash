@@ -19,21 +19,10 @@
                         <ColumnDefinition />
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0" Margin="0,0,5,0">
-                        <!--<TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="Auto" BorderBrush="White"
-                                 Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"
-                                 Margin="0,0,0,5" TextAlignment="Center"
-                                 FontSize="12" LostFocus="XPositionTextBox_OnLostFocus" />-->
-                        <TextBox x:Name="xHorizontalPositionTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                        <TextBox x:Name="xHorizontalPositionTextBox" Foreground="{StaticResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" LostFocus="XPositionTextBox_OnLostFocus" />
-
-                        <Border x:Name="xHorizontalPositionLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="X" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                        <TextBlock Text="X" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -44,14 +33,14 @@
                               ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
                             <Border x:Name="xHorizontalDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
                             </Border>
                             <Border x:Name="xHorizontalIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -59,21 +48,10 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Margin="5,0,0,0">
-                        <!--<TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="Auto" BorderBrush="White"
-                                 Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"
-                                 Margin="0,0,0,5" TextAlignment="Center"
-                                 FontSize="12" LostFocus="XPositionTextBox_OnLostFocus" />-->
-                        <TextBox x:Name="xVerticalPositionTextBox" Height="Auto" BorderBrush="Transparent" Background="White"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
+                        <TextBox x:Name="xVerticalPositionTextBox" Foreground="{StaticResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" LostFocus="XPositionTextBox_OnLostFocus" />
-
-                        <Border x:Name="xWidthLabel" CornerRadius="5" Width="Auto" Padding="10,0,10,0" Height="18"
-                                VerticalAlignment="Top" HorizontalAlignment="Left" Margin="2,0,0,0">
-                            <Border.Background>
-                                <SolidColorBrush Color="SlateGray" Opacity="0.5"></SolidColorBrush>
-                            </Border.Background>
-                            <TextBlock Text="Y" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
-                        </Border>
+                        <TextBlock Text="Y" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -84,14 +62,14 @@
                               ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
                             <Border x:Name="xVerticalDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="SteelBlue"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
                             </Border>
                             <Border x:Name="xVerticalIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="SteelBlue"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>

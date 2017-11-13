@@ -28,7 +28,7 @@ namespace Dash
             collection.FieldModelUpdated += CollectionOnFieldModelUpdated;
         }
 
-        private void CollectionOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        private void CollectionOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var colArgs = (DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs)args;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));

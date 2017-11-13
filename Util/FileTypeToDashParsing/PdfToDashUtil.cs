@@ -26,35 +26,38 @@ namespace Dash
             //var where = sender is Covar storageFile = items[0] as StorageFile;
             if (storageFile.Path.EndsWith(".pdf"))
             {
+                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(storageFile.Path), CreationCollisionOption.ReplaceExisting);
+                await storageFile.CopyAndReplaceAsync(localFile);
+
                 var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page);
-                var pdf = await PdfDocument.LoadFromFileAsync(storageFile);
+                var pdf = await PdfDocument.LoadFromFileAsync(localFile);
                 var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as DocumentCollectionFieldModelController;
                 for (uint i = 0; i < pdf.PageCount; i++)
                     using (var page = pdf.GetPage(i))
                     {
-                        var src = new BitmapImage();
+                        //var src = new BitmapImage();
                         var stream = new InMemoryRandomAccessStream();
                         await page.RenderToStreamAsync(stream);
-                        await src.SetSourceAsync(stream);
-                        var pageImage = new Image() { Source = src };
+                        //await src.SetSourceAsync(stream);
+                        //var pageImage = new Image() { Source = src };
 
                         // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
-                        var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
-                        var pageImg = new AnnotatedImage(new Uri(storageFile.Path), await ToBase64(renderTargetBitmap),
-                            300, 300 * renderTargetBitmap.PixelHeight / renderTargetBitmap.PixelWidth, 50, 50).Document;
+                        //var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
+                        var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, //await ToBase64(renderTargetBitmap),
+                            900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
 
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(storageFile.Path) + ": Page " + i, 300, 300, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, localFile.Name + ": Page " + i, 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
                         children?.AddDocument(pageDoc);
-                        GetText(pageDoc, pageImg, stream, src);
+                        GetText(pageDoc, pageImg, stream);
                     }
                 return pdfDoc.Document;
             }
             return null;
         }
 
-        public async void GetText(DocumentController pageDoc, DocumentController pageImg, InMemoryRandomAccessStream stream, BitmapImage bitmap)
+        public async void GetText(DocumentController pageDoc, DocumentController pageImg, InMemoryRandomAccessStream stream)
         {
-            var img = new Image() { Source = bitmap };
             var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages();
             var decoder = await BitmapDecoder.CreateAsync(stream);
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
@@ -62,7 +65,7 @@ namespace Dash
             var result = await ocrEngine.RecognizeAsync(softwareBitmap);
             var pageImgDoc = pageImg.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? pageImg;
             pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
-            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new ReferenceFieldModelController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
+            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceFieldController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
         async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {
@@ -108,9 +111,9 @@ namespace Dash
             HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
 
             var renderTargetBitmap = new RenderTargetBitmap();
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
             await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
-            (MainPage.Instance.MainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
+            (MainPage.Instance.xMainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
 
             return renderTargetBitmap;
         }

@@ -20,15 +20,11 @@ namespace DashShared
         {
         }
 
-        public KeyModel(string guid)
-        {
-            Id = guid;
+        public KeyModel(string guid) : base(guid) {
             Name = guid;
         }
 
-        public KeyModel(string guid, string name)
-        {
-            Id = guid;
+        public KeyModel(string guid, string name) : base(guid) {
             Name = name;
         }
 

@@ -43,6 +43,10 @@
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AuthenticationTokenModel.cs" />
+    <Compile Include="Models\ISerializable.cs" />
+    <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Models\DocumentModelDTO.cs" />
+    <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\KeyModel.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />
@@ -54,11 +58,18 @@
     <Compile Include="Push\InvocationDescriptor.cs" />
     <Compile Include="Push\Message.cs" />
     <Compile Include="Push\PushMessage.cs" />
+    <Compile Include="Util\RestRequestReturnArgs.cs" />
+    <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Windows.Foundation.UniversalApiContract">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.15063.0\Windows.Foundation.UniversalApiContract\4.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

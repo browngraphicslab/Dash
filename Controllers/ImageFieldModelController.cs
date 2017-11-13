@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using DashShared.Models;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Storage.Streams;
@@ -12,27 +13,53 @@ using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media;
 using Windows.Storage;
 using System.Diagnostics;
+using Windows.Data.Pdf;
 
 namespace Dash
 {
-    public class ImageFieldModelController : FieldModelController
+    public class ImageFieldModelController : FieldModelController<ImageFieldModel>
     {
+
         public ImageFieldModelController() : base(new ImageFieldModel()) { }
 
         public ImageFieldModelController(Uri path, string data = null) : base(new ImageFieldModel(path, data)) { }
+
+        public ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
+        {
+
+        }
+
+        public override void Init()
+        {
+
+        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ImageFieldModel ImageFieldModel => FieldModel as ImageFieldModel;
+        public ImageFieldModel ImageFieldModel => Model as ImageFieldModel;
 
-        
-
-        protected override void UpdateValue(FieldModelController fieldModel)
+        /// <summary>
+        ///     The uri which this image is sourced from. This is a wrapper for <see cref="ImageFieldModel.Data" />
+        /// </summary>
+        public Uri ImageSource
         {
-            Data = (fieldModel as ImageFieldModelController).Data;
+            get { return ImageFieldModel.Data; }
+            set
+            {
+                if (ImageFieldModel.Data != value)
+                {
+                    ImageFieldModel.Data = value;
+                    // Update the server
+                    UpdateOnServer();
+                    OnFieldModelUpdated(null);
+                    // update local
+                    // update server    
+                }
+            }
         }
+
 
         public override FrameworkElement GetTableCellView(Context context)
         {
@@ -53,7 +80,7 @@ namespace Dash
             return image;
         }
 
-        public override FieldModelController GetDefaultController()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
         }
@@ -96,7 +123,14 @@ namespace Dash
                 if (_cacheSource == null) {
                     if (ImageFieldModel.Data != null)
                     {
-                        _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data);
+                        var pathUri = ImageFieldModel.Data;
+                        if (pathUri.AbsoluteUri.Contains(".pdf:"))
+                        {
+                            _cacheSource = new BitmapImage();
+                            loadPdfPage(pathUri, _cacheSource as BitmapImage);
+                        }
+                        else
+                            _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(pathUri);
                     }
                     if (ImageFieldModel.ByteData != null)
                     {
@@ -107,13 +141,32 @@ namespace Dash
             }   //TODO We shouldn't create a new BitmapImage every time Data is accessed
             set {
                 _cacheSource = null;
-                if (value is BitmapImage && SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage)))
+
+                if (value is BitmapImage)
                 {
+                    ImageFieldModel.Data = UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage);
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
+        }
+
+        async void loadPdfPage(Uri uri, BitmapImage bitmapImage)
+        {
+            var pdfPath = uri.AbsoluteUri.Split(new string[] { ".pdf:" }, StringSplitOptions.RemoveEmptyEntries);
+            var storageFile = await ApplicationData.Current.LocalFolder.GetFileAsync(Path.GetFileName(pdfPath[0] + ".pdf"));
+            var pdf  = await PdfDocument.LoadFromFileAsync(storageFile);
+            var page = pdf.GetPage(uint.Parse(pdfPath[1]));
+            
+#pragma warning disable CS4014
+            MainPage.Instance.Dispatcher.RunIdleAsync(async (args) =>
+            {
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await page.RenderToStreamAsync(stream);
+                    bitmapImage.SetSourceAsync(stream);
+                }
+            });
+#pragma warning restore CS4014
         }
         private WriteableBitmap FromBase64(string base64)
         {
@@ -144,7 +197,7 @@ namespace Dash
             return ImageFieldModel.Data.AbsolutePath;
         }
 
-        public override FieldModelController Copy()
+        public override FieldModelController<ImageFieldModel> Copy()
         {
             return new ImageFieldModelController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }

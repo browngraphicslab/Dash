@@ -8,28 +8,33 @@ namespace Dash.Converters
 {
     public class StringToDoubleConverter : SafeDataToXamlConverter<double, string>
     {
-        private double _number;
-
-        public StringToDoubleConverter(double number)
+        double _minValue = double.NaN, _maxValue = double.NaN;
+        public StringToDoubleConverter(double minValue = double.NaN, double maxValue = double.NaN)
         {
-            _number = number;
+            _minValue = minValue;
+            _maxValue = maxValue;
         }
 
         public override string ConvertDataToXaml(double data, object parameter = null)
         {
-            _number = data;
-            return _number.ToString();
+            return data.ToString();
         }
 
         public override double ConvertXamlToData(string xaml, object parameter = null)
         {
-            double coordinateValue;
-            if (!double.TryParse(xaml, out coordinateValue))
+            if (!double.TryParse(xaml, out double outputValue))
             {
-                coordinateValue = 0;
+                outputValue = 0;
             }
-            _number = coordinateValue;
-            return _number;
+            return clamp(outputValue);
+        }
+        private double clamp(double n)
+        {
+            if (!double.IsNaN(_minValue) && n < _minValue)
+                return _minValue;
+            if (!double.IsNaN(_maxValue) && n > _maxValue)
+                return _maxValue;
+            return n;
         }
     }
 }

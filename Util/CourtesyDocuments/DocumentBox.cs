@@ -9,6 +9,7 @@ using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Converters;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {
@@ -19,7 +20,7 @@ namespace Dash
     {
         public static DocumentType DocumentType =
             new DocumentType("7C92378E-C38E-4B28-90C4-F5EF495878E5", "Document Box");
-        public DocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+        public DocumentBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
@@ -30,7 +31,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldModelController>()
+                var binding = new FieldBinding<FieldControllerBase>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,
@@ -41,7 +42,7 @@ namespace Dash
                 element.AddFieldBinding(DocumentView.DataContextProperty, binding);
             }
         }
-        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldModelController fieldModelController)
+        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
             if (fieldModelController is DocumentFieldModelController)
             {
@@ -59,7 +60,7 @@ namespace Dash
 
             ///* 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
 
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Dash.Controllers;
 using DashShared;
 using Dash.Controllers.Operators;
 
@@ -14,42 +15,42 @@ namespace Dash
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController, string title="")
         {
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = opController;
             if(title != "") fields[KeyStore.TitleKey] = new TextFieldModelController(title);
             
             var doc = new DocumentController(fields, OperatorType);
-            ContentController.GetController(doc.GetId());
+            ContentController<DocumentModel>.GetController(doc.GetId());
 
-            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             doc.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
 
             return doc;
         }
 
-        public static DocumentController CreateDBFilterDocumentController()
-        {
-            return DBFilterOperatorFieldModelController.CreateFilter(new ReferenceFieldModelController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
-        }
+        //public static DocumentController CreateDBFilterDocumentController()
+        //{
+        //    return DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
+        //}
         public static DocumentController CreateFilterDocumentController()
         {
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new FilterOperatorFieldModelController();
             var doc = new DocumentController(fields, FilterOperatorFieldModelController.FilterType);
 
-            var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new FilterOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
         }
         public static DocumentController CreateMapDocumentController()
         {
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new CollectionMapOperator();
             var doc = new DocumentController(fields, CollectionMapOperator.MapType);
 
-            var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new CollectionMapOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -57,11 +58,11 @@ namespace Dash
 
         public static DocumentController CreateApiDocumentController()
         {
-            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
             fields[OperatorKey] = new ApiOperatorController();
             var doc = new DocumentController(fields, ApiOperatorController.ApiType);
 
-            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new ApiOperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -69,13 +70,13 @@ namespace Dash
 
         public static DocumentController CreateCompoundController()
         {
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };
             var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
-            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new DocumentReferenceFieldController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             OperationCreationHelper.AddOperator(doc.GetId(), () => doc.GetCopy(), () => doc.GetField(OperatorKey).DereferenceToRoot(null) as OperatorFieldModelController);

@@ -70,7 +70,7 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     Document = OpDoc,
                     Key = DBFilterOperatorFieldModelController.SelfAvgResultKey,
-                    Converter = new DoubleToStringConverter(),
+                    Converter = new StringToDoubleConverter(),
                     Context = new Context(OpDoc)
                 });
             }
@@ -102,7 +102,7 @@ namespace Dash
         }
         public void OperatorOutputChanged(Context context)
         {
-            FieldModelController barcnts, results, buckets, avg;
+            FieldControllerBase barcnts, results, buckets, avg;
             if (context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.CountBarsKey), out barcnts) &&
                 context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), KeyStore.CollectionOutputKey), out results) &&
                 context.TryDereferenceToRoot(new DocumentFieldReference(_opDoc.GetId(), DBFilterOperatorFieldModelController.BucketsKey), out buckets) &&
@@ -149,7 +149,7 @@ namespace Dash
                     xBars[barCounts.IndexOf(b)].xBar.Height /= Math.Max(1, barSum);
             }
         }
-        public void setupBars(List<FieldModelController> buckets) 
+        public void setupBars(List<FieldControllerBase> buckets) 
         {
             this.xBarChart.Children.Clear();
             this.xBarChart.ColumnDefinitions.Clear();

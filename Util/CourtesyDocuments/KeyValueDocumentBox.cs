@@ -15,21 +15,21 @@ namespace Dash
     public class KeyValueDocumentBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("737BB31D-52B4-4C57-AD33-D519F40B57DC", "Key Value Document Box");
-        public KeyValueDocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+        public KeyValueDocumentBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
-            
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
+
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
@@ -64,7 +64,7 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(border, docController);
+                return new SelectableContainer(border, docController, dataDocument);
             }
             return border;
         }

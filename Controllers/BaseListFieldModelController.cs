@@ -5,14 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public abstract class BaseListFieldModelController : FieldModelController
+    public abstract class BaseListFieldModelController : FieldModelController<ListFieldModel>
     {
-        public abstract List<FieldModelController> Data { get; set; }
+        public abstract List<FieldControllerBase> Data { get; set; }
 
-        protected BaseListFieldModelController(FieldModel fieldModel) : base(fieldModel)
+        protected BaseListFieldModelController(ListFieldModel fieldModel) : base(fieldModel)
         {
         }
 
@@ -20,10 +21,10 @@ namespace Dash
 
         public abstract TypeInfo ListSubTypeInfo { get; }
 
-        public abstract void Add(FieldModelController fmc);
-        public abstract void AddRange(IList<FieldModelController> fmcs);
-
-        public override bool CheckType(FieldModelController fmc)
+        public abstract void Add(FieldControllerBase fmc);
+        public abstract void AddRange(IList<FieldControllerBase> fmcs);
+        
+        public override bool CheckType(FieldControllerBase fmc)
         {
             bool isList = base.CheckType(fmc);
             if (isList)

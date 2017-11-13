@@ -24,9 +24,6 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
-        public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
-        public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
-
         public static readonly KeyController GridRowKey = new KeyController("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
         public static readonly KeyController GridColumnKey = new KeyController("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
         public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
@@ -43,7 +40,7 @@ namespace Dash
         /// //TODO explain default field model controller idea here once it is written
         /// </summary>
         /// <returns></returns>
-        protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
+        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             if (refToData != null)
@@ -79,7 +76,7 @@ namespace Dash
         private static int loaded = 0, unloaded = 0;
 
         
-
+        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
@@ -134,15 +131,16 @@ namespace Dash
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            var positionFmc = docController.GetPositionField(context);
-            Binding positionBinding = new Binding
+            FieldBinding<PointFieldModelController> binding = new FieldBinding<PointFieldModelController>()
             {
-                Source = positionFmc,
-                Path = new PropertyPath(nameof(positionFmc.Data)),
                 Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
                 Converter = new PointToTranslateTransformConverter()
             };
-            element.SetBinding(UIElement.RenderTransformProperty, positionBinding);
+
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
@@ -152,7 +150,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = HorizontalAlignmentKey,
+                Key = KeyStore.HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
                 Context = context
             };
@@ -167,7 +165,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = VerticalAlignmentKey,
+                Key = KeyStore.VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
                 Context = context
             };
@@ -232,7 +230,7 @@ namespace Dash
             //Set width and height
             BindWidth(element, docController, context);
             BindHeight(element, docController, context);
-
+                
             //Set alignments
             BindHorizontalAlignment(element, docController, context);
             BindVerticalAlignment(element, docController, context);
@@ -243,19 +241,28 @@ namespace Dash
             BindGridRowSpan(element, docController, context);
             BindGridColumnSpan(element, docController, context);
         }
-        
-        public static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+
+        /// <summary>
+        /// Adds the default fields necessary for rendering a layout, such as height, width, things for the render transform.
+        /// this should be one of the first places you look if something isn't being rendered properly
+        /// 
+        /// <para>
+        /// Takes in a FieldController <paramref name="data"/> which is stored in the <see cref="KeyStore.DataKey"/> and is
+        /// usually a reference to the data which this layout is supposed to render
+        /// </para>
+        /// <returns></returns>
+        public static Dictionary<KeyController, FieldControllerBase> DefaultLayoutFields(Point pos, Size size, FieldControllerBase data = null)
         {
             // assign the default fields
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
                 [KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
                 [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
                 [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
-                [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
-                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Top.ToString())
+                [KeyStore.HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Stretch.ToString())
             };
 
             if (data != null)
@@ -274,7 +281,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldControllerBase fmController)
         {
             //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;
@@ -298,7 +305,7 @@ namespace Dash
                 var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = true;
-                freeform?.StartDrag(new IOReference(fieldKey, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                freeform?.StartDrag(new IOReference(reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
@@ -311,7 +318,7 @@ namespace Dash
                 if (args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
-                    freeform?.StartDrag(new IOReference(fieldKey, reference, true, fmController.TypeInfo, args, renderElement,
+                    freeform?.StartDrag(new IOReference(reference, true, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -323,61 +330,10 @@ namespace Dash
                 if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
-                freeform?.EndDrag(new IOReference(fieldKey, reference, false, fmController.TypeInfo, args, renderElement,
+                freeform?.EndDrag(new IOReference(reference, false, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="NumberFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="NumberFieldModelController"/> is null</exception>
-        /// </summary>
-        protected static void BindHeight(FrameworkElement renderElement,
-            NumberFieldModelController heightController)
-        {
-            if (heightController == null) throw new ArgumentNullException(nameof(heightController));
-            var heightBinding = new Binding
-            {
-                Source = heightController,
-                Path = new PropertyPath(nameof(heightController.Data)),
-                Mode = BindingMode.TwoWay
-            };
-            renderElement.SetBinding(FrameworkElement.HeightProperty, heightBinding);
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="NumberFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="NumberFieldModelController"/> is null</exception>
-        /// </summary>
-        protected static void BindWidth(FrameworkElement renderElement, NumberFieldModelController widthController)
-        {
-            if (widthController == null) throw new ArgumentNullException(nameof(widthController));
-            var widthBinding = new Binding
-            {
-                Source = widthController,
-                Path = new PropertyPath(nameof(widthController.Data)),
-                Mode = BindingMode.TwoWay
-            };
-            renderElement.SetBinding(FrameworkElement.WidthProperty, widthBinding);
-        }
-
-        /// <summary>
-        /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="PointFieldModelController"/>
-        /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="PointFieldModelController"/> is null</exception>
-        /// </summary>
-        public static void BindTranslation(FrameworkElement renderElement,
-            PointFieldModelController translateController)
-        {
-            if (translateController == null) throw new ArgumentNullException(nameof(translateController));
-            var translateBinding = new Binding
-            {
-                Source = translateController,
-                Path = new PropertyPath(nameof(translateController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = new PointToTranslateTransformConverter()
-            };
-            renderElement.SetBinding(UIElement.RenderTransformProperty, translateBinding);
         }
 
         #endregion
@@ -412,14 +368,14 @@ namespace Dash
     {
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
 
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
             var horizontalAlignmentController =
-                document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.HorizontalAlignmentKey) as TextFieldModelController;
             if (horizontalAlignmentController == null)
             {
                 return HorizontalAlignment.Stretch;
@@ -430,14 +386,14 @@ namespace Dash
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             var currentHeight = document.GetHeightField().Data;
-            document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
             document.SetHeight(currentHeight);
         }
 
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
             var verticalAlignmentController =
-                document.GetField(CourtesyDocument.VerticalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.VerticalAlignmentKey) as TextFieldModelController;
             if (verticalAlignmentController == null)
             {
                 return VerticalAlignment.Stretch;

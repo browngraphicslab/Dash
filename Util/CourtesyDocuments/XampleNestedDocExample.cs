@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Dash;
+using Dash.Controllers;
 using DashShared;
 
 namespace Dash
@@ -20,7 +21,7 @@ namespace Dash
             var twoModel = new DocumentFieldModelController(new TwoImages(displayFieldsAsDocuments).Document);
             var tModel = new TextFieldModelController("Nesting");
             var tModel2 = new TextFieldModelController("More Nesting");
-            var fields = new Dictionary<KeyController, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [TextFieldKey] = tModel,
                 [TwoImagesKey] = twoModel,
@@ -28,9 +29,9 @@ namespace Dash
             };
             Document = new DocumentController(fields, NestedDocExampleType);
 
-            var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextFieldKey), 0, 0, double.NaN, 100).Document;
+            var tBox = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), TextFieldKey), 0, 0, double.NaN, 100).Document;
             var imBox1 = twoModel.Data;
-            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextField2Key), 0, 0, double.NaN, 100).Document;
+            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), TextField2Key), 0, 0, double.NaN, 100).Document;
 
             var stackPan = new StackLayout(new DocumentController[] { tBox, imBox1, tBox2 }).Document;
 
