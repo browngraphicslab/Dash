@@ -625,7 +625,7 @@ namespace Dash
 
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
                 xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
-                xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                xTitleBorder.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
 
             //initDocumentOnDataContext();
