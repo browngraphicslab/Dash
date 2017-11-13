@@ -18,10 +18,10 @@
     d:DesignWidth="600">
 
     <Grid>
-        <Grid x:Name="xNumberContent" Visibility="Visible" HorizontalAlignment="Stretch" Background="Beige" VerticalAlignment="Stretch">
+        <Grid x:Name="xNumberContent" Visibility="Visible" HorizontalAlignment="Stretch" Background="#CC414141" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
+                <RowDefinition Height="10*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
             <Grid x:Name="xBarChart" x:FieldModifier="public" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10 10 10 0" Grid.Row="0" >
                 <Grid.ColumnDefinitions>
@@ -31,8 +31,8 @@
                 </Grid.ColumnDefinitions>
                 <local:CollectionDBChartBar Height="90" Grid.Column="1"></local:CollectionDBChartBar>
             </Grid>
-            <Grid x:Name="LineGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="5 0 5 0">
-                <TextBox x:Name="xParameter" x:FieldModifier="public" Text="Parameter" Foreground="Black" FontSize="12" Width="100" TextAlignment="Center" HorizontalAlignment="Center" Height="100"></TextBox>
+            <Grid x:Name="LineGrid" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <TextBox x:Name="xParameter" x:FieldModifier="public" Text="Parameter" Foreground="#CC414141" FontSize="12" Width="100" TextAlignment="Center" HorizontalAlignment="Center" Height="100"></TextBox>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Avg:" FontSize="9" />
                     <TextBlock x:Name="xAvg" x:FieldModifier="public" FontSize="9" Text="x"/>
