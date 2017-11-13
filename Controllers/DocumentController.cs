@@ -22,39 +22,26 @@ namespace Dash
 {
     public class DocumentController : IController<DocumentModel>
     {
-        public bool HasDelegatesOrPrototype { get; private set; }
-
-        private bool _hasDelegates;
+        public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
+        
         public bool HasDelegates
         {
             get
             {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
-                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
-                : null;
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ? 
+                    _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController : null;
 
-                if (currentDelegates == null) return _hasDelegates = false;
-                return _hasDelegates = currentDelegates.Data.Count() > 0;
-            }
-            set
-            {
-                _hasDelegates = value;
-                HasDelegatesOrPrototype = value || HasPrototype;
-
+                if (currentDelegates == null)
+                    return false;
+                return currentDelegates.Data.Count() > 0;
             }
         }
-        private bool _hasPrototypes;
         public bool HasPrototype {
             get
             {
-                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey) &&
+                return _fields.ContainsKey(KeyStore.PrototypeKey) &&
                                         (_fields[KeyStore.PrototypeKey] as DocumentFieldModelController)?.Data
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-            }
-            set
-            {
-                _hasPrototypes = value;
-                HasDelegatesOrPrototype = value || HasDelegates;
             }
         }
 
@@ -647,11 +634,15 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true;
             }
             if (shouldExecute)
             {
                 Execute(context, true);
+            }
+            if (key.Equals(KeyStore.PrototypeKey))
+            {
+                GetPrototype().PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                GetPrototype().PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
             }
             return fieldChanged;
         }
@@ -728,6 +719,11 @@ namespace Dash
                     shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                 }
+                if (field.Key.Equals(KeyStore.PrototypeKey))
+                {
+                    (field.Value as DocumentFieldModelController).Data.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                    (field.Value as DocumentFieldModelController).Data.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
+                }
             }
 
             if (shouldExecute)
@@ -756,8 +752,6 @@ namespace Dash
             var delegateController = new DocumentController(delegateModel);
 
             //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-          
-            PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = new DocumentFieldModelController(this);
@@ -905,7 +899,6 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
-                HasDelegates = true;
             }
             return currentDelegates;
         }

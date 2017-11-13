@@ -17,7 +17,7 @@ namespace Dash
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(KeyStore.TitleKey.ToString() ) } )
+                [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(KeyStore.TitleKey.Id.ToString() ) } )
             };
             return new DocumentController(fields, ImageDocType);
         }

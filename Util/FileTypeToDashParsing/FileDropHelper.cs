@@ -266,7 +266,8 @@ namespace Dash
             if (storagePath.EndsWith(".jpg") || storageItem.FileType.EndsWith(".jpg") ||
                 storagePath.EndsWith(".jpeg") || storageItem.FileType.EndsWith(".jpeg") ||
                 storagePath.EndsWith(".png") || storageItem.FileType.EndsWith(".png") ||
-                storagePath.EndsWith(".gif") || storageItem.FileType.EndsWith(".gif"))
+                storagePath.EndsWith(".gif") || storageItem.FileType.EndsWith(".gif") ||
+                storageItem.FileType == ".jpg")
                 return FileType.Image;
             if (storagePath.EndsWith(".txt"))
                 return FileType.Text;

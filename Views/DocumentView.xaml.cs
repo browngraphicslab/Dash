@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -212,7 +213,6 @@ namespace Dash
         {
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection";
 
             // add item to menu
             if (ParentCollection != null)
@@ -608,24 +608,27 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-
-                // set the default title
-                dataDoc.GetTitleFieldOrSetDefault(context);
-
-                var binding = new FieldBinding<TextFieldModelController>()
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null);
+                var key     = (keyList as ListFieldModelController<TextFieldModelController>)?.Data?.Select((k) => (k as TextFieldModelController)?.Data)?.First();
+                if (key == null) { 
+                    dataDoc.GetTitleFieldOrSetDefault(context);
+                    key = KeyStore.TitleKey.Id;
+                }
+                var Binding = new FieldBinding<TextFieldModelController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = KeyStore.TitleKey,
+                    Key = new KeyController(key),
                     Context = context
                 };
+                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
-                xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
                 xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
                 xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)

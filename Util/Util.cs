@@ -562,7 +562,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.Data)
             {
-                var actualDoc = GetDataDoc(docController, null);
+                var actualDoc = docController.GetDataDocument(null);
 
                 foreach (var field in actualDoc.EnumFields())
                 {
@@ -575,23 +575,6 @@ namespace Dash
                 }
             }
             return typedHeaders;
-        }
-
-        /// <summary>
-        /// Helper method to get the data document from a document if it exists
-        /// otherwise return the document itself
-        /// </summary>
-        /// <param name="docController"></param>
-        /// <returns></returns>
-        public static DocumentController GetDataDoc(DocumentController docController, Context context)
-        {
-            var actualDoc = docController;
-            var dataDoc = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context);
-            if (dataDoc != null)
-            {
-                actualDoc = dataDoc.Data;
-            }
-            return actualDoc;
         }
     }
 }
