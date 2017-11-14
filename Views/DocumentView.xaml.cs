@@ -604,6 +604,7 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
+                updateIcon();
                 // binds the display title of the document to the back end representation
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
@@ -645,21 +646,27 @@ namespace Dash
             if (Height < MinHeight + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
-                updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
+                if (xIcon.Visibility == Visibility.Collapsed)
+                    xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible )
+            else 
             {
                 xFieldContainer.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Visible;
+                xShadowTarget.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = .25;
                 UpdateBinding(false);
