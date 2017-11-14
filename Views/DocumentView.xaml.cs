@@ -608,12 +608,14 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null);
-                var key     = (keyList as ListFieldModelController<TextFieldModelController>)?.Data?.Select((k) => (k as TextFieldModelController)?.Data)?.First();
-                if (key == null) { 
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                string key = KeyStore.TitleKey.Id;
+                if (key == null || !(keyList?.Data?.Count() > 0)) { 
                     dataDoc.GetTitleFieldOrSetDefault(context);
                     key = KeyStore.TitleKey.Id;
-                }
+                } else
+                    key = keyList?.Data?.Select((k) => (k as TextFieldModelController)?.Data)?.First();
+
                 var Binding = new FieldBinding<TextFieldModelController>()
                 {
                     Mode = BindingMode.TwoWay,

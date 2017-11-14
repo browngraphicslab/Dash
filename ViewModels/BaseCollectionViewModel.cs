@@ -439,7 +439,7 @@ namespace Dash
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            
+
             //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
             //if (sourceIsRadialMenu)
             //{
@@ -447,9 +447,15 @@ namespace Dash
             //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
             //    e.DragUIOverride.IsContentVisible = false;
             //    e.DragUIOverride.IsGlyphVisible = false;
-            //}
+            //} 
+
+            // accessing e.DataView generates a catastrophic exception if it hasn't been set in a StartDragging method.  
+            // This happens with the CollectionDBSchemaHeader.
+            if (CollectionDBSchemaHeader.DragModel != null)
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            else 
+                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             
-            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
