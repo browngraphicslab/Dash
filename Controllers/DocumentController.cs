@@ -608,26 +608,32 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
 
-            FieldControllerBase.FieldUpdatedHandler handler =
-                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                {
-                    var newContext = new Context(c);
-                    if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-                        newContext.AddDocumentContext(this);
-                    if (ShouldExecute(newContext, reference.FieldKey))
+            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey))
+            {
+                FieldControllerBase.FieldUpdatedHandler handler =
+                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        newContext = Execute(newContext, true);
-                    }
-                    OnDocumentFieldUpdated(this,
-                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, false), newContext, true);
-                };
-            if (oldField != null)
-            {
-                oldField.FieldModelUpdated -= handler; // TODO does this even work, isn't it removing the new reference to handler not the old one
-            }
-            if (newField != null)
-            {
-                newField.FieldModelUpdated += handler;
+                        var newContext = new Context(c);
+                        if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
+                        ) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                            newContext.AddDocumentContext(this);
+                        if (ShouldExecute(newContext, reference.FieldKey))
+                        {
+                            newContext = Execute(newContext, true);
+                        }
+                        OnDocumentFieldUpdated(this,
+                            new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false),
+                            newContext, true);
+                    };
+                if (oldField != null)
+                {
+                    oldField.FieldModelUpdated -=
+                        handler; // TODO does this even work, isn't it removing the new reference to handler not the old one
+                }
+                if (newField != null)
+                {
+                    newField.FieldModelUpdated += handler;
+                }
             }
         }
 

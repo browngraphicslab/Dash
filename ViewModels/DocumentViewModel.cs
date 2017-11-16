@@ -268,6 +268,10 @@ namespace Dash
 
         private void DocumentController_LayoutUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
+            if (fieldUpdatedEventArgs.Action != DocumentController.FieldUpdatedAction.Replace)
+            {
+                return;
+            }
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) fieldUpdatedEventArgs;
             Debug.Assert(dargs.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey));
             Debug.WriteLine(dargs.Action);
