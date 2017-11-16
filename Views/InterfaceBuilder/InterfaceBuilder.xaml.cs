@@ -48,12 +48,11 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-            xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
-            xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>
-        /// Bind the textbox that shows the layout's name to the current layout being used 
+        /// Bind the textbox that shows the layout's name to the current layout being used
+        /// ** deprecated?? 
         /// </summary>
         private void BindLayoutText(DocumentController currentLayout)
         {
@@ -63,7 +62,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay
             };
-            xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
+            //xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
@@ -85,7 +84,7 @@ namespace Dash
         private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            if (documentView.ViewModel == null || documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            if (documentView.ViewModel == null /*|| documentView.ViewModel.DocumentController.GetId() != editingDocumentId*/)
             {
                 return;
             }
@@ -160,7 +159,7 @@ namespace Dash
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -200,7 +199,7 @@ namespace Dash
             }
         }
 
-        private static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
+        public static DocumentController GetLayoutDocumentForData(FieldControllerBase fieldModelController,
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
@@ -252,6 +251,17 @@ namespace Dash
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             _selectedContainer = sender;
+            
+            // change visual opacity of delete button so it looks like it is activated or deactivated
+            if (_selectedContainer.ParentContainer != null)
+            {
+                xDeleteButton.Opacity = 1;
+            }
+            else
+            {
+                xDeleteButton.Opacity = .5;
+            }
+
             if (newSettingsPane == null) return;
             // if newSettingsPane is a general document setting, bind the layoutname textbox 
             if (newSettingsPane is FreeformSettings)
@@ -307,6 +317,7 @@ namespace Dash
             var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
             data?.RemoveDocument(_selectedContainer.LayoutDocument);
             _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            xDeleteButton.Opacity = .5;
         }
         
         private void ChromeButton_OnTapped(object sender, TappedRoutedEventArgs e)

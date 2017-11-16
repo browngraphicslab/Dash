@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
+using Dash.Converters;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -26,35 +27,30 @@ namespace Dash
 
         private void BindHeight(DocumentController docController, Context context)
         {
-            var heightController =
-                docController.GetHeightField(context);
-            Debug.Assert(heightController != null);
 
-            var heightBinding = new Binding
+            var binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = heightController,
-                Path = new PropertyPath(nameof(heightController.Data)),
                 Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                Document = docController,
+                Key = KeyStore.HeightFieldKey,
+                Converter = new StringToDoubleConverter(0),
+                Context = context
             };
-            xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
-
+            xHeightTextBox.AddFieldBinding(TextBox.TextProperty, binding);
         }
 
 
         private void BindWidth(DocumentController docController, Context context)
         {
-            var widthController = docController.GetWidthField(context);
-            Debug.Assert(widthController != null);
-
-            var widthBinding = new Binding
+            var binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = widthController,
-                Path = new PropertyPath(nameof(widthController.Data)),
                 Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                Document = docController,
+                Key = KeyStore.WidthFieldKey,
+                Converter = new StringToDoubleConverter(0),
+                Context = context
             };
-            xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
+            xWidthTextBox.AddFieldBinding(TextBox.TextProperty, binding);
         }
 
         #region ValueSlider

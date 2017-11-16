@@ -214,6 +214,15 @@ namespace Dash
                 case OperatorType.Regex:
                     controller = new RegexOperatorFieldModelController(model);
                     break;
+                case OperatorType.Melt:
+                    controller = new MeltOperatorFieldModelController(model);
+                    break;
+                case OperatorType.Sentence_Analyzer:
+                    controller = new ExtractSentencesOperatorFieldModelController(model);
+                    break;
+                case OperatorType.Extract_Keywords:
+                    controller = new ExtractKeywordsOperatorFieldModelController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -225,5 +234,59 @@ namespace Dash
         {
             return CreateFromModel(model) as FieldModelController<T>;
         }
+
+
+        public static FieldControllerBase CreateDefaultFieldController(TypeInfo t)
+        {
+            FieldControllerBase controller = null;
+
+            switch (t)
+            {
+                case TypeInfo.Collection:
+                    controller = new DocumentCollectionFieldModelController();
+                    break;
+                case TypeInfo.Point:
+                    controller = new PointFieldModelController(0, 0);
+                    break;
+                case TypeInfo.Operator:
+                    throw new NotImplementedException();
+                case TypeInfo.List:
+                    throw new NotImplementedException();
+                case TypeInfo.Document:
+                    controller = new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType));
+                    break;
+                case TypeInfo.Ink:
+                    controller = new InkFieldModelController();
+                    break;
+                case TypeInfo.Number:
+                    controller = new NumberFieldModelController();
+                    break;
+                case TypeInfo.DocumentReference:
+                case TypeInfo.PointerReference:
+                    throw new NotImplementedException();
+                case TypeInfo.Rectangle:
+                    controller = new RectFieldModelController(0, 0, 0, 0);
+                    break;
+                case TypeInfo.Text:
+                    controller = new TextFieldModelController("");
+                    break;
+                case TypeInfo.RichTextField:
+                    controller = new RichTextFieldModelController();
+                    break;
+                case TypeInfo.Image:
+                    controller = new ImageFieldModelController(new Uri("DEFAULT URI"));
+                    break;
+                case TypeInfo.None:
+                case TypeInfo.Reference:
+                case TypeInfo.Any:
+                    throw new NotImplementedException("Shouldn't get here");
+            }
+
+            Debug.Assert(controller != null);
+
+            return controller;
+        }
+
+
     }
 }

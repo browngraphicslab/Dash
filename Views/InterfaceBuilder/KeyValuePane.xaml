@@ -7,69 +7,69 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="500"
-    d:DesignWidth="800">
+    d:DesignWidth="300">
 
-    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" Padding="0,0" BorderThickness="0" BorderBrush="{ThemeResource WindowsBlue}">
+    <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="7*"/>
-            <RowDefinition/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/> <!--column headers-->
+            <RowDefinition Height="7*"/> <!--column values-->
+            <RowDefinition Height="*"/> <!--random space-->
+            <RowDefinition Height="Auto"/> <!--bottom button-->
         </Grid.RowDefinitions>
+
         <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource AccentGreen}">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*" MaxWidth="100"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
             </Grid.ColumnDefinitions>
-            <TextBlock HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Keys</TextBlock>
-            <TextBlock Grid.Column="1"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Values</TextBlock>
-            <TextBlock Grid.Column="2"  HorizontalAlignment="Left" Style="{StaticResource xTitleStyle}">Type</TextBlock>
+            <TextBlock Text=" "></TextBlock>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Left">Keys</TextBlock>
+            <TextBlock Grid.Column="2"  HorizontalAlignment="Left">Values</TextBlock>
+            <TextBlock Grid.Column="3"  HorizontalAlignment="Right">Type</TextBlock>
         </Grid>
+        
+        <!--column values-->
         <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
-                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
-                  IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick"
-                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0,9.333,0,31">
+                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting" 
+                  IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick" Tapped="xKeyValueListView_Tapped"
+                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0">
+            <!--make the cells in the list view fully expand-->
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <ContentPresenter/>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                    <!--Make the list view items stretch to the full width of the list view-->
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="0,10,0,-25"/>
+                    <Setter Property="Margin" Value="0"/>
                 </Style>
             </ListView.ItemContainerStyle>
-
+            <!--template for list rows-->
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
+                <DataTemplate x:DataType="local:KeyFieldContainer">
                     <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged" Loaded="xContentGrid_Loaded">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}"/>
                             <ColumnDefinition Width="*" MaxWidth="100"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/> 
+                            <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox Tag="{Binding}" IsChecked="{x:Bind Path=IsPrimary}" Width="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"></CheckBox>
-                        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left"  />
                         </ScrollViewer>
 
-                        <Border Grid.Column="2" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
-                        <ScrollViewer Grid.Column="3" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <Border Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                         </ScrollViewer>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        
+        
         <Grid Grid.Row="3"  x:Name="xImageGrid">
-
             <Button x:Name="xCreateFieldButton" Height="40" Background="SteelBlue" Foreground="White" HorizontalAlignment="Stretch" Click="ShowCreateFieldOptions">CREATE FIELD</Button>
             <StackPanel x:Name="xNewFieldPanel" HorizontalAlignment="Stretch" Background ="Transparent" BorderBrush="DimGray" Visibility="Collapsed">
                 <Grid Background="SteelBlue">
@@ -85,7 +85,7 @@
                     <TextBox x:Name="xNewValueField" TextChanged="xNewValueField_TextChanged" KeyDown="XNewValueField_OnKeyDown" Height="30" Grid.Column="1" Margin="5,10,5,10" Background="White" Opacity=".75" HorizontalAlignment="Stretch" PlaceholderText="Value" Foreground="Black"></TextBox>
                 </Grid>
                 <Image Height="75"  x:Name="xDefaultImage" Source="Assets/DefaultImage.png" HorizontalAlignment ="Stretch" Visibility="Collapsed"/>
-                <Grid Background="Transparent">
+                <Grid Background="SteelBlue">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>

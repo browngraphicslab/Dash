@@ -76,7 +76,7 @@ namespace Dash
         private static int loaded = 0, unloaded = 0;
 
         
-
+        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
@@ -242,13 +242,15 @@ namespace Dash
             BindGridColumnSpan(element, docController, context);
         }
 
-        [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
-        protected static Dictionary<KeyController, FieldControllerBase> DefaultLayoutFields(double x, double y, double w, double h,
-            FieldControllerBase data)
-        {
-            return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
-        }
-
+        /// <summary>
+        /// Adds the default fields necessary for rendering a layout, such as height, width, things for the render transform.
+        /// this should be one of the first places you look if something isn't being rendered properly
+        /// 
+        /// <para>
+        /// Takes in a FieldController <paramref name="data"/> which is stored in the <see cref="KeyStore.DataKey"/> and is
+        /// usually a reference to the data which this layout is supposed to render
+        /// </para>
+        /// <returns></returns>
         public static Dictionary<KeyController, FieldControllerBase> DefaultLayoutFields(Point pos, Size size, FieldControllerBase data = null)
         {
             // assign the default fields

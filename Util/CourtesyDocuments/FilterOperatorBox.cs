@@ -11,12 +11,10 @@ namespace Dash
 {
     class FilterOperatorBox : CourtesyDocument
     {
-        public static DocumentType DocumentType = new DocumentType("30651C8A-C3EC-4CF6-999B-F8F1ED094D65", "Filter Operator Box");
-
         public FilterOperatorBox(ReferenceFieldModelController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
-            Document = new DocumentController(fields, DocumentType);
+            Document = new DocumentController(fields, DashConstants.TypeStore.FilterOperatorDocumentType);
         }
 
         protected override DocumentController GetLayoutPrototype()

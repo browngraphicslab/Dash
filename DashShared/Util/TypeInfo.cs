@@ -50,6 +50,9 @@ namespace DashShared
         Compound,
         Subtract,
         Multiply,
-        Regex
+        Regex,
+        Melt,
+        Sentence_Analyzer,
+        Extract_Keywords
     }
 }

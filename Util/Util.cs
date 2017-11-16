@@ -41,7 +41,7 @@ namespace Dash
             // Create a drop shadow
             var dropShadow = compositor.CreateDropShadow();
 
-            dropShadow.Color = Color.FromArgb(90, 0, 0, 0);
+            dropShadow.Color = Color.FromArgb(25, 0, 0, 0);
             dropShadow.BlurRadius = 15.0f;
             dropShadow.Offset = new Vector3(0f, 0f, 0f);
             // Associate the shape of the shadow with the shape of the target element
@@ -509,16 +509,21 @@ namespace Dash
             return null;
         }
 
-        public static DocumentController BlankDoc()
+        public static DocumentController BlankDocWithPosition(Point pos)
         {
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextFieldModelController("Document")
             };
             var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
-            var layout = new FreeFormDocument(new List<DocumentController>(), new Point(0, 0), new Size(200, 200)).Document;
+            var layout = new FreeFormDocument(new List<DocumentController>(), pos, new Size(200, 200)).Document;
             blankDocument.SetActiveLayout(layout, true, true);
             return blankDocument;
+        }
+
+        public static DocumentController BlankDoc()
+        {
+            return BlankDocWithPosition(new Point(0, 0));
         }
 
         public static DocumentController BlankCollection()
@@ -541,6 +546,52 @@ namespace Dash
         public static DocumentController BlankNote()
         {
             return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
+        }
+
+        /// <summary>
+        /// Return the union of all the keys, along with their types from a collection
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(DocumentCollectionFieldModelController collection)
+        {
+            // create the new list of headers
+            var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
+
+            // iterate over all the documents in the input collection and get their key's
+            // and associated types
+            foreach (var docController in collection.Data)
+            {
+                var actualDoc = GetDataDoc(docController, null);
+
+                foreach (var field in actualDoc.EnumFields())
+                {
+                    if (field.Key.Name.StartsWith("_"))
+                        continue;
+
+                    if (!typedHeaders.ContainsKey(field.Key))
+                        typedHeaders[field.Key] = new HashSet<TypeInfo>();
+                    typedHeaders[field.Key].Add(field.Value.TypeInfo);
+                }
+            }
+            return typedHeaders;
+        }
+
+        /// <summary>
+        /// Helper method to get the data document from a document if it exists
+        /// otherwise return the document itself
+        /// </summary>
+        /// <param name="docController"></param>
+        /// <returns></returns>
+        public static DocumentController GetDataDoc(DocumentController docController, Context context)
+        {
+            var actualDoc = docController;
+            var dataDoc = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context);
+            if (dataDoc != null)
+            {
+                actualDoc = dataDoc.Data;
+            }
+            return actualDoc;
         }
     }
 }

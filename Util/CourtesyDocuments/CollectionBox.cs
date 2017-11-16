@@ -45,7 +45,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
             fields[KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
 
-            var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.DocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
 
             return prototypeDocument;
         }
@@ -67,7 +67,7 @@ namespace Dash
 
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
-
+            
             var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(KeyStore.InkDataKey) as InkFieldModelController};
 
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextFieldModelController).Data;
@@ -79,7 +79,9 @@ namespace Dash
             if (keysToFrameworkElementsIn != null)
             {
                 keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-              //  keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+                docController.SetField(KeyStore.CollectionOutputKey,
+                    new DocumentReferenceFieldController(docController.GetId(), reference.FieldKey), true);
             }
 
 

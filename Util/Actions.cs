@@ -24,6 +24,7 @@ using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using static Dash.NoteDocuments;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {
@@ -46,47 +47,20 @@ namespace Dash
         {
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
-
-        public static void AddDocFromFunction(Func<DocumentController> documentCreationFunc)
-        {
-            var freeForm = TabMenu.AddsToThisCollection;
-
-            if (freeForm == null)
-            {
-                return;
-            }
-            
-            var searchView = TabMenu.Instance.SearchView;
-            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-            Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point());
-
-            var opController = documentCreationFunc?.Invoke();
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-            };
-
-            if (opController != null)
-            {
-                freeForm.ViewModel.AddDocument(opController, null);
-            }
-        }
-
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
                 e.GetPosition(MainPage.Instance));
 
 
-            var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-            newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
-            var newDoc = newDocProto.MakeDelegate();
-            newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
+            //var newDocProto = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+            //newDocProto.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Dynamic Doc API"), true);
+            //var newDoc = newDocProto.MakeDelegate();
+            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
+            //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
-            collection.ViewModel.AddDocument(newDoc, null);
+            //collection.ViewModel.AddDocument(newDoc, null);
+            collection.ViewModel.AddDocument(Util.BlankDocWithPosition(where), null);
 
             //DBTest.DBDoc.AddChild(newDoc);
         }
@@ -177,7 +151,7 @@ namespace Dash
                 [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(numbers)
             };
 
-            var collectionDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
+            var collectionDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
             var layoutDocument = new CollectionBox(new DocumentReferenceFieldController(collectionDocument.GetId(),
                     KeyStore.CollectionKey), 0, 0, 400, 400).Document;
             collectionDocument.SetActiveLayout(layoutDocument, true, true); 
@@ -255,6 +229,48 @@ namespace Dash
             }*/
         }
 
+
+        /// <summary>
+        /// Given a function that produces a document controller, visually displays the documents
+        /// on the selected FreeFormView, defaulting to the main canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="opController"></param>
+        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
+        {
+            // default to MainPage collection view
+            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+
+            if (sender == TabMenu.Instance)
+            {
+                freeForm = TabMenu.AddsToThisCollection;
+                if (freeForm == null)
+                    return;
+            }
+
+            // fetch the coordinates of the caller on canvas
+            var searchView = sender;
+            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+            Debug.Assert(transform != null);
+            var translate = transform.TransformPoint(new Point());
+            translate = new Point(translate.X + 300, translate.Y + 100);
+
+            //var opController = documentCreationFunc?.Invoke();
+
+            // using this as a setter for the transform massive hack - LM
+            var _ = new DocumentViewModel(opController)
+            {
+                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                freeForm.ViewModel.AddDocument(opController, null);
+            }
+
+        }
+
+
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
@@ -319,5 +335,10 @@ namespace Dash
         }
         
         #endregion
+
+        public static void ChangeTheme(ICollectionView collectionView, DragEventArgs e)
+        {
+            MainPage.Instance.ThemeChange();
+        }
     }
 }

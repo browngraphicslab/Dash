@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="470"
+    d:DesignHeight="570"
     d:DesignWidth="220">
 
     <Grid>
@@ -81,8 +81,8 @@
                 <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}" />
                 <TextBlock Text="Operator" Style="{StaticResource xMenuItemHeader}"></TextBlock>
             </Grid>
+            <!-- categories
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                
                 <Border Style="{StaticResource xMenuItemBorderGray}">
                     <StackPanel Style="{StaticResource xMenuItemStackPanel}">
                         <StackPanel Style="{StaticResource xMenuItemStackPanel}">
@@ -111,13 +111,25 @@
                         <TextBlock Style="{StaticResource xMenuItemLabel}"  Text="misc."/>
                     </StackPanel>
                 </Border>
-            </StackPanel>
-            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0,1,0,1">
+            </StackPanel>-->
+            <Grid Style="{StaticResource xMenuItemContainer}" Background="{StaticResource AccentGreen}" BorderThickness="0">
+                <TextBlock Text="Math" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ContractArrowIcon}" />
+            </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0,0,0,0">
                 <TextBlock Text="add_two_numbers" Style="{StaticResource xMenuItem}"></TextBlock>
                 <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource OperatorIcon}" />
             </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}" Background="{StaticResource AccentGreen}" BorderThickness="0">
+                <TextBlock Text="Set" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ContractArrowIcon}" />
+            </Grid>
+            <Grid Style="{StaticResource xMenuItemContainer}">
+                <TextBlock Text="union" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource OperatorIcon}" />
+            </Grid>
             <Grid Style="{StaticResource xMenuItemContainer}" BorderThickness="0">
-                <TextBlock Text="twitter_api" Style="{StaticResource xMenuItem}"></TextBlock>
+                <TextBlock Text="intersection" Style="{StaticResource xMenuItem}"></TextBlock>
                 <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Text="{StaticResource OperatorIcon}" />
             </Grid>
 
