@@ -14,7 +14,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("62F7196C-BC2B-4822-AA24-EF2D63866D58", "Api Operator Box");
 
-        public ApiOperatorBox(ReferenceFieldModelController refToOp)
+        public ApiOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
             Document = new DocumentController(fields, DocumentType);

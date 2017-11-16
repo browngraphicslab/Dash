@@ -33,14 +33,14 @@ namespace Dash
             throw new NotImplementedException();
         }
     }
-    public class ReferenceFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<ReferenceFieldModelController, FrameworkElement>
+    public class ReferenceFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<ReferenceController, FrameworkElement>
     {
-        public override FrameworkElement ConvertDataToXaml(ReferenceFieldModelController data, object parameter = null)
+        public override FrameworkElement ConvertDataToXaml(ReferenceController data, object parameter = null)
         {
             return data?.GetTableCellView(null) ?? new Grid();
         }
 
-        public override ReferenceFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override ReferenceController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

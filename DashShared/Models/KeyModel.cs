@@ -8,6 +8,7 @@ using DashShared.Models;
 
 namespace DashShared
 {
+    [FieldModelType(TypeInfo.Key)]
     public class KeyModel : FieldModel
     {
         /// <summary>

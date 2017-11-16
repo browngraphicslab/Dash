@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,8 +67,7 @@ namespace Dash
                 if (_modelDictionary != null)
                 {
                     var d = new Dictionary<string, string>(_modelDictionary);
-                    var file = await DashConstants.LocalStorageFolder.CreateFileAsync(_fileName,
-                        CreationCollisionOption.ReplaceExisting);
+                    var file = await DashConstants.LocalStorageFolder.CreateFileAsync("temp_"+_fileName, CreationCollisionOption.ReplaceExisting);
                     using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
                         using (var outgoingStream = stream.GetOutputStreamAt(0))
@@ -80,6 +80,7 @@ namespace Dash
                             }
                         }
                     }
+                    await file.RenameAsync(_fileName,NameCollisionOption.ReplaceExisting);
                 }
             }
             catch (Exception e)

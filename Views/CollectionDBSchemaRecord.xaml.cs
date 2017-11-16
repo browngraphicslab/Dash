@@ -55,15 +55,15 @@ namespace Dash
             args.Data.Properties.Add("View", true);
             args.Data.RequestedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Link;
             var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data?.DocumentType;
+            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);
-                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
+                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
+                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
 
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
+                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
+                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
                 dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
             }
         }

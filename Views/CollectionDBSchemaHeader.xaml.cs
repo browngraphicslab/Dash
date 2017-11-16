@@ -67,14 +67,14 @@ namespace Dash
             if (collection != null)
             {
                 var viewModel = (DataContext as HeaderViewModel);
-                viewModel.SchemaDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(viewModel.FieldKey.Name), true);
+                viewModel.SchemaDocument.SetField(DBFilterOperatorController.FilterFieldKey, new TextController(viewModel.FieldKey.Name), true);
                 collection.SetDBView();
             }
         }
 
         public class HeaderDragData  
         {
-            public ReferenceFieldModelController HeaderColumnReference;
+            public ReferenceController HeaderColumnReference;
             public KeyController FieldKey;
             public CollectionView.CollectionViewType ViewType;
         }
@@ -89,7 +89,7 @@ namespace Dash
             var viewModel = (DataContext as HeaderViewModel);
             DragModel = new HeaderDragData()
             {
-                HeaderColumnReference = new DocumentReferenceFieldController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
+                HeaderColumnReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
                 FieldKey = viewModel.FieldKey,
                 ViewType = CollectionView.CollectionViewType.DB
             };

@@ -28,7 +28,7 @@ namespace Dash
         private void BindHeight(DocumentController docController, Context context)
         {
 
-            var binding = new FieldBinding<NumberFieldModelController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -42,7 +42,7 @@ namespace Dash
 
         private void BindWidth(DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<NumberFieldModelController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,

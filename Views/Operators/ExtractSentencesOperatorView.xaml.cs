@@ -36,7 +36,7 @@ namespace Dash
         /// <summary>
         /// List of the documents in the input collection, set when the datacontext is changed
         /// </summary>
-        public DocumentCollectionFieldModelController InputCollection { get; set; }
+        public ListController<DocumentController> InputCollection { get; set; }
 
         public ExtractSentencesOperatorView()
         {
@@ -54,21 +54,23 @@ namespace Dash
             _operatorDoc = refToOp?.GetDocumentController(null);
 
             // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorFieldModelController.InputCollection, OnInputCollectionChanged);
-            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorFieldModelController.TextField, OnTextFieldChanged);
+            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorController.InputCollection, OnInputCollectionChanged);
+            _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorController.TextField, OnTextFieldChanged);
 
         }
 
-        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var tfmc = args.NewValue.DereferenceToRoot<TextFieldModelController>(null);
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
             XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
 
         }
 
-        private void OnInputCollectionChanged(DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
+        private void OnInputCollectionChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            InputCollection = eventArgs.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null);
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             _allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
         }
 
@@ -102,8 +104,8 @@ namespace Dash
             if (args.ChosenSuggestion != null)
             {
                 // User selected an item from the suggestion list, take an action on it here.
-                _operatorDoc.SetField(ExtractSentencesOperatorFieldModelController.TextField,
-                    new TextFieldModelController((args.ChosenSuggestion as KeyController).Id), true);
+                _operatorDoc.SetField(ExtractSentencesOperatorController.TextField,
+                    new TextController((args.ChosenSuggestion as KeyController).Id), true);
 
             }
             else

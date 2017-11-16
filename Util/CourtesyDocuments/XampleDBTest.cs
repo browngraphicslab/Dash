@@ -58,19 +58,19 @@ namespace Dash
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>();
             var dc = new DocumentController(fields, new DocumentType("DBNull", "DBNull"));
-            dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
-            dc.SetField(NullDocNameKey, new TextFieldModelController(""), true);
-            dc.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
-                new TextFieldModelController[] { new TextFieldModelController(NullDocNameKey.Id) }), true);
+            dc.SetField(KeyStore.ThisKey, dc, true);
+            dc.SetField(NullDocNameKey, new TextController(""), true);
+            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
+                new TextController[] { new TextController(NullDocNameKey.Id) }), true);
             return dc;
         }
 
         static DocumentController CreateDB()
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields.Add(KeyStore.DataKey, new DocumentCollectionFieldModelController());
+            fields.Add(KeyStore.DataKey, new ListController<DocumentController>());
             var dc = new DocumentController(fields, new DocumentType("DBDoc", "DBDoc"));
-            dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
+            dc.SetField(KeyStore.ThisKey, dc, true);
             return dc;
             return null;
         }
@@ -137,12 +137,12 @@ namespace Dash
         static DocumentController CreatePrototypeWeb()
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields.Add(WebUrlKey, new TextFieldModelController("http://www.cs.brown.edu"));
-            fields.Add(KeyStore.AbstractInterfaceKey, new TextFieldModelController("Web Data API"));
+            fields.Add(WebUrlKey, new TextController("http://www.cs.brown.edu"));
+            fields.Add(KeyStore.AbstractInterfaceKey, new TextController("Web Data API"));
             var dc = new DocumentController(fields, WebType);
-            dc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
-            dc.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
-                new TextFieldModelController[] { new TextFieldModelController(WebUrlKey.Id) }), true);
+            dc.SetField(KeyStore.ThisKey, dc, true);
+            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
+                new TextController[] { new TextController(WebUrlKey.Id) }), true);
             return dc;
 
         }
@@ -239,15 +239,15 @@ namespace Dash
         public static DocumentController CreateWebPage(string target, Point ?where = null)
         {
             var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
-            WebDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
-            WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
-            WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
-                new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
+            WebDoc.SetField(KeyStore.ThisKey, WebDoc, true);
+            WebDoc.SetField(DBTest.WebUrlKey, new TextController(target), true);
+            WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
+                new TextController[] { new TextController(DBTest.WebUrlKey.Id) }), true);
 
-            var webLayout = new WebBox(new DocumentReferenceFieldController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
-            webLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-            webLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
-            webLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(@where ?? new Point()), true);
+            var webLayout = new WebBox(new DocumentReferenceController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
+            webLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
+            webLayout.SetField(KeyStore.HeightFieldKey, new NumberController(800), true);
+            webLayout.SetField(KeyStore.PositionFieldKey, new PointController(@where ?? new Point()), true);
             WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
             return WebDoc;
 
@@ -359,7 +359,7 @@ namespace Dash
             //    game1Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
             //    SetLayoutForDocument(gameDoc, game1Layout, forceMask: true, addToLayoutList: true);
             //    Documents.Add(gameDoc);
-            //    gameDoc.SetField(new KeyController("AKEY", "AKEY"), new DocumentCollectionFieldModelController(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
+            //    gameDoc.SetField(new KeyController("AKEY", "AKEY"), new ListController<DocumentController>(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
             //}
             //{
             //    game2Doc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(game2Doc), true);
@@ -383,8 +383,8 @@ namespace Dash
             //    Documents.Add(CreateWebPage("http://www.msn.com"));
             //}
 
-            DBDoc.DocumentFieldUpdated -= DBDoc_DocumentFieldUpdated;
-            DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;
+            DBDoc.FieldModelUpdated -= DBDoc_DocumentFieldUpdated;
+            DBDoc.FieldModelUpdated += DBDoc_DocumentFieldUpdated;
             return;
 
 
@@ -393,13 +393,13 @@ namespace Dash
         private static bool instantiated;
 
 
-        private void DBDoc_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void DBDoc_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            foreach (var d in (DBDoc.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController).GetDocuments())
+            foreach (var d in (DBDoc.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>).GetElements())
                 if (!d.Equals(MainPage.Instance.MainDocument) && !d.Equals(DBDoc))
                 {
-                    d.DocumentFieldUpdated -= D_DocumentFieldUpdated;
-                    d.DocumentFieldUpdated += D_DocumentFieldUpdated;
+                    d.FieldModelUpdated -= D_DocumentFieldUpdated;
+                    d.FieldModelUpdated += D_DocumentFieldUpdated;
                 }
             return;
 
@@ -423,18 +423,19 @@ namespace Dash
             //    BeenThere.Clear();
             return;
         }
-        private void D_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void D_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             foreach (var s in BeenThere)
                 if (s.sender.Equals(sender))
                 {
-                    if (args.NewValue.CheckType(s.args.NewValue))
+                    if (dargs.NewValue.CheckType(s.args.NewValue))
                     {
-                        if (args.NewValue is DocumentCollectionFieldModelController)
+                        if (dargs.NewValue is ListController<DocumentController>)
                         {
                             var equal = true;
-                            var d1 = (args.NewValue as DocumentCollectionFieldModelController).Data;
-                            var d2 = (s.args.NewValue as DocumentCollectionFieldModelController).Data;
+                            var d1 = (dargs.NewValue as ListController<DocumentController>).Data;
+                            var d2 = (s.args.NewValue as ListController<DocumentController>).Data;
                             if (d1.Count == d2.Count)
                                 foreach (var d in d1)
                                     if (!d2.Contains(d))
@@ -446,13 +447,13 @@ namespace Dash
                                 return;
                         }
                     }
-                    if (args.NewValue.Equals(s.args.NewValue))
+                    if (dargs.NewValue.Equals(s.args.NewValue))
                     {
                         return;
                     }
                 }
-            BeenThere.Add(new SeenIt(sender, args));
-            DBDoc.SetField(KeyStore.DataKey, new DocumentReferenceFieldController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
+            BeenThere.Add(new SeenIt((DocumentController)sender, dargs));
+            DBDoc.SetField(KeyStore.DataKey, new DocumentReferenceController(MainPage.Instance.MainDocument.GetId(), KeyStore.CollectionKey), true);
             return;
         }
     }

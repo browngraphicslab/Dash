@@ -46,7 +46,7 @@ namespace Dash
         private void BindFontAlignment(DocumentController docController, Context context)
         {
             var textAlignmentController =
-                docController.GetDereferencedField(TextingBox.TextAlignmentKey, context) as NumberFieldModelController;
+                docController.GetDereferencedField(TextingBox.TextAlignmentKey, context) as NumberController;
             Debug.Assert(textAlignmentController != null);
 
             var fontAlignmentBinding = new Binding()
@@ -64,7 +64,7 @@ namespace Dash
         private void BindFontWeight(DocumentController docController, Context context)
         {
             var fontWeightController =
-                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as TextFieldModelController;
+                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as TextController;
             Debug.Assert(fontWeightController != null);
 
             _fontWeights = new ObservableCollection<string>()
@@ -88,7 +88,7 @@ namespace Dash
         private void BindFontSize(DocumentController docController, Context context)
         {
             var fontSizeController =
-                    docController.GetDereferencedField(TextingBox .FontSizeKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextingBox .FontSizeKey, context) as NumberController;
             Debug.Assert(fontSizeController != null);
 
             var fontSizeBinding = new Binding()
@@ -104,10 +104,10 @@ namespace Dash
 
         private void ColorSelectionChanged(DocumentController docController, Context context)
         {
-            var textController = docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextFieldModelController;
+            var textController = docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextController;
             Debug.Assert(textController != null);
             var col = (xBackgroundColorComboBox.SelectedItem as NamedColor).Color;
-            docController.SetField(TextingBox.BackgroundColorKey, new TextFieldModelController(col.ToString()), true);
+            docController.SetField(TextingBox.BackgroundColorKey, new TextController(col.ToString()), true);
         }
         
 

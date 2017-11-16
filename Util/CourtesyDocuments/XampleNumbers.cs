@@ -25,25 +25,25 @@ namespace Dash
         {
             // create a document with two images
             var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields.Add(Number1FieldKey, new NumberFieldModelController(789));
-            fields.Add(Number2FieldKey, new NumberFieldModelController(23));
-            fields.Add(Number3FieldKey, new NumberFieldModelController(8));
-            fields.Add(Number4FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
-            fields.Add(Number5FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
+            fields.Add(Number1FieldKey, new NumberController(789));
+            fields.Add(Number2FieldKey, new NumberController(23));
+            fields.Add(Number3FieldKey, new NumberController(8));
+            fields.Add(Number4FieldKey, new NumberController((r.NextDouble() - 0.5) * 600));
+            fields.Add(Number5FieldKey, new NumberController((r.NextDouble() - 0.5) * 600));
 
             Document = id != null ? new DocumentController(fields, NumbersType, id) : new DocumentController(fields, NumbersType);
 
-            var tBox1 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number1FieldKey), 0,
+            var tBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number2FieldKey), 0,
+            var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox3 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
+            var tBox3 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox4 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number4FieldKey), 0,
+            var tBox4 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number4FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox5 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number5FieldKey), 0,
+            var tBox5 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number5FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox6 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Number3FieldKey), 0,
+            var tBox6 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
 
             var gridPanel = new GridLayout().Document;
@@ -62,8 +62,8 @@ namespace Dash
             new RowDefinition{Height = new GridLength(1, GridUnitType.Star)}
         });
             gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
-            gridPanel.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
+            gridPanel.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
             tBox1.SetGridRow(0);
             gridPanel.AddChild(tBox1);
             tBox2.SetGridRow(1);

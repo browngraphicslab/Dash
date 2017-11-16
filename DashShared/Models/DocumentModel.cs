@@ -11,6 +11,7 @@ namespace DashShared
     /// <summary>
     /// A mapping of keys to FieldModels.
     /// </summary>
+    [FieldModelType(TypeInfo.Document)]
     public class DocumentModel : FieldModel
     {
         /// <summary>

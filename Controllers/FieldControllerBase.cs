@@ -18,10 +18,10 @@ namespace Dash
     /// </summary>
     public abstract class FieldControllerBase : IController<FieldModel>, IDisposable
     {
-        public delegate void FieldModelUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
+        public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
         public abstract TypeInfo TypeInfo { get; }
-        public event FieldModelUpdatedHandler FieldModelUpdated;
+        public event FieldUpdatedHandler FieldModelUpdated;
 
 
         public FieldControllerBase(FieldModel model) : base(model)
@@ -79,8 +79,8 @@ namespace Dash
         public virtual FrameworkElement GetTableCellView(Context context)
         {
             var tb = new TextingBox(this);
-            tb.Document.SetField(TextingBox.FontSizeKey, new NumberFieldModelController(11), true);
-            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberFieldModelController(0), true);
+            tb.Document.SetField(TextingBox.FontSizeKey, new NumberController(11), true);
+            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(0), true);
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(Double.NaN);
@@ -125,8 +125,8 @@ namespace Dash
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };
-            var refField = new DocumentReferenceFieldController(id, kc);
-            var dBox = this is ImageFieldModelController
+            var refField = new DocumentReferenceController(id, kc);
+            var dBox = this is ImageController
                 ? new ImageBox(refField).Document
                 : new TextingBox(refField).Document;
             hstack.Children.Add(label);
@@ -175,7 +175,7 @@ namespace Dash
 
         public virtual void DisposeField()
         {
-            DeleteOnServer();
+            //DeleteOnServer();
         }
 
 

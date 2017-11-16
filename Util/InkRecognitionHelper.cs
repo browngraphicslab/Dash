@@ -187,7 +187,7 @@ namespace Dash
                     var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
                     foreach (var field in fields)
                     {
-                        var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
+                        var referenceFieldModelController = (field.Value as ReferenceController);
                         if (referenceFieldModelController != null)
                         {
                             var referencesEqual =
@@ -348,10 +348,10 @@ namespace Dash
 
             var documentController = Util.BlankCollection();
             documentController.SetField(KeyStore.CollectionKey,
-                new DocumentCollectionFieldModelController(recognizedDocuments), true);
+                new ListController<DocumentController>(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
-                    new DocumentReferenceFieldController(documentController.GetId(),
+                    new DocumentReferenceController(documentController.GetId(),
                         KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
                      region.BoundingRect.Height).Document, true, true);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
@@ -392,9 +392,9 @@ namespace Dash
                     TryGetText(str, out string text, out KeyController key);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
                     doc.ParseDocField(key, text);
-                    var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                    var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
                         relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-                    (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                    (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                         rect.Height / 1.5;
                     layoutDocs.Add(textBox.Document);
                     keysToRemove.Add(rect);

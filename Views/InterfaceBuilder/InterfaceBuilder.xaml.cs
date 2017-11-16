@@ -158,16 +158,16 @@ namespace Dash
                 if (layoutContainer.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
-                    var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
-                    var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
+                    var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberController).Data / 2;
+                    var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberController).Data / 2;
+                    var positionController = new PointController(posInLayoutContainer.X - widthOffset,posInLayoutContainer.Y- heightOffset);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
                 // add the document to the composite
                 //if (layoutContainer.DataDocument != null) context.AddDocumentContext(layoutContainer.DataDocument);
-                var data = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-                data?.AddDocument(layoutDocument);
+                var data = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
+                data?.Add(layoutDocument);
             }
             else if (isDraggedFromLayoutBar)
             {
@@ -194,8 +194,8 @@ namespace Dash
                 if (newLayoutDocument != null)
                 {
                     var context = new Context(newLayoutDocument);
-                    var col = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-                    col?.AddDocument(newLayoutDocument);
+                    var col = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
+                    col?.Add(newLayoutDocument);
                 }
             }
         }
@@ -204,34 +204,34 @@ namespace Dash
             DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
-            if (fieldModelController is TextFieldModelController)
+            if (fieldModelController is TextController)
             {
-                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is NumberFieldModelController)
+            else if (fieldModelController is NumberController)
             {
-                layoutDocument = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is ImageFieldModelController)
+            else if (fieldModelController is ImageController)
             {
-                layoutDocument = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is DocumentCollectionFieldModelController)
+            else if (fieldModelController is ListController<DocumentController>)
             {
-                layoutDocument = new CollectionBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is DocumentFieldModelController)
+            else if (fieldModelController is DocumentController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-                layoutDocument = new DocumentBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is RichTextFieldModelController)
+            else if (fieldModelController is RichTextController)
             {
-                layoutDocument = new RichTextBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
-            else if (fieldModelController is InkFieldModelController)
+            else if (fieldModelController is InkController)
             {
-                layoutDocument = new InkBox(new DocumentReferenceFieldController(docController.GetId(), key)).Document;
+                layoutDocument = new InkBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }
@@ -304,8 +304,8 @@ namespace Dash
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (_selectedContainer.ParentContainer == null) return; 
-            var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
-            data?.RemoveDocument(_selectedContainer.LayoutDocument);
+            var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
+            data?.Remove(_selectedContainer.LayoutDocument);
             _selectedContainer.ParentContainer.SetSelectedContainer(null);
         }
         

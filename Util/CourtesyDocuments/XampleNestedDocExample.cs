@@ -18,9 +18,9 @@ namespace Dash
         public NestedDocExample(bool displayFieldsAsDocuments)
         {
             // create a document with two images
-            var twoModel = new DocumentFieldModelController(new TwoImages(displayFieldsAsDocuments).Document);
-            var tModel = new TextFieldModelController("Nesting");
-            var tModel2 = new TextFieldModelController("More Nesting");
+            var twoModel = new TwoImages(displayFieldsAsDocuments).Document;
+            var tModel = new TextController("Nesting");
+            var tModel2 = new TextController("More Nesting");
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [TextFieldKey] = tModel,
@@ -29,9 +29,9 @@ namespace Dash
             };
             Document = new DocumentController(fields, NestedDocExampleType);
 
-            var tBox = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), TextFieldKey), 0, 0, double.NaN, 100).Document;
-            var imBox1 = twoModel.Data;
-            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), TextField2Key), 0, 0, double.NaN, 100).Document;
+            var tBox = new TextingBox(new DocumentReferenceController(Document.GetId(), TextFieldKey), 0, 0, double.NaN, 100).Document;
+            var imBox1 = twoModel;
+            var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), TextField2Key), 0, 0, double.NaN, 100).Document;
 
             var stackPan = new StackLayout(new DocumentController[] { tBox, imBox1, tBox2 }).Document;
 

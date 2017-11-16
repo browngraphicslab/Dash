@@ -51,13 +51,11 @@ namespace Dash
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
         {
-            var dataContext = documentToDisplay.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null);
-            documentToDisplay = dataContext?.Data ?? documentToDisplay;
-            if (_documentControllerDataContext != null)
-                _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
+            var dataContext = documentToDisplay.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
+            documentToDisplay = dataContext ?? documentToDisplay;
             _documentControllerDataContext = documentToDisplay;
-            _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
-            _documentControllerDataContext.DocumentFieldUpdated += _documentControllerDataContext_DocumentFieldUpdated;
+            _documentControllerDataContext.FieldModelUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
+            _documentControllerDataContext.FieldModelUpdated += _documentControllerDataContext_DocumentFieldUpdated;
             DataContext = documentToDisplay; // this line fires data context changed
         }
 
@@ -75,7 +73,7 @@ namespace Dash
         private void SetListItemSourceToCurrentDataContext()
         {
             ListItemSource.Clear();
-            var keys = _documentControllerDataContext.GetDereferencedField< ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t)=> (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
                 {
@@ -83,18 +81,19 @@ namespace Dash
                 }
         }
 
-        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void _documentControllerDataContext_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             // if a field has been replaced or updated then set it's source to be the new element
             // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
-                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
+                UpdateListItemSourceElement(dargs.Reference.FieldKey, dargs.NewValue);
             else SetListItemSourceToCurrentDataContext();
         }
 
         void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
-            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
 
             for (int i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
@@ -131,7 +130,7 @@ namespace Dash
             //{
             // only execute if all fields are specified and reset  
             var type = (TypeInfo)xTypeComboBox.SelectedItem;
-            if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
+            if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
             {
 
                 if (AddKeyValuePair())
@@ -143,7 +142,7 @@ namespace Dash
                 }
             }
             //}
-            
+
         }
         /// <summary>
         /// Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is successful in adding the pair.
@@ -152,7 +151,7 @@ namespace Dash
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
-            FieldControllerBase fmController = new TextFieldModelController("something went wrong");
+            FieldControllerBase fmController = new TextController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
             //fmController = _documentControllerDataContext.GetField(key);
@@ -164,31 +163,33 @@ namespace Dash
                 double number;
                 // if specified type is number only add a new keyvalue pair if the value is a number 
                 if (double.TryParse(xNewValueField.Text, out number))
-                    fmController = new NumberFieldModelController(number);
+                    fmController = new NumberController(number);
                 else
                     return false;
             }
             else if (item == TypeInfo.Image)
             {
-                fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
+                fmController = new ImageController(new Uri(xNewValueField.Text));
             }
             else if (item == TypeInfo.Text)
             {
-                fmController = new TextFieldModelController(xNewValueField.Text);
-            } else if (item == TypeInfo.Collection)
-            {
-                fmController = new DocumentCollectionFieldModelController();
+                fmController = new TextController(xNewValueField.Text);
             }
+            //TODO tfs: fix this
+            //else if (item == TypeInfo.Collection)
+            //{
+            //    fmController = new ListController<DocumentController>();
+            //}
             else if (item == TypeInfo.Document)
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
-                    [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
+                    [KeyStore.ActiveLayoutKey] = new FreeFormDocument(new List<DocumentController>()).Document
                 };
 
-                fmController = new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType)); 
+                fmController = new DocumentController(fields, DocumentType.DefaultType);
             }
-            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
 
             ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext), keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
@@ -201,7 +202,7 @@ namespace Dash
             get
             {
                 return _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null ?
-                _documentControllerDataContext.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data :
+                _documentControllerDataContext.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) :
                 _documentControllerDataContext;
             }
         }
@@ -265,26 +266,26 @@ namespace Dash
                 PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
             }
         }
-        
+
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController))?.ToList() ?? new List<TextFieldModelController>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController))?.ToList() ?? new List<TextController>();
             if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() == 0)
             {
-                keys.Add(new TextFieldModelController(kf.Key.Id));
-                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(keys), false);
+                keys.Add(new TextController(kf.Key.Id));
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(keys), false);
             }
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            var keys = _documentControllerDataContext.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextFieldModelController))?.ToList() ?? new List<TextFieldModelController>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController))?.ToList() ?? new List<TextController>();
             if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() != 0)
             {
                 keys.RemoveAt(keys.FindIndex((k) => k.Data == kf.Key.Id));
-                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(keys), false);
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(keys), false);
             }
         }
 
@@ -486,7 +487,7 @@ namespace Dash
             if (e.Key == VirtualKey.Enter)
             {
                 var type = (TypeInfo)xTypeComboBox.SelectedItem;
-                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.Collection || type == TypeInfo.Document))
+                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
                 {
 
                     AddKeyValuePair();

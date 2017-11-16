@@ -33,7 +33,7 @@ namespace Dash
             var positionController = docController.GetPositionField(context);
             Debug.Assert(positionController != null);
 
-            var xPositionBinding = new FieldBinding<NumberFieldModelController>()
+            var xPositionBinding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -44,7 +44,7 @@ namespace Dash
             };
             xHorizontalPositionTextBox.AddFieldBinding(TextBox.TextProperty, xPositionBinding);
 
-            var yPositionBinding = new FieldBinding<NumberFieldModelController>()
+            var yPositionBinding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,

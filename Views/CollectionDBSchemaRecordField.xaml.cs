@@ -40,7 +40,7 @@ namespace Dash
         double    _width;
         bool      _isSelected;
         Thickness _borderThickness;
-        ReferenceFieldModelController _dataReference;
+        ReferenceController _dataReference;
         
         public bool Selected
         {
@@ -57,7 +57,7 @@ namespace Dash
             get => _width;
             set => SetProperty(ref _width, value);
         }
-        public ReferenceFieldModelController DataReference
+        public ReferenceController DataReference
         {
             get => _dataReference;
             set => SetProperty(ref _dataReference, value);
@@ -71,17 +71,17 @@ namespace Dash
             Document        = document;
             HeaderViewModel = headerViewModel;
             Row             = row;
-            DataReference   = new DocumentReferenceFieldController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
+            DataReference   = new DocumentReferenceController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
             BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
             Width           = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
             Document.AddFieldUpdatedListener(HeaderViewModel.FieldKey, Document_DocumentFieldUpdated);
         }
 
-        private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void Document_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             _dataReference = null; // forces the property change to fire-- otherwise, the old and new field references are the same
-            DataReference = new DocumentReferenceFieldController(Document.GetId(), HeaderViewModel.FieldKey);
+            DataReference = new DocumentReferenceController(Document.GetId(), HeaderViewModel.FieldKey);
         }
         
     }

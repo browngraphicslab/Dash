@@ -24,16 +24,16 @@ namespace Dash
             // create a document with two images
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
 
-            fields[IdKey] = new NumberFieldModelController(id);
-            fields[KeyStore.WidthFieldKey] = new NumberFieldModelController(300);
-            fields[KeyStore.HeightFieldKey] = new NumberFieldModelController(300);
+            fields[IdKey] = new NumberController(id);
+            fields[KeyStore.WidthFieldKey] = new NumberController(300);
+            fields[KeyStore.HeightFieldKey] = new NumberController(300);
 
             if (fieldType == TypeInfo.Text)
             {
                 for (int i = 0; i < numFields; ++i)
                 {
                     KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Text " + i), "Text " + i);
-                    fields[key] = new TextFieldModelController("This is example text " + i);
+                    fields[key] = new TextController("This is example text " + i);
                 }
             }
             else if (fieldType == TypeInfo.Text)
@@ -41,7 +41,7 @@ namespace Dash
                 for (int i = 0; i < numFields; ++i)
                 {
                     KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
-                    fields[key] = new NumberFieldModelController(r.NextDouble() * 100);
+                    fields[key] = new NumberController(r.NextDouble() * 100);
                 }
             }
             else throw new ArgumentException();

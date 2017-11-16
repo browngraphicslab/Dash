@@ -34,7 +34,7 @@ namespace Dash
         private InkSelectionRect _rectangle;
         private CollectionView _collectionView;
         public CollectionFreeformView FreeformView;
-        public InkFieldModelController InkFieldModelController;
+        public InkController InkFieldModelController;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetCanvas { get; set; }

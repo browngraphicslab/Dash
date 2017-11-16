@@ -8,7 +8,7 @@ namespace Dash
 {
     public class CollectionMapOperatorBox : CourtesyDocument
     {
-        public CollectionMapOperatorBox(ReferenceFieldModelController refToOp)
+        public CollectionMapOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.MapOperatorBoxType);

@@ -59,7 +59,7 @@ namespace Dash
             return b != true;
         }
 
-        public ReferenceFieldModelController TargetFieldReference = null;
+        public ReferenceController TargetFieldReference = null;
         public Context TargetDocContext = null;
 
         public EditableTextBlock()

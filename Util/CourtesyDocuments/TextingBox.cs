@@ -13,7 +13,7 @@ using DashShared;
 using TextWrapping = DashShared.TextWrapping;
 using System.Collections.Generic;
 using System.Linq;
-using static Dash.DocumentCollectionFieldModelController;
+using DashShared.Models;
 using static Dash.DocumentController;
 
 namespace Dash
@@ -50,7 +50,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -60,7 +60,7 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var textFieldModelController = new TextFieldModelController(DefaultText);
+            var textFieldModelController = new TextController(DefaultText);
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textFieldModelController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
 
@@ -110,11 +110,11 @@ namespace Dash
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
                 var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
-                if (fmController is TextFieldModelController)
-                    fmController = fmController as TextFieldModelController;
-                else if (fmController is NumberFieldModelController)
-                    fmController = fmController as NumberFieldModelController;
-                var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+                if (fmController is TextController)
+                    fmController = fmController as TextController;
+                else if (fmController is NumberController)
+                    fmController = fmController as NumberController;
+                var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
                 BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey, fmController);
             }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
@@ -141,19 +141,19 @@ namespace Dash
 
         protected static IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
-            if (fieldModelController is DocumentFieldModelController)
+            if (fieldModelController is DocumentController)
             {
                 return new DocumentControllerToStringConverter();
             }
-            else if (fieldModelController is DocumentCollectionFieldModelController)
+            else if (fieldModelController is ListController<DocumentController>)
             {
                 return new DocumentCollectionToStringConverter();
             }
-            else if (fieldModelController is NumberFieldModelController)
+            else if (fieldModelController is NumberController)
             {
                 return new StringToDoubleConverter(0);
             }
-            else if (fieldModelController is ReferenceFieldModelController)
+            else if (fieldModelController is ReferenceController)
             {
                 return null;
             }
@@ -163,7 +163,7 @@ namespace Dash
         
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var alignmentBinding = new FieldBinding<NumberFieldModelController>()
+            var alignmentBinding = new FieldBinding<NumberController>()
             {
                 Key = TextAlignmentKey,
                 Document = docController,
@@ -175,7 +175,7 @@ namespace Dash
         }
         protected static void BindBackgroundColor(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var backgroundBinding = new FieldBinding<TextFieldModelController>()
+            var backgroundBinding = new FieldBinding<TextController>()
             {
                 Key = BackgroundColorKey,
                 Document = docController,
@@ -188,7 +188,7 @@ namespace Dash
 
         protected static void BindFontWeight(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var fontWeightBinding = new FieldBinding<NumberFieldModelController>()
+            var fontWeightBinding = new FieldBinding<NumberController>()
             {
                 Key = FontWeightKey,
                 Document = docController,
@@ -201,7 +201,7 @@ namespace Dash
 
         protected static void BindFontSize(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var fontSizeBinding = new FieldBinding<NumberFieldModelController>()
+            var fontSizeBinding = new FieldBinding<NumberController>()
             {
                 Key = FontSizeKey,
                 Document = docController,
@@ -217,29 +217,29 @@ namespace Dash
         #region GettersAndSetters
         
 
-        private static ReferenceFieldModelController GetTextReference(DocumentController docController)
+        private static ReferenceController GetTextReference(DocumentController docController)
         {
-            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
         private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)
         {
-            docController.SetField(TextAlignmentKey, new NumberFieldModelController(textAlignment), forceMask); // set the field here so that forceMask is respected
+            docController.SetField(TextAlignmentKey, new NumberController(textAlignment), forceMask); // set the field here so that forceMask is respected
         }
 
         private void SetBackgroundColorField(DocumentController docController, Color color, bool forceMask, Context context)
         {
-            docController.SetField(BackgroundColorKey, new TextFieldModelController(color.ToString()), forceMask); // set the field here so that forceMask is respected
+            docController.SetField(BackgroundColorKey, new TextController(color.ToString()), forceMask); // set the field here so that forceMask is respected
         }
 
         private void SetFontSizeField(DocumentController docController, double fontSize, bool forceMask, Context context)
         {
-            docController.SetField(FontSizeKey, new NumberFieldModelController(fontSize), forceMask); // set the field here so that forceMask is respected
+            docController.SetField(FontSizeKey, new NumberController(fontSize), forceMask); // set the field here so that forceMask is respected
         }
 
         private void SetFontWeightField(DocumentController docController, string fontWeight, bool forceMask, Context context)
         {
-            docController.SetField(FontWeightKey, new TextFieldModelController(fontWeight), forceMask); // set the field here so that forceMask is respected
+            docController.SetField(FontWeightKey, new TextController(fontWeight), forceMask); // set the field here so that forceMask is respected
         }
 
         #endregion

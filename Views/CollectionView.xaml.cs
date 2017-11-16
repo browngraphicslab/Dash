@@ -223,7 +223,7 @@ namespace Dash
             else
                 refKey = ViewModel.CollectionKey;
 
-            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.Collection, e, el, ParentDocument);
+            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.List, e, el, ParentDocument);
 
             var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
@@ -243,7 +243,7 @@ namespace Dash
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView() { InkFieldModelController = ViewModel.InkFieldModelController };
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
             ViewModes?.HighlightAction(SetFreeformView);
         }
 
@@ -252,7 +252,7 @@ namespace Dash
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
             ViewModes?.HighlightAction(SetTextView);
         }
 
@@ -261,7 +261,7 @@ namespace Dash
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
             ViewModes?.HighlightAction(SetDBView);
         }
         private void SetSchemaView()
@@ -269,7 +269,7 @@ namespace Dash
             if (CurrentView is CollectionDBSchemaView) return;
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
             ViewModes?.HighlightAction(SetSchemaView);
         }
 
@@ -285,7 +285,7 @@ namespace Dash
             if (CurrentView is CollectionPageView) return;
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
             ViewModes?.HighlightAction(SetBrowseView);
         }
 
@@ -294,7 +294,7 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
             ViewModes?.HighlightAction(SetGridView);
         }
 
