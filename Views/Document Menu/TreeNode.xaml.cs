@@ -44,7 +44,7 @@ namespace Dash.Views.Document_Menu
 
             // re-render branch of tree only when collections are move around
             // this will change if we introduce field display to visual tree
-            if (field.TypeInfo == DashShared.TypeInfo.Collection)
+            if (field.TypeInfo == DashShared.TypeInfo.List)
                 field.FieldModelUpdated += Field_FieldModelUpdated;
 
             xDisplayName.Text = "<" + fieldController.TypeInfo.ToString() + "> " + fieldController.Id;
@@ -90,30 +90,19 @@ namespace Dash.Views.Document_Menu
 
             // TODO: pls dont use an if here, just use a generic method you pass in
             // if it's a list, loop through & display all items recursively
-            if (fieldController.TypeInfo == DashShared.TypeInfo.List)
+            if (fieldController is BaseListController)
             {
-                List<FieldControllerBase> items = (fieldController.DereferenceToRoot<BaseListFieldModelController>(null)).Data as List<FieldControllerBase>;
+                List<FieldControllerBase> items = (fieldController.DereferenceToRoot<BaseListController>(null)).Data;
                 foreach (FieldControllerBase field in items)
                 {
                     xChildrenPanel.Children.Add(new TreeNode(field));
                 }
             }
 
-            // TODO: remove this when merged w/ tyler's updates, list case should catch this
-            else if (fieldController.TypeInfo == DashShared.TypeInfo.Collection)
-            {
-                List<DocumentController> items = (fieldController.DereferenceToRoot<DocumentCollectionFieldModelController>(null)).Data as List<DocumentController>;
-                foreach (DocumentController field in items)
-                {
-                    xChildrenPanel.Children.Add(new TreeNode(new DocumentFieldModelController(field)));
-                }
-
-            }
-
             // if it's a document, loop through & display all of its fields recursively
-            else if (fieldController.TypeInfo == DashShared.TypeInfo.Document)
+            else if (fieldController is DocumentController)
             {
-                DocumentController docController = (fieldController.DereferenceToRoot<DocumentFieldModelController>(null)).Data as DocumentController;
+                DocumentController docController = (fieldController.DereferenceToRoot<DocumentController>(null));
                 
                 foreach (var field in docController.EnumDisplayableFields())
                 {
@@ -122,7 +111,8 @@ namespace Dash.Views.Document_Menu
 
                 // update display name to bind to docucment's title
 
-                var titleField = docController.GetField(ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id));
+                xDisplayName.Text = "<Doc> " + docController.GetTitleFieldOrSetDefault();
+                var titleField = docController.GetField(KeyStore.TitleKey);
                 titleField.FieldModelUpdated += TitleField_FieldModelUpdated;
             }
 
@@ -141,8 +131,8 @@ namespace Dash.Views.Document_Menu
         /// <param name="context"></param>
         private void TitleField_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            DocumentController docController = (fieldController.DereferenceToRoot<DocumentFieldModelController>(null)).Data as DocumentController;
-            xDisplayName.Text = "<Doc> " + (sender as TextFieldModelController).Data as string;
+            DocumentController docController = (fieldController.DereferenceToRoot<DocumentController>(null));
+            xDisplayName.Text = "<Doc> " + (sender as TextController).Data as string;
         }
     }
 

@@ -54,12 +54,14 @@ namespace Dash
             }
         }
 
+        public Grid TextBackground {  get { return xBackground; } }
+
         private bool Not(bool b)
         {
             return b != true;
         }
 
-        public ReferenceFieldModelController TargetFieldReference = null;
+        public ReferenceController TargetFieldReference = null;
         public Context TargetDocContext = null;
 
         public EditableTextBlock()

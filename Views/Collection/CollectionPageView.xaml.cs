@@ -55,12 +55,12 @@ namespace Dash
                 var pageViewDoc = pageDoc.GetViewCopy();
                 pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
-                CurPage = new DocumentViewModel(pageViewDoc);
-                PageDocumentViewModels.Insert(0,CurPage);
+                CurPage = new DocumentViewModel(pageViewDoc) { Undecorated = true };
+                PageDocumentViewModels.Insert(0, CurPage);
 
-                var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
+                var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,xThumbs.ActualHeight);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc));
+                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN, xThumbs.ActualHeight);
             }
         }
 
@@ -76,7 +76,7 @@ namespace Dash
                 xPageNumContainer.Children.Remove(xPageNum);
                 xPageNum = new TextBlock();
 
-                var binding = new FieldBinding<DocumentFieldModelController>()
+                var binding = new FieldBinding<DocumentController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = value.DocumentController,

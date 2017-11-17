@@ -14,13 +14,13 @@
         <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         </Canvas>
-        <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
+        <!--StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{StaticResource DocumentBackgroundOpaque}">
             <Button Tapped="TwitterTestButtonOnTapped" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent">TWITTER TEST</Button>
             <Button Tapped="TestEnvOnButtonTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >TEST ENV</Button>
             <Button Tapped="DelegateTestOnTapped" HorizontalAlignment="Left" Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent">DELEGATE TEST</Button>
             <Button Tapped="DocPointerReferenceOnTapped" HorizontalAlignment="Left"  Style="{StaticResource BlueButton}" VerticalAlignment="Center" Background="Transparent" >DOC POINTER TEST</Button>
             <Button Tapped="UIElementTest" HorizontalAlignment="Left" VerticalAlignment="Center" Style="{StaticResource BlueButton}" Background="Transparent" >UIELEMENT TEST</Button>
-        </StackPanel>
+        </-->
         <Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>

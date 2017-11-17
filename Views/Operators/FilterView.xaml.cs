@@ -39,11 +39,12 @@ namespace Dash
             _operatorDoc = refToOp?.GetDocumentController(null);
 
             // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(FilterOperatorFieldModelController.InputCollection,
-                delegate(DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
+            _operatorDoc?.AddFieldUpdatedListener(FilterOperatorController.InputCollection,
+                delegate(FieldControllerBase sender1, FieldUpdatedEventArgs args1, Context context)
                 {
-                    Documents = eventArgs.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null)
-                        .GetDocuments();
+                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args1;
+                    Documents = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null)
+                        .GetElements();
                 });
         }
 
@@ -53,26 +54,26 @@ namespace Dash
                 return;
             if (xComboBox.SelectedItem == xHasField)
             {
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterTypeKey,
-                    new TextFieldModelController(FilterModel.FilterType.containsKey.ToString()), true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.KeyNameKey, new TextFieldModelController(xSearchFieldBox.Text),
+                _operatorDoc.SetField(FilterOperatorController.FilterTypeKey,
+                    new TextController(FilterModel.FilterType.containsKey.ToString()), true);
+                _operatorDoc.SetField(FilterOperatorController.KeyNameKey, new TextController(xSearchFieldBox.Text),
                     true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterValueKey, new TextFieldModelController(""), true);
+                _operatorDoc.SetField(FilterOperatorController.FilterValueKey, new TextController(""), true);
             }
             else if (xComboBox.SelectedItem == xFieldContains)
             {
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterTypeKey,
-                    new TextFieldModelController(FilterModel.FilterType.valueContains.ToString()), true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.KeyNameKey, new TextFieldModelController(xFieldBox.Text), true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterValueKey, new TextFieldModelController(xSearchBox.Text),
+                _operatorDoc.SetField(FilterOperatorController.FilterTypeKey,
+                    new TextController(FilterModel.FilterType.valueContains.ToString()), true);
+                _operatorDoc.SetField(FilterOperatorController.KeyNameKey, new TextController(xFieldBox.Text), true);
+                _operatorDoc.SetField(FilterOperatorController.FilterValueKey, new TextController(xSearchBox.Text),
                     true);
             }
             else if (xComboBox.SelectedItem == xFieldEquals)
             {
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterTypeKey,
-                    new TextFieldModelController(FilterModel.FilterType.valueEquals.ToString()), true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.KeyNameKey, new TextFieldModelController(xFieldBox.Text), true);
-                _operatorDoc.SetField(FilterOperatorFieldModelController.FilterValueKey, new TextFieldModelController(xSearchBox.Text),
+                _operatorDoc.SetField(FilterOperatorController.FilterTypeKey,
+                    new TextController(FilterModel.FilterType.valueEquals.ToString()), true);
+                _operatorDoc.SetField(FilterOperatorController.KeyNameKey, new TextController(xFieldBox.Text), true);
+                _operatorDoc.SetField(FilterOperatorController.FilterValueKey, new TextController(xSearchBox.Text),
                     true);
             }
         }

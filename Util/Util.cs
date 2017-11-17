@@ -148,12 +148,12 @@ namespace Dash
             scrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
         }
 
-        public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA,
-            DocumentCollectionFieldModelController setB)
+        public static HashSet<DocumentController> GetIntersection(ListController<DocumentController> setA,
+            ListController<DocumentController> setB)
         {
             var result = new HashSet<DocumentController>();
-            foreach (var contA in setA.GetDocuments())
-            foreach (var contB in setB.GetDocuments())
+            foreach (var contA in setA.GetElements())
+            foreach (var contB in setB.GetElements())
             {
                 if (result.Contains(contB)) continue;
 
@@ -164,33 +164,33 @@ namespace Dash
                 var equal = true;
                 foreach (var pair in enumFieldsA)
                     if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
-                        if (pair.Value is TextFieldModelController)
+                        if (pair.Value is TextController)
                         {
-                            var fmContA = pair.Value as TextFieldModelController;
+                            var fmContA = pair.Value as TextController;
                             var fmContB =
-                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextFieldModelController;
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextController;
                             if (!fmContA.Data.Equals(fmContB?.Data))
                             {
                                 equal = false;
                                 break;
                             }
                         }
-                        else if (pair.Value is NumberFieldModelController)
+                        else if (pair.Value is NumberController)
                         {
-                            var fmContA = pair.Value as NumberFieldModelController;
+                            var fmContA = pair.Value as NumberController;
                             var fmContB =
-                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberFieldModelController;
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberController;
                             if (!fmContA.Data.Equals(fmContB?.Data))
                             {
                                 equal = false;
                                 break;
                             }
                         }
-                        else if (pair.Value is ImageFieldModelController)
+                        else if (pair.Value is ImageController)
                         {
-                            var fmContA = pair.Value as ImageFieldModelController;
+                            var fmContA = pair.Value as ImageController;
                             var fmContB =
-                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageFieldModelController;
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageController;
                             if (!fmContA.ImageFieldModel.Data.AbsoluteUri.Equals(fmContB.ImageFieldModel.Data
                                 .AbsoluteUri))
                             {
@@ -220,32 +220,32 @@ namespace Dash
             foreach (KeyValuePair<KeyController, FieldControllerBase> pair in fields)
             {
                 object data = null;
-                if (pair.Value is TextFieldModelController)
+                if (pair.Value is TextController)
                 {
-                    var cont = pair.Value as TextFieldModelController;
+                    var cont = pair.Value as TextController;
                     data = cont.Data;
                 }
-                else if (pair.Value is NumberFieldModelController)
+                else if (pair.Value is NumberController)
                 {
-                    var cont = pair.Value as NumberFieldModelController;
+                    var cont = pair.Value as NumberController;
                     data = cont.Data;
                 }
-                else if (pair.Value is ImageFieldModelController)
+                else if (pair.Value is ImageController)
                 {
-                    var cont = pair.Value as ImageFieldModelController;
+                    var cont = pair.Value as ImageController;
                     data = cont.ImageFieldModel.Data.AbsoluteUri;
                 }
-                else if (pair.Value is PointFieldModelController)
+                else if (pair.Value is PointController)
                 {
-                    var cont = pair.Value as PointFieldModelController;
+                    var cont = pair.Value as PointController;
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
                 else if (pair.Key == KeyStore.CollectionKey)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
-                    var collectionCont = pair.Value as DocumentCollectionFieldModelController;
-                    foreach (var cont in collectionCont.GetDocuments())
+                    var collectionCont = pair.Value as ListController<DocumentController>;
+                    foreach (var cont in collectionCont.GetElements())
                         collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
                     jsonDict[pair.Key.Name] = collectionList;
                     continue;
@@ -486,13 +486,13 @@ namespace Dash
             // check for number field model controller
             var num = IsNumeric(expression);
             if (num.HasValue)
-                return new NumberFieldModelController(num.Value);
+                return new NumberController(num.Value);
 
             string[] imageExtensions = {"jpg", "bmp", "gif", "png"}; //  etc
 
             if (imageExtensions.Any(expression.EndsWith))
-                return new ImageFieldModelController(new Uri(expression));
-            return new TextFieldModelController(expression);
+                return new ImageController(new Uri(expression));
+            return new TextController(expression);
         }
 
 
@@ -513,7 +513,7 @@ namespace Dash
         {
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
-                [KeyStore.TitleKey] = new TextFieldModelController("Document")
+                [KeyStore.TitleKey] = new TextController("Document")
             };
             var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
             var layout = new FreeFormDocument(new List<DocumentController>(), pos, new Size(200, 200)).Document;
@@ -531,15 +531,15 @@ namespace Dash
             var colfields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.CollectionKey] =
-                new DocumentCollectionFieldModelController(),
-                [KeyStore.TitleKey] = new TextFieldModelController("Collection")
+                new ListController<DocumentController>(),
+                [KeyStore.TitleKey] = new TextController("Collection")
             };
             var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
             colDoc.SetActiveLayout(
                 new CollectionBox(
-                    new DocumentReferenceFieldController(colDoc.GetId(),
+                    new DocumentReferenceController(colDoc.GetId(),
                         KeyStore.CollectionKey), 0, 0, 200, 200).Document, true, true);
-            colDoc.SetField(KeyStore.CollectionOutputKey, new DocumentReferenceFieldController(colDoc.GetId(), KeyStore.CollectionKey), true);
+            colDoc.SetField(KeyStore.CollectionOutputKey, new DocumentReferenceController(colDoc.GetId(), KeyStore.CollectionKey), true);
             return colDoc;
         }
 
@@ -553,16 +553,16 @@ namespace Dash
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(DocumentCollectionFieldModelController collection)
+        public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(ListController<DocumentController> collection)
         {
             // create the new list of headers
             var typedHeaders = new Dictionary<KeyController, HashSet<TypeInfo>>();
 
             // iterate over all the documents in the input collection and get their key's
             // and associated types
-            foreach (var docController in collection.Data)
+            foreach (var docController in collection.TypedData)
             {
-                var actualDoc = GetDataDoc(docController, null);
+                var actualDoc = docController.GetDataDocument(null);
 
                 foreach (var field in actualDoc.EnumFields())
                 {
@@ -575,23 +575,6 @@ namespace Dash
                 }
             }
             return typedHeaders;
-        }
-
-        /// <summary>
-        /// Helper method to get the data document from a document if it exists
-        /// otherwise return the document itself
-        /// </summary>
-        /// <param name="docController"></param>
-        /// <returns></returns>
-        public static DocumentController GetDataDoc(DocumentController docController, Context context)
-        {
-            var actualDoc = docController;
-            var dataDoc = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, context);
-            if (dataDoc != null)
-            {
-                actualDoc = dataDoc.Data;
-            }
-            return actualDoc;
         }
     }
 }

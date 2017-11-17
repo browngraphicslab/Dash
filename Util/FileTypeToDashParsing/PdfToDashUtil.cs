@@ -32,7 +32,7 @@ namespace Dash
 
                 var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page);
                 var pdf = await PdfDocument.LoadFromFileAsync(localFile);
-                var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as DocumentCollectionFieldModelController;
+                var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
                 for (uint i = 0; i < pdf.PageCount; i++)
                     using (var page = pdf.GetPage(i))
                     {
@@ -47,8 +47,8 @@ namespace Dash
                         var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, //await ToBase64(renderTargetBitmap),
                             900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
 
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileName(localFile.Path) + ": Page " + i, 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
-                        children?.AddDocument(pageDoc);
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, localFile.Name + ": Page " + i, 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
+                        children?.Add(pageDoc);
                         GetText(pageDoc, pageImg, stream);
                     }
                 return pdfDoc.Document;
@@ -63,9 +63,9 @@ namespace Dash
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             // Get recognition result 
             var result = await ocrEngine.RecognizeAsync(softwareBitmap);
-            var pageImgDoc = pageImg.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? pageImg;
-            pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
-            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceFieldController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
+            var pageImgDoc = pageImg.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? pageImg;
+            pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextController(result.Text), true);
+            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
         async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {

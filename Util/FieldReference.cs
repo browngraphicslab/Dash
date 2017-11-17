@@ -84,7 +84,7 @@ namespace Dash
         {
             context = context ?? new Context();
             FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceFieldModelController)
+            while (reference is ReferenceController)
             {
                 reference = reference.Dereference(context);
             }
@@ -113,6 +113,6 @@ namespace Dash
             return FieldKey.GetHashCode();
         }
 
-        public abstract ReferenceFieldModelController GetReferenceController();
+        public abstract ReferenceController GetReferenceController();
     }
 }

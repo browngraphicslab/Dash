@@ -29,8 +29,8 @@ namespace Dash
         public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false)
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(new Point(), new Size( double.NaN, double.NaN), new DocumentCollectionFieldModelController(docs));
-            fields.Add(StyleKey, new TextFieldModelController(horizontal ? "Horizontal" : "Vertical"));
+            var fields = DefaultLayoutFields(new Point(), new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
+            fields.Add(StyleKey, new TextController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
 
@@ -62,15 +62,15 @@ namespace Dash
             var stack = new RelativePanel();
             var stackFieldData =
                 docController.GetDereferencedField(KeyStore.DataKey, context)
-                    as DocumentCollectionFieldModelController;
+                    as ListController<DocumentController>;
 
-            var styleField = docController.GetDereferencedField(StyleKey, context) as TextFieldModelController;
+            var styleField = docController.GetDereferencedField(StyleKey, context) as TextController;
             var horizontal = styleField != null && styleField.Data == "Horizontal";
             // create a dynamic gridview that wraps content in borders
             if (stackFieldData != null)
             {
                 FrameworkElement prev = null;
-                foreach (var stackDoc in stackFieldData.GetDocuments())
+                foreach (var stackDoc in stackFieldData.GetElements())
                 {
                     var item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                     if (item != null)
@@ -90,6 +90,12 @@ namespace Dash
                             if (horizontal)
                                 RelativePanel.SetRightOf(item, prev);
                             else RelativePanel.SetBelow(item, prev);
+                        }
+                        else
+                        {
+                            if (horizontal)
+                                RelativePanel.SetAlignLeftWithPanel(item, true);
+                            else RelativePanel.SetAlignTopWithPanel(item, true);
                         }
                         prev = item;
                     }

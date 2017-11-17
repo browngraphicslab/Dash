@@ -40,9 +40,9 @@ namespace Dash
         /// //TODO explain default field model controller idea here once it is written
         /// </summary>
         /// <returns></returns>
-        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceFieldModelController refToData)
+        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceController refToData)
         {
-            refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            refToData = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (refToData != null)
             {
                 var fieldModelController = refToData.DereferenceToRoot(context);
@@ -55,7 +55,7 @@ namespace Dash
                 {
                     var parent = refToData.GetDocumentController(context);
                     Debug.Assert(parent != null);
-                    parent.SetField((refToData as ReferenceFieldModelController).FieldKey, defaultFieldModelController, true);
+                    parent.SetField((refToData as ReferenceController).FieldKey, defaultFieldModelController, true);
                     fieldModelController = refToData.DereferenceToRoot(context);
                 }
                 return fieldModelController;
@@ -76,21 +76,21 @@ namespace Dash
         private static int loaded = 0, unloaded = 0;
 
         
-
+        [Obsolete("Use FieldBindings and AddFieldBinding instead")]
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
-            DocumentController.OnDocumentFieldUpdatedHandler handler = (sender, args) =>
+            FieldControllerBase.FieldUpdatedHandler handler = (sender, args, c) =>
             {
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                bindingDelegate(element, sender, args.Context); //TODO Should be context or args.Context?
+                bindingDelegate(element, (DocumentController)sender, c); //TODO Should be context or args.Context?
             };
 
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
         protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate, DocumentController.OnDocumentFieldUpdatedHandler handler) where T : FrameworkElement
+            BindingDelegate<T> bindingDelegate, FieldControllerBase.FieldUpdatedHandler handler) where T : FrameworkElement
         {
             element.Loaded += delegate
             {
@@ -105,7 +105,7 @@ namespace Dash
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -118,7 +118,7 @@ namespace Dash
 
         protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -131,7 +131,7 @@ namespace Dash
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<PointFieldModelController> binding = new FieldBinding<PointFieldModelController>()
+            FieldBinding<PointController> binding = new FieldBinding<PointController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -146,7 +146,7 @@ namespace Dash
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var binding = new FieldBinding<TextFieldModelController>()
+            var binding = new FieldBinding<TextController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -161,7 +161,7 @@ namespace Dash
         protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var binding = new FieldBinding<TextFieldModelController>()
+            var binding = new FieldBinding<TextController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -175,7 +175,7 @@ namespace Dash
 
         protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -188,7 +188,7 @@ namespace Dash
 
         protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -201,7 +201,7 @@ namespace Dash
 
         protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -214,7 +214,7 @@ namespace Dash
 
         protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -256,13 +256,13 @@ namespace Dash
             // assign the default fields
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
-                [KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
-                [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
-                [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
-                [KeyStore.HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Stretch.ToString()),
-                [KeyStore.VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Stretch.ToString())
+                [KeyStore.WidthFieldKey] = new NumberController(size.Width),
+                [KeyStore.HeightFieldKey] = new NumberController(size.Height),
+                [KeyStore.PositionFieldKey] = new PointController(pos),
+                [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
+                [KeyStore.ScaleCenterFieldKey] = new PointController(0, 0),
+                [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
+                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString())
             };
 
             if (data != null)
@@ -340,25 +340,25 @@ namespace Dash
 
         #region GettersAndSetters
 
-        protected static NumberFieldModelController GetHeightField(DocumentController docController, Context context)
+        protected static NumberController GetHeightField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.HeightFieldKey)
-                .DereferenceToRoot<NumberFieldModelController>(context);
+                .DereferenceToRoot<NumberController>(context);
         }
 
-        protected static NumberFieldModelController GetWidthField(DocumentController docController, Context context)
+        protected static NumberController GetWidthField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.WidthFieldKey)
-                .DereferenceToRoot<NumberFieldModelController>(context);
+                .DereferenceToRoot<NumberController>(context);
         }
 
-        protected static PointFieldModelController GetPositionField(DocumentController docController, Context context)
+        protected static PointController GetPositionField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.PositionFieldKey)
-                .DereferenceToRoot<PointFieldModelController>(context);
+                .DereferenceToRoot<PointController>(context);
         }
 
         #endregion
@@ -368,14 +368,14 @@ namespace Dash
     {
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(KeyStore.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.HorizontalAlignmentKey, new TextController(alignment.ToString()), true);
         }
 
 
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
             var horizontalAlignmentController =
-                document.GetField(KeyStore.HorizontalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.HorizontalAlignmentKey) as TextController;
             if (horizontalAlignmentController == null)
             {
                 return HorizontalAlignment.Stretch;
@@ -386,14 +386,14 @@ namespace Dash
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             var currentHeight = document.GetHeightField().Data;
-            document.SetField(KeyStore.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetField(KeyStore.VerticalAlignmentKey, new TextController(alignment.ToString()), true);
             document.SetHeight(currentHeight);
         }
 
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
             var verticalAlignmentController =
-                document.GetField(KeyStore.VerticalAlignmentKey) as TextFieldModelController;
+                document.GetField(KeyStore.VerticalAlignmentKey) as TextController;
             if (verticalAlignmentController == null)
             {
                 return VerticalAlignment.Stretch;
@@ -403,32 +403,32 @@ namespace Dash
 
         public static void SetWidth(this DocumentController document, double width)
         {
-            document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+            document.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
         }
 
         public static void SetHeight(this DocumentController document, double height)
         {
-            document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+            document.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
         }
 
         public static void SetGridRow(this DocumentController document, int row)
         {
-            document.SetField(CourtesyDocument.GridRowKey, new NumberFieldModelController(row), true);
+            document.SetField(CourtesyDocument.GridRowKey, new NumberController(row), true);
         }
 
         public static void SetGridColumn(this DocumentController document, int column)
         {
-            document.SetField(CourtesyDocument.GridColumnKey, new NumberFieldModelController(column), true);
+            document.SetField(CourtesyDocument.GridColumnKey, new NumberController(column), true);
         }
 
         public static void SetGridRowSpan(this DocumentController document, int rowSpan)
         {
-            document.SetField(CourtesyDocument.GridRowSpanKey, new NumberFieldModelController(rowSpan), true);
+            document.SetField(CourtesyDocument.GridRowSpanKey, new NumberController(rowSpan), true);
         }
 
         public static void SetGridColumnSpan(this DocumentController document, int columnSpan)
         {
-            document.SetField(CourtesyDocument.GridColumnSpanKey, new NumberFieldModelController(columnSpan), true);
+            document.SetField(CourtesyDocument.GridColumnSpanKey, new NumberController(columnSpan), true);
         }
     }
 }

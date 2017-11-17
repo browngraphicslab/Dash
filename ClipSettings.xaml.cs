@@ -40,12 +40,12 @@ namespace Dash
         private void BindClip(Context context)
         {
             var clipController =
-                _documentController.GetDereferencedField(ImageBox.ClipKey, context) as RectFieldModelController;
+                _documentController.GetDereferencedField(ImageBox.ClipKey, context) as RectController;
             Debug.Assert(clipController != null);
             InitializeClip(clipController);
         }
 
-        private void InitializeClip(RectFieldModelController clipController)
+        private void InitializeClip(RectController clipController)
         {
             ClipBindingHelper(xClipXTextBox, "X", clipController.Data);
             ClipBindingHelper(xClipYTextBox, "Y", clipController.Data);
@@ -59,14 +59,14 @@ namespace Dash
             {
                 Source = clipRect,
                 Path = new PropertyPath(path),
-                Converter = new DoubleToStringConverter()
+                Converter = new StringToDoubleConverter()
             };
             tb.SetBinding(TextBox.TextProperty, binding);
         }
         
-        private RectFieldModelController ClipController()
+        private RectController ClipController()
         {
-            return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectFieldModelController;
+            return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectController;
         }
 
         private void XClipXTextBox_OnTextChanged(object sender, TextChangedEventArgs e)

@@ -20,12 +20,8 @@ namespace Dash
     /// </summary>
     public class ManipulationControls : IDisposable
     {
-
-        // == MEMBERS ==
-
-
-        public double MinScale { get; set; } = .5;
-        public double MaxScale { get; set; } = 2.0;
+        public double MinScale { get; set; } = .2;
+        public double MaxScale { get; set; } = 5.0;
         private bool _disabled;
         private FrameworkElement _element;
         private readonly bool _doesRespondToManipulationDelta;
@@ -193,9 +189,9 @@ namespace Dash
             //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
-            var newScale = ElementScale * scaleAmount;
-            ClampScale(newScale, ref scaleAmount);
+            ElementScale *= scaleAmount;
 
+            if(!ClampScale(scaleAmount))
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
                 point.Position, new Point(scaleAmount, scaleAmount)));
         }
@@ -259,9 +255,9 @@ namespace Dash
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
-            var newScale = ElementScale * scaleFactor;
-            ClampScale(newScale, ref scaleFactor);
+            ElementScale *= scaleFactor;
 
+            if(!ClampScale(scaleFactor))
             // TODO we may need to take into account the _element's render transform here with regards to scale
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
                 e.Position, new Point(scaleFactor, scaleFactor)));
@@ -275,23 +271,21 @@ namespace Dash
             _element.PointerWheelChanged -= EmptyPointerWheelChanged;
         }
 
-        private void ClampScale(double newScale, ref float scale)
+        private bool ClampScale(double scaleFactor)
         {
-            if (newScale > MaxScale)
+            Debug.WriteLine(ElementScale);
+            if (ElementScale > MaxScale)
             {
-                scale = (float)(MaxScale / ElementScale);
                 ElementScale = MaxScale;
+                return scaleFactor > 1;              
             }
-            else if (newScale < MinScale)
+
+            if (ElementScale < MinScale)
             {
-                scale = (float)(MinScale / ElementScale);
                 ElementScale = MinScale;
+                return scaleFactor < 1;
             }
-            else
-            {
-                ElementScale = newScale;
-            }
-            //ElementScale = newScale;
+            return false;
         }
     }
 }

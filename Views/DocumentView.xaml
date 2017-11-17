@@ -43,9 +43,6 @@
                 <ColumnDefinition Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <Viewbox x:Name="xTextView" Visibility="Collapsed" Height="25">
-                <!--TextBox x:Name="xDocumentDisplay" Text="{Binding DisplayName, Mode=TwoWay}" ></-->
-            </Viewbox>
             <!-- Container for Icon view -->
             <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.RowDefinitions>
@@ -128,7 +125,7 @@
 
             <!--Rectangles that indicate whether document is a delegate or a copy-->
             <Grid x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" Margin="0,-20,0,0"
-            Visibility="{Binding Path=DocumentController.HasDelegatesOrPrototype, Converter={StaticResource BoolToVisibilityConverter}}" >
+                Visibility="{Binding Path=DocumentController.HasDelegatesOrPrototype, Converter={StaticResource BoolToVisibilityConverter}}" >
                 <Canvas HorizontalAlignment="Right" Width="50" Canvas.Top="0">
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
@@ -138,7 +135,6 @@
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="12"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
-
                     <Canvas.RenderTransform>
                         <TransformGroup>
                             <RotateTransform Angle="45"></RotateTransform>

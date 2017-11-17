@@ -28,12 +28,12 @@ namespace Dash
         private void BindHeight(DocumentController docController, Context context)
         {
 
-            var binding = new FieldBinding<NumberFieldModelController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Converter = new DoubleToStringConverter(),
+                Converter = new StringToDoubleConverter(0),
                 Context = context
             };
             xHeightTextBox.AddFieldBinding(TextBox.TextProperty, binding);
@@ -42,12 +42,12 @@ namespace Dash
 
         private void BindWidth(DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<NumberFieldModelController>()
+            var binding = new FieldBinding<NumberController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Converter = new DoubleToStringConverter(),
+                Converter = new StringToDoubleConverter(0),
                 Context = context
             };
             xWidthTextBox.AddFieldBinding(TextBox.TextProperty, binding);

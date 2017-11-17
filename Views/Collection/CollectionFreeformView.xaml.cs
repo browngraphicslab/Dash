@@ -138,7 +138,7 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
 
-            if (InkFieldModelController != null)
+            if (InkController != null)
             {
                 MakeInkCanvas();
             }
@@ -164,16 +164,15 @@ namespace Dash
             {
                 var doc = docVM.DocumentController;
                 var linksListFMC =
-                    doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<TextFieldModelController>;
+                    doc.GetField(KeyStore.UserLinksKey, true) as ListController<KeyController>;
                 if (linksListFMC != null)
                 {
-                    foreach (var textFMC in linksListFMC.TypedData)
+                    foreach (var key in linksListFMC.TypedData)
                     {
-                        var keyID = textFMC.Data;
-                        var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
-                        if (keyValuePair.Key != null)
+                        var field = doc.GetField(key);
+                        if (field != null)
                         {
-                            AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), new DocumentFieldReference(doc.Id, keyValuePair.Key));
+                            AddLineFromData((field as ReferenceController).GetFieldReference(), new DocumentFieldReference(doc.Id, key));
                         }
                     }
                 }
@@ -218,7 +217,7 @@ namespace Dash
             //TypeInfo type = 0;
             //if (fmController == null)
             //{
-            //    var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+            //    var op = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorController;
             //    type = op.Outputs[startReference.FieldKey];
             //}
             //else
@@ -330,16 +329,14 @@ namespace Dash
             var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
             var doc2 = view2.ViewModel.DocumentController;
             var linksList =
-                doc2.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
+                doc2.GetField(KeyStore.UserLinksKey) as ListController<KeyController>;
             if (linksList != null)
             {
                 var field =
                     view2.ViewModel.KeysToFrameworkElements.FirstOrDefault(kvp => kvp.Value.Equals(converter.Element2));
                 if (field.Key != null)
                 {
-                    var keyId = field.Key.Id;
-                    var textFMC = linksList.TypedData.FirstOrDefault(txt => txt.Data == keyId);
-                    if (textFMC != null) linksList.Remove(textFMC);
+                    linksList.Remove(field.Key);
                 }
             }
 
@@ -494,12 +491,12 @@ namespace Dash
                 _currReference = ioReference;
                 ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
-                //replace referencefieldmodelcontrollers with the raw fieldmodelcontrollers  
+                //replace referenceControllers with the raw Controllers  
                 var refField = RefToLine.FirstOrDefault(x => x.Value == line).Key;
                 DocumentController inputController = refField.GetDocumentController(null);
                 var rawField = inputController.GetField(refField.FieldKey);
-                if (rawField as ReferenceFieldModelController != null)
-                    rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
+                if (rawField as ReferenceController != null)
+                    rawField = (rawField as ReferenceController).DereferenceToRoot(null);
                 inputController.SetField(refField.FieldKey, rawField, false);
                 RefToLine.Remove(refField);
             }
@@ -657,18 +654,18 @@ namespace Dash
             else
             {
                 inputController.SetField(inputReference.FieldReference.FieldKey,
-                    new DocumentReferenceFieldController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
+                    new DocumentReferenceController(outputReference.FieldReference.GetDocumentId(), outputReference.FieldReference.FieldKey), true);
             }
 
             //Add the key to the inputController's list of user created links
             if (inputController.GetField(KeyStore.UserLinksKey) == null)
                 inputController.SetField(KeyStore.UserLinksKey,
-                    new ListFieldModelController<TextFieldModelController>(), true);
+                    new ListController<KeyController>(), true);
             var linksList =
                 inputController.GetField(KeyStore.UserLinksKey) as
-                    ListFieldModelController<TextFieldModelController>;
-            linksList.Add(new TextFieldModelController(inputReference.FieldReference.FieldKey.Id));
-
+                    ListController<KeyController>;
+            linksList.Add(inputReference.FieldReference.FieldKey);
+            
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -931,32 +928,29 @@ namespace Dash
                 {
                     [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
                 }, DocumentType.DefaultType);
-                var layout = new DocumentBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                var layout = new DocumentBox(new DocumentReferenceController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
                 doc.SetActiveLayout(layout, true, false);
                 ViewModel.AddDocument(doc, null);
             }
-            else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Collection)
+            else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.List)
             {
                 var droppedField = _currReference.FieldReference;
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Schema.ToString();
-
-
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                                     droppedSrcDoc.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                                     CollectionView.CollectionViewType.Schema.ToString();
+                
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
-                var collType =
-                    (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType),
-                        sourceViewType);
-                var cnote = new CollectionNote(where, collType);
-                //TODO: using data document might cause problems
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceFieldController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
+                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.FilterFieldKey, null)?.Data;
-                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(field), true);
                 }
 
                 // bcz: hack to find the CollectionView for the newly created collection so that we can wire up the connection line as if it it had already been there
@@ -965,7 +959,7 @@ namespace Dash
                     if (itemsPanelCanvas.Children[i] is ContentPresenter)
                     {
                         var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
-                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.Collection, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
+                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
                     }
             }
@@ -996,7 +990,7 @@ namespace Dash
         {
             ViewModel.SetSelected(this, isSelected);
             ViewModel.UpdateDocumentsOnSelection(isSelected);
-            if (InkFieldModelController != null)
+            if (InkController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
                 XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
@@ -1190,7 +1184,7 @@ namespace Dash
 
         #region Ink
 
-        public InkFieldModelController InkFieldModelController;
+        public InkController InkController;
         public FreeformInkControl InkControl;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
 

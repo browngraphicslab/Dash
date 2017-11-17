@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -120,7 +121,6 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
         
-        private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -138,23 +138,12 @@ namespace Dash
             IsMainCollection = (this == MainPage.Instance.MainDocView);
 
             // add corresponding instance of this to hierarchical view
-            if (!IsMainCollection)
+            if (!IsMainCollection && ViewModel != null)
             {
+                
                 //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
                 if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
                 {
-                    // if we don't have a parent to add to then we can't add this to anything
-                    if (ParentCollection != null)
-                    {
-                        // if the tree contains the parent collection
-                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                        {
-                            treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, 
-                                ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                                    treeMenuItem);
-                        }
-                    }
                 }
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView)) {
@@ -184,11 +173,11 @@ namespace Dash
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
-                ViewModel.DocumentController.SetTitleField(title);
-                treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Operator, Choose,
-                    ViewModel.DocumentController, ContentController<KeyModel>.GetController<KeyController>(DashConstants.KeyStore.TitleKey.Id)); // TODO: change this line for tree menu
-                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                        treeMenuItem);
+                //ViewModel.DocumentController.SetTitleField(title);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                dataDoc.SetTitleField(title);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
+               
             }
         }
 
@@ -216,27 +205,7 @@ namespace Dash
             xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
 
             CollectionCount++;
-
-            // add item to menu
-            if (ParentCollection != null)
-                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
             
-            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
-            {
-                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
-                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
-                tree.HeaderLabel = xTitle.Text;
-
-                // if nested, add to parent collection, otherwise add to main collection
-                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                {
-
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
-                } else
-                {
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
-                }
-            }
             
             
         }
@@ -296,14 +265,14 @@ namespace Dash
 
             // apply position if we are dropping on a freeform
             var posInLayoutContainer = e.GetPosition(xFieldContainer);
-            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
-            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-            var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberController).Data / 2;
+            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberController).Data / 2;
+            var positionController = new PointController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
             layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
 
             // add the document to the composite
-            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-            data?.AddDocument(layoutDocument); 
+            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
+            data?.Add(layoutDocument); 
         }
         #endregion
 
@@ -425,8 +394,8 @@ namespace Dash
             { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
                 var currentTranslate = ViewModel.GroupTransform.Translate;
                 var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
-                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+                var layout = ViewModel.DocumentController.GetActiveLayout() ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
             }
         }
 
@@ -573,21 +542,22 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.Model.DocumentType;
+            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
             if (docType.Type != null)
             {
 
             }
             else
             {
-                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
+
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.Model.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
+                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -606,25 +576,34 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
+                updateIcon();
                 // binds the display title of the document to the back end representation
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<TextController>;
+                string key = KeyStore.TitleKey.Id;
+                if (key == null || !(keyList?.Data?.Count() > 0)) { 
+                    dataDoc.GetTitleFieldOrSetDefault(context);
+                    key = KeyStore.TitleKey.Id;
+                } else
+                    key = keyList?.Data?.Select((k) => (k as TextController)?.Data)?.First();
 
-                // set the default title
-                dataDoc.GetTitleFieldOrSetDefault(context);
-
-                var binding = new FieldBinding<TextFieldModelController>()
+                var Binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = KeyStore.TitleKey,
+                    Key = new KeyController(key),
                     Context = context
                 };
+                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                xTitleBorder.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -639,21 +618,27 @@ namespace Dash
             if (Height < MinHeight + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
-                updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
+                if (xIcon.Visibility == Visibility.Collapsed)
+                    xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible )
+            else 
             {
                 xFieldContainer.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Visible;
+                xShadowTarget.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = .25;
                 UpdateBinding(false);
@@ -682,7 +667,6 @@ namespace Dash
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
 
-                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(treeMenuItem);
 
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
@@ -856,7 +840,7 @@ namespace Dash
         private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             var doc = ViewModel.DocumentController;
-            var text = doc.GetField(KeyStore.SystemUriKey) as TextFieldModelController;
+            var text = doc.GetField(KeyStore.SystemUriKey) as TextController;
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
             Debug.WriteLine(query);

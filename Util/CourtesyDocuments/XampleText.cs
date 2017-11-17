@@ -25,17 +25,17 @@ namespace Dash
         {
             // create a document with two images
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
-            fields.Add(Text1FieldKey, new TextFieldModelController("Test1"));
-            fields.Add(Text2FieldKey, new TextFieldModelController("Test2"));
-            fields.Add(Text3FieldKey, new TextFieldModelController("Test3"));
+            fields.Add(Text1FieldKey, new TextController("Test1"));
+            fields.Add(Text2FieldKey, new TextController("Test2"));
+            fields.Add(Text3FieldKey, new TextController("Test3"));
 
             Document = new DocumentController(fields, NumbersType);
 
-            var tBox1 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text1FieldKey), 0,
+            var tBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Text1FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox2 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text2FieldKey), 0,
+            var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Text2FieldKey), 0,
                 0, 60, 35).Document;
-            var tBox3 = new TextingBox(new DocumentReferenceFieldController(Document.GetId(), Text3FieldKey), 0,
+            var tBox3 = new TextingBox(new DocumentReferenceController(Document.GetId(), Text3FieldKey), 0,
                 0, 60, 35).Document;
 
             var gridPanel = new GridLayout().Document;
@@ -50,8 +50,8 @@ namespace Dash
                 new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
             });
             gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
-            gridPanel.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
+            gridPanel.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
             tBox1.SetGridRow(0);
             gridPanel.AddChild(tBox1);
             tBox2.SetGridRow(1);

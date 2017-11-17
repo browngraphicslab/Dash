@@ -11,7 +11,7 @@ namespace Dash
 {
     class MeltOperatorBox : CourtesyDocument
     {
-        public MeltOperatorBox(ReferenceFieldModelController refToOp)
+        public MeltOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.MeltOperatorBoxDocumentType);

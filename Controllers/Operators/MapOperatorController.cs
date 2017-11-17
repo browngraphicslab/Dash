@@ -8,16 +8,16 @@ using DashShared;
 
 namespace Dash
 {
-    public class MapOperatorController : OperatorFieldModelController
+    public class MapOperatorController : OperatorController
     {
         public static KeyController InputKey = new KeyController("D7F1CA4D-820F-419E-979A-6A1538E20A5E", "Input Collection");
         public static KeyController OperatorKey = new KeyController("3A2C13C5-33F4-4845-9854-6CEE0E2D9438", "Operator");
 
         public static KeyController OutputKey = new KeyController("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
 
-        public MapOperatorController() : base(new OperatorFieldModel(OperatorType.Map)) { }
+        public MapOperatorController() : base(new OperatorModel(OperatorType.Map)) { }
 
-        public MapOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public MapOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
@@ -32,7 +32,7 @@ namespace Dash
             [OutputKey] = TypeInfo.List
         };
 
-        public override FieldModelController<OperatorFieldModel> Copy()
+        public override FieldModelController<OperatorModel> Copy()
         {
             return new MapOperatorController(OperatorFieldModel);
         }
@@ -47,8 +47,8 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            var input = (BaseListFieldModelController) inputs[InputKey];
-            var op = (OperatorFieldModelController)inputs[OperatorKey];
+            var input = (BaseListController) inputs[InputKey];
+            var op = (OperatorController)inputs[OperatorKey];
             if (op.Inputs.Count != 1 || op.Outputs.Count != 1)
             {
                 return;
@@ -65,7 +65,7 @@ namespace Dash
                 outputList.Add(outDict[outKey]);
             }
 
-            outputs[OutputKey] = new ListFieldModelController<FieldControllerBase>(outputList);//TODO Can this be more specific?
+            outputs[OutputKey] = new ListController<FieldControllerBase>(outputList);//TODO Can this be more specific?
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -22,7 +23,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();

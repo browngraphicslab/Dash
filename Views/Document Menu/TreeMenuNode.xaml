@@ -26,7 +26,8 @@
                 <ListView x:Name="xItemsList" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Margin="0" SelectionMode="None">
                 <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:AddMenuItem">
-                    <Grid Padding="10,10,0,10" Background="Transparent" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch">
+                    <Grid Padding="10,10,0,10" Background="Transparent" Tapped="Grid_Tapped"  HorizontalAlignment="Stretch" CanDrag="True"
+                          ManipulationMode="All" DragStarting="TreeNodeOnDragStarting">
                         <TextBlock Style="{StaticResource xMenuItem}" Text="{Binding DocType}"></TextBlock>
                         <TextBlock  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemIconType}" Margin="0,0,10,0" 
                                     Text="{Binding Type, Converter={StaticResource IconConverter}}" />

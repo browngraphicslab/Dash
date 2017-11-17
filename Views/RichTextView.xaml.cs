@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
+using DashShared.Models;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,17 +31,17 @@ namespace Dash
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(RichTextFieldModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextFieldModel.RTD)));
+            "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD)));
         
 
-        public RichTextFieldModel.RTD Text
+        public RichTextModel.RTD Text
         {
-            get { return (RichTextFieldModel.RTD)GetValue(TextProperty); }
+            get { return (RichTextModel.RTD)GetValue(TextProperty); }
             set{ SetValue(TextProperty, value); }
         }
 
-        public RichTextFieldModelController  TargetRTFController = null;
-        public ReferenceFieldModelController TargetFieldReference = null;
+        public RichTextController  TargetRTFController = null;
+        public ReferenceController TargetFieldReference = null;
         public Context                       TargetDocContext = null;
         private Brush _buttonBackground;
         private Brush _highlightedButtonBackgroud;
@@ -78,11 +79,11 @@ namespace Dash
             xRichEditBox.TextChanged  -= xRichEditBoxOnTextChanged;
         }
 
-        RichTextFieldModel.RTD GetText()
+        RichTextModel.RTD GetText()
         {
             if (TargetRTFController != null)
                 return TargetRTFController.Data;
-            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextFieldModel.RTD;
+            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextModel.RTD;
         }
 
         string GetSelected()
@@ -90,7 +91,8 @@ namespace Dash
             var parentDoc =  this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<TextFieldModelController>(DBFilterOperatorFieldModelController.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data;
             }
             return null;
         }
@@ -101,7 +103,7 @@ namespace Dash
             if (parentDoc != null)
             {
                 var doc =  parentDoc.ViewModel.DocumentController;
-                return doc.GetActiveLayout()?.Data ?? doc;
+                return doc.GetActiveLayout() ?? doc;
             }
             return null;
         }
@@ -166,7 +168,7 @@ namespace Dash
                 string allRtfText;
                 xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
                 UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
@@ -184,12 +186,12 @@ namespace Dash
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
-                    //theDoc = DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
+                    //theDoc = DBFilterOperatorController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {
                     theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextFieldModelController(refText), true);
+                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
                 }
             }
 
@@ -294,7 +296,7 @@ namespace Dash
             string allRtfText;
             xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
             UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -348,7 +350,7 @@ namespace Dash
                 string allRtfText;
                 xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
                 UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextFieldModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
@@ -375,7 +377,7 @@ namespace Dash
                     var point = doc.GetPositionField().Data;
 
                     var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                    var theDoc = ContentController<DocumentModel>.GetController<DocumentController>(target);
+                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
                     if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
                         var pt = point;
