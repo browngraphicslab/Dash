@@ -170,13 +170,13 @@ namespace Dash
 
                             if (items.First() is TextFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new TextFieldModelController((items.First() as TextFieldModelController).Data) :
-                                                new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController));
+                                                new ListFieldModelController<TextFieldModelController>(items.OfType<TextFieldModelController>());
                             else if (items.First() is NumberFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new NumberFieldModelController((items.First() as NumberFieldModelController).Data) :
-                                                new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController));
+                                                new ListFieldModelController<NumberFieldModelController>(items.OfType<NumberFieldModelController>());
                             else if (items.First() is RichTextFieldModelController  )
                                 field = (items.Count == 1) ? (FieldControllerBase)new RichTextFieldModelController((items.First() as RichTextFieldModelController).Data) :
-                                                new ListFieldModelController<RichTextFieldModelController>(items.Where((i) => i is RichTextFieldModelController).Select((i) => i as RichTextFieldModelController));
+                                                new ListFieldModelController<RichTextFieldModelController>(items.OfType<RichTextFieldModelController>());
                             else if (items.First() is DocumentFieldModelController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new DocumentFieldModelController((items.First() as DocumentFieldModelController).Data) :
                                                new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data));

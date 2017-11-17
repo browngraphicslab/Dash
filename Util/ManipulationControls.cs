@@ -250,15 +250,14 @@ namespace Dash
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
-            // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
-
-            //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
             ElementScale *= scaleFactor;
 
-            if(!ClampScale(scaleFactor))
-            // TODO we may need to take into account the _element's render transform here with regards to scale
+            // set up translation transform
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+
+            //Clamp the scale factor 
+            if (!ClampScale(scaleFactor))
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
                 e.Position, new Point(scaleFactor, scaleFactor)));
         }
@@ -273,7 +272,6 @@ namespace Dash
 
         private bool ClampScale(double scaleFactor)
         {
-            Debug.WriteLine(ElementScale);
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;
