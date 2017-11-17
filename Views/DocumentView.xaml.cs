@@ -120,7 +120,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
         
-        private AddMenuItem treeMenuItem;
+        private AddMenuItem _treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -152,8 +152,8 @@ namespace Dash
                         {
                             var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                             var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
-                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem);
+                            _treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
                         }
                     }
                 }
@@ -195,9 +195,9 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
                 var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
-                treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                _treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                    treeMenuItem);
+                    _treeMenuItem);
             }
         }
     
@@ -215,7 +215,7 @@ namespace Dash
 
             // add item to menu
             if (ParentCollection != null)
-                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
+                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem); // removes docview of collection from menu
             
             if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
             {
@@ -682,7 +682,7 @@ namespace Dash
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
 
-                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(treeMenuItem);
+                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(_treeMenuItem);
 
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
@@ -867,26 +867,10 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
             {
-                // change the keystore.titlekey 
+                // change the titlekey 
+                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = (sender as TextBox).Text; 
+                _treeMenuItem.DocType = (sender as TextBox).Text;                                                    // TODO theoretically this should update by itself without explicit call 
 
-                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = (sender as TextBox).Text;
-
-                //var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
-                //context.AddDocumentContext(dataDoc);
-
-                //// set the default title
-                //dataDoc.GetTitleFieldOrSetDefault(context);
-
-                //var binding = new FieldBinding<TextFieldModelController>()
-                //{
-                //    Mode = BindingMode.TwoWay,
-                //    Document = dataDoc,
-                //    Key = KeyStore.TitleKey,
-                //    Context = context
-                //};
-
-                //xTitle.AddFieldBinding(TextBox.TextProperty, binding);
-                //xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 e.Handled = true;
             }
         }

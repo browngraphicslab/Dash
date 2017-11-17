@@ -153,7 +153,8 @@ namespace Dash
                 var strings = command.Split('.'); 
                 if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
                 {
-                    System.Diagnostics.Debug.WriteLine("number of shit " + AddMenu.Instance.Elements); 
+                    var docMenuItem = FindFirstMatch(strings[0]);
+                   // docMenuItem?.Action.Invoke(); 
                 } 
                 else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
                 {
@@ -165,6 +166,36 @@ namespace Dash
             {
                 UpdateList(command);
             }
+        }
+
+        private DocumentAddMenuItem FindFirstMatch(string docName)
+        {
+            foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
+            {
+                foreach (AddMenuItem menuItem in treeNode.ItemsList)
+                {
+                    var docMenuItem = menuItem as DocumentAddMenuItem; 
+                    //if (docMenuItem != null)
+                    {
+                        var controller = docMenuItem.LayoutDoc.GetDataDocument(null);
+                        //if (controller.Title == docName)
+                        // System.Diagnostics.Debug.WriteLine("title : " + controller.Title); 
+                        if (menuItem.DocType == docName)
+                        {
+                            System.Diagnostics.Debug.WriteLine("fuckfuckfudkfudkfudkfudkfudk");
+                            return docMenuItem;
+                        }
+                    }
+                }
+            }
+            return null; 
+        }
+
+        private List<DocumentController> FindAllMatch(string docName)
+        {
+            throw new NotImplementedException(); 
+            //List<DocumentController> result = new List<DocumentController>();
+            //return result; 
         }
 
         /// <summary>

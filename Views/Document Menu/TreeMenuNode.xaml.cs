@@ -92,15 +92,17 @@ namespace Dash.Views.Document_Menu
     {
         private KeyController _key;
         public DocumentController LayoutDoc;
+        public Func<DocumentController> Action; 
         public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController layoutDoc, KeyController key) : base(label, icon, action)
         {
             _key = key;
             LayoutDoc = layoutDoc;
+            Action = action; 
             var dataDoc = layoutDoc.GetDataDocument(null);
             // set the default title
             dataDoc.GetTitleFieldOrSetDefault(null);
             dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
-            TextChangedHandler(dataDoc, null); 
+            //TextChangedHandler(dataDoc, null); 
         }
 
         public void Dispose()
@@ -110,8 +112,6 @@ namespace Dash.Views.Document_Menu
 
         private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            
-
             //var textController = documentController.GetField(_key) as TextFieldModelController;
             DocType = documentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data ?? "";
         }
@@ -163,13 +163,15 @@ namespace Dash.Views.Document_Menu
         // == MEMBERS ==
         // two levels of headers for add menu: either top-level blue or subheader green
         private bool isSubHeader = false;
-        //public ListView ItemsList { get { return xItemsList; } set { xItemsList = value; } }        // uncomment if use case arises
+        public ItemCollection ItemsList => xItemsList.Items;       // uncomment if use case arises
 
         // text that displays on the header
         public string HeaderLabel
         {
             get { return (string)GetValue(HeaderLabelProperty); }
             set { SetValue(HeaderLabelProperty, value); }
+
+            
         }
 
         // optional: the icon on the header, generally want to set this
