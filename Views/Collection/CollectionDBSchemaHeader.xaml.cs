@@ -107,7 +107,7 @@ namespace Dash
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var viewModel = (DataContext as HeaderViewModel);
-            viewModel.Width = Math.Max(0, _startWidth + e.Cumulative.Translation.X);
+            viewModel.Width = Math.Max(50, _startWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
         private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -126,6 +126,11 @@ namespace Dash
             viewModel.SchemaView.xHeaderView.CanDragItems = true;
             e.Handled = true;
 
+        }
+
+        private void Grid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            NameGrid.Width = e.NewSize.Width - 7;
         }
     }
 }

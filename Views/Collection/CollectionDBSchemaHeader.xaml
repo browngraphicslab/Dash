@@ -12,9 +12,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}">
 
-    <Grid>
+    <Grid Width="{Binding Width}" SizeChanged="Grid_OnSizeChanged">
         <StackPanel Orientation="Horizontal">
-            <Grid Width="{Binding Width}" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
+            <Grid x:Name="NameGrid"  Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
                 <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
             </Grid>
             <Grid Background="#CCDDDDDD" ManipulationMode="All" CanDrag="False" Width="7"
