@@ -82,31 +82,46 @@ namespace Dash
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             var docView = sender as DocumentView;
+            CheckForDropOnLink(docView);
+
+        }
+
+        private void CheckForDropOnLink(DocumentView docView)
+        {
             if (docView != null)
             {
                 var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.DocumentType;
                 if (docType != null && docView.ViewModel?.DocumentController?.IsConnected == false)
                 {
-                    if (docType.Equals(DashConstants.TypeStore.OperatorBoxType) || docType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                    if (docType.Equals(DashConstants.TypeStore.OperatorBoxType))
                     {
                         //Get the coordinates of the view
                         Point screenCoords = docView.TransformToVisual(Window.Current.Content)
                             .TransformPoint(new Point(0, 0));
+
+                        //parent freeform view
                         var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
                         if (freeformView?.RefToLine != null && !IsConnected(docView))
                         {
+                            // iterate through all the links in this freeform view to check for overlap
                             foreach (var link in freeformView.RefToLine)
                             {
                                 //Get the slope of the line through the endpoints of the link
                                 var converter = freeformView.LineToConverter[link.Value];
+
+                                // first end point of link
                                 var curvePoint1 = converter.Element1
                                     .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
                                     .TransformPoint(new Point(converter.Element1.ActualWidth / 2,
                                         converter.Element1.ActualHeight / 2));
+
+                                // second end point of link
                                 var curvePoint2 = converter.Element2
                                     .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
                                     .TransformPoint(new Point(converter.Element2.ActualWidth / 2,
                                         converter.Element2.ActualHeight / 2));
+
+                                // calculate slope
                                 var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
 
                                 // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
@@ -116,23 +131,24 @@ namespace Dash
 
                                 // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                                 // the link is outside the document.
-                                if (slope < 0 && !(intersectionTopX < screenCoords.X ||
+                                if ((slope < 0 && !(intersectionTopX < screenCoords.X ||
                                                    intersectionBottomX > screenCoords.X + docView.ActualWidth)
                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth))
+                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth)))
                                 {
-
-
-                                    ChangeConnections(freeformView,docView, link);
-
-                                    break;
+                                    // if the document is between the vertical bounds of the link endpoints
+                                    if (screenCoords.Y > (Math.Min(curvePoint1.Y, curvePoint2.Y))
+                                                      && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
+                                    {
+                                        // connect the dropped document to the documents linked by the path
+                                        ChangeConnections(freeformView, docView, link);
+                                        break;
+                                    }
                                 }
-                                
                             }
                         }
                     }
                 }
-                
             }
         }
 
@@ -144,7 +160,7 @@ namespace Dash
         private bool IsConnected(DocumentView docView)
         {
             var userLinks = docView.ViewModel.DocumentController.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
-            if(userLinks == null || userLinks.Data.Count <= 0)
+            if (userLinks == null || userLinks.Data.Count <= 0)
             {
                 return false;
             }
@@ -171,19 +187,15 @@ namespace Dash
             var droppedDocOutputKey = opFMController.Outputs.Keys.FirstOrDefault();
 
             var userLink = link.Value as UserCreatedLink;
-            var fieldRef = userLink.reference;
+
             var referencingDoc = userLink.referencingDocument;
             var referencingKey = userLink.referencingKey;
 
-            var referencedKey = fieldRef.FieldKey;
-            var docId = fieldRef.GetDocumentId();
-
-            //find the document containing the referenced field, if it is in this collection
-            var referencedDoc = ffView.ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
+            var referencedKey = userLink.referencedKey;
+            var referencedDoc = userLink.referencedDocument;
 
             // delete the current connection between referenced doc and referencing doc
-            ffView.DeleteLine(link.Key, ffView.RefToLine[link.Key]);
-
+            ffView.DeleteLine(link.Key, userLink); // check
 
             //Add connection between dropped and right node
             MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);
@@ -207,16 +219,18 @@ namespace Dash
         /// <returns></returns>
         private static void MakeConnection(CollectionFreeformView ffView, DocumentController referencedDoc, KeyController referencedKey, DocumentController referencingDoc, KeyController referencingKey)
         {
+            // set the field of the referencing field to be a field reference to the referenced document/field
             var fieldRef = new DocumentFieldReference(referencedDoc.GetId(), referencedKey);
             var thisRef = (referencedDoc.GetDereferencedField(KeyStore.ThisKey, null));
+
             if (referencedDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType) &&
                 fieldRef is DocumentFieldReference && thisRef != null)
                 referencingDoc.SetField(referencedKey, thisRef, true);
             else
             {
-                referencingDoc.SetField(referencedKey,
-                    new DocumentReferenceFieldController(fieldRef.GetDocumentId(),referencedKey), true); //?
-            }
+                referencingDoc.SetField(referencingKey,
+                new DocumentReferenceFieldController(fieldRef.GetDocumentId(), referencedKey), true);
+            }                                                                                       
 
             // add line visually
             ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
@@ -227,7 +241,6 @@ namespace Dash
         public void OperatorHolding(object sender, HoldingRoutedEventArgs e)
         {
             var opview = sender as DocumentView;
-            //opview.IsHitTestVisible = false;
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             AddHandler(PointerPressedEvent, new PointerEventHandler(hdlr), true);
         }
@@ -245,7 +258,7 @@ namespace Dash
             //handles drop from keyvaluepane 
             OnKeyValueDrop(e);
         }
-        
+
 
         public DocumentController Choose()
         {
@@ -267,7 +280,7 @@ namespace Dash
             }
             return null;
         }
-        
+
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
@@ -275,7 +288,7 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
-        
+
         private AddMenuItem treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
@@ -296,7 +309,7 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-                
+
                 //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
                 if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
                 {
@@ -315,7 +328,8 @@ namespace Dash
                     }
                 }
                 if (double.IsNaN(ViewModel.Width) &&
-                    (ParentCollection?.CurrentView is CollectionFreeformView)) {
+                    (ParentCollection?.CurrentView is CollectionFreeformView))
+                {
                     ViewModel.Width = 50;
                     ViewModel.Height = 50;
                 }
@@ -339,7 +353,7 @@ namespace Dash
         public void StyleOperator(double width, string title)
         {
             isOperator = true;
-            xShadowTarget.Margin = new Thickness(width,0,width,0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
@@ -357,7 +371,7 @@ namespace Dash
                     treeMenuItem);
             }
         }
-    
+
         #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
@@ -373,7 +387,7 @@ namespace Dash
             // add item to menu
             if (ParentCollection != null)
                 AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
-            
+
             if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
             {
 
@@ -386,15 +400,16 @@ namespace Dash
                 {
 
                     AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
-                } else
+                }
+                else
                 {
                     AddMenu.Instance.AddNodeFromCollection(view, tree, null);
                 }
             }
-            
-            
+
+
         }
-    
+
         //}
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
@@ -404,13 +419,13 @@ namespace Dash
             {
                 xKeyValPane.Width = KeyValPaneWidth;
                 ViewModel.Width += KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth*ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));  
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
             else
             {
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth* ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
@@ -457,7 +472,7 @@ namespace Dash
 
             // add the document to the composite
             var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-            data?.AddDocument(layoutDocument); 
+            data?.AddDocument(layoutDocument);
         }
         #endregion
 
@@ -808,7 +823,7 @@ namespace Dash
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible )
+            else if (xIcon.Visibility == Visibility.Visible)
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
@@ -929,7 +944,7 @@ namespace Dash
         public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
-        { 
+        {
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
@@ -943,13 +958,13 @@ namespace Dash
                     if (e != null)
                         e.Handled = true;
                     OnSelected();
-                    
+
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
                 }
             }
         }
-        
+
         protected override void OnActivated(bool isSelected)
         {
             ViewModel?.SetSelected(this, isSelected);
@@ -1028,5 +1043,5 @@ namespace Dash
             }
         }
     }
-    
+
 }

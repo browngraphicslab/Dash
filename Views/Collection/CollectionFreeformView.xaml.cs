@@ -328,9 +328,10 @@ namespace Dash
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
                 CompositeMode = ElementCompositeMode.SourceOver,
-                reference = endReference, //
                 referencingDocument = referencingDoc,
-                referencingKey = referencingFieldKey
+                referencingKey = referencingFieldKey,
+                referencedDocument= referencedDoc,
+                referencedKey = referencedFieldKey
         };
             Canvas.SetZIndex(link, -1);
             var converter = new BezierConverter(frameworkElement1, frameworkElement2, itemsPanelCanvas);
@@ -774,9 +775,11 @@ namespace Dash
                 if (connectionLine != null)
                 {
                     connectionLine.referencingDocument = inputController;
-                    connectionLine.reference = outputReference.FieldReference;
                     connectionLine.referencingKey = inputReference.FieldReference.FieldKey;
+                    connectionLine.referencedKey = outputReference.FieldReference.FieldKey;
+                    connectionLine.referencedDocument = outputReference.FieldReference.GetDocumentController(null);
                 }
+
                 if (!LineToConverter.ContainsKey(_connectionLine)) LineToConverter.Add(_connectionLine, _converter);
                 if (!LineToElementKeysDictionary.ContainsKey(_connectionLine))
                 {

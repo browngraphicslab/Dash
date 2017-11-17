@@ -7,10 +7,14 @@ using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
+    /// <summary>
+    /// A path subclass that knows its 
+    /// </summary>
     class UserCreatedLink:Path
     {
         public DocumentController referencingDocument;
-        public FieldReference reference;
+        public DocumentController referencedDocument;
         public KeyController referencingKey;
+        public KeyController referencedKey;
     }
 }
