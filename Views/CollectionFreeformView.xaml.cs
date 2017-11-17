@@ -1165,6 +1165,8 @@ namespace Dash
 
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
 
         private void MakeInkCanvas()

@@ -70,6 +70,19 @@ namespace Dash
             TargetInkCanvas.RightTapped += TargetCanvasOnRightTapped;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
+            FreeformView.Unloaded += FreeformViewOnUnloaded;
+        }
+
+        private void FreeformViewOnUnloaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            TargetInkCanvas.InkPresenter.StrokesCollected -= InkPresenterOnStrokesCollected;
+            TargetInkCanvas.InkPresenter.StrokesErased -= InkPresenterOnStrokesErased;
+            TargetInkCanvas.InkPresenter.StrokeInput.StrokeStarted -= StrokeInputOnStrokeStarted;
+            TargetInkCanvas.InkPresenter.StrokeInput.StrokeContinued -= StrokeInputOnStrokeContinued;
+            TargetInkCanvas.RightTapped -= TargetCanvasOnRightTapped;
+            InkFieldModelController.InkUpdated -= InkFieldModelControllerOnInkUpdated;
+            GlobalInkSettings.InkSettingsUpdated -= GlobalInkSettingsOnInkSettingsUpdated;
+            FreeformView.Unloaded -= FreeformViewOnUnloaded;
         }
 
         private void MakeFlyout()
