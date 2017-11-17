@@ -134,7 +134,8 @@ namespace Dash
                     }
                     if (ImageFieldModel.ByteData != null)
                     {
-                        _cacheSource = FromBase64(ImageFieldModel.ByteData);
+                        if (ImageFieldModel.ByteData.Length > 0)
+                            _cacheSource = FromBase64(ImageFieldModel.ByteData);
                     }
                 }
                 return _cacheSource;

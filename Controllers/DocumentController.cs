@@ -439,7 +439,15 @@ namespace Dash
                     else if (curField is TextFieldModelController)
                         (curField as TextFieldModelController).Data = textInput;
                     else if (curField is ImageFieldModelController)
-                        ((curField as ImageFieldModelController).Data as BitmapImage).UriSource = new Uri(textInput);
+                    {
+                        try
+                        {
+                            ((curField as ImageFieldModelController).Data as BitmapImage).UriSource = new Uri(textInput);
+                        } catch (Exception)
+                        {
+                            ((curField as ImageFieldModelController).Data as BitmapImage).UriSource = null;
+                        }
+                    }
                     else if (curField is DocumentFieldModelController)
                         (curField as DocumentFieldModelController).Data = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     else if (curField is DocumentCollectionFieldModelController)
@@ -719,7 +727,7 @@ namespace Dash
                     shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                 }
-                if (field.Key.Equals(KeyStore.PrototypeKey))
+                if (field.Key.Equals(KeyStore.PrototypeKey) && (field.Value as DocumentFieldModelController) != null)
                 {
                     (field.Value as DocumentFieldModelController).Data.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
                     (field.Value as DocumentFieldModelController).Data.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;

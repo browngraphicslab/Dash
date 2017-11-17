@@ -353,16 +353,50 @@ namespace Dash
                     Console.WriteLine(exception);
                 }
             }
-            if (false && e.DataView.Contains(StandardDataFormats.Html))
+            if (e.DataView.Contains(StandardDataFormats.Html))
             {
+                var html = await e.DataView.GetHtmlFormatAsync();
+                var splits = new Regex("<").Split(html);
+                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
+                var text = e.DataView.Contains(StandardDataFormats.Text) ? await e.DataView.GetTextAsync() : "";
+                var matches = new Regex(".*:.*").Matches(text);
+              
+                foreach (var img in imgs)
+                {
+                    var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
+                    var src = srcMatch.Substring(5, srcMatch.Length - 5);
+                    var i = new AnnotatedImage(new Uri(src), "", 200, 250, where.X, where.Y);
+                    AddDocument(i.Document, null);
+                    foreach (var match in matches)
+                    {
+                        var pair = new Regex(":").Split(match.ToString());
+                        i.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextFieldModelController(pair[1].Trim('\r')), true);
+                    }
+                }
+                if (imgs.Count() == 0)
+                {
+                    var t = new RichTextNote(PostitNote.DocumentType, "", where);
+                    t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(text)), true);
+                    foreach (var match in matches)
+                    {
+                        var pair = new Regex(":").Split(match.ToString());
+                        t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextFieldModelController(pair[1].Trim('\r')), true);
+                    }
+                    AddDocument(t.Document, null);
+                }
 
-                var text = await e.DataView.GetHtmlFormatAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, "");
-                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(text)), true);
-                AddDocument(t.Document, null);
+                //var n = new RichTextNote(PostitNote.DocumentType, "");
+                //n.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(html)), true);
+                //AddDocument(n.Document, null);
             }
             else if (e.DataView.Contains(StandardDataFormats.Rtf))
-                ;
+            {
+                var text = await e.DataView.GetRtfAsync();
+
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(text, text)), true);
+                AddDocument(t.Document, null);
+            }
             else if (e.DataView.Contains(StandardDataFormats.Text))
             {
                 var text = await e.DataView.GetTextAsync();

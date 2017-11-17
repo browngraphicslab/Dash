@@ -148,7 +148,7 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?") : base(type)
+            public RichTextNote(DocumentType type, string title = "Title?", Point where = new Point()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
@@ -160,7 +160,7 @@ namespace Dash
                 if (_prototypeLayout == null)
                     _prototypeLayout = CreatePrototypeLayout();
                 var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
-                docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(where), true);
 
                 if (false)
                 {

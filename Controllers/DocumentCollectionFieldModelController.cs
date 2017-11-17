@@ -138,6 +138,8 @@ namespace Dash
         /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
+            if (docController == null)
+                return;
             // if the document is already in the collection don't readd it
             if (_documents.Contains(docController))
             {
