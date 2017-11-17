@@ -22,6 +22,7 @@
                             <ComboBoxItem>Center</ComboBoxItem>
                             <ComboBoxItem>Right</ComboBoxItem>
                             <ComboBoxItem>Stretch</ComboBoxItem>
+                            
                         </ComboBox>
                 </local:SettingsPaneBlock.MainContent>
                 <local:SettingsPaneBlock.Title>HORIZONTAL ALIGNMENT</local:SettingsPaneBlock.Title>

@@ -14,7 +14,8 @@
                         TextChanged="AutoSuggestBox_TextChanged"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                        DisplayMemberPath="Name">
+                        DisplayMemberPath="Name"
+                        Background="{StaticResource MainText}">
         </AutoSuggestBox>
     </Grid>
 </UserControl>

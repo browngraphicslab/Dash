@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -244,6 +245,33 @@ namespace Dash
             // set the active layout on the deepest prototype since its the first one
             var deepestPrototype = doc.GetDeepestPrototype();
             deepestPrototype.SetActiveLayout(activeLayout, forceMask: true, addToLayoutList: true);
+        }
+
+        public static TextController GetTitleFieldOrSetDefault(this DocumentController doc, Context context = null)
+        {
+            var dataDoc = doc.GetDataDocument(context);
+            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
+            if (titleKey == null)
+            {
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Untitled"), false);
+                titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
+            }
+            return titleKey;
+        }
+
+        public static void SetTitleField(this DocumentController doc, string newTitle, Context context = null)
+        {
+            var dataDoc = doc.GetDataDocument(context);
+            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
+            if (titleKey == null)
+            {
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Untitled"), false);
+                titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
+            }
+            Debug.Assert(titleKey != null);
+            titleKey.Data = newTitle;
         }
 
         public static NumberController GetHeightField(this DocumentController doc, Context context = null)

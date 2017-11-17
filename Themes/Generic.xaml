@@ -26,7 +26,7 @@
                             <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
                             
                             <!--window chrome-->
-                            <Rectangle x:Name="PART_Header" Fill="{TemplateBinding HeaderColor}"
+                            <Rectangle x:Name="PART_Header" Fill="{StaticResource AccentGreen}"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                             <Button x:Name="PART_CloseButton" Width="30" Height="25" Background="Transparent"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0" Padding="10">

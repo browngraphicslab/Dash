@@ -52,7 +52,7 @@ namespace DashShared
         Multiply,
         Regex,
         Melt,
-        ExtractSentences,
-        ExtractKeyWords
+        Sentence_Analyzer,
+        Extract_Keywords
     }
 }

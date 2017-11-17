@@ -22,6 +22,7 @@ namespace Dash.Views.Document_Menu
         public MainMenu()
         {
             this.InitializeComponent();
+
         }
         
     }

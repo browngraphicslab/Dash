@@ -9,6 +9,7 @@ using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Converters;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {

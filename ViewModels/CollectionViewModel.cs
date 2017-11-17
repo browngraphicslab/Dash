@@ -18,7 +18,7 @@ namespace Dash
     {
         private ListController<DocumentController> _collectionFieldModelController;
 
-        public InkController InkFieldModelController;
+        public InkController InkController;
 
         public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
@@ -27,7 +27,6 @@ namespace Dash
             AddViewModels(_collectionFieldModelController.TypedData, context);
 
             var copiedContext = new Context(context);
-            OutputKey = KeyStore.CollectionOutputKey;
 
             if (collection is ReferenceController)
             {

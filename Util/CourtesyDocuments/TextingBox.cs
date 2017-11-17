@@ -32,13 +32,15 @@ namespace Dash
 
         public static string DefaultText = "Default Text";
         public static string DefaultFontWeight = "Normal"; // 100;
-        public static double DefaultTextAlignment = (int)TextAlignment.Left;
+        public static double DefaultTextAlignment = (int)TextAlignment.Center;
         public static double DefaultFontSize = (Double)App.Instance.Resources["DefaultFontSize"];
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null, Color? backgroundColor = null)
+        public TextingBox(FieldControllerBase refToText, double x = 0, double y = 0, double w = 200, double h = 40, FontWeight weight = null, Color? backgroundColor = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
+            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
+            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);
@@ -60,8 +62,8 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var textFieldModelController = new TextController(DefaultText);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textFieldModelController);
+            var textController = new TextController(DefaultText);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
 
             return prototypeDocument;
@@ -139,21 +141,21 @@ namespace Dash
             }
         }
 
-        protected static IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
+        protected static IValueConverter GetFieldConverter(FieldControllerBase Controller)
         {
-            if (fieldModelController is DocumentController)
+            if (Controller is DocumentController)
             {
                 return new DocumentControllerToStringConverter();
             }
-            else if (fieldModelController is ListController<DocumentController>)
+            else if (Controller is ListController<DocumentController>)
             {
                 return new DocumentCollectionToStringConverter();
             }
-            else if (fieldModelController is NumberController)
+            else if (Controller is NumberController)
             {
-                return new StringToDoubleConverter(0);
+                return new StringToDoubleConverter();
             }
-            else if (fieldModelController is ReferenceController)
+            else if (Controller is ReferenceController)
             {
                 return null;
             }
@@ -173,6 +175,7 @@ namespace Dash
             };
             element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
         }
+
         protected static void BindBackgroundColor(EditableTextBlock element, DocumentController docController, Context context)
         {
             var backgroundBinding = new FieldBinding<TextController>()
@@ -183,7 +186,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context
             };
-            element.AddFieldBinding(EditableTextBlock.BackgroundProperty, backgroundBinding);
+            element.TextBackground.AddFieldBinding(Grid.BackgroundProperty, backgroundBinding);
         }
 
         protected static void BindFontWeight(EditableTextBlock element, DocumentController docController, Context context)

@@ -1,19 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using DashShared;
-using System;
-using Windows.System;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Controllers.Operators;
-using Dash.Converters;
-using Visibility = Windows.UI.Xaml.Visibility;
+using DashShared;
+using Visibility = DashShared.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,21 +17,28 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-        public static readonly string DragPropertyKey = "key";
+        public static readonly string DragPropertyKey = "key_value_pane_drag_key 1893741";
+
+        private bool _addKVPaneOpen = true;
 
         private DocumentController _documentControllerDataContext;
+        private bool _editKey;
+
+        private KeyFieldContainer _selectedKV;
+        private TextBox _tb;
+
         /// <summary>
-        /// Contains
+        /// The backing collection for items in the list of keys and values
         /// </summary>
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
-        public void SetHeaderVisibility(DashShared.Visibility vis)
-        {
-            xHeaderGrid.Visibility = vis == DashShared.Visibility.Visible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
-        }
 
-        private bool _addKVPaneOpen = true;
+        public DocumentController RealDataContext =>
+            _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null
+                ? _documentControllerDataContext
+                    .GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null)
+                : _documentControllerDataContext;
 
         public KeyValuePane()
         {
@@ -49,10 +52,20 @@ namespace Dash
             xTypeComboBox.SelectedItem = TypeInfo.None;
         }
 
+        public void SetHeaderVisibility(Visibility vis)
+        {
+            xHeaderGrid.Visibility = vis == DashShared.Visibility.Visible
+                ? Windows.UI.Xaml.Visibility.Visible
+                : Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
         {
             var dataContext = documentToDisplay.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
             documentToDisplay = dataContext ?? documentToDisplay;
+            if (_documentControllerDataContext != null)
+                _documentControllerDataContext.FieldModelUpdated -=
+                    _documentControllerDataContext_DocumentFieldUpdated;
             _documentControllerDataContext = documentToDisplay;
             _documentControllerDataContext.FieldModelUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
             _documentControllerDataContext.FieldModelUpdated += _documentControllerDataContext_DocumentFieldUpdated;
@@ -62,23 +75,22 @@ namespace Dash
         private void KeyValuePane_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (DataContext != null)
-            {
                 SetListItemSourceToCurrentDataContext();
-            }
         }
 
         /// <summary>
-        /// Resets the ListItemSource to fields in the current datacontext (this can be thought of as rebuilding the entire list)
+        ///     Resets the ListItemSource to fields in the current datacontext (this can be thought of as rebuilding the entire
+        ///     list)
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
             ListItemSource.Clear();
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
-                {
-                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext), keys.Contains(keyFieldPair.Key.Id), TypeColumnWidth));
-                }
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
+                        new BoundController(keyFieldPair.Value, _documentControllerDataContext),
+                        keys.Contains(keyFieldPair.Key.Id), TypeColumnWidth));
         }
 
         private void _documentControllerDataContext_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -91,14 +103,15 @@ namespace Dash
             else SetListItemSourceToCurrentDataContext();
         }
 
-        void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
+        private void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
 
-            for (int i = 0; i < ListItemSource.Count; i++)
+            for (var i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundFieldModelController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id), TypeColumnWidth);
+                        new BoundController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id),
+                        TypeColumnWidth);
         }
 
         private void FocusOn(TextBox tb)
@@ -117,11 +130,12 @@ namespace Dash
             {
                 var container = item as KeyFieldContainer;
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
+                e.Data.Properties.Add(DragPropertyKey,
+                    new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
             }
         }
 
-        private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void AddButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             //Debug.Assert(xAddButton.Content != null, "xAddButton.Content != null");
             //var view = (Viewbox)xAddButton.Content;
@@ -132,7 +146,6 @@ namespace Dash
             var type = (TypeInfo)xTypeComboBox.SelectedItem;
             if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
             {
-
                 if (AddKeyValuePair())
                 {
                     xNewKeyField.Text = "";
@@ -141,16 +154,16 @@ namespace Dash
                     ToggleAddKVPane();
                 }
             }
-            //}
-
         }
+
         /// <summary>
-        /// Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is successful in adding the pair.
+        ///     Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is
+        ///     successful in adding the pair.
         /// </summary>
         private bool AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);
             FieldControllerBase fmController = new TextController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
@@ -175,123 +188,96 @@ namespace Dash
             {
                 fmController = new TextController(xNewValueField.Text);
             }
-            //TODO tfs: fix this
-            //else if (item == TypeInfo.Collection)
-            //{
-            //    fmController = new ListController<DocumentController>();
-            //}
+            else if (item == TypeInfo.List)
+            {
+                //TODO tfs: this can only create lists of docs(collections), not lists of other things
+                fmController = new ListController<DocumentController>();
+            }
             else if (item == TypeInfo.Document)
             {
-                var fields = new Dictionary<KeyController, FieldControllerBase>()
+                var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     [KeyStore.ActiveLayoutKey] = new FreeFormDocument(new List<DocumentController>()).Document
                 };
 
                 fmController = new DocumentController(fields, DocumentType.DefaultType);
             }
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController).Data)?.ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext), keys.Contains(key.Id), TypeColumnWidth));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, RealDataContext),
+                keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
             return true;
         }
 
-        public DocumentController RealDataContext
-        {
-            get
-            {
-                return _documentControllerDataContext.GetField(KeyStore.DocumentContextKey) != null ?
-                _documentControllerDataContext.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) :
-                _documentControllerDataContext;
-            }
-        }
-
         /// <summary>
-        /// Toggles the bottom pane UI for adding new key-value pairs 
+        ///     Toggles the bottom pane UI for adding new key-value pairs
         /// </summary>
         private void ToggleAddKVPane()
         {
             _addKVPaneOpen = !_addKVPaneOpen;
             if (_addKVPaneOpen)
             {
-                xNewFieldPanel.Visibility = Visibility.Collapsed;
-                xCreateFieldButton.Visibility = Visibility.Visible;
+                xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
             }
             else
             {
-                xNewFieldPanel.Visibility = Visibility.Visible;
-                xCreateFieldButton.Visibility = Visibility.Collapsed;
-            }
-            //if (_addKVPaneOpen)
-            //{
-            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Accept) };
-            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            //    FocusOn(xNewKeyField);
-            //}
-            //else
-            //{
-            //    xAddButton.Content = new Viewbox { Child = new SymbolIcon(Symbol.Add) };
-            //    xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xTypeComboBox.IsEnabled = false;
-            //    xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xNewValueField.IsEnabled = false;
-            //    xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    xImageGrid.BorderThickness = new Thickness(0);
-            //}
-        }
-        /// <summary>
-        /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
-        /// </summary>
-        public class KeyFieldContainer
-        {
-            public KeyController Key { get; }
-            public bool IsPrimary { get; }
-            public BoundFieldModelController Controller { get; set; }
-            // Type of field, ex) Text, Image, Number  
-            public string Type { get; }
-            public GridLength TypeColumnWidth { get; set; }
-            public GridLength PrimaryKeyColumnWidth { get; set; }
-
-            public KeyFieldContainer(KeyController key, BoundFieldModelController controller, bool isPrimary, GridLength typeColumnWidth)
-            {
-                Key = key;
-                Controller = controller;
-                Type = (controller.FieldModelController.TypeInfo).ToString();
-                IsPrimary = isPrimary;
-                TypeColumnWidth = typeColumnWidth;
-                PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
+                xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController))?.ToList() ?? new List<TextController>();
-            if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() == 0)
+            if (kf == null)
             {
-                keys.Add(new TextController(kf.Key.Id));
-                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(keys), false);
+                return;
+            }
+            var primaryKeys =
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(
+                    KeyStore.PrimaryKeyKey, null);
+            if (primaryKeys == null)
+            {
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey,
+                    new ListController<KeyController>(new List<KeyController> {kf.Key}), false);
+            }
+            else
+            {
+                if (!primaryKeys.TypedData.Contains(kf.Key))
+                {
+                    primaryKeys.Add(kf.Key);
+                }
             }
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<TextController>>(KeyStore.PrimaryKeyKey, null)?.Data?.Select((t) => (t as TextController))?.ToList() ?? new List<TextController>();
-            if (kf != null && keys.Where((k) => k.Data == kf.Key.Id).Count() != 0)
+            if (kf == null)
             {
-                keys.RemoveAt(keys.FindIndex((k) => k.Data == kf.Key.Id));
-                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(keys), false);
+                return;
+            }
+            var primaryKeys =
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(
+                    KeyStore.PrimaryKeyKey, null);
+            if(primaryKeys != null)
+            {
+                if (primaryKeys.TypedData.Contains(kf.Key))
+                {
+                    primaryKeys.Remove(kf.Key);
+                }
             }
         }
 
         private void xNewKeyField_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (xNewKeyField.Text != "") xTypeComboBox.IsEnabled = true;
+            if (xNewKeyField.Text != "")
+            {
+                xTypeComboBox.IsEnabled = true;
+            }
             else
             {
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
@@ -302,7 +288,7 @@ namespace Dash
 
         private void xTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var item = (TypeInfo)xTypeComboBox.SelectedItem;
+            var item = (TypeInfo) xTypeComboBox.SelectedItem;
 
             if (item == TypeInfo.Image)
             {
@@ -322,37 +308,33 @@ namespace Dash
             else
             {
                 xNewValueField.IsEnabled = false;
-                return;
             }
-
         }
 
         /// <summary>
-        /// If a new Image field is being added, update the preview (xDefaultImage) with the inputed url  
+        ///     If a new Image field is being added, update the preview (xDefaultImage) with the inputed url
         /// </summary>
         private void xNewValueField_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string value = xNewValueField.Text;
+            var value = xNewValueField.Text;
 
-            if (value != "" && (TypeInfo)xTypeComboBox.SelectedItem == TypeInfo.Image)
+            if (value != "" && (TypeInfo) xTypeComboBox.SelectedItem == TypeInfo.Image)
             {
                 Uri outUri;
                 if (Uri.TryCreate(value, UriKind.Absolute, out outUri))
-                {
                     xDefaultImage.Source = new BitmapImage(outUri);
-                }
                 else
-                {
                     xDefaultImage.Source = new BitmapImage(new Uri("ms-appx://Dash/Assets/DefaultImage.png"));
-                }
             }
         }
 
         /// <summary>
-        /// when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position 
+        ///     when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position
         /// </summary>
-        private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = true;
+
             // if there's already an editing textbox, get rid of it
             if (_tb != null)
             {
@@ -360,9 +342,9 @@ namespace Dash
                 return;
             }
 
-            FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
+            var tappedSource = e.OriginalSource as FrameworkElement;
             var posInKVPane = e.GetPosition(xOuterGrid);
-            var item = (xKeyValueListView.ContainerFromIndex(0) as ListViewItem);
+            var item = xKeyValueListView.ContainerFromIndex(0) as ListViewItem;
             if (item == null)
                 return;
             var col0Width = (item.ContentTemplateRoot as Grid).ColumnDefinitions[0].ActualWidth;
@@ -400,18 +382,18 @@ namespace Dash
         }
 
         /// <summary>
-        /// Textbox will update keyvaluepane on enter 
+        ///     Textbox will update keyvaluepane on enter
         /// </summary>
         private void SetTextBoxEvents()
         {
             _tb.LostFocus += (s, e) => RemoveEditingTextBox();
 
-            // if key was pressed, just edit the key value (don't have to update the fieldmodelcontrollers) 
+            // if key was pressed, just edit the key value (don't have to update the Controllers) 
             if (_editKey)
             {
                 _tb.KeyDown += (s, e) =>
                 {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    if (e.Key == VirtualKey.Enter)
                     {
                         //DBTest.ResetCycleDetection();
                         _selectedKV.Key.Name = _tb.Text;
@@ -424,11 +406,12 @@ namespace Dash
 
             _tb.KeyDown += (s, e) =>
             {
-                if (e.Key == Windows.System.VirtualKey.Enter)
+                if (e.Key == VirtualKey.Enter)
                 {
                     //DBTest.ResetCycleDetection();
-                    var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(_selectedKV.Key, new Context(_documentControllerDataContext));
-                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
+                    var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(
+                        _selectedKV.Key, new Context(_documentControllerDataContext));
+                    _documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                     RemoveEditingTextBox();
                 }
             };
@@ -440,12 +423,8 @@ namespace Dash
             _tb = null;
         }
 
-        private KeyFieldContainer _selectedKV = null;
-        private TextBox _tb = null;
-        private bool _editKey = false;
-
         /// <summary>
-        /// Identifies the row that is being modified currently 
+        ///     Identifies the row that is being modified currently
         /// </summary>
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
@@ -454,7 +433,7 @@ namespace Dash
 
 
         /// <summary>
-        /// Corrects the column widths of headers upon load 
+        ///     Corrects the column widths of headers upon load
         /// </summary>
         private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -463,13 +442,13 @@ namespace Dash
         }
 
         /// <summary>
-        /// Corrects the column widths of new grid list items 
+        ///     Corrects the column widths of new grid list items
         /// </summary>
         private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
         {
             // not sure what this was fixing, but it breaks the doc test example
             //for (int i = 0; i < 3; i++)
-            //  (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
+            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
 
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
@@ -486,10 +465,10 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                var type = (TypeInfo)xTypeComboBox.SelectedItem;
-                if (xNewKeyField.Text != "" && type != TypeInfo.None && (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
+                var type = (TypeInfo) xTypeComboBox.SelectedItem;
+                if (xNewKeyField.Text != "" && type != TypeInfo.None &&
+                    (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
                 {
-
                     AddKeyValuePair();
                     xNewKeyField.Text = "";
                     xNewValueField.Text = "";
@@ -497,6 +476,14 @@ namespace Dash
                     FocusOn(xNewKeyField);
                 }
             }
+        }
+
+        private void xKeyValueListView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            //var newField = new KeyFieldContainer(new KeyController(),
+            //    new BoundController(new TextController(""), RealDataContext), false,
+            //    TypeColumnWidth);
+            //ListItemSource.Add(newField);
         }
     }
 }

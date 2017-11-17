@@ -16,7 +16,7 @@ namespace Dash
 
     /// <summary>
     /// A generic document type containing a single image. The Data field on an ImageBox is a reference which eventually ends in an
-    /// ImageFieldModelController or an ImageFieldModelController
+    /// ImageController or an ImageController
     /// </summary>
     public class ImageBox : CourtesyDocument
     {
@@ -32,6 +32,8 @@ namespace Dash
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
+            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
+            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetOpacityField(Document, DefaultOpacity, true, null);
@@ -227,8 +229,8 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var imFieldModelController = new ImageController(DefaultImageUri);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imFieldModelController);
+            var imController = new ImageController(DefaultImageUri);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             SetOpacityField(prototypeDocument, DefaultOpacity, true, null);
             return prototypeDocument;

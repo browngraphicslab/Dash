@@ -6,8 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 using DashShared.Models;
+using Dash.Controllers.Operators;
 
-namespace Dash.Controllers.Operators.Demo
+namespace Dash
 {
     public class ExtractSentencesOperatorController : OperatorController
     {
@@ -21,6 +22,10 @@ namespace Dash.Controllers.Operators.Demo
         // helper key to store sentences in the output
         public static readonly KeyController SentenceKey = new KeyController("528F8275-99FD-48A3-8B9D-71CEB0856078", "Sentence");
 
+        // helper key to store sentences in the output
+        public static readonly KeyController IndexKey = new KeyController("4e852433-b6cc-43f2-a37c-636e1e61cd8b", "Index");
+        public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
+        public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
@@ -35,7 +40,7 @@ namespace Dash.Controllers.Operators.Demo
                 [OutputCollection] = TypeInfo.List
             };
 
-        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.ExtractSentences))
+        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.Sentence_Analyzer))
         {
         }
 
@@ -52,16 +57,29 @@ namespace Dash.Controllers.Operators.Demo
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
-                var textInput = dataDoc.GetField(textFieldKey) as TextController;
+                var dataDoc = inputDoc.GetDataDocument(null);
+                var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data ??
+                                (dataDoc.GetDereferencedField(textFieldKey, null) as RichTextController)?.Data?.ReadableString;
                 if (textInput != null)
                 {
-                    var sentences = Regex.Split(textInput.Data, @"(?<=[\.!\?])\s+");
+                    var sentences = Regex.Split(textInput, @"(?<=[\.!\?])\s+");
+
+                    var protoLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
+
+                    //var sentenceIndex = 0;
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
                     {
                         var outputDoc = dataDoc.MakeDelegate();
-                        outputDoc.SetField(SentenceKey, new TextController(sentence), true);
-                        outputDocs.Add(outputDoc);
+                        outputDoc.SetField(SentenceKey, new RichTextController(new RichTextModel.RTD(sentence)), true);
+                        outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
+                        outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
+
+                        var docLayout = protoLayout.MakeDelegate();
+                        docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
+                        outputDocs.Add(docLayout);
+
+
+                        //sentenceIndex += sentence.Length;
                     }
 
                 }
@@ -69,6 +87,7 @@ namespace Dash.Controllers.Operators.Demo
 
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
+
         public override FieldModelController<OperatorModel> Copy()
         {
             return new ExtractSentencesOperatorController();

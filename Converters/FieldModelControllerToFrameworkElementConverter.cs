@@ -8,19 +8,19 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    public class BoundFieldModelController
+    public class BoundController
     {
         public FieldControllerBase FieldModelController;
         public DocumentController   ContextDocumentController;
-        public BoundFieldModelController(FieldControllerBase fieldModelController, DocumentController contextDocument)
+        public BoundController(FieldControllerBase fieldModelController, DocumentController contextDocument)
         {
             FieldModelController = fieldModelController;
             ContextDocumentController = contextDocument;
         }
     }
-    public class BoundFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<BoundFieldModelController, FrameworkElement>
+    public class BoundControllerToFrameworkElementConverter : SafeDataToXamlConverter<BoundController, FrameworkElement>
     {
-        public override FrameworkElement ConvertDataToXaml(BoundFieldModelController data, object parameter = null)
+        public override FrameworkElement ConvertDataToXaml(BoundController data, object parameter = null)
         {
             if (data == null)
                 return new TextBox();
@@ -28,7 +28,7 @@ namespace Dash
             return convertDataToXaml;
         }
 
-        public override BoundFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override BoundController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

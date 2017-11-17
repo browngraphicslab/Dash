@@ -20,12 +20,8 @@ namespace Dash
     /// </summary>
     public class ManipulationControls : IDisposable
     {
-
-        // == MEMBERS ==
-
-
-        public double MinScale { get; set; } = .5;
-        public double MaxScale { get; set; } = 2.0;
+        public double MinScale { get; set; } = .2;
+        public double MaxScale { get; set; } = 5.0;
         private bool _disabled;
         private FrameworkElement _element;
         private readonly bool _doesRespondToManipulationDelta;
@@ -48,10 +44,21 @@ namespace Dash
         {
             get
             {
+                // if we're on the lowest selecting document view then we can resize it with pointer wheel
                 var docView = _element as DocumentView;
                 if (docView != null) return docView.IsLowestSelected;
+
+                /*
                 var colView = _element as CollectionFreeformView;
-                return colView == null || colView.IsLowestSelected;
+
+                // hack to see if we're in the interface builder or in the compound operator editor
+                // these are outside of the normal selection hierarchy so we always return true
+                if (colView?.ViewModel is SimpleCollectionViewModel) return true;
+
+                // if the collection view is a free form view, or it is the lowest
+                // selected element then use the pointer
+                return colView != null || colView.IsLowestSelected;*/
+                return _element is CollectionFreeformView;
             }
         }
 
@@ -182,9 +189,9 @@ namespace Dash
             //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
             //Clamp the scale factor 
-            var newScale = ElementScale * scaleAmount;
-            ClampScale(newScale, ref scaleAmount);
+            ElementScale *= scaleAmount;
 
+            if(!ClampScale(scaleAmount))
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
                 point.Position, new Point(scaleAmount, scaleAmount)));
         }
@@ -244,13 +251,13 @@ namespace Dash
             e.Handled = true;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
 
             //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
-            var newScale = ElementScale * scaleFactor;
-            ClampScale(newScale, ref scaleFactor);
+            ElementScale *= scaleFactor;
 
+            if(!ClampScale(scaleFactor))
             // TODO we may need to take into account the _element's render transform here with regards to scale
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
                 e.Position, new Point(scaleFactor, scaleFactor)));
@@ -264,23 +271,21 @@ namespace Dash
             _element.PointerWheelChanged -= EmptyPointerWheelChanged;
         }
 
-        private void ClampScale(double newScale, ref float scale)
+        private bool ClampScale(double scaleFactor)
         {
-            //if (newScale > MaxScale)
-            //{
-            //    scale = (float)(MaxScale / ElementScale);
-            //    ElementScale = MaxScale;
-            //}
-            //else if (newScale < MinScale)
-            //{
-            //    scale = (float)(MinScale / ElementScale);
-            //    ElementScale = MinScale;
-            //}
-            //else
-            //{
-            //    ElementScale = newScale;
-            //}
-            ElementScale = newScale;
+            Debug.WriteLine(ElementScale);
+            if (ElementScale > MaxScale)
+            {
+                ElementScale = MaxScale;
+                return scaleFactor > 1;              
+            }
+
+            if (ElementScale < MinScale)
+            {
+                ElementScale = MinScale;
+                return scaleFactor < 1;
+            }
+            return false;
         }
     }
 }

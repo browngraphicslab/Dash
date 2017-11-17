@@ -45,7 +45,7 @@ namespace Dash
         {
         }
 
-        public ExtractKeywordsOperatorController() : base(new OperatorModel(OperatorType.ExtractKeyWords))
+        public ExtractKeywordsOperatorController() : base(new OperatorModel(OperatorType.Extract_Keywords))
         {
         }
 
@@ -61,7 +61,7 @@ namespace Dash
             foreach (var inputDoc in collection.TypedData)
             {
                 // get the data from it if it exists
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
+                var dataDoc = inputDoc.GetDataDocument(null);
                 // get the text and add it to allText if the text exists
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
@@ -81,14 +81,14 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
+                var dataDoc = inputDoc.GetDataDocument(null);
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
                 {
                     var presentKeyWords = keyWords.Where(kw => textInput.Data.Contains(kw.Text));
                     var outputDoc = dataDoc.MakeDelegate();
-                    var textFieldModelControllers = presentKeyWords.SortByOccurences().Select(kw => new TextController(kw.Text));
-                    outputDoc.SetField(KeyWords, new ListController<TextController>(textFieldModelControllers), true);
+                    var textControllers = presentKeyWords.SortByOccurences().Select(kw => new TextController(kw.Text));
+                    outputDoc.SetField(KeyWords, new ListController<TextController>(textControllers), true);
                     outputDocs.Add(outputDoc);
                 }
 
@@ -99,7 +99,7 @@ namespace Dash
 
         public override FieldModelController<OperatorModel> Copy()
         {
-            return new ExtractKeywordsOperatorController(new OperatorModel(OperatorType.ExtractKeyWords));
+            return new ExtractKeywordsOperatorController(new OperatorModel(OperatorType.Extract_Keywords));
         }
 
         public override bool SetValue(object value)

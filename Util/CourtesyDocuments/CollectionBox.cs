@@ -42,8 +42,8 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var docFieldModelController = new ListController<DocumentController>(new List<DocumentController>());
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
+            var docController = new ListController<DocumentController>(new List<DocumentController>());
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docController);
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
 
             var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
@@ -66,10 +66,10 @@ namespace Dash
 
             double opacityValue = opacity.HasValue ? (double)opacity : 1;
 
-            var collectionFieldModelController = data.DereferenceToRoot<ListController<DocumentController>>(context);
-            Debug.Assert(collectionFieldModelController != null);
-
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
+            Debug.Assert(collectionController != null);
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            
 
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController).Data;
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);

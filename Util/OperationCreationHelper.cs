@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Dash.Controllers.Operators.Demo;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -29,14 +28,13 @@ namespace Dash
             AddOperator(() => new ImageOperatorController(), "UriToImage");
             AddOperator(() => new FilterOperatorController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
-            //AddOperator(() => new CollectionMapOperator(), "Map", rfmc => new CollectionMapOperatorBox(rfmc));
             AddOperator(() => new CompoundOperatorController(), "Compound");
             AddOperator(() => new MeltOperatorController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
-            AddOperator(() => new ExtractSentencesOperatorController(), "Extract Sentences", rfmc => new ExtractSentencesOperatorBox(rfmc));
+            AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
 
             //TODO fix DB special case
-            //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
+            //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
 
         }
 

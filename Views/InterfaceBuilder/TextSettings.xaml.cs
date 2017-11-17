@@ -30,17 +30,16 @@ namespace Dash
         }
 
         public TextSettings(DocumentController editedLayoutDocument, Context context) : this()
-        {            
+        {
+            if (editedLayoutDocument.GetField(TextingBox.BackgroundColorKey) == null)
+                editedLayoutDocument.SetField(TextingBox.BackgroundColorKey, new TextController("white"), true);
             xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(editedLayoutDocument,context));
             BindFontWeight(editedLayoutDocument, context);
             BindFontSize(editedLayoutDocument, context);
             BindFontAlignment(editedLayoutDocument, context);
-            xBackgroundColorComboBox.SelectionChanged += delegate
-            {
-                this.ColorSelectionChanged(editedLayoutDocument, context);
-            };
+            BindBackgroundColor(editedLayoutDocument, context);
         }
 
         private void BindFontAlignment(DocumentController docController, Context context)
@@ -53,13 +52,30 @@ namespace Dash
             {
                 Source = textAlignmentController,
                 Path = new PropertyPath(nameof(textAlignmentController.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                // Converter = new IntToTextAlignmentConverter()
             };
 
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);
             xAlignmentListView.SelectionChanged += delegate (object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
         }
 
+
+        private void BindBackgroundColor(DocumentController docController, Context context)
+        {
+            var backColorController =
+                    docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextController;
+            Debug.Assert(backColorController != null);
+            var backgroundBinding = new FieldBinding<TextController>()
+            {
+                Key = TextingBox.BackgroundColorKey,
+                Document = docController,
+                Converter = new StringToNamedColorConverter(),
+                Mode = BindingMode.TwoWay,
+                Context = context
+            };
+            xBackgroundColorComboBox.AddFieldBinding(ComboBox.SelectedItemProperty, backgroundBinding);
+        }
 
         private void BindFontWeight(DocumentController docController, Context context)
         {
@@ -87,29 +103,24 @@ namespace Dash
 
         private void BindFontSize(DocumentController docController, Context context)
         {
-            var fontSizeController =
-                    docController.GetDereferencedField(TextingBox .FontSizeKey, context) as NumberController;
-            Debug.Assert(fontSizeController != null);
-
-            var fontSizeBinding = new Binding()
+            var fontSizeBinding = new FieldBinding<NumberController>()
             {
-                Source = fontSizeController,
-                Path = new PropertyPath(nameof(fontSizeController.Data)),
+                Key = TextingBox.FontSizeKey,
+                Document = docController,
                 Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                Context = context,
+                Converter = new StringToDoubleConverter(1)
             };
-
-            xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
+            xFontSizeTextBox.AddFieldBinding(TextBox.TextProperty, fontSizeBinding);
         }
 
         private void ColorSelectionChanged(DocumentController docController, Context context)
         {
-            var textController = docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextController;
-            Debug.Assert(textController != null);
+            var field = docController.GetDereferencedField<TextController>(TextingBox.BackgroundColorKey, context);
             var col = (xBackgroundColorComboBox.SelectedItem as NamedColor).Color;
-            docController.SetField(TextingBox.BackgroundColorKey, new TextController(col.ToString()), true);
+            field.SetValue(col.ToString());
         }
-        
+
 
         private void AddColors()
         {
@@ -284,5 +295,10 @@ namespace Dash
         }
 
         #endregion
+
+        private void SettingsPaneBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

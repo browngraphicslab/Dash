@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Dash.Controllers;
 using Dash.Controllers.Operators;
-using Dash.Controllers.Operators.Demo;
 using DashShared;
 using DashShared.Models;
 using Flurl.Util;
@@ -218,10 +217,10 @@ namespace Dash
                 case OperatorType.Melt:
                     controller = new MeltOperatorController(model);
                     break;
-                case OperatorType.ExtractSentences:
+                case OperatorType.Sentence_Analyzer:
                     controller = new ExtractSentencesOperatorController(model);
                     break;
-                case OperatorType.ExtractKeyWords:
+                case OperatorType.Extract_Keywords:
                     controller = new ExtractKeywordsOperatorController(model);
                     break;
                 default:

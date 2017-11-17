@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using Dash.Controllers.Operators.Demo;
+
 using DashShared;
 using DashShared.Models;
 
@@ -86,7 +86,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
                 var userInput = sender.Text;
-                sender.ItemsSource = _allHeaders.Where(kvp => kvp.Key.Name.ToLower().Contains(userInput.ToLower())).Select(kvp => kvp.Key);
+                sender.ItemsSource = _allHeaders?.Where(kvp => kvp.Key.Name.ToLower().Contains(userInput.ToLower())).Select(kvp => kvp.Key);
             }
         }
 

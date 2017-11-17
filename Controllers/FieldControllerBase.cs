@@ -13,8 +13,8 @@ using TextWrapping = DashShared.TextWrapping;
 namespace Dash
 {
     /// <summary>
-    /// abstract controller from which "FieldModelController<T>" should inherit.
-    /// This class should hold all the abstract contracts that every FieldModelController must inherit
+    /// abstract controller from which "Controller<T>" should inherit.
+    /// This class should hold all the abstract contracts that every Controller must inherit
     /// </summary>
     public abstract class FieldControllerBase : IController<FieldModel>, IDisposable
     {
@@ -81,6 +81,7 @@ namespace Dash
             var tb = new TextingBox(this);
             tb.Document.SetField(TextingBox.FontSizeKey, new NumberController(11), true);
             tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(0), true);
+            //tb.Document.SetField(KeyStore.HeightFieldKey, new NumberController(25), true); 
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(Double.NaN);

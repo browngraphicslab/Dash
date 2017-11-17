@@ -1,4 +1,5 @@
 ﻿
+
 using Windows.Storage;
 
 namespace DashShared
@@ -151,7 +152,7 @@ namespace DashShared
             public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
             public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "Height");
             public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
-            public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "DocumentTextKey");
+            public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "Position");
             public static KeyModel ScaleCenterFieldKey = new KeyModel("FE4IMA9J-NOE9-3NGS-G09Q-JFOE9038S82S" , "Scale Center");
             public static KeyModel ScaleAmountFieldKey = new KeyModel("AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE", "Scale Amount");
@@ -161,6 +162,7 @@ namespace DashShared
             public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
             public static KeyModel UserLinksKey = new KeyModel("D5E8B9F2-BDDC-4031-B40D-E4762E535E65", "_User-Created Links");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
+            public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "Parsed Fields");
         }
 
         public static class TypeStore
