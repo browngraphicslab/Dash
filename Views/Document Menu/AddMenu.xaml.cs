@@ -29,6 +29,8 @@ namespace Dash.Views.Document_Menu
         // mapping of collection view => menu items
         public Dictionary<CollectionView,TreeMenuNode> ViewToMenuItem;
 
+        public int Elements { get { return ViewToMenuItem.Count(); } } 
+
         // == CONSTRUCTOR ==
         public AddMenu()
         {

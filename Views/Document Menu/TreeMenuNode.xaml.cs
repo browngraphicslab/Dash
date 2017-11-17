@@ -163,7 +163,7 @@ namespace Dash.Views.Document_Menu
         // == MEMBERS ==
         // two levels of headers for add menu: either top-level blue or subheader green
         private bool isSubHeader = false;
-        //public ListView ItemsList { get { return xItemsList; } set { xItemsList = value; } } uncomment if use case arises
+        //public ListView ItemsList { get { return xItemsList; } set { xItemsList = value; } }        // uncomment if use case arises
 
         // text that displays on the header
         public string HeaderLabel

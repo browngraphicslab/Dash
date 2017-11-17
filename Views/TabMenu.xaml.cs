@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
 using DashShared;
+using Dash.Views.Document_Menu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -134,9 +135,36 @@ namespace Dash
         /// </summary>
         private void XSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            // if the user typed the change then update the displayed results
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-                UpdateList(sender.Text);
+            // if the user typed the change then prompt action  
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)                                          
+                Parse(sender.Text);
+        }
+
+        /// <summary>
+        /// Parser for tabmenu; 
+        /// </summary>
+        private void Parse(string command)                                                                                          // TOOD figure out where to put this 
+        {
+            command = command.Trim();
+            // if command starts with "@", search the whole workspace 
+            if (command.StartsWith("@"))        
+            {
+                command = command.Substring(1, command.Length - 1);
+                var strings = command.Split('.'); 
+                if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
+                {
+                    System.Diagnostics.Debug.WriteLine("number of shit " + AddMenu.Instance.Elements); 
+                } 
+                else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
+                {
+
+                }
+            }
+            //else update the displayed local tabmenu list 
+            else         
+            {
+                UpdateList(command);
+            }
         }
 
         /// <summary>

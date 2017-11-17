@@ -153,8 +153,7 @@ namespace Dash
                             var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                             var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
                             treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                                    treeMenuItem);
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem);
                         }
                     }
                 }
@@ -173,7 +172,7 @@ namespace Dash
             new ManipulationControls(xKeyValuePane, false, false);
         }
 
-        #region Xaml Styling Methods (used by operator/colelction view)
+        #region Xaml Styling Methods (used by operator/collection view)
         private bool isOperator = false;
         private bool addItem = false;
         /// <summary>
@@ -868,6 +867,26 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
             {
+                // change the keystore.titlekey 
+
+                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = (sender as TextBox).Text;
+
+                //var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
+                //context.AddDocumentContext(dataDoc);
+
+                //// set the default title
+                //dataDoc.GetTitleFieldOrSetDefault(context);
+
+                //var binding = new FieldBinding<TextFieldModelController>()
+                //{
+                //    Mode = BindingMode.TwoWay,
+                //    Document = dataDoc,
+                //    Key = KeyStore.TitleKey,
+                //    Context = context
+                //};
+
+                //xTitle.AddFieldBinding(TextBox.TextProperty, binding);
+                //xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 e.Handled = true;
             }
         }
