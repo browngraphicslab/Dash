@@ -206,6 +206,10 @@ namespace Dash
                 
             };
 
+            // add TreeMenu
+            TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionFieldModelController);
+            MyGrid.Children.Add(TreeMenu);
+
         }
 
         public CollectionView GetMainCollectionView()

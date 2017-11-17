@@ -154,11 +154,11 @@ namespace Dash
             if (!DocumentCollectionFieldModel.Data.Contains(docController.GetId()))
             {
                 DocumentCollectionFieldModel.Data.Add(docController.GetId());
-
                 UpdateOnServer();
             }
 
             //TODO only fire this once for add documents
+            // fire corresponding events in field modifier
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
                 CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
                 new List<DocumentController> {docController}));
@@ -178,6 +178,10 @@ namespace Dash
                 OnFieldModelUpdated(args.FieldArgs);
         }
 
+        /// <summary>
+        /// Removes a dfocument from the given collection
+        /// </summary>
+        /// <param name="doc"></param>
         public void RemoveDocument(DocumentController doc)
         {
             doc.DocumentFieldUpdated -= ContainedDocumentFieldUpdated;

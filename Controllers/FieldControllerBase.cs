@@ -28,6 +28,11 @@ namespace Dash
         {
         }
 
+        /// <summary>
+        /// Wrapper for the event called when a field model's data is updated
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
             UpdateOnServer();

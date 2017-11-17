@@ -213,6 +213,8 @@ namespace Dash
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xTitle.Text = "Collection (" + CollectionCount + ")";
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+
             CollectionCount++;
 
             // add item to menu
@@ -519,7 +521,7 @@ namespace Dash
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-                fitFreeFormChildrenToTheirLayouts();
+               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
             }
         }
 

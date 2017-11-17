@@ -10,6 +10,7 @@ namespace Dash
     public class CollectionViewModel : BaseCollectionViewModel
     {
         private DocumentCollectionFieldModelController _collectionFieldModelController;
+        public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
 
         public InkFieldModelController InkFieldModelController;
 
