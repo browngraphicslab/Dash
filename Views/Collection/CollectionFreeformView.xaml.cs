@@ -165,23 +165,6 @@ namespace Dash
         /// </summary>
         public void LoadLines()
         {
-//<<<<<<< HEAD:Views/CollectionFreeformView.xaml.cs
-//            //iterate through documents and get user links fields
-//            foreach (var docVM in ViewModel.DocumentViewModels)
-//            {
-//                TryLoadLinks(docVM);
-//            }
-//        }
-
-//        private void TryLoadLinks(DocumentViewModel docVM)
-//        {
-//            var doc = docVM.DocumentController;
-//            var linksListFMC =
-//                doc.GetField(KeyStore.UserLinksKey) as ListFieldModelController<TextFieldModelController>;
-//            if (linksListFMC != null)
-//            {
-//                foreach (var textFMC in linksListFMC.TypedData)
-//=======
             _linksToRetry = new List<Tuple<FieldReference, DocumentFieldReference>>();
             foreach (var docVM in ViewModel.DocumentViewModels)
             {
@@ -189,7 +172,6 @@ namespace Dash
                 var linksListFMC =
                     doc.GetField(KeyStore.UserLinksKey, true) as ListFieldModelController<TextFieldModelController>;
                 if (linksListFMC != null)
-                //>>>>>>> f1ed3cd456cc434a134fdc2c137b3d591d64d9ed:Views/Collection/CollectionFreeformView.xaml.cs
                 {
                     foreach (var textFMC in linksListFMC.TypedData) { 
 
@@ -197,15 +179,12 @@ namespace Dash
                     var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
                     if (keyValuePair.Key != null)
                     {
-                        //var keyID = textFMC.Data;
-                        // var keyValuePair = doc.EnumFields().FirstOrDefault(kvp => kvp.Key.Id == keyID);
                         if (keyValuePair.Key != null)
                         {
                             AddLineFromData((keyValuePair.Value as ReferenceFieldModelController).GetFieldReference(), new DocumentFieldReference(doc.Id, keyValuePair.Key));
                         }
                     }
                 }
-
                 }
             }
 
@@ -226,39 +205,6 @@ namespace Dash
             timer.Start();
         }
 
-//<<<<<<< HEAD:Views/CollectionFreeformView.xaml.cs
-//        /// <summary>
-//        /// Adds a visual link between two fields A and B in which B is a reference to A, and both fields are in the collection.
-//        /// Gets the document views on both ends of the link and the framework elements corresponding to the linked fields, then programatically
-//        /// starts and ends a drag between those two fields
-//        /// </summary>
-//        /// <param name="reference">The field reference on the document on the recieving end of the link</param>
-//        /// <param name="referencingDoc">The document on the recieving end of the link</param>
-//        /// <param name="referencingFieldKey">The key corresponding to the field on the recieving end of the link</param>
-//        public void AddLineFromData(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey)
-//        {
-//            var docId = reference.GetDocumentId();
-//            var referencedFieldKey = reference.FieldKey;
-//            //find the document containing the referenced field, if it is in this collection
-//            DocumentController referencedDoc = ViewModel.DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == docId)?.DocumentController;
-//            if (referencedDoc == null) return;
-//            //get the type of the referenced field (needed for the IOReference) 
-//            TypeInfo fieldTypeInfo;
-//            var fmController = reference.DereferenceToRoot(null);
-//            if (fmController == null)
-//            {
-//                fieldTypeInfo = (referencedDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController).Outputs[reference.FieldKey];
-//            } else
-//            {
-//                fieldTypeInfo = fmController.TypeInfo;
-//            }
-//            MakeLine(reference, referencingDoc, referencingFieldKey, referencedFieldKey, fmController, referencedDoc, fieldTypeInfo);
-//        }
-
-//        private void MakeLine(FieldReference reference, DocumentController referencingDoc, KeyController referencingFieldKey, KeyController referencedFieldKey, FieldModelController fmController, DocumentController referencedDoc, TypeInfo fieldTypeInfo)
-//        {
-//            var docView1 = GetDocView(referencedDoc);
-//=======
         public void AddLineFromData(FieldReference startReference, DocumentFieldReference endReference)
         {
             if (RefToLine.ContainsKey(startReference) &&
@@ -365,15 +311,6 @@ namespace Dash
 
             
 
-            //DocumentController inputController = outputtingReference.FieldReference.GetDocumentController(null);
-            //var thisRef = (inputtingReference.ContainerView.DataContext as DocumentViewModel).DocumentController
-            //    .GetDereferencedField(KeyStore.ThisKey, null);
-            //if (inputController.DocumentType.Equals(DashConstants.TypeStore.OperatorType) &&
-            //    outputtingReference.FieldReference is DocumentFieldReference && thisRef != null)
-            //    inputController.SetField(outputtingReference.FieldReference.FieldKey, thisRef, true);
-            //else
-            //    inputController.SetField(outputtingReference.FieldReference.FieldKey,
-            //        new DocumentReferenceFieldController(inputtingReference.FieldReference.GetDocumentId(), inputtingReference.FieldReference.FieldKey), true);
         }
 
         private void AddLineToKeysEntry(BezierConverter converter, Path link)
