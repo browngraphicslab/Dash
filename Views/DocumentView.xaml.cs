@@ -867,10 +867,12 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
             {
+                var box = sender as TextBox;
                 // change the titlekey 
-                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = (sender as TextBox).Text; 
-                _treeMenuItem.DocType = (sender as TextBox).Text;                                                    // TODO theoretically this should update by itself without explicit call 
+                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = box.Text; 
+                _treeMenuItem.DocType = box.Text;                                                    // TODO theoretically this should update by itself without explicit call :/ 
 
+                this.Focus(FocusState.Programmatic); 
                 e.Handled = true;
             }
         }
