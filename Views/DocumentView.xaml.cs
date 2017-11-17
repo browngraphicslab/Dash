@@ -76,8 +76,11 @@ namespace Dash
             this.Drop += OnDrop;
 
             this.Holding += OperatorHolding;
-            this.ManipulationCompleted += DocumentView_ManipulationCompleted; ;
+            this.ManipulationCompleted += DocumentView_ManipulationCompleted;
+           // this.ManipulationDelta += DocumentView_ManipulationDelta;
         }
+
+        
 
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
@@ -150,6 +153,11 @@ namespace Dash
                     }
                 }
             }
+        }
+
+        public void DisconnectFromLink()
+        {
+
         }
 
         /// <summary>

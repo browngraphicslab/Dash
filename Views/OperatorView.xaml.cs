@@ -43,6 +43,9 @@ namespace Dash
         /// </summary>
         private object _lastDataContext { get; set; } = null;
 
+
+        public DocumentView DocumentView { get { return documentView; } }
+
         /// <summary>
         /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
         /// </summary>
@@ -52,7 +55,7 @@ namespace Dash
             set => xOpContentPresenter.Content = value;
         }
 
-
+        
 
         public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {

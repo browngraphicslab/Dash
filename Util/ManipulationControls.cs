@@ -100,6 +100,8 @@ namespace Dash
                 return;
             }
             _processManipulation = true;
+
+            _velocitiesReached = 0;
         }
 
         public void AddAllAndHandle()
@@ -179,6 +181,58 @@ namespace Dash
         {
 
             TranslateAndScale(e);
+
+            
+            DetectShake(sender, e);
+
+        }
+
+        // keep track of whether the node has been shaken hard enough
+        private static int _velocitiesReached = 0;
+        private static double _direction;
+        private static void DetectShake(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+           // var docGrid = sender as DocumentView;
+            //var doc = docGrid.DataContext;
+            var grid = sender as Grid;
+            var docVM = grid.DataContext as DocumentViewModel;
+
+            var opView = docVM.Content as OperatorView;
+            var docView = opView.DocumentView;
+
+            if (docView != null)
+            {
+                var velocity = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
+                if (velocity > 6)
+                {
+                    if (_velocitiesReached == 0)
+                    {
+                        _velocitiesReached++;
+                        _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI; // store
+
+                    }
+                    else if (_velocitiesReached == 1)
+                    {
+                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                        if (newDir < 100 - _direction)
+                        {
+                            //_velocitiesReached++;
+                            // _direction = newDir;
+                            docView.DisconnectFromLink();
+                        }
+                    }
+                    //else if (_velocitiesReached == 2)
+                    //{
+                    //    var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                    //    if (newDir < 100 - _direction)
+                    //    {
+                    //        System.Diagnostics.Debug.WriteLine("BOOM");
+                    //    }
+                    //}
+
+                }
+            }
+         
         }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
@@ -199,6 +253,7 @@ namespace Dash
             if(!ClampScale(scaleAmount))
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
                 point.Position, new Point(scaleAmount, scaleAmount)));
+
         }
 
         public void FitToParent()
