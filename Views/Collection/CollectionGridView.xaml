@@ -16,6 +16,7 @@
     >
     <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
+                  ScrollViewer.VerticalScrollMode="Enabled"
                   VirtualizingStackPanel.VirtualizationMode="Standard"
                   Loaded="XGridView_OnLoaded"
                   ItemsSource="{Binding DocumentViewModels}"

@@ -56,7 +56,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.Data)
             {
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
+                var dataDoc = inputDoc.GetDataDocument(null);
                 var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextFieldModelController)?.Data ??
                                 (dataDoc.GetDereferencedField(textFieldKey, null) as RichTextFieldModelController)?.Data?.ReadableString;
                 if (textInput != null)

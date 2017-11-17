@@ -79,7 +79,7 @@ namespace Dash
             }
             public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
             public DocumentController DataDocument { get; set; }
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
 

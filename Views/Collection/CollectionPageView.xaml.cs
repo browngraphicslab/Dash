@@ -55,7 +55,7 @@ namespace Dash
                 var pageViewDoc = pageDoc.GetViewCopy();
                 pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
-                CurPage = new DocumentViewModel(pageViewDoc);
+                CurPage = new DocumentViewModel(pageViewDoc) { Undecorated = true };
                 PageDocumentViewModels.Insert(0, CurPage);
 
                 var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();

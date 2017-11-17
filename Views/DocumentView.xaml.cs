@@ -382,7 +382,6 @@ namespace Dash
         {
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection";
 
             // add item to menu
             if (ParentCollection != null)
@@ -775,28 +774,34 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
+                updateIcon();
                 // binds the display title of the document to the back end representation
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
+                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                string key = KeyStore.TitleKey.Id;
+                if (key == null || !(keyList?.Data?.Count() > 0)) { 
+                    dataDoc.GetTitleFieldOrSetDefault(context);
+                    key = KeyStore.TitleKey.Id;
+                } else
+                    key = keyList?.Data?.Select((k) => (k as TextFieldModelController)?.Data)?.First();
 
-                // set the default title
-                dataDoc.GetTitleFieldOrSetDefault(context);
-
-                var binding = new FieldBinding<TextFieldModelController>()
+                var Binding = new FieldBinding<TextFieldModelController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = KeyStore.TitleKey,
+                    Key = new KeyController(key),
                     Context = context
                 };
+                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
-                xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
                 xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
-                xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                xTitleBorder.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -811,21 +816,28 @@ namespace Dash
             if (Height < MinHeight + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
-                updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
+                if (xIcon.Visibility == Visibility.Collapsed)
+                    xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible)
+
+            else 
             {
                 xFieldContainer.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Visible;
+                xShadowTarget.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = .25;
                 UpdateBinding(false);

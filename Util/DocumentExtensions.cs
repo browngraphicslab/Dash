@@ -248,26 +248,26 @@ namespace Dash
 
         public static TextFieldModelController GetTitleFieldOrSetDefault(this DocumentController doc, Context context = null)
         {
-            doc = Util.GetDataDoc(doc, context);
-            context = Context.SafeInitAndAddDocument(context, doc);
-            var titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? doc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
+            var dataDoc = doc.GetDataDocument(context);
+            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                doc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
-                titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController;
+                dataDoc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
+                titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextFieldModelController;
             }
             return titleKey;
         }
 
         public static void SetTitleField(this DocumentController doc, string newTitle, Context context = null)
         {
-            doc = Util.GetDataDoc(doc, context);
-            context = Context.SafeInitAndAddDocument(context, doc);
-            var titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? doc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
+            var dataDoc = doc.GetDataDocument(context);
+            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextFieldModelController ?? dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                doc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
-                titleKey = doc.GetField(KeyStore.TitleKey) as TextFieldModelController;
+                dataDoc.SetField(KeyStore.TitleKey, new TextFieldModelController("Untitled"), false);
+                titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextFieldModelController;
             }
             Debug.Assert(titleKey != null);
             titleKey.Data = newTitle;

@@ -170,9 +170,8 @@ namespace Dash
         /// </summary>
         private bool AddKeyValuePair()
         {
-            var item = (TypeInfo) xTypeComboBox.SelectedItem;
-            var key = new KeyController(Guid.NewGuid().ToString(),
-                xNewKeyField.Text); // TODO change this create actual guids 
+            var item = (TypeInfo)xTypeComboBox.SelectedItem;
+            KeyController key = new KeyController(xNewKeyField.Text, xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldControllerBase fmController = new TextFieldModelController("something went wrong");
 
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);

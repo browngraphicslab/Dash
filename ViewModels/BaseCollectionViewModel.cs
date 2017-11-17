@@ -24,6 +24,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Views.Document_Menu;
 using static Dash.NoteDocuments;
+using System.Text.RegularExpressions;
 
 namespace Dash
 {
@@ -352,6 +353,29 @@ namespace Dash
                     Console.WriteLine(exception);
                 }
             }
+            if (false && e.DataView.Contains(StandardDataFormats.Html))
+            {
+
+                var text = await e.DataView.GetHtmlFormatAsync();
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(text)), true);
+                AddDocument(t.Document, null);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Rtf))
+                ;
+            else if (e.DataView.Contains(StandardDataFormats.Text))
+            {
+                var text = await e.DataView.GetTextAsync();
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(text)), true);
+                var matches = new Regex(".*:.*").Matches(text);
+                foreach (var match in matches)
+                {
+                    var pair = new Regex(":").Split(match.ToString());
+                    t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextFieldModelController(pair[1].Trim('\r')), true);
+                }
+                AddDocument(t.Document, null);
+            }
 
             // collection dynamic previews
             if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
@@ -439,7 +463,7 @@ namespace Dash
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            
+
             //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
             //if (sourceIsRadialMenu)
             //{
@@ -447,9 +471,15 @@ namespace Dash
             //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
             //    e.DragUIOverride.IsContentVisible = false;
             //    e.DragUIOverride.IsGlyphVisible = false;
-            //}
+            //} 
+
+            // accessing e.DataView generates a catastrophic exception if it hasn't been set in a StartDragging method.  
+            // This happens with the CollectionDBSchemaHeader.
+            if (CollectionDBSchemaHeader.DragModel != null)
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            else 
+                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             
-            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
