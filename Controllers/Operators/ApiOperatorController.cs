@@ -91,7 +91,7 @@ namespace Dash
         public void AddParameter(ApiParameter parameter)
         {
             int index = Parameters.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
+            KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
             parameter.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             Parameters[key] = parameter;
@@ -105,7 +105,7 @@ namespace Dash
         public void AddHeader(ApiParameter header)
         {
             int index = Headers.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
+            KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
             header.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             Headers[key] = header;
@@ -119,7 +119,7 @@ namespace Dash
         public void AddAuthParameter(ApiParameter parameter)
         {
             int index = AuthParameters.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
+            KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
             parameter.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be parameter.Required
             AuthParameters[key] = parameter;
@@ -133,7 +133,7 @@ namespace Dash
         public void AddAuthHeader(ApiParameter header)
         {
             int index = AuthHeaders.Count + 1;
-            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
+            KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
             header.Key = key;
             Inputs.Add(key, new IOInfo(TypeInfo.Text, false));//TODO This might be able to be header.Required
             AuthHeaders[key] = header;

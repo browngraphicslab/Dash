@@ -44,7 +44,7 @@ namespace Dash
             if (_prototype == null)
             {
                 _prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                    new DocumentType(DashShared.Util.GetDeterministicGuid("RegexOutput"), "RegexOutput"));
+                    new DocumentType(DashShared.UtilShared.GetDeterministicGuid("RegexOutput"), "RegexOutput"));
                 _prototype.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController(_prototype.DocumentType.Type + "API"), true);
             }
         }

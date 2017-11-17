@@ -82,9 +82,9 @@ namespace Dash
             var allHeaderKeys = Util.GetTypedHeaders(collection);
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
-            var docType = new DocumentType(DashShared.Util.GenerateNewId());
-            var variableKey = new KeyController(DashShared.Util.GenerateNewId(), variableName.Data);
-            var valueKey = new KeyController(DashShared.Util.GenerateNewId(), valueName.Data);
+            var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
+            var variableKey = new KeyController(DashShared.UtilShared.GenerateNewId(), variableName.Data);
+            var valueKey = new KeyController(DashShared.UtilShared.GenerateNewId(), valueName.Data);
 
             var outputDocs = new List<DocumentController>();
 

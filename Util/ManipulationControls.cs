@@ -86,7 +86,10 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
+            
         }
+
+       
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -166,6 +169,8 @@ namespace Dash
         {
             e.Handled = _handle;
         }
+
+        
 
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.

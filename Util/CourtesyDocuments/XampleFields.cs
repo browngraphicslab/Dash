@@ -32,7 +32,7 @@ namespace Dash
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Text " + i), "Text " + i);
+                    KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid("Text " + i), "Text " + i);
                     fields[key] = new TextFieldModelController("This is example text " + i);
                 }
             }
@@ -40,7 +40,7 @@ namespace Dash
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
+                    KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid("Number " + i), "Number " + i);
                     fields[key] = new NumberFieldModelController(r.NextDouble() * 100);
                 }
             }
