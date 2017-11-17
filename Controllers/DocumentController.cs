@@ -23,38 +23,25 @@ namespace Dash
     public class DocumentController : IController<DocumentModel>
     {
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-
-        private bool _hasDelegates;
+        
         public bool HasDelegates
         {
             get
             {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
-                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
-                : null;
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ? 
+                    _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController : null;
 
-                if (currentDelegates == null) return _hasDelegates = false;
-                return _hasDelegates = currentDelegates.Data.Count() > 0;
-            }
-            set
-            {
-                _hasDelegates = value;
-              //  HasDelegatesOrPrototype = value || HasPrototype;
-
+                if (currentDelegates == null)
+                    return false;
+                return currentDelegates.Data.Count() > 0;
             }
         }
-        private bool _hasPrototypes;
         public bool HasPrototype {
             get
             {
-                return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey) &&
+                return _fields.ContainsKey(KeyStore.PrototypeKey) &&
                                         (_fields[KeyStore.PrototypeKey] as DocumentFieldModelController)?.Data
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-            }
-            set
-            {
-                _hasPrototypes = value;
-               // HasDelegatesOrPrototype = value || HasDelegates;
             }
         }
 
@@ -647,7 +634,6 @@ namespace Dash
                 UpdateOnServer();
                 // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
                 //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-                if (key.Equals(KeyStore.PrototypeKey)) HasPrototype = true;
             }
             if (shouldExecute)
             {
@@ -913,7 +899,6 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 SetField(KeyStore.DelegatesKey, currentDelegates, true);
-                HasDelegates = true;
             }
             return currentDelegates;
         }
@@ -1103,7 +1088,7 @@ namespace Dash
             }
             if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
             {
-                return KeyValueDocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
+                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
             }
             if (DocumentType.Equals(StackLayout.DocumentType))
             {
@@ -1172,6 +1157,10 @@ namespace Dash
             if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
                 return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
+            }
+            if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
+            {
+                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);

@@ -31,7 +31,7 @@ namespace Dash
 
         public GridViewSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == GridViewLayout.DocumentType);
+            Debug.Assert(docController.DocumentType.Equals(GridViewLayout.DocumentType));
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));

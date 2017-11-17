@@ -44,7 +44,7 @@ namespace Dash
         {
         }
 
-        public ExtractKeywordsOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.ExtractKeyWords))
+        public ExtractKeywordsOperatorFieldModelController() : base(new OperatorFieldModel(OperatorType.Extract_Keywords))
         {
         }
 
@@ -60,7 +60,7 @@ namespace Dash
             foreach (var inputDoc in collection.Data)
             {
                 // get the data from it if it exists
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
+                var dataDoc = inputDoc.GetDataDocument(null);
                 // get the text and add it to allText if the text exists
                 var textInput = dataDoc.GetField(textFieldKey) as TextFieldModelController;
                 if (textInput != null)
@@ -80,7 +80,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.Data)
             {
-                var dataDoc = Util.GetDataDoc(inputDoc, null);
+                var dataDoc = inputDoc.GetDataDocument(null);
                 var textInput = dataDoc.GetField(textFieldKey) as TextFieldModelController;
                 if (textInput != null)
                 {
@@ -98,7 +98,7 @@ namespace Dash
 
         public override FieldModelController<OperatorFieldModel> Copy()
         {
-            return new ExtractKeywordsOperatorFieldModelController(new OperatorFieldModel(OperatorType.ExtractKeyWords));
+            return new ExtractKeywordsOperatorFieldModelController(new OperatorFieldModel(OperatorType.Extract_Keywords));
         }
 
         public override bool SetValue(object value)

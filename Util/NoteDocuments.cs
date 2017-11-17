@@ -79,7 +79,7 @@ namespace Dash
             }
             public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
             public DocumentController DataDocument { get; set; }
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "", double width=200, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
 
@@ -119,7 +119,7 @@ namespace Dash
         }
         public class RichTextNote : NoteDocument
         {
-            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
+            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "Rich Text");
             
             public override DocumentController CreatePrototype()
             {
@@ -137,9 +137,9 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype(); 
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var richTextLayout = new RichTextBox(new DocumentReferenceFieldController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
+                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ richTextLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -172,6 +172,7 @@ namespace Dash
                     docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(dataDocument), true);
                     docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                     docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+                    docLayout.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
                     Document = docLayout;
                 }
             }
@@ -195,9 +196,9 @@ namespace Dash
             {
                 var prototype = GetDocumentPrototype();
 
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
                 var imageLayout = new ImageBox(new DocumentReferenceFieldController(prototype.GetId(), ImageFieldKey), 0, 50, 200, 200);
-                var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
+                var prototpeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
             }
@@ -240,9 +241,9 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype();
-                var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
+                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var textLayout  = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, textLayout.Document });
+                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ textLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);

@@ -55,7 +55,8 @@ namespace Dash
             xContentGrid.Visibility = xContentGrid.Visibility == Visibility.Collapsed
                 ? Visibility.Visible
                 : Visibility.Collapsed;
-            xCollapseExpandButton.Text = xCollapseExpandButton.Text.Equals("˅") ? "˃" : "˅";
+            xCollapseExpandButton.Text = xCollapseExpandButton.Text.Equals(Application.Current.Resources["ContractArrowIcon"].ToString()) ? Application.Current.Resources["ExpandArrowIcon"].ToString() : Application.Current.Resources["ContractArrowIcon"].ToString();
+
         }
     }
 }
