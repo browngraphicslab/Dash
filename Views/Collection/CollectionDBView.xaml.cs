@@ -328,7 +328,7 @@ namespace Dash
                 foreach (var dmc in dbDocs)
                 {
                     count++;
-                    Debug.WriteLine("Count = " + count + " rawText = " + rawText.Length);
+                    //Debug.WriteLine("Count = " + count + " rawText = " + rawText.Length);
                     var visited = new List<DocumentController>();
                     visited.Add(dmc);
                     if (pattern == null)

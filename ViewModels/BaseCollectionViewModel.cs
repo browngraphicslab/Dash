@@ -169,6 +169,7 @@ namespace Dash
                         {
                             FieldControllerBase field = null;
 
+                            //TODO tfs: why are we making copies of all of these fields?
                             if (items.First() is TextController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new TextController((items.First() as TextController).Data) :
                                                 new ListController<TextController>(items.OfType<TextController>());
@@ -179,9 +180,8 @@ namespace Dash
                                 field = (items.Count == 1) ? (FieldControllerBase)new RichTextController((items.First() as RichTextController).Data) :
                                                 new ListController<RichTextController>(items.OfType<RichTextController>());
                             else if (items.First() is DocumentController)
-                                field = (items.Count == 1)
-                                    ? (FieldControllerBase) (items.First() as DocumentController).MakeCopy(new List<KeyController>())
-                                    : new ListController<DocumentController>(items.OfType<DocumentController>());
+                                field = (items.Count == 1) ? (FieldControllerBase)(items.First() as DocumentController) :
+                                               new ListController<DocumentController>(items.OfType<DocumentController>());
                             if (field != null)
                                 doc.SetField(f.Key, field, true);
                         }

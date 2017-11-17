@@ -12,18 +12,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}">
 
-    <Grid Width="{Binding Width}" MinWidth="{Binding MinWidth}" >
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="10" MinWidth="10" />
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
-
-            <!--TODO move foreground to static resources-->
-            <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}" Height="25"/>
-
-         </Grid>
-         <Grid Background="{StaticResource WindowsBlue}" Opacity=".5" Grid.Column="1" ManipulationMode="All" CanDrag="False" 
-                        ManipulationStarted="Grid_ManipulationStarted" ManipulationDelta="Grid_ManipulationDelta" ManipulationCompleted="Grid_ManipulationCompleted"/>
+    <Grid>
+        <StackPanel Orientation="Horizontal">
+            <Grid Width="{Binding Width}" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
+                <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
+            </Grid>
+            <Grid Background="#CCDDDDDD" ManipulationMode="All" CanDrag="False" Width="7"
+                  ManipulationStarted="Grid_ManipulationStarted" ManipulationDelta="Grid_ManipulationDelta" ManipulationCompleted="Grid_ManipulationCompleted"/>
+        </StackPanel>
     </Grid> 
 </UserControl>
