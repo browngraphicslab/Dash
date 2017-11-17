@@ -144,7 +144,7 @@ namespace Dash
                 UpdateOnServer();
 
                 OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
-                    ListFieldUpdatedEventArgs.ListChangedAction.Add,
+                    ListFieldUpdatedEventArgs.ListChangedAction.Remove,
                     new List<T> {element}));
             }
         }

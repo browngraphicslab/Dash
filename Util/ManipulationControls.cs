@@ -273,7 +273,6 @@ namespace Dash
 
         private bool ClampScale(double scaleFactor)
         {
-            Debug.WriteLine(ElementScale);
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;
