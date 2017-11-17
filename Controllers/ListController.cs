@@ -246,6 +246,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Provides data about how the list changed. Similar to NotifyCollectionChangedEventArgs.
+        /// </summary>
         public class ListFieldUpdatedEventArgs : FieldUpdatedEventArgs
         {
             public enum ListChangedAction

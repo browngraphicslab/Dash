@@ -45,6 +45,12 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Add: Used when a field is added to a document with a key that is didn't previously contain
+        /// Remove: Used when a field is removed from a document
+        /// Replace: Used when a field in the document is replaced with a different field
+        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
+        /// </summary>
         public enum FieldUpdatedAction
         {
             Add,
