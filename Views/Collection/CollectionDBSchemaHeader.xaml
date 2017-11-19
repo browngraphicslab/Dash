@@ -10,12 +10,13 @@
     ManipulationStarted="UserControl_ManipulationStarted"
     AllowDrop="True"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}"
+    SizeChanged="DBS_OnSizeChanged">
 
-    <Grid Width="{Binding Width}" SizeChanged="Grid_OnSizeChanged">
+    <Grid Width="{Binding Width}">
         <StackPanel Orientation="Horizontal">
             <Grid x:Name="NameGrid"  Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
-                <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
+                <TextBox x:Name="Text" IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
             </Grid>
             <Grid Background="#CCDDDDDD" ManipulationMode="All" CanDrag="False" Width="7"
                   ManipulationStarted="Grid_ManipulationStarted" ManipulationDelta="Grid_ManipulationDelta" ManipulationCompleted="Grid_ManipulationCompleted"/>
