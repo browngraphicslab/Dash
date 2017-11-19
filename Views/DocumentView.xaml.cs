@@ -157,7 +157,8 @@ namespace Dash
 
         public void DisconnectFromLink()
         {
-
+            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
+            ViewModel.DocumentController.IsConnected = false;
         }
 
         /// <summary>
@@ -190,9 +191,9 @@ namespace Dash
 
             // get all the ingredients
             var droppedDoc = docView.ViewModel.DocumentController;
-            var opFMController = droppedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
-            var droppedDocInputKey = opFMController.Inputs.Keys.FirstOrDefault();
-            var droppedDocOutputKey = opFMController.Outputs.Keys.FirstOrDefault();
+            var droppedDocOpFMController = droppedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+            var droppedDocInputKey = droppedDocOpFMController.Inputs.Keys.FirstOrDefault();
+            var droppedDocOutputKey = droppedDocOpFMController.Outputs.Keys.FirstOrDefault();
 
             var userLink = link.Value as UserCreatedLink;
 
@@ -202,18 +203,31 @@ namespace Dash
             var referencedKey = userLink.referencedKey;
             var referencedDoc = userLink.referencedDocument;
 
-            // delete the current connection between referenced doc and referencing doc
-            ffView.DeleteLine(link.Key, userLink); // check
+            // Check if nodes inputs/outputs are of the same type
+            var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
+            var droppedDocInputType = droppedDocOpFMController.Inputs[droppedDocInputKey];
 
-            //Add connection between dropped and right node
-            MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);
+            var referencedDocOpFMController = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+            var referencedDocOutputType = referencedDocOpFMController.Outputs[referencedKey];
 
-            //Add connection between dropped and right node
-            MakeConnection(ffView, referencedDoc, referencedKey, droppedDoc, droppedDocInputKey);
+            var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+            var referencingDocInputType = referencingDocOpFMController.Inputs[referencingKey];
 
-            referencedDoc.IsConnected = true;
-            referencingDoc.IsConnected = true;
-            droppedDoc.IsConnected = true;
+            if(droppedDocOutputType == referencingDocInputType.Type && referencedDocOutputType == droppedDocInputType.Type)
+            {
+                // delete the current connection between referenced doc and referencing doc
+                ffView.DeleteLine(link.Key, userLink); // check
+
+                //Add connection between dropped and right node
+                MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);
+
+                //Add connection between dropped and right node
+                MakeConnection(ffView, referencedDoc, referencedKey, droppedDoc, droppedDocInputKey);
+
+                referencedDoc.IsConnected = true;
+                referencingDoc.IsConnected = true;
+                droppedDoc.IsConnected = true;
+            }
         }
 
         /// <summary>

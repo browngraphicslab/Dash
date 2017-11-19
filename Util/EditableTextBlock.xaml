@@ -29,6 +29,7 @@
                  HorizontalAlignment="Stretch" 
                  VerticalAlignment="Top" 
                  TextWrapping="Wrap" 
+
                  BorderThickness="0" 
                  PointerWheelChanged="XTextBox_OnPointerWheelChanged"
                  ManipulationDelta="XTextBox_OnManipulationDelta"

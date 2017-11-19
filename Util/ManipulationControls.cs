@@ -86,10 +86,15 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
+            element.ManipulationCompleted += ElementOnManipulationCompleted;
             
         }
 
-       
+        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            _velocitiesReached = 0;
+
+        }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -195,43 +200,46 @@ namespace Dash
            // var docGrid = sender as DocumentView;
             //var doc = docGrid.DataContext;
             var grid = sender as Grid;
-            var docVM = grid.DataContext as DocumentViewModel;
-
-            var opView = docVM.Content as OperatorView;
-            var docView = opView.DocumentView;
-
-            if (docView != null)
+            if(grid != null)
             {
-                var velocity = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
-                if (velocity > 6)
+                var docVM = grid.DataContext as DocumentViewModel;
+
+                var opView = docVM.Content as OperatorView;
+                var docView = opView?.DocumentView;
+
+                if (docView != null)
                 {
-                    if (_velocitiesReached == 0)
+                    var velocity = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
+                    if (velocity > 4)
                     {
-                        _velocitiesReached++;
-                        _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI; // store
-
-                    }
-                    else if (_velocitiesReached == 1)
-                    {
-                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                        if (newDir < 100 - _direction)
+                        if (_velocitiesReached == 0)
                         {
-                            //_velocitiesReached++;
-                            // _direction = newDir;
-                            docView.DisconnectFromLink();
-                        }
-                    }
-                    //else if (_velocitiesReached == 2)
-                    //{
-                    //    var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                    //    if (newDir < 100 - _direction)
-                    //    {
-                    //        System.Diagnostics.Debug.WriteLine("BOOM");
-                    //    }
-                    //}
+                            _velocitiesReached++;
+                            _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI; // store
 
+                        }
+                        else if (_velocitiesReached == 1)
+                        {
+                            var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                            if (newDir < 150 - _direction)
+                            {
+                                _velocitiesReached++;
+                                _direction = newDir;
+                            }
+                        }
+                        else if (_velocitiesReached == 2)
+                        {
+                            var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                            if (newDir < 150 - _direction)
+                            {
+                                docView.DisconnectFromLink();
+                            }
+                        }
+
+                    }
                 }
             }
+            
          
         }
 
