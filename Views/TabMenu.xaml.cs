@@ -36,25 +36,77 @@ namespace Dash
         /// </summary>
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
 
-        // TODO make this private, comment what it is
-        public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-        // TODO make this private, comment what it is
-        public static Point WhereToAdd;
-
-
+        // The CollectionFreeformView to which items from tab menu will be added 
+        private static CollectionFreeformView _addsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+        // The position relative to the collectionfreeformview in which items from tab menu will be added 
+        private static Point _whereToAdd;
         #endregion
+        private TabMenu()
+        {
+            InitializeComponent();
+            GetSearchItems();
 
+            xSearch.TextChanged += XSearch_TextChanged;
+            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
+            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
+
+            // hide the tab menu when we lose focus
+            LostFocus += (sender, args) => Hide();
+        }
+
+        // returns the relative point of WhereToAdd to the collectionfreeformview it is added in  
+        public Point GetRelativePoint()
+        {
+            return Util.GetCollectionFreeFormPoint(_addsToThisCollection, _whereToAdd);
+        }
+
+        public void AddToFreeform(DocumentController controller, Context context = null)
+        {
+            _addsToThisCollection.ViewModel.AddDocument(controller, context); 
+        }
+        
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
-        public static void Configure(CollectionFreeformView col, Point p)
+        public static void ConfigureAndShow(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
         {
-            AddsToThisCollection = col;
-            WhereToAdd = p;
+            _addsToThisCollection = col;
+            _whereToAdd = p;
+            ShowAt(canvas, isTouch); 
+        }
+
+        //Adds the immediate documents contained in the collectionfreeformview that contains the tabmenu 
+        //Recalculated every time tabmenu is opened (otherwise CollectionFreeformview would need to keep track of all the documentviews as well as the viewmodels) 
+        //TODO curtail this in case collectionview contains too many documents
+        public void AddGoToTabItems(CollectionFreeformView topCollection)
+        {
+            //var docViews = topCollection.GetImmediateDescendantsOfType<DocumentView>(); 
+            //var tabItems = new List<ITabItemViewModel>(AllTabItems);
+            //foreach (DocumentView dv in docViews)
+            //{
+            //    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
+            //}
+            //DisplayedTabItems = tabItems;
+        }
+
+        private static void ShowAt(Canvas canvas, bool isTouch = false)
+        {
+            if (Instance != null)
+            {
+                if (!canvas.Children.Contains(Instance))
+                    canvas.Children.Add(Instance);
+
+                if (isTouch) Instance.ConfigureForTouch();
+                Canvas.SetLeft(Instance, _whereToAdd.X);
+                Canvas.SetTop(Instance, _whereToAdd.Y);
+                Instance.ResetList();
+                Instance.SetTextBoxFocus();
+            }
         }
 
         // private backing fields
         private List<ITabItemViewModel> _allTabItems;
         private List<ITabItemViewModel> _displayedTabItems;
+        private int _selectedIndex = -1;
 
         /// <summary>
         /// All the tab items in the list they are automatically sorted by Title
@@ -88,25 +140,13 @@ namespace Dash
             }
         }
 
-        private TabMenu()
-        {
-            InitializeComponent();
-            GetSearchItems();
-
-            xSearch.TextChanged += XSearch_TextChanged;
-            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
-            xSearch.Loaded += (sender, args) => SetTextBoxFocus();
-
-            // hide the tab menu when we lose focus
-            LostFocus += (sender, args) => Hide();
-        }
+        
 
         /// <summary>
         /// Create the list of items to be displayed in the tab menu
         /// </summary>
         private void GetSearchItems()
         {
-            
             var list = new List<ITabItemViewModel>
             {
                 new CreateOpTabItemViewModel("Document", Util.BlankDoc),
@@ -119,8 +159,7 @@ namespace Dash
         }
 
         #region xSEARCH
-        // TODO make this private, set it when the tab menu opens itself
-        public void SetTextBoxFocus()
+        private void SetTextBoxFocus()
         {
             xSearch.Focus(FocusState.Programmatic);
         }
@@ -243,23 +282,9 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        // TODO make this part of configure, then make this private
-        public static void ShowAt(Canvas canvas, bool isTouch = false)
-        {
-            if (Instance != null)
-            {
-                if (!canvas.Children.Contains(Instance))
-                    canvas.Children.Add(Instance);
+        
 
-                if (isTouch) Instance.ConfigureForTouch();
-                Canvas.SetLeft(Instance, WhereToAdd.X);
-                Canvas.SetTop(Instance, WhereToAdd.Y);
-                Instance.ResetList();
-            }
-        }
-
-        // TODO make this private if possible
-        public void ConfigureForTouch()
+        private void ConfigureForTouch()
         {
             xListView.ItemContainerStyle = this.Resources["TouchStyle"] as Style;
         }
@@ -273,18 +298,17 @@ namespace Dash
             if (xListView.SelectedIndex < 0)
             {
                 xListView.SelectedIndex = 0;
-
             }
             // if the selected index is not the last item in the list
             else if (xListView.SelectedIndex != xListView.Items.Count - 1)
             {
                 // increment the selected index
                 xListView.SelectedIndex = xListView.SelectedIndex + 1;
-
             }
 
             // scroll the newly selected item into view
             xListView.ScrollIntoView(xListView.SelectedItem);
+            _selectedIndex = xListView.SelectedIndex;
         }
 
         /// <summary>
@@ -305,6 +329,7 @@ namespace Dash
             }
             // scroll the newly selected item into view
             xListView.ScrollIntoView(xListView.SelectedItem);
+            _selectedIndex = xListView.SelectedIndex;
         }
 
         private void xListView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -317,9 +342,9 @@ namespace Dash
         /// </summary>
         private void ExecuteSelectedElement()
         {
-            // TODO fix this for when enter key is pressed, selected index is always -1, and selecteditem is always null
-            var selectedIndex = xListView.SelectedIndex;
-            var selectedItem = xListView.SelectedItem as ITabItemViewModel;
+            var selectedItem = xListView.SelectedIndex < 0
+                ? xListView.Items.ElementAt(_selectedIndex) as ITabItemViewModel
+                : xListView.SelectedItem as ITabItemViewModel;  
             selectedItem?.ExecuteFunc();
             Hide();
         }
@@ -346,13 +371,11 @@ namespace Dash
         {
             if (e.VirtualKey == VirtualKey.Down)
             {
-
                 MoveSelectedDown();
             }
 
             if (e.VirtualKey == VirtualKey.Up)
             {
-
                 MoveSelectedUp();
             }
         }

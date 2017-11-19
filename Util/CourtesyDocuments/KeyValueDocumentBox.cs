@@ -41,11 +41,8 @@ namespace Dash
             var border = new Border();
 
             var docView = new KeyValuePane() { TypeColumnWidth = new GridLength(0) };
-            docView.xKeyValueListView.CanDragItems = false;
-            docView.xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
-            docView.SetHeaderVisibility(DashShared.Visibility.Collapsed);
+            docView.DisableInteraction(); 
             docView.SetDataContextToDocumentController(documentfieldModelController.Data);
-
             border.Child = docView;
 
             //add to key to framework element dictionary

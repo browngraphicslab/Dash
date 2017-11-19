@@ -241,12 +241,12 @@ namespace Dash
             // default to MainPage collection view
             CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
-            if (sender == TabMenu.Instance)
-            {
-                freeForm = TabMenu.AddsToThisCollection;
-                if (freeForm == null)
-                    return;
-            }
+            //if (sender == TabMenu.Instance)
+            //{
+            //    freeForm = TabMenu.AddsToThisCollection;
+            //    if (freeForm == null)
+            //        return;
+            //}
 
             // fetch the coordinates of the caller on canvas
             var searchView = sender;

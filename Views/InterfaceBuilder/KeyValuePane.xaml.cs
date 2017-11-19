@@ -39,7 +39,7 @@ namespace Dash
                 ? _documentControllerDataContext
                     .GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null).Data
                 : _documentControllerDataContext;
-
+        
         public KeyValuePane()
         {
             InitializeComponent();
@@ -49,10 +49,16 @@ namespace Dash
 
             //ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
-            xTypeComboBox.SelectedItem = TypeInfo.None;
         }
 
-        public void SetHeaderVisibility(Visibility vis)
+        public void DisableInteraction()
+        {
+            xKeyValueListView.CanDragItems = false;
+            xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
+            SetHeaderVisibility(DashShared.Visibility.Collapsed); 
+        }
+
+        private void SetHeaderVisibility(Visibility vis)
         {
             xHeaderGrid.Visibility = vis == DashShared.Visibility.Visible
                 ? Windows.UI.Xaml.Visibility.Visible
@@ -429,26 +435,6 @@ namespace Dash
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
-        }
-
-
-        /// <summary>
-        ///     Corrects the column widths of headers upon load
-        /// </summary>
-        private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //for (int i = 0; i < 3; i++)
-            //    xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
-        }
-
-        /// <summary>
-        ///     Corrects the column widths of new grid list items
-        /// </summary>
-        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            // not sure what this was fixing, but it breaks the doc test example
-            //for (int i = 0; i < 3; i++)
-            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
 
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)

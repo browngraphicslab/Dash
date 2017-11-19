@@ -9,12 +9,12 @@ namespace Dash
 {
     class CreateOpTabItemViewModel : ITabItemViewModel
     {
-        public Func<DocumentController> Function;
+        private Func<DocumentController> _function;
         public string _title; 
         public CreateOpTabItemViewModel(string title, Func<DocumentController> func) 
         {
-            _title = title;  
-            Function = func;
+            _title = title;
+            _function = func;
         }
 
         public string Title { get => _title; set => _title = value; }
@@ -22,12 +22,10 @@ namespace Dash
 
         void ITabItemViewModel.ExecuteFunc()
         {
-            var freeForm = TabMenu.AddsToThisCollection;
-            if (freeForm == null)
-                return;
+            if (TabMenu.Instance == null) return; 
 
-            var opController = Function?.Invoke();
-            var p = Util.GetCollectionFreeFormPoint(freeForm, TabMenu.WhereToAdd); 
+            var opController = _function?.Invoke();
+            var p = TabMenu.Instance.GetRelativePoint(); 
             
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
@@ -37,7 +35,8 @@ namespace Dash
 
             if (opController != null)
             {
-                freeForm.ViewModel.AddDocument(opController, null);
+                //freeForm.ViewModel.AddDocument(opController, null);
+                TabMenu.Instance.AddToFreeform(opController); 
             }
         }
     }
