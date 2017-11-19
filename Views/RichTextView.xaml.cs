@@ -378,32 +378,48 @@ namespace Dash
             submenu?.Items?.Add(item);
         }
 
-        private void AddFormats()
+        private void AddCharacterFormats()
         {
-            var basics = new List<string>() {"Bold", "Italics", "Underline", "Strikethrough"};
+            var basics = new List<string>() {"Bold (ctrl+B)", "Italics (ctrl+I)", "Underline (ctrl+U)", "Strikethrough"};
             var scripts = new List<string>() {"Superscript", "Subscript" };
             var caps = new List<string>() {"AllCaps", "SmallCaps"};
             foreach (var basic in basics)
             {
-                AddFormatMenuItem(basic, xFormat);
+                AddFormatMenuItem(basic, xFormat, true);
             }
             foreach (var script in scripts)
             {
-                AddFormatMenuItem(script, xScript);
+                AddFormatMenuItem(script, xScript, true);
             }
             foreach (var cap in caps)
             {
-                AddFormatMenuItem(cap, xCaps);
+                AddFormatMenuItem(cap, xCaps, true);
             }
         }
 
-        private void AddFormatMenuItem(string menuText, MenuFlyoutSubItem subMenu)
+        private void AddParagraphFormats()
+        {
+            var alignments = new List<string>() {"Left", "Center", "Right", "Justify", "Reset"};
+            foreach (var alignment in alignments)
+            {
+                AddFormatMenuItem(alignment, xAlignment, false);
+            }
+        }
+
+        private void AddFormatMenuItem(string menuText, MenuFlyoutSubItem subMenu, bool charFormat)
         {
             var item = new MenuFlyoutItem();
             item.Text = menuText;
             item.Foreground = new SolidColorBrush(Colors.White);
             item.Click += Format_OnClick;
-            item.GotFocus += Format_OnGotFocus;
+            if (charFormat)
+            {
+                item.GotFocus += CharFormat_OnGotFocus;
+            }
+            else
+            {
+                item.GotFocus += ParFormat_OnGotFocus;
+            }
             subMenu?.Items?.Add(item);
         }
 
@@ -504,17 +520,17 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
-        private void Format(String menuText, bool updateDocument)
+        private void CharFormat(String menuText, bool updateDocument)
         {
-            if (menuText == "Bold")
+            if (menuText == "BolBold (ctrl+B)")
             {
                 Bold(updateDocument);
             }
-            else if (menuText == "Italics")
+            else if (menuText == "Italics (ctrl+I)")
             {
                 Italicize(updateDocument);
             }
-            else if (menuText == "Underline")
+            else if (menuText == "Underline (ctrl+U)")
             {
                 Underline(updateDocument);
             } else if (menuText == "Strikethrough")
@@ -532,6 +548,26 @@ namespace Dash
             } else if (menuText == "SmallCaps")
             {
                 SmallCaps(updateDocument);
+            }
+        }
+
+        private void ParFormat(String menuText, bool updateDocument)
+        {
+            if (menuText == "Left")
+            {
+                Alignment(ParagraphAlignment.Left, updateDocument);
+            } else if (menuText == "Right")
+            {
+                Alignment(ParagraphAlignment.Right, updateDocument);
+            } else if (menuText == "Center")
+            {
+                Alignment(ParagraphAlignment.Center, updateDocument);
+            } else if (menuText == "Justify")
+            {
+                Alignment(ParagraphAlignment.Justify, updateDocument);
+            } else if (menuText == "Reset")
+            {
+                Alignment(ParagraphAlignment.Undefined, updateDocument);
             }
         }
 
@@ -834,6 +870,7 @@ namespace Dash
         {
             UpdateDocument();
             currentCharFormat = null;
+            currentParagraphFormat = null;
         }
 
         private void XRichEditBox_OnHolding(object sender, HoldingRoutedEventArgs e)
@@ -867,22 +904,31 @@ namespace Dash
         private ITextCharacterFormat currentCharFormat;
         private void FormatGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if(xFormat.Items.Count == 2) AddFormats();
+            if(xFormat.Items.Count == 2) AddCharacterFormats();
             if(currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
         }
 
-        private void Format_OnGotFocus(object sender, RoutedEventArgs e)
+        private void CharFormat_OnGotFocus(object sender, RoutedEventArgs e)
         {
             var menuFlyoutItem = sender as MenuFlyoutItem;
             var menuText = menuFlyoutItem?.Text;
             if(currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
-            Format(menuText, false);
+            CharFormat(menuText, false);
+        }
+
+        private void ParFormat_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            var menuText = menuFlyoutItem?.Text;
+            if (currentParagraphFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
+            ParFormat(menuText, false);
         }
 
         private ITextParagraphFormat currentParagraphFormat;
         private void ParagraphGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (xParagraph.Items.Count == 0) ;
+            if (xAlignment.Items.Count == 0) AddParagraphFormats();
+            if(currentParagraphFormat != null) xRichEditBox.Document.Selection.ParagraphFormat.SetClone(currentParagraphFormat);
         }
     }
 }

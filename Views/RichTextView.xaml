@@ -75,10 +75,12 @@
                             <Setter Property="Opacity" Value="0.8"></Setter>
                         </Style>
                     </MenuFlyout.MenuFlyoutPresenterStyle>
-                    <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xFormat" Text="Format" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
                         <MenuFlyoutSubItem x:Name="xScript" Text="Script" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
                         <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus">
+                        <MenuFlyoutSubItem x:Name="xAlignment" Text="Alignment" Foreground="White"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
                     </MenuFlyoutSubItem>
