@@ -153,8 +153,8 @@ namespace Dash
                 var strings = command.Split('.'); 
                 if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
                 {
-                    var docMenuItem = FindFirstMatch(strings[0]);
-                   // docMenuItem?.Action.Invoke(); 
+                    var docMenuItem = FindFirstMatchingDoc(strings[0]);
+                    docMenuItem?.Action.Invoke();
                 } 
                 else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
                 {
@@ -168,21 +168,21 @@ namespace Dash
             }
         }
 
-        private DocumentAddMenuItem FindFirstMatch(string docName)
+        /// <summary>
+        /// Looks through the documents in the workspace and returns the first DocumentAddMenuItem representing the doucment matching the given name 
+        /// </summary>
+        private DocumentAddMenuItem FindFirstMatchingDoc(string docName)
         {
             foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
             {
                 foreach (AddMenuItem menuItem in treeNode.ItemsList)
                 {
-                    var docMenuItem = menuItem as DocumentAddMenuItem; 
-                    //if (docMenuItem != null)
+                    var docMenuItem = menuItem as DocumentAddMenuItem;
+                    if (docMenuItem != null)
                     {
                         var controller = docMenuItem.LayoutDoc.GetDataDocument(null);
-                        //if (controller.Title == docName)
-                        // System.Diagnostics.Debug.WriteLine("title : " + controller.Title); 
                         if (menuItem.DocType == docName)
                         {
-                            System.Diagnostics.Debug.WriteLine("fuckfuckfudkfudkfudkfudkfudk");
                             return docMenuItem;
                         }
                     }
