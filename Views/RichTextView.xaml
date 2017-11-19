@@ -66,7 +66,8 @@
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          KeyDown="XRichEditBox_OnKeyDown"
-                         Holding="XRichEditBox_OnHolding">
+                         Holding="XRichEditBox_OnHolding"
+                         SelectionHighlightColorWhenNotFocused="Black">
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout>
                     <MenuFlyout.MenuFlyoutPresenterStyle>
@@ -80,13 +81,17 @@
                         <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus">
-                        <MenuFlyoutSubItem x:Name="xAlignment" Text="Alignment" Foreground="White"></MenuFlyoutSubItem>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
+                        <MenuFlyoutSubItem x:Name="xAlignment" Text="Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListTypes" Text="List" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListStyles" Text="List Style" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListAlignments" Text="List Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
+                    </MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xColor" Text="Color" GotFocus="ColorGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
-
+                    <MenuFlyoutSeparator></MenuFlyoutSeparator>
+                    <MenuFlyoutItem x:Name="xResetAll" Text="Reset All" Foreground="White" Click="XResetAll_OnClick"></MenuFlyoutItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>

@@ -54,6 +54,13 @@ namespace Dash
         private Brush _buttonBackground;
         private Brush _highlightedButtonBackgroud;
 
+        private ITextParagraphFormat defaultParFormat;
+        private ITextCharacterFormat defaultCharFormat;
+
+        private Dictionary<string, ParagraphAlignment> alignments = new Dictionary<string, ParagraphAlignment>();
+        private Dictionary<string, MarkerType> markers = new Dictionary<string, MarkerType>();
+        private Dictionary<string, MarkerStyle> markerStyles = new Dictionary<string, MarkerStyle>();
+        private Dictionary<string, MarkerAlignment> markerAlignments = new Dictionary<string, MarkerAlignment>();
         public RichTextView()
         {
             this.InitializeComponent();
@@ -64,11 +71,69 @@ namespace Dash
             //this.AddColors();
             //_buttonBackground = xBoldButton.Background;
             //_highlightedButtonBackgroud = xRichEditBox.SelectionHighlightColor;
-
+            defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+            defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
+            SetUpEnumDictionaries();
+            AddSearchBoxHandlers();
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
         long TextChangedCallbackToken;
 
+        private void SetUpEnumDictionaries()
+        {
+            var keys = Enum.GetNames(typeof(ParagraphAlignment));
+            var vals = Enum.GetValues(typeof(ParagraphAlignment));
+            var length = keys.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (keys[i].Equals("Undefined"))
+                    keys[i] = "Clear Alignment";
+                alignments.Add(keys[i], (ParagraphAlignment)vals.GetValue(i));
+            }
+            keys = Enum.GetNames(typeof(MarkerType));
+            vals = Enum.GetValues(typeof(MarkerType));
+            length = keys.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (keys[i].Equals("Undefined"))
+                    keys[i] = "Clear Marker";
+                markers.Add(keys[i], (MarkerType)vals.GetValue(i));
+            }
+            markers.Remove("None");
+            keys = Enum.GetNames(typeof(MarkerStyle));
+            vals = Enum.GetValues(typeof(MarkerStyle));
+            length = keys.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (vals.GetValue(i).Equals(Windows.UI.Text.MarkerStyle.Undefined))
+                    keys[i] = "Clear Style";
+                markerStyles.Add(keys[i], (MarkerStyle)vals.GetValue(i));
+            }
+            keys = Enum.GetNames(typeof(MarkerAlignment));
+            vals = Enum.GetValues(typeof(MarkerAlignment));
+            length = keys.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (keys[i].Equals("Undefined"))
+                    keys[i] = "Reset Alignment";
+                else
+                    keys[i] = string.Concat("List Align ", keys[i]);
+                markerAlignments.Add(keys[i], (MarkerAlignment)vals.GetValue(i));
+            }
+        }
+
+        //private Dictionary<string, Type> SetUpDictionary(Type type)
+        //{
+        //    var dictionary = new Dictionary<string, Type>();
+        //    var keys = Enum.GetNames(type);
+        //    var vals = Enum.GetValues(type);
+        //    var length = keys.Length;
+        //    for (int i = 0; i < length; i++)
+        //    {
+        //        dictionary.Add(keys[i], (Type)vals.GetValue(i));
+        //    }
+        //    return dictionary;
+        //}
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
@@ -326,12 +391,13 @@ namespace Dash
         private Color currentForeground;
         private void AddColors(MenuFlyoutSubItem item)
         {
-            AddColorMenuItem(Colors.Black, item);
             AddColorRange(Colors.Red, Colors.Violet, item);
             AddColorRange(Colors.Violet, Colors.Blue, item);
             AddColorRange(Colors.Blue, Colors.Aqua, item);
             AddColorRange(Colors.Aqua, Colors.Green, item);
             AddColorRange(Colors.Green, Colors.Yellow, item);
+            item?.Items?.Add(new MenuFlyoutSeparator());
+            AddColorRange(Colors.White, Colors.Black, item);
         }
 
         private void AddColorRange(Color color1, Color color2, MenuFlyoutSubItem item)
@@ -347,15 +413,15 @@ namespace Dash
                 var rAverage = r1 + (int)((rEnd - r1) * i / 25);
                 var gAverage = g1 + (int)((gEnd - g1) * i / 25);
                 var bAverage = b1 + (int)((bEnd - b1) * i / 25);
-                AddColorMenuItem(Color.FromArgb(255, (byte)rAverage, (byte)gAverage, (byte)bAverage), item);
+                AddColorMenuItem(Color.FromArgb(255, (byte)rAverage, (byte)gAverage, (byte)bAverage), item, 2);
             }
         }
 
-        private void AddColorMenuItem(Color color, MenuFlyoutSubItem submenu)
+        private void AddColorMenuItem(Color color, MenuFlyoutSubItem submenu, double height)
         {
             var item = new MenuFlyoutItem();
             item.Background = new SolidColorBrush(color);
-            item.Height = 2;
+            item.Height = height;
             if (submenu == xColor)
             {
                 item.Click += delegate
@@ -399,10 +465,26 @@ namespace Dash
 
         private void AddParagraphFormats()
         {
-            var alignments = new List<string>() {"Left", "Center", "Right", "Justify", "Reset"};
-            foreach (var alignment in alignments)
+            //var alignments = new List<string>() {"Left", "Center", "Right", "Justify", "Reset"};
+            var alignmentNames = alignments.Keys;
+            foreach (var alignment in alignmentNames)
             {
                 AddFormatMenuItem(alignment, xAlignment, false);
+            }
+            var listTypes = markers.Keys;
+            foreach (var type in listTypes)
+            {
+                AddFormatMenuItem(type, xListTypes, false);
+            }
+            var listStyles = markerStyles.Keys;
+            foreach (var style in listStyles)
+            {
+                AddFormatMenuItem(style, xListStyles, false);
+            }
+            var listAlignments = markerAlignments.Keys;
+            foreach (var listAlignment in listAlignments)
+            {
+                AddFormatMenuItem(listAlignment, xListAlignments, false);
             }
         }
 
@@ -553,22 +635,21 @@ namespace Dash
 
         private void ParFormat(String menuText, bool updateDocument)
         {
-            if (menuText == "Left")
-            {
-                Alignment(ParagraphAlignment.Left, updateDocument);
-            } else if (menuText == "Right")
-            {
-                Alignment(ParagraphAlignment.Right, updateDocument);
-            } else if (menuText == "Center")
-            {
-                Alignment(ParagraphAlignment.Center, updateDocument);
-            } else if (menuText == "Justify")
-            {
-                Alignment(ParagraphAlignment.Justify, updateDocument);
-            } else if (menuText == "Reset")
-            {
-                Alignment(ParagraphAlignment.Undefined, updateDocument);
-            }
+            ParagraphAlignment alignment;
+            if(alignments.TryGetValue(menuText, out alignment))
+                Alignment(alignment, updateDocument);
+
+            MarkerType listType;
+            if(markers.TryGetValue(menuText, out listType))
+                Marker(listType, updateDocument);
+
+            MarkerStyle listStyle;
+            if(markerStyles.TryGetValue(menuText, out listStyle))
+                MarkerStyle(listStyle, updateDocument);
+
+            MarkerAlignment listAlignment;
+            if (markerAlignments.TryGetValue(menuText, out listAlignment))
+                MarkerAlignment(listAlignment, updateDocument);
         }
 
         private void Highlight(Color background, bool updateDocument)
@@ -583,10 +664,40 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
   
-        private void Alignment(ParagraphAlignment alignment, bool updateDocument)
+        private void Alignment(object alignment, bool updateDocument)
         {
-            xRichEditBox.Document.Selection.ParagraphFormat.Alignment = alignment;
-            if(updateDocument) UpdateDocument();
+            if (alignment != null && alignment.GetType() == typeof(ParagraphAlignment))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        private void Marker(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerType))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        private void MarkerStyle(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerStyle))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        private void MarkerAlignment(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerAlignment))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
+                if (updateDocument) UpdateDocument();
+            }
         }
 
         //private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -851,8 +962,24 @@ namespace Dash
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
-            var found =xRichEditBox.Document.GetRange(0, length).FindText(query, length, FindOptions.None);
-            xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+            if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+            {
+                xRichEditBox.Document.Selection.SetRange(0, length);
+            }
+            //int i = 1;
+            //while (i > 0)
+            //{
+            //    i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
+            //    var selectedText = xRichEditBox.Document.Selection;
+            //    if (selectedText != null)
+            //    {
+            //        selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
+            //    }
+            //}
+            var found = xRichEditBox.Document.GetRange(0, length).FindText(query, length, FindOptions.None);
+            var start = xRichEditBox.Document.Selection.StartPosition;
+            var end = xRichEditBox.Document.Selection.StartPosition;
+            //xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
         }
 
         private void OpenContextMenu(object sender)
@@ -930,5 +1057,12 @@ namespace Dash
             if (xAlignment.Items.Count == 0) AddParagraphFormats();
             if(currentParagraphFormat != null) xRichEditBox.Document.Selection.ParagraphFormat.SetClone(currentParagraphFormat);
         }
+
+        private void XResetAll_OnClick(object sender, RoutedEventArgs e)
+        {
+            xRichEditBox.Document.Selection.CharacterFormat.SetClone(defaultCharFormat);
+            xRichEditBox.Document.Selection.ParagraphFormat.SetClone(defaultParFormat);
+        }
     }
 }
+
