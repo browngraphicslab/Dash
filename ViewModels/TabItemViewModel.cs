@@ -30,4 +30,23 @@ namespace Dash
             
         }
     }
+    /// <summary>
+    /// Tab Item View Model used to display documents that can be navigated to 
+    /// </summary>
+    public class GoToTabItemViewModel : ITabItemViewModel
+    {
+        private string _title;
+        public string Title { get => _title; set => _title = value; }
+        public Func<DocumentController> Action { get; set; }
+        public GoToTabItemViewModel(string title, Func<DocumentController> action)
+        {
+            _title = "Get: " + title;
+            Action = action;
+        }
+            
+        public void ExecuteFunc()
+        {
+            Action?.Invoke();
+        }
+    }
 }

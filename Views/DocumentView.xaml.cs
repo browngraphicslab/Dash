@@ -89,7 +89,7 @@ namespace Dash
             //handles drop from keyvaluepane 
             OnKeyValueDrop(e);
         }
-        
+
 
         public DocumentController Choose()
         {
@@ -111,7 +111,7 @@ namespace Dash
             }
             return null;
         }
-        
+
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
@@ -119,7 +119,7 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
-        
+
         private AddMenuItem _treeMenuItem;
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
@@ -140,7 +140,7 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-                
+
                 //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
                 if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
                 {
@@ -158,7 +158,8 @@ namespace Dash
                     }
                 }
                 if (double.IsNaN(ViewModel.Width) &&
-                    (ParentCollection?.CurrentView is CollectionFreeformView)) {
+                    (ParentCollection?.CurrentView is CollectionFreeformView))
+                {
                     ViewModel.Width = 50;
                     ViewModel.Height = 50;
                 }
@@ -182,7 +183,7 @@ namespace Dash
         public void StyleOperator(double width, string title)
         {
             isOperator = true;
-            xShadowTarget.Margin = new Thickness(width,0,width,0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
@@ -200,7 +201,7 @@ namespace Dash
                     _treeMenuItem);
             }
         }
-    
+
         #endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
@@ -216,7 +217,7 @@ namespace Dash
             // add item to menu
             if (ParentCollection != null)
                 AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem); // removes docview of collection from menu
-            
+
             if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
             {
 
@@ -229,15 +230,16 @@ namespace Dash
                 {
 
                     AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
-                } else
+                }
+                else
                 {
                     AddMenu.Instance.AddNodeFromCollection(view, tree, null);
                 }
             }
-            
-            
+
+
         }
-    
+
         //}
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
@@ -247,13 +249,13 @@ namespace Dash
             {
                 xKeyValPane.Width = KeyValPaneWidth;
                 ViewModel.Width += KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth*ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));  
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
             else
             {
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth* ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
+                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
         }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
@@ -300,7 +302,7 @@ namespace Dash
 
             // add the document to the composite
             var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-            data?.AddDocument(layoutDocument); 
+            data?.AddDocument(layoutDocument);
         }
         #endregion
 
@@ -651,7 +653,7 @@ namespace Dash
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible )
+            else if (xIcon.Visibility == Visibility.Visible)
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
@@ -772,7 +774,7 @@ namespace Dash
         public Rect ClipRect { get { return xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
-        { 
+        {
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
@@ -786,13 +788,13 @@ namespace Dash
                     if (e != null)
                         e.Handled = true;
                     OnSelected();
-                    
+
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
                 }
             }
         }
-        
+
         protected override void OnActivated(bool isSelected)
         {
             ViewModel?.SetSelected(this, isSelected);
@@ -867,15 +869,19 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
             {
-                var box = sender as TextBox;
-                // change the titlekey 
-                ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = box.Text; 
-                _treeMenuItem.DocType = box.Text;                                                    // TODO theoretically this should update by itself without explicit call :/ 
-
-                this.Focus(FocusState.Programmatic); 
+                this.Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
         }
+
+        private void XTitle_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // change the titlekey 
+            ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+            //ViewModel.DocumentController.Title = box.Text; 
+            _treeMenuItem.DocType = xTitle.Text;                                                    // TODO theoretically this should update by itself without explicit call :/ 
+
+        }
     }
-    
+
 }

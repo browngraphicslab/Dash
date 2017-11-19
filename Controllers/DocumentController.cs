@@ -44,7 +44,8 @@ namespace Dash
             }
         }
         private bool _hasPrototypes;
-        public bool HasPrototype {
+        public bool HasPrototype
+        {
             get
             {
                 return _hasPrototypes = _fields.ContainsKey(KeyStore.PrototypeKey) &&
@@ -104,13 +105,16 @@ namespace Dash
         {
             get
             {
-                if (GetField(KeyStore.TitleKey) is TextFieldModelController)
-                {
-                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
-                    if (textFieldModelController != null)
-                        return textFieldModelController.Data;
-                }
+                var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                if (textFieldModelController != null)
+                    return textFieldModelController.Data;
                 return DocumentType.Type;
+            }
+            set
+            {
+                var textFieldModelController = GetField(KeyStore.TitleKey) as TextFieldModelController;
+                if (textFieldModelController != null)
+                    textFieldModelController.Data = value;
             }
         }
 
@@ -552,19 +556,21 @@ namespace Dash
                 var oldPrototype = (oldField as DocumentFieldModelController)?.Data;
                 if (oldPrototype != null)
                 {
-                    DocumentFieldUpdated -= delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
-                                                args.FromDelegate = true;
-                                                oldPrototype.OnDocumentFieldUpdated(sender, args, false);
-                                            };
+                    DocumentFieldUpdated -= delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
+                    {
+                        args.FromDelegate = true;
+                        oldPrototype.OnDocumentFieldUpdated(sender, args, false);
+                    };
                 }
 
                 var prototype = (field as DocumentFieldModelController)?.Data;
                 if (prototype != null)
                 {
-                    DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) {
-                                                args.FromDelegate = true;
-                                                prototype.OnDocumentFieldUpdated(sender, args, false);
-                                            };
+                    DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
+                    {
+                        args.FromDelegate = true;
+                        prototype.OnDocumentFieldUpdated(sender, args, false);
+                    };
                 }
             }
 
@@ -586,7 +592,7 @@ namespace Dash
 
                 return true;
             }
-            return false; 
+            return false;
         }
 
 
@@ -756,7 +762,7 @@ namespace Dash
             var delegateController = new DocumentController(delegateModel);
 
             //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-          
+
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
@@ -959,7 +965,7 @@ namespace Dash
             // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
             var outputs = new Dictionary<KeyController, FieldControllerBase>(opField.Outputs.Count);
-            
+
             // iterate over the operator inputs adding them to our preparing dictionaries if they 
             // exist, and returning if there is a required field that we are missing
             foreach (var opFieldInput in opField.Inputs)
@@ -968,7 +974,7 @@ namespace Dash
                 var field = GetField(opFieldInput.Key);
                 // dereference the inputs so that the field is now the actual field from the output document
                 field = field?.DereferenceToRoot(context);
-                
+
                 if (field == null)
                 {
                     // if the reference was null and the reference was recquired just return the context
@@ -1103,7 +1109,7 @@ namespace Dash
             }
             if (DocumentType.Equals(WebBox.DocumentType))
             {
-                return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return WebBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
@@ -1224,7 +1230,7 @@ namespace Dash
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
             {
-                var delegates = (DocumentCollectionFieldModelController) _fields[KeyStore.DelegatesKey];
+                var delegates = (DocumentCollectionFieldModelController)_fields[KeyStore.DelegatesKey];
                 foreach (var del in delegates.Data)
                 {
                     del.DeleteOnServer();

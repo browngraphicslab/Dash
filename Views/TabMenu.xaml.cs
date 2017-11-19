@@ -62,31 +62,19 @@ namespace Dash
 
         public void AddToFreeform(DocumentController controller, Context context = null)
         {
-            _addsToThisCollection.ViewModel.AddDocument(controller, context); 
+            _addsToThisCollection.ViewModel.AddDocument(controller, context);
         }
-        
+
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
         // the correct args from coreWindowOnKeyUp
         public static void ConfigureAndShow(CollectionFreeformView col, Point p, Canvas canvas, bool isTouch = false)
         {
             _addsToThisCollection = col;
             _whereToAdd = p;
-            ShowAt(canvas, isTouch); 
+            ShowAt(canvas, isTouch);
         }
 
-        //Adds the immediate documents contained in the collectionfreeformview that contains the tabmenu 
-        //Recalculated every time tabmenu is opened (otherwise CollectionFreeformview would need to keep track of all the documentviews as well as the viewmodels) 
-        //TODO curtail this in case collectionview contains too many documents
-        public void AddGoToTabItems(CollectionFreeformView topCollection)
-        {
-            //var docViews = topCollection.GetImmediateDescendantsOfType<DocumentView>(); 
-            //var tabItems = new List<ITabItemViewModel>(AllTabItems);
-            //foreach (DocumentView dv in docViews)
-            //{
-            //    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-            //}
-            //DisplayedTabItems = tabItems;
-        }
+
 
         private static void ShowAt(Canvas canvas, bool isTouch = false)
         {
@@ -118,7 +106,7 @@ namespace Dash
             {
                 // whenever we set all the tab items we immediately sort them by their titles
                 value.Sort((x, y) => x.Title.ToLowerInvariant().CompareTo(y.Title.ToLowerInvariant()));
-                _allTabItems = value;              
+                _allTabItems = value;
             }
         }
 
@@ -136,11 +124,11 @@ namespace Dash
                 _displayedTabItems = value;
                 xListView.ItemsSource = _displayedTabItems.Any() // use the passed in value, otherwise use a NoResults placeholder
                     ? _displayedTabItems
-                    : new List<ITabItemViewModel>() {new NoResultTabViewModel()};
+                    : new List<ITabItemViewModel>() { new NoResultTabViewModel() };
             }
         }
 
-        
+
 
         /// <summary>
         /// Create the list of items to be displayed in the tab menu
@@ -175,43 +163,41 @@ namespace Dash
         private void XSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // if the user typed the change then prompt action  
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)                                          
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
                 Parse(sender.Text);
         }
 
         /// <summary>
         /// Parser for tabmenu; 
         /// </summary>
-        private void Parse(string command)                                                                                          // TOOD figure out where to put this 
+        private void Parse(string command)                                                                                   
         {
-            command = command.Trim();
-            // if command starts with "@", search the whole workspace 
-            if (command.StartsWith("@"))        
+            var query = command.Trim();
+            // if command starts with "@", change list to reflect searching for documents in workspace 
+            if (query.StartsWith("@"))
             {
-                command = command.Substring(1, command.Length - 1);
-                var strings = command.Split('.'); 
+                query = query.Substring(1, query.Length - 1);
+                var strings = query.Split('.');
                 if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
                 {
-                    var docMenuItem = FindFirstMatchingDoc(strings[0]);
-                    docMenuItem?.Action.Invoke();
-                } 
+                    DisplayedTabItems = _allDocItems;
+                    _selectedIndex = -1;
+                }
                 else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
                 {
 
                 }
             }
-            //else update the displayed local tabmenu list 
-            else         
-            {
-                UpdateList(command);
-            }
+            UpdateList(command);
         }
 
-        /// <summary>
-        /// Looks through the documents in the workspace and returns the first DocumentAddMenuItem representing the doucment matching the given name 
-        /// </summary>
-        private DocumentAddMenuItem FindFirstMatchingDoc(string docName)
+        private List<ITabItemViewModel> _allDocItems;
+        //Adds the immediate documents contained in the collectionfreeformview that contains the tabmenu 
+        //Recalculated every time tabmenu is opened (otherwise CollectionFreeformview would need to keep track of all the documentviews as well as the viewmodels) 
+        //TODO curtail this in case collectionview contains too many documents
+        public void AddGoToTabItems(CollectionFreeformView topCollection = null)
         {
+            _allDocItems = new List<ITabItemViewModel>();
             foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
             {
                 foreach (AddMenuItem menuItem in treeNode.ItemsList)
@@ -219,22 +205,10 @@ namespace Dash
                     var docMenuItem = menuItem as DocumentAddMenuItem;
                     if (docMenuItem != null)
                     {
-                        var controller = docMenuItem.LayoutDoc.GetDataDocument(null);
-                        if (menuItem.DocType == docName)
-                        {
-                            return docMenuItem;
-                        }
+                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action));
                     }
                 }
             }
-            return null; 
-        }
-
-        private List<DocumentController> FindAllMatch(string docName)
-        {
-            throw new NotImplementedException(); 
-            //List<DocumentController> result = new List<DocumentController>();
-            //return result; 
         }
 
         /// <summary>
@@ -250,8 +224,17 @@ namespace Dash
             // otherwise display the tab items
             else
             {
-                DisplayedTabItems = AllTabItems
-                    .Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+                if (query.StartsWith("@"))
+                {
+                    query = query.Substring(1, query.Length - 1);
+                    DisplayedTabItems = _allDocItems.Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+                }
+                else
+                {
+                    DisplayedTabItems = AllTabItems
+                        .Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
+                }
+
             }
         }
 
@@ -265,7 +248,7 @@ namespace Dash
             DisplayedTabItems = AllTabItems;
             xSearch.Text = string.Empty;
         }
-        
+
         #endregion
 
 
@@ -282,7 +265,7 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
 
-        
+
 
         private void ConfigureForTouch()
         {
@@ -292,7 +275,7 @@ namespace Dash
         /// <summary>
         /// Move the current selection in the list view down
         /// </summary>
-        public void MoveSelectedDown()                                                                                     
+        public void MoveSelectedDown()
         {
             // if the selected index is -1 (nothing selected) then make it 0
             if (xListView.SelectedIndex < 0)
@@ -344,7 +327,7 @@ namespace Dash
         {
             var selectedItem = xListView.SelectedIndex < 0
                 ? xListView.Items.ElementAt(_selectedIndex) as ITabItemViewModel
-                : xListView.SelectedItem as ITabItemViewModel;  
+                : xListView.SelectedItem as ITabItemViewModel;
             selectedItem?.ExecuteFunc();
             Hide();
         }
