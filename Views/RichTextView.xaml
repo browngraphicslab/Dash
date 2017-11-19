@@ -9,7 +9,8 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
+    <!--<Grid x:Name="xMainGrid" GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus">-->
+    <Grid x:Name="xMainGrid">
         <Grid.Resources>
             <Style TargetType="Button">
                 <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
@@ -28,7 +29,7 @@
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="5*"/>
                 </Grid.ColumnDefinitions>
-                <Grid>
+                <!--<Grid>
                     <Button x:Name="xBoldButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
                         <SymbolIcon Symbol="Bold"></SymbolIcon>
                     </Button>
@@ -45,16 +46,16 @@
                 </Grid>
                 <Grid Grid.Column="3">
                     <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
-                </Grid>
+                </Grid>-->
             </Grid>
         </Grid >
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
-                         DragOver="xRichEitBox_DragOver" 
-
+                         Grid.Row="0"
                          Foreground="{StaticResource MainText}" 
                          Background="{StaticResource DocumentBackground}" Opacity=".9"
-                         GotFocus="xRichEditBox_GotFocus" 
+                         GotFocus="xRichEditBox_GotFocus"
+                         LostFocus="XRichEditBox_OnLostFocus"
                          Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
@@ -63,7 +64,36 @@
                          BorderBrush="{StaticResource DocumentBackground}" 
                          BorderThickness="1"
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
+                         KeyDown="XRichEditBox_OnKeyDown"
+                         Holding="XRichEditBox_OnHolding">
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout>
+                    <MenuFlyout.MenuFlyoutPresenterStyle>
+                        <Style TargetType="MenuFlyoutPresenter">
+                            <Setter Property="Background"  Value="{StaticResource DarkBackground}"></Setter>
+                            <Setter Property="Opacity" Value="0.8"></Setter>
+                        </Style>
+                    </MenuFlyout.MenuFlyoutPresenterStyle>
+                    <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xFormat" Text="Format" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
+                        <MenuFlyoutSubItem x:Name="xScript" Text="Script" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xColor" Text="Color" GotFocus="ColorGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+
+                </MenuFlyout>
+            </FlyoutBase.AttachedFlyout>
+        </RichEditBox>
+        <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" Visibility="Collapsed" Opacity="0.5">
+            <SearchBox x:Name="xSearchBox" Height="20" Width="100" BorderBrush="Transparent" Background="Gainsboro"></SearchBox>
+            <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3" Height="20" Width="15" VerticalContentAlignment="Top" Background="Gainsboro">
+                <TextBlock Text="x" Padding="0"></TextBlock>
+            </Button>
+        </StackPanel>
     </Grid>
 
 </UserControl>
