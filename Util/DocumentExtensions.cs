@@ -330,7 +330,7 @@ namespace Dash
             return scaleAmountField;
         }
 
-        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys)
+        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null)
         {
             var refs = new List<ReferenceController>();
             var docIds = new Dictionary<DocumentController, DocumentController>();
@@ -353,6 +353,10 @@ namespace Dash
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
                 ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys)
         {
+            if (excludeKeys == null)
+            {
+                excludeKeys = new List<KeyController>{KeyStore.LayoutListKey, KeyStore.DelegatesKey};
+            }
             if (doc == null)
                 return doc;
             if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
@@ -360,6 +364,7 @@ namespace Dash
             if (docs.ContainsKey(doc))
                 return docs[doc];
 
+            //TODO tfs: why do we make a delegate in copy?
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                             new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), doc.DocumentType);
             docs.Add(doc, copy);
@@ -371,6 +376,7 @@ namespace Dash
                 if (kvp.Key.Equals(KeyStore.ThisKey))
                     fields[kvp.Key] = copy;
                 else if (excludeKeys.Contains(kvp.Key))
+                    //TODO tfs: why do we copy things in the exclude keys list?
                     fields[kvp.Key] = kvp.Value.GetCopy();
                 else if (kvp.Value is DocumentController)
                     fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys);

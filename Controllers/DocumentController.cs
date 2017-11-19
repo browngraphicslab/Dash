@@ -280,7 +280,7 @@ namespace Dash
 
         public override FieldModelController<DocumentModel> Copy()
         {
-            throw new NotImplementedException();
+            return this.MakeCopy();
         }
 
         /// <summary>
@@ -1258,7 +1258,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public override FieldControllerBase GetDefaultController()
