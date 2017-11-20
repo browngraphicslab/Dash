@@ -203,17 +203,19 @@ namespace Dash
             var referencedKey = userLink.referencedKey;
             var referencedDoc = userLink.referencedDocument;
 
+            
+
             // Check if nodes inputs/outputs are of the same type
             var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
             var droppedDocInputType = droppedDocOpFMController.Inputs[droppedDocInputKey];
 
             var referencedDocOpFMController = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
-            var referencedDocOutputType = referencedDocOpFMController.Outputs[referencedKey];
+            var referencedDocOutputType = referencedDocOpFMController?.Outputs[referencedKey];
 
             var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
-            var referencingDocInputType = referencingDocOpFMController.Inputs[referencingKey];
+            var referencingDocInputType = referencingDocOpFMController?.Inputs[referencingKey];
 
-            if(droppedDocOutputType == referencingDocInputType.Type && referencedDocOutputType == droppedDocInputType.Type)
+            if(droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
             {
                 // delete the current connection between referenced doc and referencing doc
                 ffView.DeleteLine(link.Key, userLink); // check
