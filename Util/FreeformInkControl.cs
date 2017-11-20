@@ -35,7 +35,6 @@ namespace Dash
         private CollectionView _collectionView;
         public CollectionFreeformView FreeformView;
         public InkFieldModelController InkFieldModelController;
-        public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetInkCanvas { get; set; }
 
@@ -46,7 +45,6 @@ namespace Dash
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
             InkFieldModelController = view.InkFieldModelController;
-            LassoHelper = new LassoSelectHelper(FreeformView);
             _collectionView = FreeformView.GetFirstAncestorOfType<CollectionView>();
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.Mode =
                 GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Eraser
@@ -216,8 +214,8 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
             var selectionList =
-                LassoHelper.GetSelectedDocuments(
-                    new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000)))); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl
+                MainPage.InkRecognizer.LassoSelectHelper.GetSelectedDocuments(
+                    new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000))), FreeformView); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl
             foreach (var docView in selectionList)
             {
                 FreeformView.Select(docView);

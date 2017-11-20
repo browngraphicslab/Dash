@@ -51,12 +51,12 @@ namespace Dash.Views
             return new Point(Canvas.GetLeft(this) + 25, Canvas.GetTop(this) + 25);
         }
 
-        public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
+        public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokeContainer, ScrollViewer scroller = null)
         {
             this.InitializeComponent();
             _freeformView = view;
             _scroller = scroller;
-            _strokeContainer = strokes;
+            _strokeContainer = strokeContainer;
             Loaded += OnLoaded;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnOnAttributesUpdated;
             UpdateStartingTransforms();

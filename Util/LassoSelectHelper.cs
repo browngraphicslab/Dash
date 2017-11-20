@@ -29,21 +29,17 @@ namespace Dash
         private MenuFlyout _menu = new MenuFlyout();
         private Grid _flyoutBase;
 
-        public LassoSelectHelper(CollectionFreeformView view)
+        public LassoSelectHelper()
         {
-            _view = view;
-            //var delete = new MenuFlyoutItem {Text = "Delete"};
-            //delete.Tapped += DeleteOnTapped;
-            //_menu.Items.Add(delete);
-            //_menu.Placement = FlyoutPlacementMode.Bottom;
         }
         
 
         /// <summary>
         /// Executes hull tasks, i.e. sorting points and figuring out the hull. 
         /// </summary>
-        public List<DocumentView> GetSelectedDocuments(List<Point> points)
+        public List<DocumentView> GetSelectedDocuments(List<Point> points, CollectionFreeformView view)
         {
+            _view = view;
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
             _points = points;
