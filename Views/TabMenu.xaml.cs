@@ -164,31 +164,7 @@ namespace Dash
         {
             // if the user typed the change then prompt action  
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-                Parse(sender.Text);
-        }
-
-        /// <summary>
-        /// Parser for tabmenu; 
-        /// </summary>
-        private void Parse(string command)                                                                                   
-        {
-            var query = command.Trim();
-            // if command starts with "@", change list to reflect searching for documents in workspace 
-            if (query.StartsWith("@"))
-            {
-                query = query.Substring(1, query.Length - 1);
-                var strings = query.Split('.');
-                if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
-                {
-                    DisplayedTabItems = _allDocItems;
-                    _selectedIndex = -1;
-                }
-                else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
-                {
-
-                }
-            }
-            UpdateList(command);
+                UpdateList(sender.Text);
         }
 
         private List<ITabItemViewModel> _allDocItems;
@@ -205,7 +181,7 @@ namespace Dash
                     var docMenuItem = menuItem as DocumentAddMenuItem;
                     if (docMenuItem != null)
                     {
-                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action));
+                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.LayoutDoc.GetDataDocument(null)));
                     }
                 }
             }
@@ -216,26 +192,43 @@ namespace Dash
         /// </summary>
         private void UpdateList(string query)
         {
+            query.Trim();
             // if the input text is null or whitespace display everything
             if (string.IsNullOrWhiteSpace(query))
             {
                 ResetList();
             }
             // otherwise display the tab items
+            else if (query.StartsWith("@"))
+            {
+                query = query.Substring(1, query.Length - 1);
+                var strings = query.Split('.');
+                var docName = strings[0];
+                if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
+                {
+                    DisplayedTabItems = _allDocItems.Where(t => t.Title.ToLowerInvariant().Contains(docName.ToLowerInvariant())).ToList();
+                }
+                else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
+                {
+                    var fieldName = strings[1]; 
+                    var newTabItems = new List<ITabItemViewModel>(); 
+                    foreach (ITabItemViewModel item in DisplayedTabItems)
+                    {
+                        var nameMatches = item.Title.ToLowerInvariant().Contains(docName.ToLowerInvariant());
+                        var containsField = item is GoToTabItemViewModel ? 
+                            (item as GoToTabItemViewModel).Document.HasMatchingKey(fieldName) : false;
+                        if (nameMatches && containsField)
+                            newTabItems.Add(item); 
+                    }
+                    DisplayedTabItems = newTabItems; 
+                }
+            }
             else
             {
-                if (query.StartsWith("@"))
-                {
-                    query = query.Substring(1, query.Length - 1);
-                    DisplayedTabItems = _allDocItems.Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
-                }
-                else
-                {
-                    DisplayedTabItems = AllTabItems
-                        .Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
-                }
-
+                DisplayedTabItems = AllTabItems
+                    .Where(t => t.Title.ToLowerInvariant().Contains(query.ToLowerInvariant())).ToList();
             }
+            _selectedIndex = -1;
         }
 
 
@@ -325,7 +318,7 @@ namespace Dash
         /// </summary>
         private void ExecuteSelectedElement()
         {
-            var selectedItem = xListView.SelectedIndex < 0
+            var selectedItem = xListView.SelectedIndex < 0 && _selectedIndex > 0
                 ? xListView.Items.ElementAt(_selectedIndex) as ITabItemViewModel
                 : xListView.SelectedItem as ITabItemViewModel;
             selectedItem?.ExecuteFunc();

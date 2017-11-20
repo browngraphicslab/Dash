@@ -38,10 +38,13 @@ namespace Dash
         private string _title;
         public string Title { get => _title; set => _title = value; }
         public Func<DocumentController> Action { get; set; }
-        public GoToTabItemViewModel(string title, Func<DocumentController> action)
+        public DocumentController Document; 
+
+        public GoToTabItemViewModel(string title, Func<DocumentController> action, DocumentController dc)
         {
             _title = "Get: " + title;
             Action = action;
+            Document = dc; 
         }
             
         public void ExecuteFunc()

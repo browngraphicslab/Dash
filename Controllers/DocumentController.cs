@@ -118,6 +118,25 @@ namespace Dash
             }
         }
 
+        public bool HasMatchingKey(string keyName)
+        {
+            Debug.WriteLine("looking for : " + keyName);
+
+            //var dataContext = GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, null);
+            //var doc = dataContext?.Data ?? this;
+            foreach (KeyController key in _fields.Keys)
+            {
+                if (key.Name.StartsWith("_"))
+                    continue; 
+                Debug.WriteLine("key: " + key.Name);
+                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
+                {
+                    Debug.WriteLine("found????????????");
+                    return true;
+                }
+            }
+            return false; 
+        }
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed
