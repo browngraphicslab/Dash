@@ -46,7 +46,6 @@ namespace Dash.Controllers.Operators
                 tags = allTags.Aggregate(tags, (current, tag) => current + tag + ", ");
             }
             tags = tags.TrimEnd(' ').TrimEnd(',');
-            Debug.WriteLine("TAGS: " + tags);
             outputs[DescriptorKey] = new TextFieldModelController(tags);
         }
 
