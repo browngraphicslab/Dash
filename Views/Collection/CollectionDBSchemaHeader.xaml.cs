@@ -127,5 +127,11 @@ namespace Dash
             e.Handled = true;
 
         }
+
+        private void DBS_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            NameGrid.Width = Math.Max(1, e.NewSize.Width - 7);
+            Text.Width = Math.Max(1, Width - 7);
+        }
     }
 }

@@ -188,6 +188,42 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\ImageResolvingEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\LinkClickedEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\MarkdownRenderedEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\MarkdownTextBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\IImageResolver.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\ILinkRegister.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\MarkdownTable.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\XamlRenderer.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Helpers\Common.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Helpers\DebuggingReporter.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownDocument.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownElement.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\CodeBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\HeaderBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\HorizontalRuleBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\LinkReferenceBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\ListBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\ParagraphBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\QuoteBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\TableBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\BoldTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\CodeInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\EmojiInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\EmojiInline.EmojiCodes.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\HyperlinkInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\IInlineContainer.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\IInlineLeaf.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ILinkElement.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ImageInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ItalicTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\MarkdownLinkInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\StrikethroughTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\GoToTabItemViewModel.cs" />
@@ -664,6 +700,10 @@
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Util\UWPCommunityToolkit\Markdown\MarkdownTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
       <SubType>Designer</SubType>

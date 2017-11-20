@@ -36,8 +36,9 @@ namespace Dash
             double sum = 0;
             foreach (var value in inputs.Values)
             {
-                if (value is NumberController)
-                    sum += ((NumberController) value).Data;
+                var controller = value as NumberController;
+                if (controller != null)
+                    sum += controller.Data;
             }
 
             outputs[SumKey] = new NumberController(sum);
