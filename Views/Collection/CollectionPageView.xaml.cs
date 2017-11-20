@@ -60,7 +60,7 @@ namespace Dash
 
                 var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 thumbnailImageViewDoc.SetLayoutDimensions(double.NaN,xThumbs.ActualHeight);
-                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN, xThumbs.ActualHeight);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc) {Undecorated = true});
             }
         }
 
