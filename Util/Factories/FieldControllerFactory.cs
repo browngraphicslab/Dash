@@ -223,6 +223,9 @@ namespace Dash
                 case OperatorType.Extract_Keywords:
                     controller = new ExtractKeywordsOperatorFieldModelController(model);
                     break;
+                case OperatorType.ImageRecognition:
+                    controller = new ImageRecognitionOperatorFieldModelController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

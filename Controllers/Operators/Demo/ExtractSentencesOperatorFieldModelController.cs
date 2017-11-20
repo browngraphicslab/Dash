@@ -47,7 +47,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var collection = inputs[InputCollection] as DocumentCollectionFieldModelController;
             var textFieldKeyId = (inputs[TextField] as TextFieldModelController).Data;

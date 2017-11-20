@@ -182,7 +182,7 @@ namespace Dash
             return true;
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
             var method = (inputs[MethodKey] as TextFieldModelController).Data;

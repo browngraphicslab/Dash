@@ -115,6 +115,7 @@
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ImageRecognitionOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
     <Compile Include="Controllers\PointerReferenceFieldController.cs" />
@@ -141,6 +142,7 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -1100,6 +1102,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectOxford.Vision">
+      <Version>1.0.393</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>

@@ -53,6 +53,7 @@ namespace DashShared
         Regex,
         Melt,
         Sentence_Analyzer,
-        Extract_Keywords
+        Extract_Keywords,
+        ImageRecognition
     }
 }
