@@ -88,7 +88,7 @@ namespace Dash.Controllers.Operators
             [AvgResultKey]  = TypeInfo.Number
         };
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var idocs        = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey]);
             var dbDocs       = (idocs as DocumentCollectionFieldModelController)?.Data ?? (idocs as DocumentFieldModelController)?.Data.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionNote.CollectedDocsKey, null).Data;

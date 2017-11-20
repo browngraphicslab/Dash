@@ -34,7 +34,7 @@ namespace Dash.Controllers.Operators
             [DescriptorKey] = TypeInfo.Text
         };
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var tags = "";
             var value = inputs.ElementAt(0).Value;

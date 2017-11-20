@@ -56,7 +56,7 @@ namespace Dash
                 [OutputCollection] = TypeInfo.Collection
             };
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var docs = (inputs[InputCollection] as DocumentCollectionFieldModelController)?.GetDocuments();

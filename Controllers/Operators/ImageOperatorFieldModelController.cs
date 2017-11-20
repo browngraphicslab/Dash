@@ -28,7 +28,7 @@ namespace Dash
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             //throw new NotImplementedException();
 

@@ -72,7 +72,7 @@ namespace Dash
 
         public Dictionary<KeyController, KeyController> InputKeyMap { get; set; } = new Dictionary<KeyController, KeyController>();
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             OperatorFieldModelController operatorController = inputs[InputOperatorKey] as OperatorFieldModelController;
             Dictionary<KeyController, FieldControllerBase> operatorInputs = new Dictionary<KeyController, FieldControllerBase>();
@@ -117,7 +117,7 @@ namespace Dash
                     operatorInputs[keys[j]] = collections[j][i].GetField(InputKeyMap[keys[j]]);
                 }
                 operatorOutputs.Clear();
-                operatorController.ExecuteAsync(operatorInputs, operatorOutputs);
+                operatorController.Execute(operatorInputs, operatorOutputs);
                 DocumentController doc = prototype.MakeDelegate();//new DocumentController(operatorOutputs, DocumentType.DefaultType);
                 doc.SetFields(operatorOutputs, true);
                 doc.SetActiveLayout(new DefaultLayout().Document, true, false);

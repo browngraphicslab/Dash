@@ -990,7 +990,7 @@ namespace Dash
             }
 
             // execute the operator
-            opField.ExecuteAsync(inputs, outputs);
+            opField.Execute(inputs, outputs);
 
             // pass the updates along 
             // TODO comment how this works

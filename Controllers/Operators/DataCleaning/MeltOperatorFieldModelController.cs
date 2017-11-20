@@ -70,7 +70,7 @@ namespace Dash
         {
         }
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var collection = inputs[InputCollection] as DocumentCollectionFieldModelController;;

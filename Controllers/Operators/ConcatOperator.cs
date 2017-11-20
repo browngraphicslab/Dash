@@ -44,7 +44,7 @@ namespace Dash
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var a = (inputs[AKey] as TextFieldModelController).Data;
             var b = (inputs[BKey] as TextFieldModelController).Data;

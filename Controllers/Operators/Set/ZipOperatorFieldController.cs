@@ -49,7 +49,7 @@ namespace Dash
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
-        public override void ExecuteAsync(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var aDocs = (inputs[AKey] as DocumentCollectionFieldModelController).GetDocuments();
             var bDocs = (inputs[BKey] as DocumentCollectionFieldModelController).GetDocuments();
