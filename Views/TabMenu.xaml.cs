@@ -212,13 +212,14 @@ namespace Dash
                 {
                     var fieldName = strings[1]; 
                     var newTabItems = new List<ITabItemViewModel>(); 
-                    foreach (ITabItemViewModel item in DisplayedTabItems)
+                    foreach (ITabItemViewModel item in _allDocItems)
                     {
                         var nameMatches = item.Title.ToLowerInvariant().Contains(docName.ToLowerInvariant());
-                        var containsField = item is GoToTabItemViewModel ? 
-                            (item as GoToTabItemViewModel).Document.HasMatchingKey(fieldName) : false;
-                        if (nameMatches && containsField)
-                            newTabItems.Add(item); 
+                        if (!nameMatches)
+                            continue; 
+                        var containsField = (item as GoToTabItemViewModel).Document.HasMatchingKey(fieldName);
+                        if (containsField)
+                            newTabItems.Add(item);  
                     }
                     DisplayedTabItems = newTabItems; 
                 }
