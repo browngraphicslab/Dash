@@ -11,7 +11,7 @@ namespace Dash
 {
     class FilterOperatorBox : CourtesyDocument
     {
-        public FilterOperatorBox(ReferenceFieldModelController refToOp)
+        public FilterOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.FilterOperatorDocumentType);

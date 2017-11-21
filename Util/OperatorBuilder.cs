@@ -15,7 +15,7 @@ namespace Dash
         /// <summary>
         ///     A func which returns an OperatorFieldModelController
         /// </summary>
-        public Func<OperatorFieldModelController> OperationControllerConstructor { get; }
+        public Func<OperatorController> OperationControllerConstructor { get; }
 
         /// <summary>
         ///     The title of the operator, can be null
@@ -30,7 +30,7 @@ namespace Dash
         /// <param name="operationControllerConstructor">A func which returns an OperatorFieldModelController</param>
         /// <param name="title">The title of the operator, can be null</param>
         public OperatorBuilder(Func<DocumentController> operationDocumentConstructor,
-            Func<OperatorFieldModelController> operationControllerConstructor, string title)
+            Func<OperatorController> operationControllerConstructor, string title)
         {
             OperationDocumentConstructor = operationDocumentConstructor;
             OperationControllerConstructor = operationControllerConstructor;

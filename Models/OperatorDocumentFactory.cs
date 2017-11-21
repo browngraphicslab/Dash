@@ -17,13 +17,13 @@ namespace Dash
         /// the optional function normally takes the form (rfmc => new CourtesyDocument(rfmc)) where the courtesy document is defining
         /// a custom view for the operator
         /// </summary>
-        public static DocumentController CreateOperatorDocument(OperatorFieldModelController opController, string title=null, Func<ReferenceFieldModelController, CourtesyDocument> layoutFunc = null)
+        public static DocumentController CreateOperatorDocument(OperatorController opController, string title=null, Func<ReferenceController, CourtesyDocument> layoutFunc = null)
         {
             // set the operator and title field
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.OperatorKey] = opController,
-                [KeyStore.TitleKey] = new TextFieldModelController(title ?? "")
+                [KeyStore.TitleKey] = new TextController(title ?? "")
             };
 
             // create a new document to hold the operator
@@ -38,7 +38,7 @@ namespace Dash
         // TODO fix DB special case
         public static DocumentController CreateDBFilterDocumentController()
         {
-            return DBFilterOperatorFieldModelController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
+            return DBFilterOperatorController.CreateFilter(new DocumentReferenceController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
         }
 
         /// <summary>
@@ -46,9 +46,9 @@ namespace Dash
         /// </summary>
         /// <param name="layoutFunc"></param>
         /// <param name="docContainingOp"></param>
-        public static void SetOperatorLayout(Func<ReferenceFieldModelController, CourtesyDocument> layoutFunc, DocumentController docContainingOp)
+        public static void SetOperatorLayout(Func<ReferenceController, CourtesyDocument> layoutFunc, DocumentController docContainingOp)
         {
-            var layoutDoc = layoutFunc(new DocumentReferenceFieldController(docContainingOp.GetId(), KeyStore.OperatorKey)).Document;
+            var layoutDoc = layoutFunc(new DocumentReferenceController(docContainingOp.GetId(), KeyStore.OperatorKey)).Document;
             docContainingOp.SetActiveLayout(layoutDoc, true, true);
 
         }

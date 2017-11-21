@@ -13,7 +13,7 @@ namespace Dash
     public class CollectionViewModelBindingSource : INotifyCollectionChanged, IItemsRangeInfo, IList<DocumentViewModel>, IList
     {
         private List<DocumentViewModel> _cachedViewModels = new List<DocumentViewModel>();
-        private DocumentCollectionFieldModelController _collection = null;
+        private ListController<DocumentController> _collection = null;
         private int _startIndex = 0, _endIndex = 0;
         private int _bufferSize = 2;
 
@@ -22,7 +22,7 @@ namespace Dash
 
         }
 
-        public CollectionViewModelBindingSource(DocumentCollectionFieldModelController collection)
+        public CollectionViewModelBindingSource(ListController<DocumentController> collection)
         {
             _collection = collection;
             collection.FieldModelUpdated += CollectionOnFieldModelUpdated;
@@ -30,7 +30,7 @@ namespace Dash
 
         private void CollectionOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var colArgs = (DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs)args;
+            var colArgs = (ListController<DocumentController>.ListFieldUpdatedEventArgs)args;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             //var dvms = new List<DocumentViewModel>();
             //foreach (var colArgsChangedDocument in colArgs.ChangedDocuments)
@@ -39,16 +39,16 @@ namespace Dash
             //}
             //switch (colArgs.CollectionAction)
             //{
-            //    case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
+            //    case ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
             //        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, dvms));
             //        break;
-            //    case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
+            //    case ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
             //        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             //        break;
-            //    case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
+            //    case ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
             //        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, dvms));
             //        break;
-            //    case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
+            //    case ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
             //        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, dvms));
             //        break;
             //}
@@ -101,7 +101,7 @@ namespace Dash
             int length = endIndex - startIndex;
             List<DocumentViewModel> newViewModels = new List<DocumentViewModel>(length);
             var createdViewModels = new List<KeyValuePair<int, DocumentViewModel>>();
-            var docs = _collection.GetDocuments();
+            var docs = _collection.GetElements();
             for (int i = 0; i < length; ++i)
             {
                 if (i + startIndex >= _startIndex && i + startIndex < _endIndex)
@@ -160,7 +160,7 @@ namespace Dash
             {
                 return -1;
             }
-            return _collection.GetDocuments().IndexOf(item.DocumentController);
+            return _collection.GetElements().IndexOf(item.DocumentController);
         }
 
         public DocumentViewModel this[int index]

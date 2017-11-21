@@ -114,9 +114,9 @@ namespace Dash
         public DocumentController DocController { get; }
         public Context Context { get; }
 
-        public RectFieldModelController ClipController
+        public RectController ClipController
         {
-            get { return DocController.GetDereferencedField(ImageBox.ClipKey, Context) as RectFieldModelController; }
+            get { return DocController.GetDereferencedField(ImageBox.ClipKey, Context) as RectController; }
         }
         #endregion
 

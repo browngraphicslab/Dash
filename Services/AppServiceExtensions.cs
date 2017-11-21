@@ -31,12 +31,12 @@ namespace Dash
             serviceCollection.AddSingleton<ServerEndpoint, ServerEndpoint>();
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
-            serviceCollection.AddSingleton<IModelEndpoint<DocumentModel>, LocalDocumentEndpoint>();
-            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalModelEndpoint<FieldModel>>();
-            serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, LocalModelEndpoint<KeyModel>>();
+            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalEverythingEndpoint>();
+            //serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalModelEndpoint<FieldModel>>();
+           // serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, LocalModelEndpoint<KeyModel>>();
 
 
-            serviceCollection.AddTransient<IController<DocumentModel>, DocumentController>();
+            serviceCollection.AddTransient<IController<FieldModel>, DocumentController>();
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors

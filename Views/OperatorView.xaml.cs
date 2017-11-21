@@ -14,10 +14,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Controllers.Operators;
 using Dash.Views;
-using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
+using static Dash.Controllers.Operators.DBSearchOperatorController;
 using System.Collections.Specialized;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using DashShared.Models;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,7 +37,7 @@ namespace Dash
         /// <summary>
         /// The operator field model controller backing this operator view
         /// </summary>
-        private OperatorFieldModelController _operator { get; set; }
+        private OperatorController _operator { get; set; }
 
         /// <summary>
         /// Used to cache the last datacontext so that we don't rebind unecessarily
@@ -73,7 +74,7 @@ namespace Dash
 
         /// <summary>
         /// Called whenever the datacontext for the entire view changes
-        /// The datacontext should be a <see cref="DocumentFieldReference"/> to a <see cref="OperatorFieldModelController"/>
+        /// The datacontext should be a <see cref="DocumentFieldReference"/> to a <see cref="OperatorController"/>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
@@ -88,7 +89,7 @@ namespace Dash
             _lastDataContext = DataContext;
 
             // get the operator field model controller form the data context
-            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
+            _operator = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorController>(null);
             _isCompound = _operator.IsCompound();
 
             // bind the input and output lists (the things we link to)
@@ -123,7 +124,7 @@ namespace Dash
             DoubleTapped += OnCompoundOperatorDoubleTapped;
             _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true;
 
-            var compoundFMCont = _operator as CompoundOperatorFieldController;
+            var compoundFMCont = _operator as CompoundOperatorController;
 
             InputListView.PointerReleased += (s, e) =>
             {
@@ -242,7 +243,7 @@ namespace Dash
                 StartNewLink(sender, ioref.PointerArgs, false, view);
                 view.EndDrag(ioref, true);
                 var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
-                (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref);
+                (_operator as CompoundOperatorController).AddInputreference(key, ioref);
             }
             else
             {
@@ -316,9 +317,9 @@ namespace Dash
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
-            var documentController = ContentController<DocumentModel>.GetController<DocumentController>(docId);
+            var documentController = ContentController<FieldModel>.GetController<DocumentController>(docId);
             var operatorFieldModelController = (DataContext as FieldReference)
-                ?.DereferenceToRoot<CompoundOperatorFieldController>(null);
+                ?.DereferenceToRoot<CompoundOperatorController>(null);
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor();
         }
@@ -419,7 +420,7 @@ namespace Dash
                             if (operatorDoc != null)
                             {
                                 operatorDoc.SetField(key,
-                                    new TextFieldModelController(dm.FieldKey.Id), true);
+                                    dm.FieldKey, true);
                                 return;
                             }
 
