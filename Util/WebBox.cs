@@ -28,18 +28,20 @@ namespace Dash
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
             var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceFieldModelController)
+            if (data is ReferenceController)
             {
-                var reference = data as ReferenceFieldModelController;
+                var reference = data as ReferenceController;
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+                        DocumentController doc = (DocumentController) sender;
+                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
                         {
                             return;
                         }
-                        BindTextSource(element, sender, args.Context, reference.FieldKey);
+                        BindTextSource(element, doc, context1, reference.FieldKey);
                     });
             }
             BindTextSource(element, controller, context, KeyStore.DataKey);
@@ -51,7 +53,7 @@ namespace Dash
             {
                 return;
             }
-            var textData = data as TextFieldModelController;
+            var textData = data as TextController;
             var sourceBinding = new Binding
             {
                 Source = textData,
@@ -77,9 +79,9 @@ namespace Dash
 
             ///* 
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
-                new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out ReferenceFieldModelController refToData);
+                new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
 
-            var textfieldModelController = fieldModelController as TextFieldModelController;
+            var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
             var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
@@ -103,7 +105,7 @@ namespace Dash
             SetupBindings(web, docController, context);
 
             //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = web;
 
             if (isInterfaceBuilderLayout)

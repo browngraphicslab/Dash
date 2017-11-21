@@ -21,7 +21,7 @@ namespace Dash
         {
             // bcz: default values for data fields can be added, but should not be needed
             Dictionary<KeyController, FieldControllerBase> fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields.Add(InkFieldKey, new InkFieldModelController());
+            fields.Add(InkFieldKey, new InkController());
             return new DocumentController(fields, InkDocType);
 
         }
@@ -31,14 +31,14 @@ namespace Dash
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
             
-            var prototypeInkLayout = new InkBox(new DocumentReferenceFieldController(_prototypeTwoImages.GetId(), InkFieldKey));
+            var prototypeInkLayout = new InkBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), InkFieldKey));
             prototypeInkLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             prototypeInkLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             prototypeInkLayout.Document.SetHeight(double.NaN);
             prototypeInkLayout.Document.SetWidth(double.NaN);
             var prototypeLayout = new StackLayout(new[] {prototypeInkLayout.Document });
-            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
-            prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(200), true);
+            prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
 
             return prototypeLayout.Document;
         }
@@ -48,8 +48,8 @@ namespace Dash
             Document = _prototypeTwoImages.MakeDelegate();
 
             var docLayout = _prototypeLayout.MakeDelegate();
-            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-            docLayout.SetField(new KeyController("opacity", "opacity"), new NumberFieldModelController(0.8), true);
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
+            docLayout.SetField(new KeyController("opacity", "opacity"), new NumberController(0.8), true);
             SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
 
         }

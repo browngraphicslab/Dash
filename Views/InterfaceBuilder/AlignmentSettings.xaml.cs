@@ -98,19 +98,19 @@ namespace Dash
         }
 
         // called when the document key updates
-        private void VerticalAlignmentChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void VerticalAlignmentChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            var alignment = sender.GetVerticalAlignment();
+            var alignment = ((DocumentController)sender).GetVerticalAlignment();
             xVerticalAlignmentComboBox.SelectionChanged -= XVerticalAlignmentComboBox_SelectionChanged; ;
             xVerticalAlignmentComboBox.SelectedIndex = (int) alignment;
             xVerticalAlignmentComboBox.SelectionChanged += XVerticalAlignmentComboBox_SelectionChanged; ;
         }
 
         // called when the document key updates
-        private void HorizontalAlignmentChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void HorizontalAlignmentChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
 
-            var alignment = sender.GetHorizontalAlignment();
+            var alignment = ((DocumentController)sender).GetHorizontalAlignment();
             xHorizontalAlignmentComboBox.SelectionChanged -= XHorizontalAlignmentComboBox_SelectionChanged;
             xHorizontalAlignmentComboBox.SelectedIndex = (int)alignment;
             xHorizontalAlignmentComboBox.SelectionChanged += XHorizontalAlignmentComboBox_SelectionChanged;

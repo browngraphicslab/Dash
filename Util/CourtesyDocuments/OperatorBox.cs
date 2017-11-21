@@ -14,14 +14,14 @@ namespace Dash
     /// </summary>
     public class OperatorBox : CourtesyDocument
     {
-        public OperatorBox(ReferenceFieldModelController refToOp)
+        public OperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(250,100), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.OperatorBoxType);
-            if (refToOp.DereferenceToRoot<OperatorFieldModelController>(null).IsCompound())
+            if (refToOp.DereferenceToRoot<OperatorController>(null).IsCompound())
             {
                 DocumentController controller = refToOp.GetDocumentController(null);
-                controller.SetField(DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController(), true);
+                controller.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(), true);
             }
         }
 
@@ -56,7 +56,7 @@ namespace Dash
         {
 
             var data = docController.GetField(KeyStore.DataKey);
-            var opfmc = data as ReferenceFieldModelController;
+            var opfmc = data as ReferenceController;
             Debug.Assert(opfmc != null, "We assume that documents containing operators contain a reference to the required operator doc in the data key");
             Debug.Assert(opfmc.GetFieldReference() is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
             var opView = new OperatorView(keysToFrameworkElements)

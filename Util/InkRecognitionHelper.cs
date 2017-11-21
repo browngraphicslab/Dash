@@ -109,7 +109,7 @@ namespace Dash
             //if (recognitionFromSelectedStrokes) Analyzer.ClearDataForAllStrokes();
             
             NewStrokes.Clear();
-            FreeformInkControl.UpdateInkFieldModelController();
+            FreeformInkControl.UpdateInkController();
         }
 
 
@@ -139,7 +139,7 @@ namespace Dash
                 newStroke.Selected = true;
                 FreeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                 Analyzer.RemoveDataForStroke(newStroke.Id);
-                FreeformInkControl.UpdateInkFieldModelController();
+                FreeformInkControl.UpdateInkController();
 
             }
             return deleted;
@@ -206,7 +206,7 @@ namespace Dash
                     var fields = layoutDoc2.EnumFields().ToImmutableList();
                     var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
                     var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
-                    var dataRef = layoutDoc2.GetField(key2) as ReferenceFieldModelController;
+                    var dataRef = layoutDoc2.GetField(key2) as ReferenceController;
                     var referencesEqual =
                         view1.ViewModel.KeysToFrameworkElements[key1].Equals(converter.Element1) && view2
                             .ViewModel.KeysToFrameworkElements[key2].Equals(converter.Element2);
@@ -214,7 +214,7 @@ namespace Dash
                     {
                         //Case where we have layout document and need to get dataDoc;
                         view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
-                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceFieldModelController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
+                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
                         if (dataDoc != null)
                         {
                             dataDoc.SetField(key2, dataRef
@@ -300,10 +300,10 @@ namespace Dash
 
             var documentController = Util.BlankCollection();
             documentController.SetField(KeyStore.CollectionKey,
-                new DocumentCollectionFieldModelController(recognizedDocuments), true);
+                new ListController<DocumentController>(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
-                    new DocumentReferenceFieldController(documentController.GetId(),
+                    new DocumentReferenceController(documentController.GetId(),
                         KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
                      region.BoundingRect.Height).Document, true, true);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
@@ -340,7 +340,7 @@ namespace Dash
             int fieldIndex = 0;
             var stringFields = TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r));
             var enumerable = stringFields as IList<Rect> ?? stringFields.ToList();
-            ListFieldModelController<TextFieldModelController> list = enumerable.Count == 0 ? null : new ListFieldModelController<TextFieldModelController>();
+            ListController<TextController> list = enumerable.Count == 0 ? null : new ListController<TextController>();
             foreach (var rect in enumerable)
             {
                 DeleteStrokesByID(TextBoundsDictionary[rect].GetStrokeIds().ToImmutableHashSet());
@@ -350,13 +350,13 @@ namespace Dash
                 var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
                 doc.ParseDocField(key, text);
                 var field = doc.GetField(key);
-                if (field != null && field is TextFieldModelController)
+                if (field != null && field is TextController)
                 {
                     list.Add(field);
                 }
-                var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
                     relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-                (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                     rect.Height / 1.5;
                 layoutDocs.Add(textBox.Document);
                 keysToRemove.Add(rect);
@@ -364,7 +364,7 @@ namespace Dash
             //now try making fields from only partially intersected lines
             var intersectedLines = TextBoundsDictionary.Keys.Where(r => r.IntersectsWith(region.BoundingRect) && !keysToRemove.Contains(r));
             var intersectionEnumerable = intersectedLines as IList<Rect> ?? intersectedLines.ToList();
-            if (list == null && intersectionEnumerable.Count > 0) list = new ListFieldModelController<TextFieldModelController>();
+            if (list == null && intersectionEnumerable.Count > 0) list = new ListController<TextController>();
             foreach (var rect in intersectionEnumerable)
             {
                 var containedWords = GetContainedWords(rect, region.BoundingRect);
@@ -391,9 +391,9 @@ namespace Dash
                         {
                             list.Add(field);
                         }
-                        var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                        var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
-                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
                         layoutDocs.Add(textBox.Document);
                     }

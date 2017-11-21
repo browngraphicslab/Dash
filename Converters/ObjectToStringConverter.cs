@@ -24,7 +24,7 @@ namespace Dash
 
         public override string ConvertDataToXaml(object refField, object parameter = null)
         {
-            var fieldData = (refField as ReferenceFieldModelController)?.DereferenceToRoot(_context)?.GetValue(_context) ?? refField;
+            var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) ?? refField;
 
             if (fieldData is DocumentController)
             {
@@ -43,7 +43,7 @@ namespace Dash
                 return "[" + String.Join(", ", ilist.Cast<object>().Select(o => o.ToString())) + "]";
             }
 
-            return fieldData == null || fieldData is ReferenceFieldModelController ? "<null>" : fieldData.ToString();
+            return fieldData == null || fieldData is ReferenceController ? "<null>" : fieldData.ToString();
          }
 
         public override object ConvertXamlToData(string xaml, object parameter = null)

@@ -775,7 +775,7 @@
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:BoolToBoldConverter x:Key="BoolToBoldConverter"></local:BoolToBoldConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
-        <local:BoundFieldModelControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"></local:BoundFieldModelControllerToFrameworkElementConverter>
+        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"></local:BoundControllerToFrameworkElementConverter>
         <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"></local:ReferenceFieldModelControllerToFrameworkElementConverter>
         <local:ObjectToStringConverter x:Key="ObjectToStringConverter"></local:ObjectToStringConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
