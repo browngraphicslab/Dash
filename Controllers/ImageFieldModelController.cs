@@ -153,7 +153,7 @@ namespace Dash
 
         async void loadPdfPage(Uri uri, BitmapImage bitmapImage)
         {
-            var pdfPath = uri.AbsoluteUri.Split(new string[] { ".pdf:" }, StringSplitOptions.RemoveEmptyEntries);
+            var pdfPath = uri.LocalPath.Split(new string[] { ".pdf:" }, StringSplitOptions.RemoveEmptyEntries);
             var storageFile = await ApplicationData.Current.LocalFolder.GetFileAsync(Path.GetFileName(pdfPath[0] + ".pdf"));
             var pdf  = await PdfDocument.LoadFromFileAsync(storageFile);
             var page = pdf.GetPage(uint.Parse(pdfPath[1]));
