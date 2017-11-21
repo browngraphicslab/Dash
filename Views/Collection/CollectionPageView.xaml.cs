@@ -166,6 +166,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
+            Focus(FocusState.Keyboard);
         }
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -220,6 +221,14 @@ namespace Dash
             e.Data.Properties.Add("Width", xDocView.ActualWidth);
             e.Data.Properties.Add("Height", xDocView.ActualHeight);
             CurPage.DocumentView_DragStarting(sender, e, ViewModel);
+        }
+
+        private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.PageDown)
+                NextButton_Click( sender,  e);
+            if (e.Key == Windows.System.VirtualKey.PageUp)
+                PrevButton_Click(sender, e);
         }
     }
 }
