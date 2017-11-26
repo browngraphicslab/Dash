@@ -87,12 +87,12 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationCompleted += ElementOnManipulationCompleted;
-            
+
         }
 
         private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            _velocitiesReached = 0;
+            _numberOfTimesSpeedReached = 0;
 
         }
 
@@ -106,7 +106,7 @@ namespace Dash
             }
             _processManipulation = true;
 
-            _velocitiesReached = 0;
+            _numberOfTimesSpeedReached = 0;
         }
 
         public void AddAllAndHandle()
@@ -177,7 +177,7 @@ namespace Dash
             e.Handled = _handle;
         }
 
-        
+
 
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
@@ -187,60 +187,87 @@ namespace Dash
 
             TranslateAndScale(e);
 
-            
             DetectShake(sender, e);
 
         }
 
-        // keep track of whether the node has been shaken hard enough
-        private static int _velocitiesReached = 0;
+        // keeps track of whether the node has been shaken hard enough
+        private static int _numberOfTimesSpeedReached = 0;
         private static double _direction;
+        private static DispatcherTimer _dispatcherTimer;
+
+        /// <summary>
+        /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void DetectShake(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-           // var docGrid = sender as DocumentView;
-            //var doc = docGrid.DataContext;
+            // get the document view that's being manipulated
             var grid = sender as Grid;
-            if(grid != null)
+            var docView = grid?.GetFirstAncestorOfType<DocumentView>();
+
+            if (docView != null)
             {
-                var docVM = grid.DataContext as DocumentViewModel;
+                // calculate the speed of the translation from the velocities property of the eventargs
+                var speed = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
 
-                var opView = docVM.Content as OperatorView;
-                var docView = opView?.DocumentView;
-
-                if (docView != null)
+                // if the speed is higher than 4
+                if (speed > 6)
                 {
-                    var velocity = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
-                    if (velocity > 4)
+                    // if this is the first time we reach this speed, increment counter and store direction of translation
+                    if (_numberOfTimesSpeedReached == 0)
                     {
-                        if (_velocitiesReached == 0)
-                        {
-                            _velocitiesReached++;
-                            _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI; // store
+                        StartTimer();
+                        _numberOfTimesSpeedReached++;
+                        _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI;
 
-                        }
-                        else if (_velocitiesReached == 1)
+                    }
+                    // if this is the second time, check if the direction of this translation is different enough 
+                    // from the old direction 
+                    else if (_numberOfTimesSpeedReached == 1)
+                    {
+                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                        if (Math.Abs(newDir - _direction) < 50)
                         {
-                            var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                            if (newDir < 150 - _direction)
-                            {
-                                _velocitiesReached++;
-                                _direction = newDir;
-                            }
+                            // if it is, increment counter and store the new direction
+                            _numberOfTimesSpeedReached++;
+                            _direction = newDir;
                         }
-                        else if (_velocitiesReached == 2)
+                    }
+                    // if this is the third time, check again if the direction is different enough
+                    // if it is, disconnect this documentview from its links
+                    else if (_numberOfTimesSpeedReached == 2)
+                    {
+                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
+                        if (Math.Abs(newDir - _direction) < 50)
                         {
-                            var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                            if (newDir < 150 - _direction)
-                            {
-                                docView.DisconnectFromLink();
-                            }
+                            docView.DisconnectFromLink();
+                            _dispatcherTimer.Stop();
+                            _numberOfTimesSpeedReached = 0;
                         }
-
                     }
                 }
             }
-            
-         
+        }
+
+        private static void StartTimer()
+        {
+            if(_dispatcherTimer != null)
+            {
+                _dispatcherTimer.Stop();
+            }
+            _dispatcherTimer = new DispatcherTimer();
+            _dispatcherTimer.Tick += dispatcherTimer_Tick;
+            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 50);
+            _dispatcherTimer.Start();
+           
+        }
+
+        private static void dispatcherTimer_Tick(object sender, object e)
+        {
+            _numberOfTimesSpeedReached = 0;
+            _dispatcherTimer.Stop();
         }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
@@ -258,9 +285,9 @@ namespace Dash
             //Clamp the scale factor 
             ElementScale *= scaleAmount;
 
-            if(!ClampScale(scaleAmount))
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
-                point.Position, new Point(scaleAmount, scaleAmount)));
+            if (!ClampScale(scaleAmount))
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
+                    point.Position, new Point(scaleAmount, scaleAmount)));
 
         }
 
@@ -284,7 +311,7 @@ namespace Dash
             //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
             //    return;
             //}
-            
+
             var r = Rect.Empty;
             foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
             {
@@ -302,7 +329,7 @@ namespace Dash
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left+r.Width/2, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left + r.Width / 2, r.Top), scaleAmt));
             }
         }
 
@@ -325,10 +352,10 @@ namespace Dash
             var scaleFactor = e.Delta.Scale;
             ElementScale *= scaleFactor;
 
-            if(!ClampScale(scaleFactor))
-            // TODO we may need to take into account the _element's render transform here with regards to scale
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                e.Position, new Point(scaleFactor, scaleFactor)));
+            if (!ClampScale(scaleFactor))
+                // TODO we may need to take into account the _element's render transform here with regards to scale
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
+                    e.Position, new Point(scaleFactor, scaleFactor)));
         }
 
         public void Dispose()
@@ -345,7 +372,7 @@ namespace Dash
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;
-                return scaleFactor > 1;              
+                return scaleFactor > 1;
             }
 
             if (ElementScale < MinScale)
