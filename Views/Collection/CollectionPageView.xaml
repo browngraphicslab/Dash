@@ -83,6 +83,10 @@
                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                     ScrollViewer.IsVerticalRailEnabled="True"
                     ScrollViewer.HorizontalScrollMode="Disabled">
+                <ListView.Resources>
+
+                    <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+                </ListView.Resources>
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <ItemsStackPanel Orientation="Vertical" />
@@ -98,8 +102,8 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <ListViewItem Background="LightGray">
-                            <local:DocumentView IsHitTestVisible="True"/>
+                        <ListViewItem Background="{Binding IsSelected, Converter={StaticResource BoolToBrushConverter}}">
+                            <local:DocumentView IsHitTestVisible="True" />
                         </ListViewItem>
                     </DataTemplate>
                 </ListView.ItemTemplate>

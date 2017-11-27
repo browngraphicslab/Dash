@@ -167,7 +167,8 @@ namespace Dash
             var newDoc = doc;
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
-                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }), // skip layout & delegates
+                                            new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
                 newDoc = activeLayout;
             }
             else if (docContext == null && activeLayout != null) // has a layout
@@ -330,11 +331,11 @@ namespace Dash
             return scaleAmountField;
         }
 
-        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null)
+        public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null, List<KeyController> dontCopyKeys = null)
         {
             var refs = new List<ReferenceController>();
             var docIds = new Dictionary<DocumentController, DocumentController>();
-            var copy   = doc.makeCopy(ref refs, ref docIds, excludeKeys);
+            var copy   = doc.makeCopy(ref refs, ref docIds, excludeKeys, dontCopyKeys);
             foreach (var d2 in docIds)
             {
                 foreach (var r in refs)
@@ -351,7 +352,7 @@ namespace Dash
             return copy;
         }
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
-                ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys)
+                ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys, List<KeyController> dontCopyKeys)
         {
             if (excludeKeys == null)
             {
@@ -373,19 +374,20 @@ namespace Dash
 
             foreach (var kvp in doc.EnumFields(true))
             {
-                if (kvp.Key.Equals(KeyStore.ThisKey))
+                if (excludeKeys.Contains(kvp.Key))
+                    continue;
+                else if (kvp.Key.Equals(KeyStore.ThisKey))
                     fields[kvp.Key] = copy;
-                else if (excludeKeys.Contains(kvp.Key))
-                    //TODO tfs: why do we copy things in the exclude keys list?
-                    fields[kvp.Key] = kvp.Value.GetCopy();
+                else if (dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
+                    fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)
-                    fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys);
+                    fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys, dontCopyKeys);
                 else if (kvp.Value is ListController<DocumentController>)
                 {
                     var docList = new List<DocumentController>();
                     foreach (var d in kvp.Value.DereferenceToRoot<ListController<DocumentController>>(new Context(doc)).TypedData)
                     {
-                        docList.Add(d.makeCopy(ref refs, ref docs, excludeKeys));
+                        docList.Add(d.makeCopy(ref refs, ref docs, excludeKeys, dontCopyKeys));
                     }
                     fields[kvp.Key] = new ListController<DocumentController>(docList);
                 }
