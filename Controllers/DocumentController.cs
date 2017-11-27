@@ -293,17 +293,16 @@ namespace Dash
             foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
                 if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
-                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<TextController>;
+                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
                     if (primaryKeys != null)
                     {
                         bool found = true;
                         foreach (var value in primaryKeyValues)
                         {
                             bool foundValue = false;
-                            foreach (var kf in primaryKeys.Data)
+                            foreach (var key in primaryKeys.Data)
                             {
-                                var key = new KeyController((kf as TextController).Data);
-                                var derefValue = (dmc.GetDereferencedField(key, null) as TextController)?.Data;
+                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
                                 if (derefValue != null)
                                 {
                                     if (value == derefValue)

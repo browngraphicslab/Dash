@@ -40,7 +40,7 @@ namespace Dash
             var protoFieldDict = new Dictionary<KeyController, FieldControllerBase>()
             { // dictionary of fields to set on the prototype document
                 [KeyStore.AbstractInterfaceKey] = new TextController(protoDoc.DocumentType.Id),
-                [KeyStore.PrimaryKeyKey] = new ListController<TextController>()
+                [KeyStore.PrimaryKeyKey] = new ListController<KeyController>()
             };
             var headerToFieldMap = new Dictionary<string, FieldControllerBase>();
             var headerToKeyMap = new Dictionary<string, KeyController>();

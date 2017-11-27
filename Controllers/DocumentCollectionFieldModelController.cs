@@ -173,9 +173,7 @@ namespace Dash
 
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
-            var keylist = (sender
-                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
-                    new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            var keylist = sender.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data;
             if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
                 OnFieldModelUpdated(args.FieldArgs);
         }

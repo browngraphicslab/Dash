@@ -610,19 +610,20 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<TextController>;
-                string key = KeyStore.TitleKey.Id;
-                if (key == null || !(keyList?.Data?.Count() > 0)) { 
+                var keyList = dataDoc.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
+                var key = KeyStore.TitleKey;
+                if (key == null || !(keyList?.Data?.Count() > 0))
+                {
                     dataDoc.GetTitleFieldOrSetDefault(context);
-                    key = KeyStore.TitleKey.Id;
-                } else
-                    key = keyList?.Data?.Select((k) => (k as TextController)?.Data)?.First();
+                }
+                else
+                    key = keyList?.Data?.First() as KeyController;
 
                 var Binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = new KeyController(key),
+                    Key = key,
                     Context = context
                 };
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);

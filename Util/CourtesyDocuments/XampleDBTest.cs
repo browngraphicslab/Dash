@@ -59,9 +59,8 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>();
             var dc = new DocumentController(fields, new DocumentType("DBNull", "DBNull"));
             dc.SetField(KeyStore.ThisKey, dc, true);
-            dc.SetField(NullDocNameKey, new TextController(""), true);
-            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
-                new TextController[] { new TextController(NullDocNameKey.Id) }), true);
+            dc.SetField(NullDocNameKey, new KeyController(), true);  // bcz: is this correct??
+            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(NullDocNameKey), true);
             return dc;
         }
 
@@ -141,8 +140,7 @@ namespace Dash
             fields.Add(KeyStore.AbstractInterfaceKey, new TextController("Web Data API"));
             var dc = new DocumentController(fields, WebType);
             dc.SetField(KeyStore.ThisKey, dc, true);
-            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
-                new TextController[] { new TextController(WebUrlKey.Id) }), true);
+            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(WebUrlKey), true);
             return dc;
 
         }
@@ -242,8 +240,7 @@ namespace Dash
             WebDoc.SetField(KeyStore.ThisKey, WebDoc, true);
             WebDoc.SetField(KeyStore.TitleKey, new TextController("Web Doc"), true);
             WebDoc.SetField(DBTest.WebUrlKey, new TextController(target), true);
-            WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListController<TextController>(
-                new TextController[] { new TextController(DBTest.WebUrlKey.Id) }), true);
+            WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(DBTest.WebUrlKey), true);
 
             var webLayout = new WebBox(new DocumentReferenceController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
             webLayout.SetField(KeyStore.DocumentContextKey, WebDoc, true);

@@ -27,7 +27,7 @@ namespace Dash.Converters
 
         string GetPrimaryKeyString(DocumentController data)
         {
-            var keys = data.GetDereferencedField< ListController<TextController>>(KeyStore.PrimaryKeyKey, _context);
+            var keys = data.GetDereferencedField< ListController<KeyController>>(KeyStore.PrimaryKeyKey, _context);
             var context = _context;
             if (keys == null)
             {
@@ -35,7 +35,7 @@ namespace Dash.Converters
                 if (docContext != null)
                 {
                     context = new Context(docContext);
-                    keys = docContext.GetDereferencedField< ListController<TextController>>(KeyStore.PrimaryKeyKey, context);
+                    keys = docContext.GetDereferencedField< ListController<KeyController>>(KeyStore.PrimaryKeyKey, context);
                     data = docContext;
                 }
             }
@@ -44,7 +44,7 @@ namespace Dash.Converters
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new KeyController((k as TextController).Data), context);
+                    var keyField = data.GetDereferencedField(k as KeyController, context);
                     if (keyField is TextController)
                         docString += (keyField as TextController).Data + " ";
                     else if (keyField is DocumentController)
@@ -122,7 +122,7 @@ namespace Dash.Converters
         {
             var values = xaml.TrimStart('<').TrimEnd('>').Split(' ');
             var keyList = _doc?.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
-            var keys = keyList as ListController<TextController>;
+            var keys = keyList as ListController<KeyController>;
             if (keys != null)
             {
                 foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
@@ -131,9 +131,8 @@ namespace Dash.Converters
                         bool found = true;
                         foreach (var k in keys.Data)
                         {
-                            var key = new KeyController((k as TextController).Data);
                             var index = keys.Data.IndexOf(k);
-                            var derefValue = (dmc.GetDereferencedField(key, _context) as TextController)?.Data;
+                            var derefValue = (dmc.GetDereferencedField(k as KeyController, _context) as TextController)?.Data;
                             if (derefValue != null)
                             {
                                 if (values[index] != derefValue)
@@ -196,14 +195,13 @@ namespace Dash.Converters
         public override string ConvertDataToXaml(DocumentViewModel data, object parameter = null)
         {
             _vm = data;
-            var keyList = data.DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, data.Context);
-            var keys = keyList as ListController<TextController>;
+            var keys = data.DocumentController.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, data.Context);
             if (keys != null)
             {
                 var docString = "";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.DocumentController.GetDereferencedField(new KeyController((k as TextController).Data), data.Context);
+                    var keyField = data.DocumentController.GetDereferencedField(k as KeyController, data.Context);
                     if (keyField is TextController)
                         docString += (keyField as TextController).Data + " ";
                 }
@@ -215,8 +213,7 @@ namespace Dash.Converters
         public override DocumentViewModel ConvertXamlToData(string xaml, object parameter = null)
         {
             var values = xaml.Split(' ');
-            var keyList = _vm.DocumentController?.GetDereferencedField(KeyStore.PrimaryKeyKey, _vm.Context);
-            var keys = keyList as ListController<TextController>;
+            var keys = _vm.DocumentController?.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, _vm.Context);
             if (keys != null)
             {
                 foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
@@ -225,9 +222,8 @@ namespace Dash.Converters
                         bool found = true;
                         foreach (var k in keys.Data)
                         {
-                            var key = new KeyController((k as TextController).Data);
                             var index = keys.Data.IndexOf(k);
-                            var derefValue = (dmc.GetDereferencedField(key, _vm.Context) as TextController)?.Data;
+                            var derefValue = (dmc.GetDereferencedField(k as KeyController, _vm.Context) as TextController)?.Data;
                             if (derefValue != null)
                             {
                                 if (values[index] != derefValue)

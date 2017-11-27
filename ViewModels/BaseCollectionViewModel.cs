@@ -202,7 +202,7 @@ namespace Dash
                 if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
-                        [KeyStore.PrimaryKeyKey] = new ListController<TextController>(new TextController[] { new TextController(pivotKey.Id) })
+                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                         }, DocumentType.DefaultType);
                     if (obj is string)
                     {

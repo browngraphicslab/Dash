@@ -62,7 +62,7 @@ namespace Dash
                     [CollectedDocsKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                     [KeyStore.TitleKey] = new TextController("Collection Note"),
-                    [KeyStore.PrimaryKeyKey] = new ListController<TextController>(new TextController[] { new TextController(KeyStore.TitleKey.Id) })
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -129,8 +129,7 @@ namespace Dash
                     [KeyStore.TitleKey]             = new TextController("Prototype Title"),
                     [RTFieldKey]                    = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
-                    [KeyStore.PrimaryKeyKey]        = new ListController<TextController>(
-                            new TextController[] {new TextController(KeyStore.TitleKey.Id)})
+                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey )
                 };
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -232,8 +231,7 @@ namespace Dash
                     [KeyStore.TitleKey]             = new TextController("Prototype Title"),
                     [KeyStore.DocumentTextKey]      = new TextController("Prototype Content"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("PostIt Note Data API"),
-                    [KeyStore.PrimaryKeyKey]        = new ListController<TextController>(
-                            new TextController[] {new TextController(KeyStore.TitleKey.Id)})
+                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>(KeyStore.TitleKey)
                 };
                 return new DocumentController(fields, DocumentType, _prototypeID);
             }
