@@ -79,8 +79,8 @@ namespace Dash
                         oldData.DocumentFieldUpdated -= primaryKeyHandler;
                     primaryKeyHandler = (sender, args) =>
                     {
-                        var keylist = (_data.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data.Select((d) => (d as TextFieldModelController).Data));
-                        if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                        var keylist = _data.GetDereferencedField<ListFieldModelController<KeyController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data;
+                        if (keylist != null && keylist.Contains(args.Reference.FieldKey))
                             OnFieldModelUpdated(null);
                     };
                     value.DocumentFieldUpdated += primaryKeyHandler;

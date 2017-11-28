@@ -29,7 +29,7 @@ namespace Dash
 {
     public sealed partial class InkCanvasControl : SelectionElement
     {
-        public InkFieldModelController InkFieldModelController;
+        public InkController InkFieldModelController;
         private readonly bool _isInterfaceBuilder;
         private ManipulationControls _controls;
         Symbol SelectIcon = (Symbol) 0xEF20;
@@ -48,7 +48,7 @@ namespace Dash
         /// on the canvas in the underlying data.
         /// </summary>
         /// <param name="inkFieldModelController"></param>
-        public InkCanvasControl(InkFieldModelController inkFieldModelController, bool isInterfaceBuilder)
+        public InkCanvasControl(InkController inkFieldModelController, bool isInterfaceBuilder)
         {
             this.InitializeComponent();
             _isInterfaceBuilder = isInterfaceBuilder;

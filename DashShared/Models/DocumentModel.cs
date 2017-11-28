@@ -11,10 +11,9 @@ namespace DashShared
     /// <summary>
     /// A mapping of keys to FieldModels.
     /// </summary>
-    public class DocumentModel : AuthorizableEntityBase
+    [FieldModelType(TypeInfo.Document)]
+    public class DocumentModel : FieldModel
     {
-        public static Dictionary<string, DocumentModel> Map = new Dictionary<string, DocumentModel>();
-
         /// <summary>
         /// A dictionary of <see cref="KeyModel.Id"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
         /// data that is stored in the document model

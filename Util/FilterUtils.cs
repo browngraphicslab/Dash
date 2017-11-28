@@ -160,14 +160,14 @@ namespace Dash.StaticClasses
                 }
                 string data = "";
                 var field = document.GetField(key);
-                if (field is TextFieldModelController)
+                if (field is TextController)
                 {
-                    var text = field as TextFieldModelController;
+                    var text = field as TextController;
                     data = text.Data;
                 }
-                else if (field is ImageFieldModelController)
+                else if (field is ImageController)
                 {
-                    var image = field as ImageFieldModelController;
+                    var image = field as ImageController;
                     data = image.ImageFieldModel.Data.AbsoluteUri;
                 }
                 if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
@@ -207,14 +207,14 @@ namespace Dash.StaticClasses
                 }
                 string data = "";
                 var field = document.GetField(key);
-                if (field is TextFieldModelController)
+                if (field is TextController)
                 {
-                    var text = field as TextFieldModelController;
+                    var text = field as TextController;
                     data = text.Data;
                 }
-                else if (field is ImageFieldModelController)
+                else if (field is ImageController)
                 {
-                    var image = field as ImageFieldModelController;
+                    var image = field as ImageController;
                     data = image.ImageFieldModel.Data.AbsoluteUri;
                 }
                 if (data.ToLower().Equals(value.ToLower()))

@@ -42,7 +42,7 @@ namespace Dash.Views.Document_Menu
             List<string> categories = new List<string> {
                 "Add", "Subtract", "Multiply",
                 "Divide", "Union", "Intersection",
-                "Zip", "UriToImage", "Map", "Api",
+                "Zip", "UriToImage", "Api",
                 "Concat", "Append", "Filter", "Compound"
             };
 
@@ -104,7 +104,7 @@ namespace Dash.Views.Document_Menu
             // set ops subheaders
             TreeMenuNode setOpsTree = new TreeMenuNode(MenuDisplayType.Subheader);
             setOpsTree.HeaderLabel = "Set";
-            SetOperatorMenuActions(setOpsTree,new List<string> { "Union", "Intersection", "Map", "Filter" });
+            SetOperatorMenuActions(setOpsTree,new List<string> { "Union", "Intersection", "Filter" });
            
             // set ops subheaders
             TreeMenuNode mathOpsTree = new TreeMenuNode(MenuDisplayType.Subheader);

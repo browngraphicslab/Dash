@@ -23,7 +23,7 @@ namespace Dash
         private bool _isDroppedOnOtherHeaderList;
 
         /// <summary>
-        ///     The document controller which contains the <see cref="MeltOperatorFieldModelController" /> that this
+        ///     The document controller which contains the <see cref="MeltOperatorController" /> that this
         ///     view is associated with
         /// </summary>
         private DocumentController _operatorDoc;
@@ -59,11 +59,11 @@ namespace Dash
             _operatorDoc = refToOp?.GetDocumentController(null);
 
             // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorFieldModelController.InputCollection,
+            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorController.InputCollection,
                 OnInputCollectionChanged);
-            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorFieldModelController.VariableName,
+            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorController.VariableName,
                 OnNewVariableNameChanged);
-            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorFieldModelController.ValueName, OnNewValueNameChanged);
+            _operatorDoc?.AddFieldUpdatedListener(MeltOperatorController.ValueName, OnNewValueNameChanged);
 
             // TODO - Luke, set initial values for the variable and value names if they exist already
         }
@@ -71,11 +71,12 @@ namespace Dash
         /// <summary>
         ///     Called whenever the input collection to the melt operator is changed
         /// </summary>
-        private void OnInputCollectionChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnInputCollectionChanged(FieldControllerBase sender,
+            FieldUpdatedEventArgs args, Context context)
         {
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             // get all the headers from a collection
-            var collection = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null);
+            var collection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             var typedHeaders = Util.GetTypedHeaders(collection);
 
             // reset all the headers
@@ -117,12 +118,12 @@ namespace Dash
             // otherwise update the correct backend based on the sender
             if (sender == xNewValueTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorFieldModelController.ValueName,
-                    new TextFieldModelController(xNewValueTextBox.Text), true);
+                _operatorDoc.SetField(MeltOperatorController.ValueName,
+                    new TextController(xNewValueTextBox.Text), true);
             } else if (sender == xNewVariableTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorFieldModelController.VariableName,
-                    new TextFieldModelController(xNewVariableTextBox.Text), true);
+                _operatorDoc.SetField(MeltOperatorController.VariableName,
+                    new TextController(xNewVariableTextBox.Text), true);
             }
         }
 
@@ -131,10 +132,11 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnNewValueNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnNewValueNameChanged(FieldControllerBase sender,
+            FieldUpdatedEventArgs args, Context context)
         {
-            var tfmc = args.NewValue as TextFieldModelController;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            var tfmc = dargs.NewValue as TextController;
             Debug.Assert(tfmc != null);
             if (tfmc.Data.Equals(xNewValueTextBox.Text))
                 return;
@@ -147,10 +149,11 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnNewVariableNameChanged(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnNewVariableNameChanged(FieldControllerBase sender,
+            FieldUpdatedEventArgs args, Context context)
         {
-            var tfmc = args.NewValue as TextFieldModelController;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            var tfmc = dargs.NewValue as TextController;
             Debug.Assert(tfmc != null);
             if (tfmc.Data.Equals(xNewVariableTextBox.Text))
                 return;
@@ -180,9 +183,9 @@ namespace Dash
                 foreach (var item in args.Items.Select(item => item as KeyController))
                     listToRemoveHeadersFrom.Remove(item);
 
-                _operatorDoc.SetField(MeltOperatorFieldModelController.ColumnVariables,
-                    new ListFieldModelController<TextFieldModelController>(
-                        OutputHeaders.Select(h => new TextFieldModelController(h.Id))), true);
+                _operatorDoc.SetField(MeltOperatorController.ColumnVariables,
+                    new ListController<TextController>(
+                        OutputHeaders.Select(h => new TextController(h.Id))), true);
             }
             _isDroppedOnOtherHeaderList = false;
             _dragTargetHeaderList = null;

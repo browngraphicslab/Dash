@@ -33,13 +33,13 @@ namespace Dash
             xThumbs.Loaded += (sender, e) =>
             {
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
-                    t.Height = xThumbs.ActualHeight;
+                    t.Width = xThumbs.ActualWidth;
             };
             xThumbs.SizeChanged += (sender, e) =>
             {
                 FitPageButton_Click(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
-                    t.Height = xThumbs.ActualHeight;
+                    t.Width = xThumbs.ActualWidth;
             };
         }
 
@@ -55,12 +55,13 @@ namespace Dash
                 var pageViewDoc = pageDoc.GetViewCopy();
                 pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
-                CurPage = new DocumentViewModel(pageViewDoc) { Undecorated = true };
-                PageDocumentViewModels.Insert(0, CurPage);
-
-                var thumbnailImageViewDoc = ((pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentFieldModelController)?.Data ?? pageDoc).GetViewCopy();
-                thumbnailImageViewDoc.SetLayoutDimensions(double.NaN, xThumbs.ActualHeight);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
+                PageDocumentViewModels.Insert(0, new DocumentViewModel(pageViewDoc) { Undecorated = true });
+                
+                var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
+                thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
+                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc) {Undecorated = true});
+                
+                CurPage = PageDocumentViewModels.First();
             }
         }
 
@@ -76,7 +77,7 @@ namespace Dash
                 xPageNumContainer.Children.Remove(xPageNum);
                 xPageNum = new TextBlock();
 
-                var binding = new FieldBinding<DocumentFieldModelController>()
+                var binding = new FieldBinding<DocumentController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = value.DocumentController,
@@ -92,6 +93,15 @@ namespace Dash
 
                 xPageNumContainer.Children.Add(xPageNum);
                 xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
+
+                var ind = PageDocumentViewModels.IndexOf(CurPage);
+                if (ind >= 0)
+                {
+                    var thumb = ViewModel.ThumbDocumentViewModels[ind];
+                    foreach (var t in ViewModel.ThumbDocumentViewModels)
+                        t.SetSelected(null, false);
+                    thumb.SetSelected(null, true);
+                }
             }
         }
 
@@ -166,9 +176,23 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
+            Focus(FocusState.Keyboard);
         }
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            // hack because Selecting in the listView is broken
+            var xx = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(MainPage.Instance), this);
+            foreach (var x in xx)
+                if (x is DocumentView)
+                {
+                    var d = (x as DocumentView).ViewModel.DocumentController.GetDataDocument(null);
+                    foreach (var dv in ViewModel.ThumbDocumentViewModels)
+                        if (dv.DocumentController.GetDataDocument(null).Id.Equals(d.Id))
+                        {
+                            var ind = ViewModel.ThumbDocumentViewModels.IndexOf(dv);
+                            CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+                        }
+                }
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
@@ -198,7 +222,7 @@ namespace Dash
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
         {
             var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element?.ManipulationControls.FitToParent();
+            _element?.ManipulationControls?.FitToParent();
         }
 
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -221,5 +245,14 @@ namespace Dash
             e.Data.Properties.Add("Height", xDocView.ActualHeight);
             CurPage.DocumentView_DragStarting(sender, e, ViewModel);
         }
+
+        private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.PageDown)
+                NextButton_Click( sender,  e);
+            if (e.Key == Windows.System.VirtualKey.PageUp)
+                PrevButton_Click(sender, e);
+        }
+        
     }
 }
