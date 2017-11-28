@@ -252,6 +252,7 @@ namespace Dash
                 NextButton_Click( sender,  e);
             if (e.Key == Windows.System.VirtualKey.PageUp)
                 PrevButton_Click(sender, e);
+            e.Handled = true;
         }
         
     }

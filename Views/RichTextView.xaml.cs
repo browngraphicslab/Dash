@@ -21,6 +21,10 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
 using DashShared.Models;
+using static Dash.NoteDocuments;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
+using System.Diagnostics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -77,6 +81,7 @@ namespace Dash
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
             xRichEditBox.TextChanged  -= xRichEditBoxOnTextChanged;
+            MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
         }
 
         RichTextModel.RTD GetText()
@@ -120,10 +125,16 @@ namespace Dash
             
             if (GetText() != null)
                 xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
-        
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+            MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
         }
+
+        private async void released(object sender, PointerRoutedEventArgs e)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
+        }
+        
 
         // freezes the app
         private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
@@ -311,13 +322,42 @@ namespace Dash
 
         private void Grid_GotFocus(object sender, RoutedEventArgs e)
         {
-
             xFormatRow.Height = new GridLength(30);
+        }
+
+        private void SizeToFit()
+        {
+            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+            var str = "";
+            this.xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out str);
+            xRichEditBox.Document.Selection.SetRange(0, str.Length);
+            var selectedText = xRichEditBox.Document.Selection;
+            xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+            int count = 0;
+            float lastMax = 20;
+            float lastMin = 6;
+            while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 5 && selectedText != null && count++ < 10)
+            {
+                var charFormatting = selectedText.CharacterFormat;
+                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - charFormatting.Size) : (lastMax - charFormatting.Size));
+                if (delta < 0)
+                    lastMax = charFormatting.Size;
+                else lastMin = charFormatting.Size;
+                charFormatting.Size += delta/2;
+                selectedText.CharacterFormat = charFormatting;
+                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+            }
+            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            xRichEditBox.TextChanged -= xRichEditBoxOnTextChanged;
+            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
         }
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
             xFormatRow.Height = new GridLength(0);
+            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
+
         }
 
 
@@ -383,6 +423,8 @@ namespace Dash
                         var pt = point;
                         pt.X -= 150;
                         pt.Y -= 50;
+                        if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
+                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                         MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
                     }
                     else if (target.StartsWith("http"))

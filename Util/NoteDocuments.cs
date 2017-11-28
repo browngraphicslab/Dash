@@ -53,14 +53,14 @@ namespace Dash
         public class CollectionNote : NoteDocument
         {
             public static KeyController CollectedDocsKey = new KeyController("F12AEF6B-C302-45D6-B0B8-A9906EF16DAF", "Collected Docs");
-
+            public static string APISignature = "Collected Docs Note Data API";
 
             public override DocumentController CreatePrototype()
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [CollectedDocsKey] = new ListController<DocumentController>(),
-                    [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
+                    [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
                     [KeyStore.TitleKey] = new TextController("Collection Note"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
@@ -80,42 +80,56 @@ namespace Dash
             }
             public static DocumentType DocumentType = new DocumentType("EDDED871-DD89-4E6E-9C5E-A1CF927B3CB2", "Collected Docs Note");
             public DocumentController DataDocument { get; set; }
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+
+            void createLayout(Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300)
             {
-                _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
-
-                var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
-                dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-
-                if (_prototypeLayout == null)
-                    _prototypeLayout = CreatePrototypeLayout();
                 var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
                 docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                 docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
                 docLayout.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewtype.ToString()), true);
 
-                var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
-
-                dataDocument.SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(listOfCollectedDocs), true);
-                
                 if (false)
                 {
-                    dataDocument.AddLayoutToLayoutList(docLayout);
-                    dataDocument.SetActiveLayout(docLayout, true, true);
-                    Document = dataDocument;
+                    DataDocument.AddLayoutToLayoutList(docLayout);
+                    DataDocument.SetActiveLayout(docLayout, true, true);
+                    Document = DataDocument;
                 }
                 else
                 {
-                    docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                    docLayout.SetField(KeyStore.DocumentContextKey, DataDocument, true);
                     Document = docLayout;
                 }
+            }
+            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300) : base(DocumentType)
+            {
+                _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
+                if (_prototypeLayout == null)
+                    _prototypeLayout = CreatePrototypeLayout();
+
+                DataDocument = dataDocument;
+                createLayout(where, viewtype, width, height);
+            }
+
+
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            {
+                _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
+                if (_prototypeLayout == null)
+                    _prototypeLayout = CreatePrototypeLayout();
+
+                DataDocument = GetDocumentPrototype().MakeDelegate();
+                DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
+                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+                var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
+                DataDocument.SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+
+                createLayout(where, viewtype, width, height);
+
                 if (listOfCollectedDocs.Any())
                 {
                     Document.SetField(KeyStore.ThumbnailFieldKey,  listOfCollectedDocs.FirstOrDefault(), true);
                 }
-                DataDocument = dataDocument;
             }
         }
         public class RichTextNote : NoteDocument

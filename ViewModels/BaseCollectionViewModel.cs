@@ -355,7 +355,7 @@ namespace Dash
                     Console.WriteLine(exception);
                 }
             }
-            if (e.DataView.Contains(StandardDataFormats.Html))
+            else if (e.DataView.Contains(StandardDataFormats.Html))
             {
                 var html = await e.DataView.GetHtmlFormatAsync();
                 var splits = new Regex("<").Split(html);
@@ -377,13 +377,15 @@ namespace Dash
                 }
                 if (imgs.Count() == 0)
                 {
-                    var t = new RichTextNote(PostitNote.DocumentType, "", where);
+                    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                    var t = new RichTextNote(PostitNote.DocumentType, title, where);
                     t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
-                    foreach (var match in matches)
-                    {
-                        var pair = new Regex(":").Split(match.ToString());
-                        t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
-                    }
+                    if (title == "")
+                        foreach (var match in matches)
+                        {
+                            var pair = new Regex(":").Split(match.ToString());
+                            t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
+                        }
                     AddDocument(t.Document, null);
                 }
 

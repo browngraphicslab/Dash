@@ -374,11 +374,11 @@ namespace Dash
 
             foreach (var kvp in doc.EnumFields(true))
             {
-                if (excludeKeys.Contains(kvp.Key))
+                if (excludeKeys != null && excludeKeys.Contains(kvp.Key))
                     continue;
                 else if (kvp.Key.Equals(KeyStore.ThisKey))
                     fields[kvp.Key] = copy;
-                else if (dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
+                else if (dontCopyKeys != null && dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
                     fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)
                     fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys, dontCopyKeys);

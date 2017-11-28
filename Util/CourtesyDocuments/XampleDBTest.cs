@@ -248,8 +248,7 @@ namespace Dash
             webLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
             webLayout.SetField(KeyStore.HeightFieldKey, new NumberController(800), true);
             webLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
-            WebDoc.SetActiveLayout(webLayout, true, true);
-            return WebDoc;
+            return webLayout;
 
         }
 
