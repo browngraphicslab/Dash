@@ -376,6 +376,19 @@ namespace Dash
                 }
                 AddDocument(t.Document, null);
             }
+            else if (e.DataView.Contains(StandardDataFormats.Bitmap))
+            {
+                var bmp = await e.DataView.GetBitmapAsync();
+                IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+                byte[] buffer = new byte[streamWithContent.Size];
+                using (DataReader reader = new DataReader(streamWithContent))
+                {
+                    await reader.LoadAsync((uint)streamWithContent.Size);
+                    reader.ReadBytes(buffer);
+                }
+                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "");
+                AddDocument(t.Document, null);
+            }
 
             // collection dynamic previews
             if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))

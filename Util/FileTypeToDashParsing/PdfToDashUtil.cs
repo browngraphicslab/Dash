@@ -67,7 +67,7 @@ namespace Dash
             pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextFieldModelController(result.Text), true);
             pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceFieldController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
         }
-        async Task<string> ToBase64(RenderTargetBitmap bitmap)
+        public static async Task<string> ToBase64(RenderTargetBitmap bitmap)
         {
             var image = (await bitmap.GetPixelsAsync()).ToArray();
             var width = (uint)bitmap.PixelWidth;
