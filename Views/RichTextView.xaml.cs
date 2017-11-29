@@ -25,6 +25,8 @@ using static Dash.NoteDocuments;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using System.Diagnostics;
+using Windows.System;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -80,7 +82,7 @@ namespace Dash
         }
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
-            xRichEditBox.TextChanged  -= xRichEditBoxOnTextChanged;
+            xRichEditBox.KeyUp -= XRichEditBox_KeyUp;
             MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
         }
 
@@ -128,20 +130,18 @@ namespace Dash
                 if (GetText() != null)
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
             });
-            
-            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+
+            xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
         }
 
-        private async void released(object sender, PointerRoutedEventArgs e)
+        private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
-        }
-        
-
-        // freezes the app
-        private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
-        {
+            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
+            if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
+            {
+                return;
+            }
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
 
@@ -177,15 +177,13 @@ namespace Dash
                 }
             }
 
-            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
-            {
-                string allRtfText;
-                xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
-                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-            }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            e.Handled = true;
+        }
+
+        private async void released(object sender, PointerRoutedEventArgs e)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
@@ -353,12 +351,20 @@ namespace Dash
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
-            xRichEditBox.TextChanged -= xRichEditBoxOnTextChanged;
-            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
         }
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
+            string allText;
+            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
+            {
+                string allRtfText;
+                xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            }
             var ele = FocusManager.GetFocusedElement() as FrameworkElement;
             if (!ele.GetAncestors().Contains(this) && (xFontComboBox.ItemsPanelRoot == null || !xFontComboBox.ItemsPanelRoot.Children.Contains(ele)))
             {
@@ -373,14 +379,21 @@ namespace Dash
         }
 
 
-        private void xRichEditBox_Drop(object sender, DragEventArgs e)
+        private async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             DocumentController theDoc = null;
             if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
                 var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
                 theDoc = docCtrls.First();
             }
+            var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+            if (sourceIsFileSystem)
+            {
+                theDoc = await FileDropHelper.GetDroppedFile(e);
+            }
+
 
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);

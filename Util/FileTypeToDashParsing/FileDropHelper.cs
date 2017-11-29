@@ -159,6 +159,19 @@ namespace Dash
             return layoutDoc;
         }
 
+        public static async Task< DocumentController> GetDroppedFile(DragEventArgs e)
+        {
+            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+
+            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            if (files.Count == 1)
+            {
+                var fileType = GetSupportedFileType(files.First());
+                return await ParseFileAsync(fileType, files.First(), new Point(), e).AsAsyncOperation();
+            }
+            return null;
+        }
+
         /// <summary>
         ///     Handles the situation where a file is dropped on a collection. The DragEventArgs are assumed
         ///     to have StorageItems, and the DragEventArgs should have been handled
@@ -236,7 +249,8 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
-                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
+                    var link = await e.DataView.GetWebLinkAsync();
+                    return DBTest.CreateWebPage(link.AbsoluteUri, where);
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
                 case FileType.Text:
