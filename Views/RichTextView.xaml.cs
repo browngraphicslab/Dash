@@ -133,6 +133,62 @@ namespace Dash
 
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
+            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
+            this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
+        }
+
+        public string target = null;
+        private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+            // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
+            // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
+            if (this.xRichEditBox.Document.Selection.Link.Length > 1)
+            {
+                target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
+            }
+        }
+
+        private void tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (target != null)
+            {
+                var doc = GetDoc();
+                var point = doc.GetPositionField().Data;
+
+                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
+                {
+                    var pt = point;
+                    pt.X -= 150;
+                    pt.Y -= 50;
+                    if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
+                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
+                    MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
+                }
+                else if (target.StartsWith("http"))
+                {
+                    theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
+                    if (theDoc != null && theDoc != DBTest.DBNull)
+                    {
+                        var pt = point;
+                        pt.X -= 150;
+                        pt.Y -= 50;
+                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                    }
+                    else
+                    {
+                        var WebDoc = DBTest.CreateWebPage(target);
+                        var pt = point;
+                        pt.X -= 150;
+                        pt.Y -= 50;
+                        MainPage.Instance.DisplayDocument(WebDoc, pt);
+                    }
+                }
+                this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
+            }
+            target = null;
         }
 
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -429,44 +485,6 @@ namespace Dash
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             if (LastS1 != s1 || LastS2 != s2)  // test if the selection has actually changed... seem to get in here when nothing has happened perhaps because of losing focus?
             {
-                // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
-                // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
-                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-                {
-                    var doc = GetDoc();
-                    var point = doc.GetPositionField().Data;
-
-                    var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                    if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
-                    {
-                        var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                        MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
-                    }
-                    else if (target.StartsWith("http"))
-                    {
-                        theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                        if (theDoc != null && theDoc != DBTest.DBNull)
-                        {
-                            var pt = point;
-                            pt.X -= 150;
-                            pt.Y -= 50;
-                            MainPage.Instance.DisplayDocument(theDoc, pt);
-                        }
-                        else
-                        {
-                            var WebDoc = DBTest.CreateWebPage(target);
-                            var pt = point;
-                            pt.X -= 150;
-                            pt.Y -= 50;
-                            MainPage.Instance.DisplayDocument(WebDoc, pt);
-                        }
-                    }
-                }
             }
             LastS1 = s1;
             LastS2 = s2;
