@@ -359,7 +359,7 @@ namespace Dash
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
             var ele = FocusManager.GetFocusedElement() as FrameworkElement;
-            if (!ele.GetAncestors().Contains(this) && (xFontComboBox.ItemsPanelRoot != null || !xFontComboBox.ItemsPanelRoot.Children.Contains(ele)))
+            if (!ele.GetAncestors().Contains(this) && (xFontComboBox.ItemsPanelRoot == null || !xFontComboBox.ItemsPanelRoot.Children.Contains(ele)))
             {
                 xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
