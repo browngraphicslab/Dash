@@ -11,7 +11,6 @@
     xmlns:localConverters="using:Dash.Converters"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    ManipulationMode="{Binding ManipulationMode}"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped">
     <UserControl.Resources>
@@ -91,7 +90,7 @@
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <Grid.Clip>
-                        <RectangleGeometry x:Name="xClipRect" Rect="0,0,300,300" />
+                        <!--RectangleGeometry x:Name="xClipRect" Rect="0,0,300,300" /-->
                     </Grid.Clip>
                     <FlyoutBase.AttachedFlyout >
                         <Flyout Placement="Bottom">

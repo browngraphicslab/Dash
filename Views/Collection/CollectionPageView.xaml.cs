@@ -48,20 +48,24 @@ namespace Dash
 
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel = DataContext as BaseCollectionViewModel;
-            ViewModel.ThumbDocumentViewModels.Clear();
-            foreach (var pageDoc in ViewModel.DocumentViewModels.Reverse().Select((vm) => vm.DocumentController))
+            args.Handled = true;
+            if (ViewModel != DataContext)
             {
-                var pageViewDoc = pageDoc.GetViewCopy();
-                pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
+                ViewModel = DataContext as BaseCollectionViewModel;
+                ViewModel.ThumbDocumentViewModels.Clear();
+                foreach (var pageDoc in ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController))
+                {
+                    var pageViewDoc = pageDoc.GetViewCopy();
+                    pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
 
-                PageDocumentViewModels.Insert(0, new DocumentViewModel(pageViewDoc) { Undecorated = true });
-                
-                var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
-                thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                ViewModel.ThumbDocumentViewModels.Insert(0, new DocumentViewModel(thumbnailImageViewDoc) {Undecorated = true});
-                
-                CurPage = PageDocumentViewModels.First();
+                    PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
+
+                    var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
+                    thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
+                    ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
+
+                    CurPage = PageDocumentViewModels.First();
+                }
             }
         }
 

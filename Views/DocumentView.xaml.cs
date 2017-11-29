@@ -640,7 +640,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+               // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -784,7 +784,7 @@ namespace Dash
 
         #region Activation
 
-        public Rect ClipRect { get { return xClipRect.Rect; } }
+        public Rect ClipRect { get { return new Rect(); } } //  xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         { 

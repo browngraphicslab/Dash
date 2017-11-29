@@ -122,9 +122,12 @@ namespace Dash
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
-            
-            if (GetText() != null)
-                xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
+            {
+                if (GetText() != null)
+                    xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+            });
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
@@ -317,12 +320,12 @@ namespace Dash
 
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(30);
+            xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         private void Grid_GotFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(30);
+            xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         private void SizeToFit()
@@ -355,9 +358,12 @@ namespace Dash
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(0);
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
-
+            var ele = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (!ele.GetAncestors().Contains(this) && xFontComboBox.ItemsPanelRoot != null && !xFontComboBox.ItemsPanelRoot.Children.Contains(ele))
+            {
+                xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
+            }
         }
 
 

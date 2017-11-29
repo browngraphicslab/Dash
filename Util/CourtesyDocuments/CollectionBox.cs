@@ -45,6 +45,7 @@ namespace Dash
             var docController = new ListController<DocumentController>(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docController);
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
+            fields[KeyStore.AbstractInterfaceKey] = new TextController("CollectionBox Layout");
 
             var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
 
