@@ -244,14 +244,16 @@ namespace Dash
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
         {
-            if (xKeyValPane.Width == 0)
+            if (xKeyValPane.Visibility == Visibility.Collapsed)
             {
                 xKeyValPane.Width = KeyValPaneWidth;
+                xKeyValPane.Visibility = Visibility.Visible;
                 ViewModel.Width += KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth*ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));  
             }
             else
             {
+                xKeyValPane.Visibility = Visibility.Collapsed;
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth* ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
@@ -629,7 +631,6 @@ namespace Dash
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
-                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
             }
 
             //initDocumentOnDataContext();

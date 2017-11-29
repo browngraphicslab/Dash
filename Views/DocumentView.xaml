@@ -27,7 +27,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Grid x:Name="xKeyValPane" Width="0" Tapped="xKeyValPane_Tapped" ManipulationDelta="xKeyValPane_ManipulationDelta">
+        <Grid x:Name="xKeyValPane" Visibility="Collapsed" Tapped="xKeyValPane_Tapped" ManipulationDelta="xKeyValPane_ManipulationDelta">
             <local:KeyValuePane x:Name="xKeyValuePane"></local:KeyValuePane>
         </Grid>
 

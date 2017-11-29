@@ -343,11 +343,12 @@ namespace Dash
             while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 5 && selectedText != null && count++ < 10)
             {
                 var charFormatting = selectedText.CharacterFormat;
-                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - charFormatting.Size) : (lastMax - charFormatting.Size));
+                var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
+                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
                 if (delta < 0)
-                    lastMax = charFormatting.Size;
-                else lastMin = charFormatting.Size;
-                charFormatting.Size += delta/2;
+                    lastMax = curSize;
+                else lastMin = curSize;
+                charFormatting.Size = curSize + delta / 2;
                 selectedText.CharacterFormat = charFormatting;
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
             }
