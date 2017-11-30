@@ -35,7 +35,6 @@ namespace Dash
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
             var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeDoc.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, 25);
-            //prototypeTextLayout.Document.SetField(KeyStore.HorizontalAlignmentKey, new TextController(HorizontalAlignment.Stretch.ToString()), true);
             var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
 
             var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, false);
