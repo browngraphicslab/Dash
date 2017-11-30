@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
+using Dash.Controllers.Operators;
 using DashShared.Models;
 
 namespace Dash
@@ -320,15 +321,17 @@ namespace Dash
         }
         DocumentController lookupOperator(string opname)
         {
-            if (opname == "Add")
-                return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorFieldModelController());
-            if (opname == "Subtract")
-                return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorFieldModelController());
-            if (opname == "Divide")
-                return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorFieldModelController());
-            if (opname == "Multiply")
-                return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorFieldModelController());
-
+            switch (opname)
+            {
+                case "Add":
+                    return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorFieldModelController());
+                case "Subtract":
+                    return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorFieldModelController());
+                case "Divide":
+                    return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorFieldModelController());
+                case "Multiply":
+                    return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorFieldModelController());
+            }
             return null;
         }
 
@@ -393,6 +396,8 @@ namespace Dash
                 else
                 {
                     var opModel = lookupOperator(strings[0]);
+                    if (opModel == null)
+                        return false;
                     var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorFieldModelController);
                     var args = strings[1].TrimEnd(')').Split(',');
                     int count = 0;
