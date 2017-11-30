@@ -367,7 +367,7 @@ namespace Dash
                 {
                     var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
                     var src = srcMatch.Substring(5, srcMatch.Length - 5);
-                    var i = new AnnotatedImage(new Uri(src), "", 200, 250, where.X, where.Y);
+                    var i = new AnnotatedImage(new Uri(src), null, "", "", 200, 250, where.X, where.Y);
                     AddDocument(i.Document, null);
                     foreach (var match in matches)
                     {
@@ -424,7 +424,7 @@ namespace Dash
                     await reader.LoadAsync((uint)streamWithContent.Size);
                     reader.ReadBytes(buffer);
                 }
-                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "");
+                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
                 AddDocument(t.Document, null);
             }
 

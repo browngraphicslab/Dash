@@ -44,7 +44,7 @@ namespace Dash
         {
             if (active)
                 HasTitle = active;
-            else HasTitle = DocumentController.GetDataDocument(null).HasTitle;
+            else HasTitle = DocumentController.GetDataDocument(null).HasTitle && !Undecorated;
         }
         public struct WidthAndMenuOpenWrapper
         {

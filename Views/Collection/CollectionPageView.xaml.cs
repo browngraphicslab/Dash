@@ -81,12 +81,11 @@ namespace Dash
                 xPageNumContainer.Children.Remove(xPageNum);
                 xPageNum = new TextBlock();
 
-                var binding = new FieldBinding<DocumentController>()
+                var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = value.DocumentController,
-                    Key = value.DocumentController.GetField(KeyStore.DocumentContextKey, true) == null ? KeyStore.ThisKey : KeyStore.DocumentContextKey,
-                    Converter = new DocumentControllerToStringConverter()
+                    Document = value.DocumentController.GetDataDocument(null),
+                    Key = KeyStore.TitleKey
                 };
 
                 if (value.Content is CollectionView)

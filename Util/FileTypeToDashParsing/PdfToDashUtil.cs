@@ -30,7 +30,7 @@ namespace Dash
                 var localFile = await localFolder.CreateFileAsync(Path.GetFileName(storageFile.Path), CreationCollisionOption.ReplaceExisting);
                 await storageFile.CopyAndReplaceAsync(localFile);
 
-                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page);
+                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, Path.GetFileNameWithoutExtension(localFile.Name));
                 var pdf = await PdfDocument.LoadFromFileAsync(localFile);
                 var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
                 for (uint i = 0; i < pdf.PageCount; i++)
@@ -44,10 +44,10 @@ namespace Dash
 
                         // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
                         //var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
-                        var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, //await ToBase64(renderTargetBitmap),
-                            900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
+                        var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, "", //await ToBase64(renderTargetBitmap),
+                            "", 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
 
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, localFile.Name + ": Page " + i, 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
+                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileNameWithoutExtension(localFile.Name) + ": Page " + (i+1), 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
                         children?.Add(pageDoc);
                         GetText(pageDoc, pageImg, stream);
                     }

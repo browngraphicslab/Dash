@@ -631,6 +631,7 @@ namespace Dash
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
+                ViewModel.SetHasTitle(this.IsLowestSelected);
             }
 
             //initDocumentOnDataContext();
