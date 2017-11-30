@@ -360,23 +360,12 @@ namespace Dash
                 var html = await e.DataView.GetHtmlFormatAsync();
                 var splits = new Regex("<").Split(html);
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
-                var text = e.DataView.Contains(StandardDataFormats.Text) ? await e.DataView.GetTextAsync() : "";
-                var matches = new Regex(".*:.*").Matches(text);
-              
-                foreach (var img in imgs)
-                {
-                    var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
-                    var src = srcMatch.Substring(5, srcMatch.Length - 5);
-                    var i = new AnnotatedImage(new Uri(src), null, "", "", 200, 250, where.X, where.Y);
-                    AddDocument(i.Document, null);
-                    foreach (var match in matches)
-                    {
-                        var pair = new Regex(":").Split(match.ToString());
-                        i.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
-                    }
-                }
+                var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                var strings = text.Split(new char[] { '\r' });
+
                 if (imgs.Count() == 0)
                 {
+                    var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
                     var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
                     var t = new RichTextNote(PostitNote.DocumentType, title, where);
                     t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
@@ -384,10 +373,45 @@ namespace Dash
                         foreach (var match in matches)
                         {
                             var pair = new Regex(":").Split(match.ToString());
-                            t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
+                            t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
                         }
                     AddDocument(t.Document, null);
-                }
+                } else {
+                    DocumentController primary = null;
+                    var related = new List<DocumentController>();
+                    foreach (var img in imgs)
+                    {
+                        var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(5, srcMatch.Length - 5);
+                        var i = new AnnotatedImage(new Uri(src), null, "", "", 200, 250, where.X, where.Y);
+                        if (img == imgs.First())
+                        {
+                            AddDocument(i.Document, null);
+                            primary = i.Document;
+                        }
+                        else
+                        {
+                            related.Add(i.Document);
+                        }
+                        var docText = "";
+                        foreach (var str in strings)
+                        {
+                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                            if (matches.Count != 0)
+                            {
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    i.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                                }
+                            }
+                            else
+                                docText += str + "\r\n";
+                        }
+                        i.Document.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(docText.Trim()), true);
+                    }
+                    primary.GetDataDocument(null).SetField(KeyStore.CollectionKey, new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid, "", 300, 300, related).Document, true);
+                 }
 
                 //var n = new RichTextNote(PostitNote.DocumentType, "");
                 //n.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(html)), true);

@@ -103,7 +103,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ListViewItem Background="{Binding IsSelected, Converter={StaticResource BoolToBrushConverter}}">
-                            <local:DocumentView IsHitTestVisible="False" />
+                            <local:DocumentView />
                         </ListViewItem>
                     </DataTemplate>
                 </ListView.ItemTemplate>

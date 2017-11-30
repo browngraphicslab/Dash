@@ -240,7 +240,7 @@ namespace Dash
             string id, bool isInterfaceBuilder = false)
         {
             var rfmc = new DocumentReferenceFieldController(id, kc);
-            var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
+            var vm = new CollectionViewModel(container, rfmc, isInterfaceBuilder, context);
             var viewType = container.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ??  CollectionView.CollectionViewType.Grid.ToString();
             var colView = new CollectionView(vm, (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), viewType));
             sp.Children.Add(colView);

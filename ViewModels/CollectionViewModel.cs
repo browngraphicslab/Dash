@@ -20,11 +20,14 @@ namespace Dash
 
         public InkController InkController;
 
-        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentController ContainerDocument;
+
+        public CollectionViewModel(DocumentController container, FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             Debug.Assert(collection != null);
             _collectionFieldModelController = collection.DereferenceToRoot<ListController<DocumentController>>(context);
             AddViewModels(_collectionFieldModelController.TypedData, context);
+            ContainerDocument = container;
 
             var copiedContext = new Context(context);
 

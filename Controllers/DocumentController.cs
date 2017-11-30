@@ -941,7 +941,7 @@ namespace Dash
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             var fieldController = GetField(key);
-            return fieldController?.DereferenceToRoot(context);
+            return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase

@@ -105,7 +105,29 @@ namespace Dash
                         t.SetSelected(null, false);
                     thumb.SetSelected(null, true);
                 }
+                var cview = (CurPage?.Content as CollectionView);
+                if (cview != null)
+                {
+                    cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
+                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;      
+                    cview.Loaded -= Cview_Loaded;
+                    cview.Loaded += Cview_Loaded;
+                }
             }
+        }
+
+        private void ContainerDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            var cview = (CurPage?.Content as CollectionView);
+            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
+        }
+
+        private void Cview_Loaded(object sender, RoutedEventArgs e)
+        {
+            var cview = sender as CollectionView;
+            cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
+            cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
+            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
         }
 
         private void Content_Loaded(object sender, RoutedEventArgs e)
@@ -195,6 +217,7 @@ namespace Dash
                             var ind = ViewModel.ThumbDocumentViewModels.IndexOf(dv);
                             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
                         }
+                    break;
                 }
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
