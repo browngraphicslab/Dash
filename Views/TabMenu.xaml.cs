@@ -171,7 +171,7 @@ namespace Dash
         //Adds the immediate documents contained in the collectionfreeformview that contains the tabmenu 
         //Recalculated every time tabmenu is opened (otherwise CollectionFreeformview would need to keep track of all the documentviews as well as the viewmodels) 
         //TODO curtail this in case collectionview contains too many documents
-        public void AddGoToTabItems(CollectionFreeformView topCollection = null)
+        public void AddGoToTabItems()
         {
             _allDocItems = new List<ITabItemViewModel>();
             foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
@@ -181,7 +181,8 @@ namespace Dash
                     var docMenuItem = menuItem as DocumentAddMenuItem;
                     if (docMenuItem != null)
                     {
-                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.LayoutDoc.GetDataDocument(null)));
+                        //var controller = docMenuItem.LayoutDoc.GetDataDocument(null); 
+                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, /*controller*/ docMenuItem.DataDoc));
                     }
                 }
             }

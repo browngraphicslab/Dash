@@ -151,7 +151,7 @@ namespace Dash
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
 
                 TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems(topCollection as CollectionFreeformView);
+                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu

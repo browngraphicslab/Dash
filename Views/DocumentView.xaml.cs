@@ -729,9 +729,6 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            // KBTODO remove itself from tab menu 
-            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault());
-
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();
@@ -739,7 +736,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(10, 10), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController, view : this), new Point(10, 10), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -881,6 +878,11 @@ namespace Dash
             //ViewModel.DocumentController.Title = box.Text; 
             _treeMenuItem.DocType = xTitle.Text;                                                    // have to call because the documentcontrollers in these items aren't updated 
 
+        }
+
+        public void UpdateTreeNode(DocumentController dc)
+        {
+            (_treeMenuItem as DocumentAddMenuItem).DataDoc = dc; 
         }
     }
 

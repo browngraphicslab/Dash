@@ -32,13 +32,15 @@ namespace Dash
         private DocumentController _editingDocument;
         private DocumentView _editingDocView;
 
+        private DocumentView _view; 
 
-        public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
+        public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545, DocumentView view = null)
         {
             this.InitializeComponent();
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
             Width = width;
             Height = height;
+            _view = view; 
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
@@ -58,7 +60,7 @@ namespace Dash
         {
             var textBinding = new Binding
             {
-                Source = /*CurrentLayout*/ currentLayout,
+                Source = currentLayout,
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay
             };
@@ -74,6 +76,13 @@ namespace Dash
             xDocumentPane.DataContext = freeFormView;
             freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
+
+            xKeyValuePane.OnKeyValuePairAdded += XKeyValuePane_OnKeyValuePairAdded;
+        }
+
+        private void XKeyValuePane_OnKeyValuePairAdded(KeyValuePane sender, DocumentController dc)
+        {
+            _view?.UpdateTreeNode(dc); 
         }
 
         private void DocumentPaneOnDocumentViewLoaded(CollectionFreeformView collectionFreeformView, DocumentView documentView)
