@@ -18,7 +18,9 @@ namespace Dash
         public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
         {
             Element1 = element1;
+            Temp1 = element1;
             Element2 = element2;
+            Temp2 = element2;
             ToElement = toElement;
             _figure = new PathFigure();
             _bezier = new BezierSegment();

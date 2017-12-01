@@ -40,44 +40,44 @@ namespace Dash
 
             switch (type.GetType())
             {
-                case TypeInfo.Collection:
-                    controller = new DocumentCollectionFieldModelController(model as DocumentCollectionFieldModel);
-                    break;
                 case TypeInfo.Point:
-                    controller = new PointFieldModelController(model as PointFieldModel);
+                    controller = new PointController(model as PointModel);
                     break;
                 case TypeInfo.Operator:
-                    controller = MakeOperatorController(model as OperatorFieldModel);
+                    controller = MakeOperatorController(model as OperatorModel);
                     break;
                 case TypeInfo.List:
-                    controller = MakeListFieldController(model as ListFieldModel);
+                    controller = MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentFieldModelController(model as DocumentFieldModel);
+                    controller = new DocumentController(model as DocumentModel, false);
                     break;
                 case TypeInfo.Ink:
-                    controller = new InkFieldModelController(model as InkFieldModel);
+                    controller = new InkController(model as InkModel);
                     break;
                 case TypeInfo.Number:
-                    controller = new NumberFieldModelController(model as NumberFieldModel);
+                    controller = new NumberController(model as NumberModel);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = new DocumentReferenceFieldController(model as DocumentReferenceFieldModel);
+                    controller = new DocumentReferenceController(model as DocumentReferenceModel);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = new PointerReferenceFieldController(model as PointerReferenceFieldModel);
+                    controller = new PointerReferenceController(model as PointerReferenceModel);
                     break;
                 case TypeInfo.Rectangle:
-                    controller = new RectFieldModelController(model as RectFieldModel);
+                    controller = new RectController(model as RectModel);
                     break;
                 case TypeInfo.Text:
-                    controller = new TextFieldModelController(model as TextFieldModel);
+                    controller = new TextController(model as TextModel);
                     break;
                 case TypeInfo.RichTextField:
-                    controller = new RichTextFieldModelController(model as RichTextFieldModel);
+                    controller = new RichTextController(model as RichTextModel);
                     break;
                 case TypeInfo.Image:
-                    controller = new ImageFieldModelController(model as ImageFieldModel);
+                    controller = new ImageController(model as ImageModel);
+                    break;
+                case TypeInfo.Key:
+                    controller = new KeyController(model as KeyModel);
                     break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
@@ -90,12 +90,12 @@ namespace Dash
                     break;
             }
 
-            Debug.Assert(controller !=null);
+            Debug.Assert(controller != null);
 
             return controller;
         }
 
-        private static FieldControllerBase MakeListFieldController(ListFieldModel model)
+        private static FieldControllerBase MakeListFieldController(ListModel model)
         {
             FieldControllerBase controller = null;
 
@@ -105,46 +105,46 @@ namespace Dash
                     Debug.Fail("this shouldnt happen????");
                     break;
                 case TypeInfo.Number:
-                    controller = new ListFieldModelController<NumberFieldModelController>(model);
+                    controller = new ListController<NumberController>(model);
                     break;
                 case TypeInfo.Text:
-                    controller = new ListFieldModelController<TextFieldModelController>(model);
+                    controller = new ListController<TextController>(model);
                     break;
                 case TypeInfo.Image:
-                    controller = new ListFieldModelController<ImageFieldModelController>(model);
-                    break;
-                case TypeInfo.Collection:
-                    controller = new ListFieldModelController<DocumentCollectionFieldModelController>(model);
+                    controller = new ListController<ImageController>(model);
                     break;
                 case TypeInfo.Document:
-                    controller = new ListFieldModelController<DocumentFieldModelController>(model);
+                    controller = new ListController<DocumentController>(model);
                     break;
                 case TypeInfo.PointerReference:
-                    controller = new ListFieldModelController<PointerReferenceFieldController>(model);
+                    controller = new ListController<PointerReferenceController>(model);
                     break;
                 case TypeInfo.DocumentReference:
-                    controller = new ListFieldModelController<DocumentReferenceFieldController>(model);
+                    controller = new ListController<DocumentReferenceController>(model);
                     break;
                 case TypeInfo.Operator:
-                    controller = new ListFieldModelController<OperatorFieldModelController>(model);
+                    controller = new ListController<OperatorController>(model);
                     break;
                 case TypeInfo.Point:
-                    controller = new ListFieldModelController<PointFieldModelController>(model);
+                    controller = new ListController<PointController>(model);
                     break;
                 case TypeInfo.List:
                     Debug.Fail("idk why you got here");
                     break;
                 case TypeInfo.Ink:
-                    controller = new ListFieldModelController<InkFieldModelController>(model);
+                    controller = new ListController<InkController>(model);
                     break;
                 case TypeInfo.RichTextField:
-                    controller = new ListFieldModelController<RichTextFieldModelController>(model);
+                    controller = new ListController<RichTextController>(model);
                     break;
                 case TypeInfo.Rectangle:
-                    controller = new ListFieldModelController<RectFieldModelController>(model);
+                    controller = new ListController<RectController>(model);
                     break;
                 case TypeInfo.Reference:
-                    controller = new ListFieldModelController<ReferenceFieldModelController>(model);
+                    controller = new ListController<ReferenceController>(model);
+                    break;
+                case TypeInfo.Key:
+                    controller = new ListController<KeyController>(model);
                     break;
                 case TypeInfo.Any:
                     Debug.Fail("idk why you got here");
@@ -155,73 +155,73 @@ namespace Dash
             return controller;
         }
 
-        private static OperatorFieldModelController MakeOperatorController(OperatorFieldModel model)
+        private static OperatorController MakeOperatorController(OperatorModel model)
         {
-            OperatorFieldModelController controller = null;
+            OperatorController controller = null;
             switch (model.Type)
             {
                 case OperatorType.Add:
-                    controller = new AddOperatorFieldModelController(model);
+                    controller = new AddOperatorController(model);
                     break;
                 case OperatorType.DBfilter:
-                    controller = new DBFilterOperatorFieldModelController(model as DBFilterOperatorFieldModel);
+                    controller = new DBFilterOperatorController(model as DBFilterOperatorFieldModel);
                     break;
                 case OperatorType.Zip:
-                    controller = new ZipOperatorFieldController(model);
+                    controller = new ZipOperatorController(model);
                     break;
                 case OperatorType.Filter:
-                    controller = new FilterOperatorFieldModelController(model);
+                    controller = new FilterOperatorController(model);
                     break;
-                case OperatorType.CollectionMap:
-                    controller = new CollectionMapOperator(model);
-                    break;
+                //case OperatorType.CollectionMap:
+                //    controller = new CollectionMapOperator(model);
+                //    break;
                 case OperatorType.Intersection:
-                    controller = new IntersectionOperatorModelController(model);
+                    controller = new IntersectionOperatorController(model);
                     break;
                 case OperatorType.Union:
-                    controller = new UnionOperatorFieldModelController(model);
+                    controller = new UnionOperatorController(model);
                     break;
                 case OperatorType.Map:
                     controller = new MapOperatorController(model);
                     break;
                 case OperatorType.ImageToUri:
-                    controller = new ImageOperatorFieldModelController(model);
+                    controller = new ImageOperatorController(model);
                     break;
                 case OperatorType.DocumentAppend:
                     controller = new DocumentAppendOperatorController(model);
                     break;
                 case OperatorType.Concat:
-                    controller = new ConcatOperator(model);
+                    controller = new ConcatOperatorController(model);
                     break;
                 case OperatorType.Divide:
-                    controller = new DivideOperatorFieldModelController(model);
+                    controller = new DivideOperatorController(model);
                     break;
                 case OperatorType.Search:
-                    controller = new DBSearchOperatorFieldModelController(model as DBSearchOperatorFieldModel);
+                    controller = new DBSearchOperatorController(model as DBSearchOperatorFieldModel);
                     break;
                 case OperatorType.Api:
                     controller = new ApiOperatorController(model);
                     break;
                 case OperatorType.Compound:
-                    controller = new CompoundOperatorFieldController(model as CompoundOperatorFieldModel);
+                    controller = new CompoundOperatorController(model as CompoundOperatorModel);
                     break;
                 case OperatorType.Subtract:
-                    controller = new SubtractOperatorFieldModelController(model);
+                    controller = new SubtractOperatorController(model);
                     break;
                 case OperatorType.Multiply:
-                    controller = new MultiplyOperatorFieldModelController(model);
+                    controller = new MultiplyOperatorController(model);
                     break;
                 case OperatorType.Regex:
-                    controller = new RegexOperatorFieldModelController(model);
+                    controller = new RegexOperatorController(model);
                     break;
                 case OperatorType.Melt:
-                    controller = new MeltOperatorFieldModelController(model);
+                    controller = new MeltOperatorController(model);
                     break;
-                case OperatorType.ExtractSentences:
-                    controller = new ExtractSentencesOperatorFieldModelController(model);
+                case OperatorType.Sentence_Analyzer:
+                    controller = new ExtractSentencesOperatorController(model);
                     break;
-                case OperatorType.ExtractKeyWords:
-                    controller = new ExtractKeywordsOperatorFieldModelController(model);
+                case OperatorType.Extract_Keywords:
+                    controller = new ExtractKeywordsOperatorController(model);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -236,45 +236,42 @@ namespace Dash
         }
 
 
-        public static FieldControllerBase CreateDefaultFieldController(TypeInfo t)
+        public static FieldControllerBase CreateDefaultFieldController(TypeInfo t, TypeInfo listType = TypeInfo.Document)
         {
             FieldControllerBase controller = null;
 
             switch (t)
             {
-                case TypeInfo.Collection:
-                    controller = new DocumentCollectionFieldModelController();
-                    break;
                 case TypeInfo.Point:
-                    controller = new PointFieldModelController(0, 0);
+                    controller = new PointController(0, 0);
                     break;
                 case TypeInfo.Operator:
                     throw new NotImplementedException();
                 case TypeInfo.List:
-                    throw new NotImplementedException();
+                    return MakeDefaultListFieldController(listType);
                 case TypeInfo.Document:
-                    controller = new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType));
+                    controller = new DocumentController();
                     break;
                 case TypeInfo.Ink:
-                    controller = new InkFieldModelController();
+                    controller = new InkController();
                     break;
                 case TypeInfo.Number:
-                    controller = new NumberFieldModelController();
+                    controller = new NumberController();
                     break;
                 case TypeInfo.DocumentReference:
                 case TypeInfo.PointerReference:
                     throw new NotImplementedException();
                 case TypeInfo.Rectangle:
-                    controller = new RectFieldModelController(0, 0, 0, 0);
+                    controller = new RectController(0, 0, 0, 0);
                     break;
                 case TypeInfo.Text:
-                    controller = new TextFieldModelController("");
+                    controller = new TextController("");
                     break;
                 case TypeInfo.RichTextField:
-                    controller = new RichTextFieldModelController();
+                    controller = new RichTextController();
                     break;
                 case TypeInfo.Image:
-                    controller = new ImageFieldModelController(new Uri("DEFAULT URI"));
+                    controller = new ImageController(new Uri("DEFAULT URI"));
                     break;
                 case TypeInfo.None:
                 case TypeInfo.Reference:
@@ -284,6 +281,66 @@ namespace Dash
 
             Debug.Assert(controller != null);
 
+            return controller;
+        }
+
+        private static FieldControllerBase MakeDefaultListFieldController(TypeInfo listType)
+        {
+            FieldControllerBase controller = null;
+
+            switch (listType)
+            {
+                case TypeInfo.None:
+                    Debug.Fail("this shouldnt happen????");
+                    break;
+                case TypeInfo.Number:
+                    controller = new ListController<NumberController>();
+                    break;
+                case TypeInfo.Text:
+                    controller = new ListController<TextController>();
+                    break;
+                case TypeInfo.Image:
+                    controller = new ListController<ImageController>();
+                    break;
+                case TypeInfo.Document:
+                    controller = new ListController<DocumentController>();
+                    break;
+                case TypeInfo.PointerReference:
+                    controller = new ListController<PointerReferenceController>();
+                    break;
+                case TypeInfo.DocumentReference:
+                    controller = new ListController<DocumentReferenceController>();
+                    break;
+                case TypeInfo.Operator:
+                    controller = new ListController<OperatorController>();
+                    break;
+                case TypeInfo.Point:
+                    controller = new ListController<PointController>();
+                    break;
+                case TypeInfo.List:
+                    Debug.Fail("idk why you got here");
+                    break;
+                case TypeInfo.Ink:
+                    controller = new ListController<InkController>();
+                    break;
+                case TypeInfo.RichTextField:
+                    controller = new ListController<RichTextController>();
+                    break;
+                case TypeInfo.Rectangle:
+                    controller = new ListController<RectController>();
+                    break;
+                case TypeInfo.Reference:
+                    controller = new ListController<ReferenceController>();
+                    break;
+                case TypeInfo.Key:
+                    controller = new ListController<KeyController>();
+                    break;
+                case TypeInfo.Any:
+                    Debug.Fail("idk why you got here");
+                    break;
+                default:
+                    break;
+            }
             return controller;
         }
 

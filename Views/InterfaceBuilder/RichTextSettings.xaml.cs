@@ -107,7 +107,7 @@ namespace Dash
 
         private void HighlightSelectionChanged(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -120,7 +120,7 @@ namespace Dash
 
         private void ColorSelectionChanged(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -133,7 +133,7 @@ namespace Dash
 
         private void AlignRightTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -146,7 +146,7 @@ namespace Dash
 
         private void AlignCenterTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -159,7 +159,7 @@ namespace Dash
 
         private void AlignLeftTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -172,7 +172,7 @@ namespace Dash
 
         private void AllCapsTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -185,7 +185,7 @@ namespace Dash
 
         private void SubScriptTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -198,7 +198,7 @@ namespace Dash
 
         private void SuperScriptTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -211,7 +211,7 @@ namespace Dash
 
         private void UnderlineTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -231,7 +231,7 @@ namespace Dash
 
         private void ItalicTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -244,7 +244,7 @@ namespace Dash
 
         private void BoldTapped(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -257,7 +257,7 @@ namespace Dash
 
         private void FontSelectionChanged(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -270,7 +270,7 @@ namespace Dash
 
         private void FontWeightChanged(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)
@@ -284,7 +284,7 @@ namespace Dash
 
         private void FontSizeChanged(DocumentController docController, Context context)
         {
-            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextFieldModelController;
+            var richTextController = docController.GetDereferencedField(KeyStore.DataKey, context) as RichTextController;
             Debug.Assert(richTextController != null);
             ITextSelection selectedText = richTextController.SelectedText;
             if (selectedText != null)

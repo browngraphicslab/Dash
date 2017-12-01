@@ -8,7 +8,7 @@ namespace Dash
 {
     public class ExtractSentencesOperatorBox : CourtesyDocument
     {
-        public ExtractSentencesOperatorBox(ReferenceFieldModelController refToOp)
+        public ExtractSentencesOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(470, 120), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.ExtractSentencesDocumentType);

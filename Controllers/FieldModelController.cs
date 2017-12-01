@@ -20,7 +20,7 @@ namespace Dash
         ///     A wrapper for <see cref="DashShared.Models.FieldModel.OutputReferences" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ObservableCollection<ReferenceFieldModelController> OutputReferences;
+        public ObservableCollection<ReferenceController> OutputReferences;
 
 
         protected FieldModelController(T fieldModel) : base(fieldModel)
@@ -68,6 +68,6 @@ namespace Dash
         }
 
 
-        public event InkFieldModelController.InkUpdatedHandler InkUpdated;
+        public event InkController.InkUpdatedHandler InkUpdated;
     }
 }

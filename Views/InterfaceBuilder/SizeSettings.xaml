@@ -18,9 +18,9 @@
                     <Grid Grid.Column="0" Margin="0,0,5,0">
                         <!--<TextBox x:Name="xWidthTextBox" Header="Width" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,5" TextAlignment="Center"  FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>-->
                         <TextBox x:Name="xWidthTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
-                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" />
-                        <TextBlock Text="Width" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
+                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" Foreground="{StaticResource MainText}"/>
+                        <TextBlock Text="Width" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -48,9 +48,9 @@
                     <Grid Grid.Column="1" Margin="5,0,0,0">
                         <!--<TextBox x:Name="xHeightTextBox" Header="Height" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"  Margin="0,0,0,5" TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus"/>-->
                         <TextBox x:Name="xHeightTextBox" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
-                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"
-                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" />
-                        <TextBlock Text="Height" FontSize="12" Foreground="White" HorizontalAlignment="Center"></TextBlock>
+                                 VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
+                                 TextAlignment="Center" FontSize="12" LostFocus="XSizeTextBox_OnLostFocus" Foreground="{StaticResource MainText}"/>
+                        <TextBlock Text="Height" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"

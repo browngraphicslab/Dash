@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using DashShared;
+using DashShared.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -19,12 +20,16 @@ namespace Dash
         }
 
         /// <summary>
+        /// Only assume that Controllers have been put in the content controller, not that CreateReferences has been called on them
+        /// </summary>
+        //public abstract void CreateReferences();
+
+        /// <summary>
         /// Method which should store all the initlization methods for the controller. 
         /// Anything that gets other controllers' references should be put in here instead of the constructor
         /// </summary>
-        public abstract void Init();
+        public abstract void Init();/// <summary>
 
-        /// <summary>
         /// If you get an exception here, you are trying to compare 2 controllers with ==.
         /// This causes problems with data persistence so you should always use .Equals to compare controllers
         /// </summary>

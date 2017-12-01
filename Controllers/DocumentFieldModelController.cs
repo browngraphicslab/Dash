@@ -33,59 +33,12 @@ namespace Dash
 
         public override void Init()
         {
-            Data = ContentController<DocumentModel>.GetController<DocumentController>((Model as DocumentFieldModel).Data);
-        }
-
-        /*
-        public static async Task<DocumentFieldModelController> CreateFromServer(DocumentFieldModel documentFieldModel)
-        {
-            var localController = ContentController<FieldModel>.GetController<DocumentFieldModelController>(documentFieldModel.Id);
-            if (localController != null)
+            if (Data == null)
             {
-                return localController;
+                Data = ContentController<DocumentModel>.GetController<DocumentController>((Model as DocumentFieldModel).Data);
             }
-
-            DocumentController docController = null;
-
-            await RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data, async model =>
-            {
-                docController = new DocumentController(model);
-
-                foreach (var keyFieldPair in docController.EnumFields(true))
-                {
-                    if (keyFieldPair.Value is DocumentFieldModelController)
-                    {
-                        var dfmc = (DocumentFieldModelController)keyFieldPair.Value;
-                        await RESTClient.Instance.Documents.GetDocument(
-                            dfmc.DocumentFieldModel.Data, async protoDto =>
-                            {
-                                dfmc.Data = new DocumentController(protoDto);
-                            }, exception => throw exception);
-                    }
-
-                    if (keyFieldPair.Value is DocumentCollectionFieldModelController)
-                    {
-                        Debug.Assert(keyFieldPair.Key.Equals(KeyStore.DelegatesKey) == false, "the document controller should skip over creating any delegates field since it creates infinite loops");
-
-                        var dcfmc = ((DocumentCollectionFieldModelController)keyFieldPair.Value);
-                        var documentIds = dcfmc.DocumentCollectionFieldModel.Data;
-
-                        await RESTClient.Instance.Documents.GetDocuments(documentIds, async docmodelDtos =>
-                        {
-                            foreach (var docDto in docmodelDtos)
-                            {
-                                new  DocumentController(docDto);
-                            }
-                        }, exception => throw exception);
-                    }
-                }
-            }, exception => throw exception);
-
-
-            return new DocumentFieldModelController(docController, documentFieldModel);
-
         }
-        */
+        
         /// <summary>
         ///     The <see cref="DocumentFieldModel" /> associated with this <see cref="DocumentFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
@@ -126,8 +79,8 @@ namespace Dash
                         oldData.DocumentFieldUpdated -= primaryKeyHandler;
                     primaryKeyHandler = (sender, args) =>
                     {
-                        var keylist = (_data.GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data.Select((d) => (d as TextFieldModelController).Data));
-                        if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
+                        var keylist = _data.GetDereferencedField<ListFieldModelController<KeyController>>(KeyStore.PrimaryKeyKey, new Context(_data))?.Data;
+                        if (keylist != null && keylist.Contains(args.Reference.FieldKey))
                             OnFieldModelUpdated(null);
                     };
                     value.DocumentFieldUpdated += primaryKeyHandler;

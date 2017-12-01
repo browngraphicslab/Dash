@@ -76,8 +76,8 @@ namespace RadialMenuControl.UserControl
 
             Loaded += (sender, args) =>
             {
-                CenterButtonTop = Diameter/2 - (CenterButton.ActualWidth/2);
-                CenterButtonLeft = Diameter/2 - (CenterButton.ActualHeight/2);
+                CenterButtonTop = Diameter/2 - (CenterButton.ActualWidth/2) - 9;
+                CenterButtonLeft = Diameter/2 - (CenterButton.ActualHeight/2) - 9;
                 PieCompositeTransform.CenterX = Diameter/2;
                 PieCompositeTransform.CenterY = Diameter/2;
                 CustomPieCompositeTransform.CenterX = Diameter/2;

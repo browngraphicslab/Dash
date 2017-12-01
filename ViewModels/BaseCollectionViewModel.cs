@@ -22,7 +22,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views.Document_Menu;
 using static Dash.NoteDocuments;
+using System.Text.RegularExpressions;
 
 namespace Dash
 {
@@ -156,18 +158,33 @@ namespace Dash
                         foreach (var i in f.Value)
                         {
                             if (i is string)
-                                items.Add(new TextFieldModelController(i as string));
+                                items.Add(new TextController(i as string));
                             else if (i is double)
-                                items.Add(new NumberFieldModelController((double) i));
+                                items.Add(new NumberController((double) i));
                             else if (i is DocumentController)
-                                items.Add(new DocumentFieldModelController((DocumentController)i));
+                                items.Add((DocumentController)i);
                         }
-                        if (items.FirstOrDefault() is TextFieldModelController)
-                            doc.SetField(f.Key, new ListFieldModelController<TextFieldModelController>(items.Where((i) => i is TextFieldModelController).Select((i) => i as TextFieldModelController)), true);
-                        else if (items.FirstOrDefault() is NumberFieldModelController)
-                            doc.SetField(f.Key, new ListFieldModelController<NumberFieldModelController>(items.Where((i) => i is NumberFieldModelController).Select((i) => i as NumberFieldModelController)), true);
-                        else if (items.FirstOrDefault() is DocumentFieldModelController)
-                            doc.SetField(f.Key, new DocumentCollectionFieldModelController(items.Where((i) => i is DocumentFieldModelController).Select((i) => (i as DocumentFieldModelController).Data)), true);
+
+                        if (items.Count > 0)
+                        {
+                            FieldControllerBase field = null;
+
+                            //TODO tfs: why are we making copies of all of these fields?
+                            if (items.First() is TextController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new TextController((items.First() as TextController).Data) :
+                                                new ListController<TextController>(items.OfType<TextController>());
+                            else if (items.First() is NumberController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new NumberController((items.First() as NumberController).Data) :
+                                                new ListController<NumberController>(items.OfType<NumberController>());
+                            else if (items.First() is RichTextController  )
+                                field = (items.Count == 1) ? (FieldControllerBase)new RichTextController((items.First() as RichTextController).Data) :
+                                                new ListController<RichTextController>(items.OfType<RichTextController>());
+                            else if (items.First() is DocumentController)
+                                field = (items.Count == 1) ? (FieldControllerBase)(items.First() as DocumentController) :
+                                               new ListController<DocumentController>(items.OfType<DocumentController>());
+                            if (field != null)
+                                doc.SetField(f.Key, field, true);
+                        }
                     }
                 pivoted.Add(doc);
             }
@@ -181,69 +198,73 @@ namespace Dash
             if (!dictionary.ContainsKey(obj))
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
-                pivotDoc = (pivotField as ReferenceFieldModelController)?.GetDocumentController(null);
+                pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
                 if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
-                        [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(pivotKey.Id) })
+                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                         }, DocumentType.DefaultType);
                     if (obj is string)
                     {
-                        pivotDoc.SetField(pivotKey, new TextFieldModelController(obj as string), true);
+                        pivotDoc.SetField(pivotKey, new TextController(obj as string), true);
+                    }
+                    else if (obj is RichTextModel.RTD)
+                    {
+                        pivotDoc.SetField(pivotKey, new RichTextController(obj as RichTextModel.RTD), true);
                     }
                     else if (obj is double)
                     {
-                        pivotDoc.SetField(pivotKey, new NumberFieldModelController((double)obj), true);
+                        pivotDoc.SetField(pivotKey, new NumberController((double)obj), true);
                     }
                     else if (obj is DocumentController)
                     {
                         pivotDoc = obj as DocumentController;
                     }
-                    else if (obj is DocumentCollectionFieldModelController)
+                    else if (obj is ListController<DocumentController>)
                     {
-                        pivotDoc.SetField(pivotKey, new DocumentCollectionFieldModelController(obj as List<DocumentController>), true);
+                        pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceFieldController(pivotDoc.GetId(), pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
             }
 
-            d.SetField(pivotKey, new DocumentReferenceFieldController(pivotDictionary[obj].GetId(), pivotKey), true);
+            d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
             var fieldDict = dictionary[obj];
             return fieldDict;
         }
         
         KeyController expandCollection(CollectionDBSchemaHeader.HeaderDragData dragData, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
         {
-            foreach (var d in (getDocs as DocumentCollectionFieldModelController).Data)
+            foreach (var d in (getDocs as ListController<DocumentController>).TypedData)
             {
                 var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
-                if (fieldData is DocumentCollectionFieldModelController)
-                    foreach (var dd in (fieldData as DocumentCollectionFieldModelController).Data)
+                if (fieldData is ListController<DocumentController>)
+                    foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
                     {
                         var dataDoc = dd.GetDataDocument(null);
                         
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
-                        expandedDoc.SetField(showField, new DocumentFieldModelController(dataDoc), true);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(null), true);
+                        expandedDoc.SetField(showField, dataDoc, true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListFieldModelController<TextFieldModelController>)
-                    foreach (var dd in (fieldData as ListFieldModelController<TextFieldModelController>).Data)
+                else if (fieldData is ListController<TextController>)
+                    foreach (var dd in (fieldData as ListController<TextController>).Data)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
-                        expandedDoc.SetField(showField, new TextFieldModelController((dd as TextFieldModelController).Data), true);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(null), true);
+                        expandedDoc.SetField(showField, new TextController((dd as TextController).Data), true);
                         subDocs.Add(expandedDoc);
                     }
-                else if (fieldData is ListFieldModelController<NumberFieldModelController>)
-                    foreach (var dd in (fieldData as ListFieldModelController<NumberFieldModelController>).Data)
+                else if (fieldData is ListController<NumberController>)
+                    foreach (var dd in (fieldData as ListController<NumberController>).Data)
                     {
                         var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
-                        expandedDoc.SetField(KeyStore.HeaderKey, new DocumentFieldModelController(d.GetDataDocument(null)), true);
-                        expandedDoc.SetField(showField, new NumberFieldModelController((dd as NumberFieldModelController).Data), true);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(null), true);
+                        expandedDoc.SetField(showField, new NumberController((dd as NumberController).Data), true);
                         subDocs.Add(expandedDoc);
                     }
             }
@@ -269,21 +290,21 @@ namespace Dash
 
                 // bcz: testing stuff out here...
                 var cnote = new CollectionNote(where, dragData.ViewType);
-                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceFieldController).DereferenceToRoot(null);
+                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceController).DereferenceToRoot(null);
 
                 var subDocs = new List<DocumentController>();
                 var showField = dragData.FieldKey;
-                if ((getDocs as DocumentCollectionFieldModelController).Data.Any())
+                if ((getDocs as ListController<DocumentController>).Data.Any())
                 {
-                    var firstDocValue = (getDocs as DocumentCollectionFieldModelController).Data.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                    if (firstDocValue is DocumentCollectionFieldModelController || firstDocValue.GetValue(null) is List<FieldControllerBase>)
+                    var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
+                    if (firstDocValue is ListController<DocumentController> || firstDocValue.GetValue(null) is List<FieldControllerBase>)
                         showField = expandCollection(dragData, getDocs, subDocs, showField);
-                    else subDocs = pivot((getDocs as DocumentCollectionFieldModelController).Data, showField);
+                    else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
-                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentCollectionFieldModelController(subDocs), true);
+                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(subDocs), true);
                 else cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorFieldModelController.FilterFieldKey, new TextFieldModelController(showField.Name), true);
+                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
 
                 AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
@@ -298,21 +319,22 @@ namespace Dash
             this.RemoveDragDropIndication(sender as SelectionElement);
 
             // true if dragged from key value pane in interfacebuilder
-            var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
+            var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
 
             // true if dragged from layoutbar in interfacebuilder
-            var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
+            var isDraggedFromLayoutBar = (e.DataView?.Properties.ContainsKey(InterfaceBuilder.LayoutDragKey) ?? false) && 
+                e.DataView?.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
 
             //return if it's an operator dragged from compoundoperatoreditor listview 
-            if (e.Data?.Properties[CompoundOperatorFieldController.OperationBarDragKey] != null) return;
+            if (e.Data?.Properties[CompoundOperatorController.OperationBarDragKey] != null) return;
 
             // from now on we are handling this event!
             e.Handled = true;
 
             // if we are dragging and dropping from the radial menu
             // if we drag from radial menu
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            var sourceIsRadialMenu = e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) ?? false;
             if (sourceIsRadialMenu)
             {
                 var action =
@@ -332,6 +354,138 @@ namespace Dash
                 {
                     Console.WriteLine(exception);
                 }
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Html))
+            {
+                var html = await e.DataView.GetHtmlFormatAsync();
+                var splits = new Regex("<").Split(html);
+                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
+                var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                var strings = text.Split(new char[] { '\r' });
+
+                if (imgs.Count() == 0)
+                {
+                    var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
+                    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                    var t = new RichTextNote(PostitNote.DocumentType, title, where);
+                    t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                    if (title == "")
+                        foreach (var match in matches)
+                        {
+                            var pair = new Regex(":").Split(match.ToString());
+                            t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                        }
+                    AddDocument(t.Document, null);
+                } else {
+                    DocumentController primary = null;
+                    var related = new List<DocumentController>();
+                    foreach (var img in imgs)
+                    {
+                        var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(5, srcMatch.Length - 5);
+                        var i = new AnnotatedImage(new Uri(src), null, "", "", 200, 250, where.X, where.Y);
+                        if (img == imgs.First())
+                        {
+                            AddDocument(i.Document, null);
+                            primary = i.Document;
+                        }
+                        else
+                        {
+                            related.Add(i.Document);
+                        }
+                        var docText = "";
+                        foreach (var str in strings)
+                        {
+                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                            if (matches.Count != 0)
+                            {
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    i.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                                }
+                            }
+                            else
+                                docText += str + "\r\n";
+                        }
+                        i.Document.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(docText.Trim()), true);
+                    }
+                    primary.GetDataDocument(null).SetField(KeyStore.CollectionKey, new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid, "", 300, 300, related).Document, true);
+                 }
+
+                //var n = new RichTextNote(PostitNote.DocumentType, "");
+                //n.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(html)), true);
+                //AddDocument(n.Document, null);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Rtf))
+            {
+                var text = await e.DataView.GetRtfAsync();
+
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text, text)), true);
+                AddDocument(t.Document, null);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Text))
+            {
+                var text = await e.DataView.GetTextAsync();
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                var matches = new Regex(".*:.*").Matches(text);
+                foreach (var match in matches)
+                {
+                    var pair = new Regex(":").Split(match.ToString());
+                    t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
+                }
+                AddDocument(t.Document, null);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Bitmap))
+            {
+                var bmp = await e.DataView.GetBitmapAsync();
+                IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+                byte[] buffer = new byte[streamWithContent.Size];
+                using (DataReader reader = new DataReader(streamWithContent))
+                {
+                    await reader.LoadAsync((uint)streamWithContent.Size);
+                    reader.ReadBytes(buffer);
+                }
+                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
+                AddDocument(t.Document, null);
+            }
+
+            // collection dynamic previews
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
+            {
+                // the collection view which should control the new doc
+                var sendingView = e.DataView.Properties[CollectionView.CollectionPreviewDragKey] as CollectionView;
+
+                // the doc controlling the new doc
+                var sendingDoc = sendingView?.ParentDocument.ViewModel.DocumentController;
+                // get the data part out of it
+                sendingDoc = sendingDoc?.GetDataDocument(null);
+
+                //var previewDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType());
+                //previewDoc.SetField(KeyStore.ActiveLayoutKey, 
+                //    new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), true);
+
+                //AddDocument(previewDoc, null);
+
+                if (sendingDoc != null)
+                {
+                    var previewDoc =
+                        new PreviewDocument(
+                            new DocumentReferenceController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
+                    AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [KeyStore.ActiveLayoutKey] = previewDoc.Document,
+                        [KeyStore.TitleKey] = new TextController("Preview Document")
+                    }, new DocumentType()), null);
+                }
+            }
+
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(TreeMenuNode.TreeNodeDragKey))
+            {
+                var draggedLayout = e.DataView.Properties[TreeMenuNode.TreeNodeDragKey] as DocumentController;
+                AddDocument(draggedLayout.GetViewCopy(where), null);
             }
 
             if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
@@ -353,9 +507,14 @@ namespace Dash
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
                     if (double.IsNaN(newDoc.GetWidthField().Data))
-                        newDoc.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+                        newDoc.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                     if (double.IsNaN(newDoc.GetHeightField().Data))
-                        newDoc.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+                        newDoc.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
+                    if (e.DataView.Properties.ContainsKey("SelectedText"))
+                    {
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<ListController<DocumentController>>(CollectionNote.CollectedDocsKey, null)?.Data;
+
+                    }
                     return newDoc;
                 });
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
@@ -379,16 +538,23 @@ namespace Dash
 
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-            if (sourceIsRadialMenu)
-            {
-               e.DragUIOverride.Clear();
-                e.DragUIOverride.Caption = e.DataView.Properties.Title;
-                e.DragUIOverride.IsContentVisible = false;
-                e.DragUIOverride.IsGlyphVisible = false;
-            }
+
+            //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
+            //if (sourceIsRadialMenu)
+            //{
+            //   e.DragUIOverride.Clear();
+            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
+            //    e.DragUIOverride.IsContentVisible = false;
+            //    e.DragUIOverride.IsGlyphVisible = false;
+            //} 
+
+            // accessing e.DataView generates a catastrophic exception if it hasn't been set in a StartDragging method.  
+            // This happens with the CollectionDBSchemaHeader.
+            if (CollectionDBSchemaHeader.DragModel != null)
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            else 
+                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             
-            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
             e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;

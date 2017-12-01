@@ -36,8 +36,8 @@ namespace Dash
         
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
-            var refField = Document.GetField(Key) as ReferenceFieldModelController;
-            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
+            var refField = Document.GetField(Key) as ReferenceController;
+            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
             {
                 element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
             }
@@ -59,7 +59,7 @@ namespace Dash
         public bool ConvertFromXaml(object xamlData)
         {
             var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
-            if (field is ReferenceFieldModelController) {
+            if (field is ReferenceController) {
                 xamlData = new Tuple<Context, object>(Context, xamlData);
             }
             
@@ -95,13 +95,13 @@ namespace Dash
 
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
-            DocumentController.OnDocumentFieldUpdatedHandler handler =
-                (sender, args) =>
+            FieldControllerBase.FieldUpdatedHandler handler =
+                (sender, args, context) =>
                 {
-                    if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                    if (binding.Context.IsCompatibleWith(context.DocContextList))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !args.Context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context: binding.Context);
                     }
                 };
             if (element.IsInVisualTree())
@@ -122,20 +122,20 @@ namespace Dash
             where T : FrameworkElement where U : FieldControllerBase
         {
             bool updateUI = true;
-            DocumentController.OnDocumentFieldUpdatedHandler handler =
-                (sender, args) =>
+            FieldControllerBase.FieldUpdatedHandler handler =
+                (sender, args, context) =>
                 {
                     updateUI = false;
                 if (binding.Context == null)
                 {
-                    binding.ConvertToXaml(element, property, args.Context);
+                    binding.ConvertToXaml(element, property, context);
 
                 }
                 else
-                if (binding.Context.IsCompatibleWith(args.Context.DocContextList))
+                if (binding.Context.IsCompatibleWith(context.DocContextList))
                 {
-                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !args.Context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? args.Context : binding.Context);
+                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
                     }
                     updateUI = true;
                 };
@@ -152,7 +152,7 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, binding.Context, false));
+                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, false), binding.Context);
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {

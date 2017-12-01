@@ -9,6 +9,7 @@ using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Converters;
+using Dash.Views.Document_Menu;
 
 namespace Dash
 {
@@ -43,7 +44,7 @@ namespace Dash
         }
         protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
         {
-            if (fieldModelController is DocumentFieldModelController)
+            if (fieldModelController is DocumentController)
             {
                 return new DocumentToViewModelConverter();
             }
@@ -58,14 +59,14 @@ namespace Dash
             // X, Y, Width, and Height etc....
 
             ///* 
-            ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
+            ReferenceController refToData;
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out refToData);
 
-            if (fieldModelController is ImageFieldModelController)
+            if (fieldModelController is ImageController)
                 return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            if (fieldModelController is TextFieldModelController)
+            if (fieldModelController is TextController)
                 return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout, true);
-            var documentfieldModelController = fieldModelController as DocumentFieldModelController;
+            var documentfieldModelController = fieldModelController as DocumentController;
             Debug.Assert(documentfieldModelController != null);
 
             //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
@@ -73,7 +74,7 @@ namespace Dash
             //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
             //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
 
-            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
+            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController, isInterfaceBuilderLayout, context));
 
             var border = new Border();
             border.Child = docView;
@@ -81,7 +82,7 @@ namespace Dash
             SetupDocumentBinding(docView, docController, context);
 
             //Add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = border; 
 
             // bind the text height

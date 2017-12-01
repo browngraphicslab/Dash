@@ -38,29 +38,29 @@ namespace Dash
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [BaseUrlKey] = new TextFieldModelController(""),
-                [HttpMethodKey] = new NumberFieldModelController(0),
-                [AuthBaseUrlKey] = new TextFieldModelController(""),
-                [AuthHttpMethodKey] = new NumberFieldModelController(0),
-                [AuthSecretKey] = new TextFieldModelController(""),
-                [AuthKey] = new TextFieldModelController(""),
-                [ParametersKey] = new DocumentCollectionFieldModelController(new List<DocumentController>()),
-                [HeadersKey] = new DocumentCollectionFieldModelController(new List<DocumentController>()),
+                [BaseUrlKey] = new TextController(""),
+                [HttpMethodKey] = new NumberController(0),
+                [AuthBaseUrlKey] = new TextController(""),
+                [AuthHttpMethodKey] = new NumberController(0),
+                [AuthSecretKey] = new TextController(""),
+                [AuthKey] = new TextController(""),
+                [ParametersKey] = new ListController<DocumentController>(new List<DocumentController>()),
+                [HeadersKey] = new ListController<DocumentController>(new List<DocumentController>()),
                 [AuthParametersKey] =
-                new DocumentCollectionFieldModelController(new List<DocumentController>()),
-                [AuthHeadersKey] = new DocumentCollectionFieldModelController(new List<DocumentController>()),
-                [KeyStore.WidthFieldKey] = new NumberFieldModelController(550),
-                [KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
-                [KeyStore.PositionFieldKey] = new PointFieldModelController(new Windows.Foundation.Point(0,0)),
-                [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                new ListController<DocumentController>(new List<DocumentController>()),
+                [AuthHeadersKey] = new ListController<DocumentController>(new List<DocumentController>()),
+                [KeyStore.WidthFieldKey] = new NumberController(550),
+                [KeyStore.HeightFieldKey] = new NumberController(400),
+                [KeyStore.PositionFieldKey] = new PointController(new Windows.Foundation.Point(0,0)),
+                [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
+                [KeyStore.ScaleCenterFieldKey] = new PointController(0, 0),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                 [KeyStore.CollectionKey] =
-                new DocumentCollectionFieldModelController(new List<DocumentController>())
+                new ListController<DocumentController>(new List<DocumentController>())
             };
             Document = new DocumentController(fields, DocumentType);
-            Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            Document.SetField(KeyStore.IconTypeFieldKey, new NumberController((double)IconTypeEnum.Api), true);
             //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
@@ -80,7 +80,7 @@ namespace Dash
 
             // fetch parameter list to add to
             var col =
-                (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
+                (ListController<DocumentController>)docController.GetField(parameterCollectionKey);
 
             double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
             double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
@@ -88,10 +88,10 @@ namespace Dash
             // generate new doc with information to add
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [ValueTextKey] = new TextFieldModelController(key.Text),
-                [DisplayKey] = new NumberFieldModelController(displayDouble),
-                [KeyTextKey] = new TextFieldModelController(value.Text),
-                [RequiredKey] = new NumberFieldModelController(requiredDouble),
+                [ValueTextKey] = new TextController(key.Text),
+                [DisplayKey] = new NumberController(displayDouble),
+                [KeyTextKey] = new TextController(value.Text),
+                [RequiredKey] = new NumberController(requiredDouble),
             };
 
             // add to collection & return new document result
@@ -120,8 +120,8 @@ namespace Dash
             Debug.WriteLine("here: " + key.Text);
 
             // bind source's fields to those of the editor (key, value)
-            TextFieldModelController textFieldModelController =
-                ret.GetField(KeyTextKey) as TextFieldModelController;
+            TextController textFieldModelController =
+                ret.GetField(KeyTextKey) as TextController;
             var sourceBinding = new Binding
             {
                 Source = textFieldModelController,
@@ -154,7 +154,7 @@ namespace Dash
             apiprop.XRequired.SetBinding(CheckBox.IsCheckedProperty, bindin);
 
 
-            col.AddDocument(ret);
+            col.Add(ret);
             return ret;
         }
 
@@ -170,9 +170,9 @@ namespace Dash
                          parameterCollectionKey == AuthHeadersKey ||
                          parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
-            DocumentCollectionFieldModelController col =
-                (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
-            col.RemoveDocument(docModelToRemove);
+            ListController<DocumentController> col =
+                (ListController<DocumentController>)docController.GetField(parameterCollectionKey);
+            col.Remove(docModelToRemove);
 
         }
 
@@ -200,7 +200,7 @@ namespace Dash
         {
 
             // bind URL
-            TextFieldModelController textFieldModelController = field as TextFieldModelController;
+            TextController textFieldModelController = field as TextController;
             var sourceBinding = new Binding
             {
                 Source = textFieldModelController,
@@ -219,7 +219,7 @@ namespace Dash
         {
 
             // bind URL
-            NumberFieldModelController textFieldModelController = field as NumberFieldModelController;
+            NumberController textFieldModelController = field as NumberController;
             var sourceBinding = new Binding
             {
                 Source = textFieldModelController,
@@ -242,8 +242,8 @@ namespace Dash
             // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey));
 
             // bind drop down list
-            NumberFieldModelController fmcontroller =
-                docController.GetField(HttpMethodKey) as NumberFieldModelController;
+            NumberController fmcontroller =
+                docController.GetField(HttpMethodKey) as NumberController;
             var sourceBinding = new Binding
             {
                 Source = fmcontroller,
@@ -258,7 +258,7 @@ namespace Dash
         public static void setResults(DocumentController docController, List<DocumentController> documents)
         {
             (docController.GetField(KeyStore.CollectionKey) as
-                DocumentCollectionFieldModelController).SetDocuments(documents);
+                ListController<DocumentController>).Set(documents);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,

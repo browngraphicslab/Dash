@@ -138,6 +138,8 @@ namespace Dash
         /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
+            if (docController == null)
+                return;
             // if the document is already in the collection don't readd it
             if (_documents.Contains(docController))
             {
@@ -171,9 +173,7 @@ namespace Dash
 
         void ContainedDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
-            var keylist = (sender
-                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
-                    new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
+            var keylist = sender.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, new Context(sender))?.Data;
             if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
                 OnFieldModelUpdated(args.FieldArgs);
         }
@@ -240,7 +240,7 @@ namespace Dash
             string id, bool isInterfaceBuilder = false)
         {
             var rfmc = new DocumentReferenceFieldController(id, kc);
-            var vm = new CollectionViewModel(rfmc, isInterfaceBuilder, context);
+            var vm = new CollectionViewModel(container, rfmc, isInterfaceBuilder, context);
             var viewType = container.GetActiveLayout()?.Data?.GetDereferencedField<TextFieldModelController>(KeyStore.CollectionViewTypeKey, null)?.Data ??  CollectionView.CollectionViewType.Grid.ToString();
             var colView = new CollectionView(vm, (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), viewType));
             sp.Children.Add(colView);

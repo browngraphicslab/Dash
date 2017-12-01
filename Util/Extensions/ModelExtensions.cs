@@ -11,11 +11,11 @@ namespace Dash
 {
     public static class ModelExtensions
     {
-        public static DocumentController NewController(this DocumentModel model)
-        {
-            var controller =  DocumentControllerFactory.CreateFromModel(model);
-            return controller;
-        }
+        //public static DocumentController NewController(this DocumentModel model)
+        //{
+        //    var controller =  DocumentControllerFactory.CreateFromModel(model);
+        //    return controller;
+        //}
 
         public static FieldControllerBase NewController(this FieldModel model)
         {
@@ -23,15 +23,15 @@ namespace Dash
             return controller;
         }
 
-        public static KeyController NewController(this KeyModel model)
-        {
-            var controller = KeyControllerFactory.CreateFromModel(model);
-            return controller;
-        }
+        //public static KeyController NewController(this KeyModel model)
+        //{
+        //    var controller = KeyControllerFactory.CreateFromModel(model);
+        //    return controller;
+        //}
 
         public static DocumentController GetController(this DocumentModel model)
         {
-            return ContentController<DocumentModel>.GetController<DocumentController>(model.Id);
+            return ContentController<FieldModel>.GetController<DocumentController>(model.Id);
         }
 
         public static FieldControllerBase GetController(this FieldModel model)
@@ -41,7 +41,7 @@ namespace Dash
 
         public static KeyController GetController(this KeyModel model)
         {
-            return ContentController<KeyModel>.GetController<KeyController>(model.Id);
+            return ContentController<FieldModel>.GetController<KeyController>(model.Id);
         }
     }
 }
