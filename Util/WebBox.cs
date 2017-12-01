@@ -91,11 +91,13 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
-            web.NavigationStarting += Web_NavigationStarting;
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
-                web.NavigateToString(html.Substring(html.ToLower().IndexOf("<html"), html.Length-html.ToLower().IndexOf("<html")));
+                if (html.StartsWith("http"))
+                    web.Navigate(new Uri(html));
+                else web.NavigateToString(html.StartsWith("http") ? html : html.Substring(html.ToLower().IndexOf("<html"), html.Length-html.ToLower().IndexOf("<html")));
             else web.Source = new Uri(textfieldModelController.Data);
+            web.NavigationStarting += Web_NavigationStarting;
 
             grid.Children.Add(web);
             var overgrid = new Grid
@@ -121,14 +123,12 @@ namespace Dash
             return grid;
         }
 
-        private static async void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
             if (args.Uri != null)
             {
                 args.Cancel = true;
-                await Windows.System.Launcher.LaunchUriAsync(args.Uri);
-
-
+                Windows.System.Launcher.LaunchUriAsync(args.Uri);
             }
         }
 

@@ -51,7 +51,7 @@ namespace Dash
 
         public static bool operator !=(IController<T> c1, IController<T> c2)
         {
-            return !(c1 == c2);
+            return c1 == null ? !(c2 == null) : !(c1.Equals(c2));
         }
 
         /// <summary>

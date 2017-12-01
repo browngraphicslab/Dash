@@ -9,6 +9,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Dash.Controllers;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -250,7 +251,7 @@ namespace Dash
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
                     var link = await e.DataView.GetWebLinkAsync();
-                    return DBTest.CreateWebPage(link.AbsoluteUri, where);
+                    return new HtmlNote(link.AbsoluteUri, "", where).Document;
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
                 case FileType.Text:
