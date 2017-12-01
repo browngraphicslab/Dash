@@ -87,11 +87,15 @@ namespace Dash
             var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
             var web = new WebView
             {
-                Source = new Uri(textfieldModelController.Data),
                 IsHitTestVisible = false,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
+            var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
+            if (html != null)
+                web.NavigateToString(html.Substring(html.IndexOf("<html"), html.Length-html.IndexOf("<html")));
+            else web.Source = new Uri(textfieldModelController.Data);
+
             grid.Children.Add(web);
             var overgrid = new Grid
             {
@@ -102,7 +106,8 @@ namespace Dash
             };
             grid.Children.Add(overgrid);
 
-            SetupBindings(web, docController, context);
+            if (html == null)
+                SetupBindings(web, docController, context);
 
             //add to key to framework element dictionary
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
