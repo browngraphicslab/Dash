@@ -887,6 +887,14 @@ namespace Dash
                 e.Handled = true;
             }
         }
-    }
+
+        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
+            var deepestPrototype = prototypes.First.Value;
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
+            var same = deepestPrototype.Equals(ViewModel.DocumentController);
+        }
+}
     
 }
