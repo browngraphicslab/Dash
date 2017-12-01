@@ -92,7 +92,6 @@ namespace Dash.Views.Document_Menu
     {
         private KeyController _key;
         public DocumentController LayoutDoc;
-        public DocumentController DataDoc;
         public Func<DocumentController> Action; 
         public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController layoutDoc, KeyController key) : base(label, icon, action)
         {
@@ -103,8 +102,6 @@ namespace Dash.Views.Document_Menu
             // set the default title
             dataDoc.GetTitleFieldOrSetDefault(null);
             dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
-
-            DataDoc = dataDoc; 
             //TextChangedHandler(dataDoc, null); 
         }
 

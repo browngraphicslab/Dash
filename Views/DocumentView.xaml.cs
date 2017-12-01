@@ -858,8 +858,6 @@ namespace Dash
             var text = doc.GetField(KeyStore.SystemUriKey) as TextFieldModelController;
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
-            Debug.WriteLine(query);
-
         }
 
         private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)
@@ -882,7 +880,7 @@ namespace Dash
 
         public void UpdateTreeNode(DocumentController dc)
         {
-            (_treeMenuItem as DocumentAddMenuItem).DataDoc = dc; 
+            (_treeMenuItem as DocumentAddMenuItem).LayoutDoc = dc; 
         }
     }
 

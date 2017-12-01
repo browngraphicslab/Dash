@@ -77,6 +77,7 @@ namespace Dash
             freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
 
+            xKeyValuePane.OnKeyValuePairAdded -= XKeyValuePane_OnKeyValuePairAdded;
             xKeyValuePane.OnKeyValuePairAdded += XKeyValuePane_OnKeyValuePairAdded;
         }
 

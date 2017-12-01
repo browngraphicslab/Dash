@@ -181,8 +181,7 @@ namespace Dash
                     var docMenuItem = menuItem as DocumentAddMenuItem;
                     if (docMenuItem != null)
                     {
-                        //var controller = docMenuItem.LayoutDoc.GetDataDocument(null); 
-                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, /*controller*/ docMenuItem.DataDoc));
+                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.LayoutDoc.GetDataDocument(null)));
                     }
                 }
             }

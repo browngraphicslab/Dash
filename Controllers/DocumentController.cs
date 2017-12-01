@@ -123,8 +123,6 @@ namespace Dash
             if (string.IsNullOrWhiteSpace(keyName))
                 return false;
 
-            Debug.WriteLine("looking for : " + keyName);
-
             foreach (KeyController key in _fields.Keys)
             {
                 if (key.Name.StartsWith("_"))
@@ -132,7 +130,6 @@ namespace Dash
                 Debug.WriteLine("key: " + key.Name);
                 if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
                 {
-                    Debug.WriteLine("found????????????");
                     return true;
                 }
             }
