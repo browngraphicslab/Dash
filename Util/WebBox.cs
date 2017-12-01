@@ -87,13 +87,14 @@ namespace Dash
             var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
             var web = new WebView
             {
-                IsHitTestVisible = false,
+                IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
+            web.NavigationStarting += Web_NavigationStarting;
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
-                web.NavigateToString(html.Substring(html.IndexOf("<html"), html.Length-html.IndexOf("<html")));
+                web.NavigateToString(html.Substring(html.ToLower().IndexOf("<html"), html.Length-html.ToLower().IndexOf("<html")));
             else web.Source = new Uri(textfieldModelController.Data);
 
             grid.Children.Add(web);
@@ -104,7 +105,7 @@ namespace Dash
                 Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
                 Name = "overgrid"
             };
-            grid.Children.Add(overgrid);
+          //  grid.Children.Add(overgrid);
 
             if (html == null)
                 SetupBindings(web, docController, context);
@@ -118,6 +119,17 @@ namespace Dash
                 return new SelectableContainer(grid, docController);
             }
             return grid;
+        }
+
+        private static async void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+            if (args.Uri != null)
+            {
+                args.Cancel = true;
+                await Windows.System.Launcher.LaunchUriAsync(args.Uri);
+
+
+            }
         }
 
         protected override DocumentController GetLayoutPrototype()
