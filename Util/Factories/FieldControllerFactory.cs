@@ -236,7 +236,7 @@ namespace Dash
         }
 
 
-        public static FieldControllerBase CreateDefaultFieldController(TypeInfo t)
+        public static FieldControllerBase CreateDefaultFieldController(TypeInfo t, TypeInfo listType = TypeInfo.Document)
         {
             FieldControllerBase controller = null;
 
@@ -248,7 +248,7 @@ namespace Dash
                 case TypeInfo.Operator:
                     throw new NotImplementedException();
                 case TypeInfo.List:
-                    throw new NotImplementedException();
+                    return MakeDefaultListFieldController(listType);
                 case TypeInfo.Document:
                     controller = new DocumentController();
                     break;
@@ -281,6 +281,66 @@ namespace Dash
 
             Debug.Assert(controller != null);
 
+            return controller;
+        }
+
+        private static FieldControllerBase MakeDefaultListFieldController(TypeInfo listType)
+        {
+            FieldControllerBase controller = null;
+
+            switch (listType)
+            {
+                case TypeInfo.None:
+                    Debug.Fail("this shouldnt happen????");
+                    break;
+                case TypeInfo.Number:
+                    controller = new ListController<NumberController>();
+                    break;
+                case TypeInfo.Text:
+                    controller = new ListController<TextController>();
+                    break;
+                case TypeInfo.Image:
+                    controller = new ListController<ImageController>();
+                    break;
+                case TypeInfo.Document:
+                    controller = new ListController<DocumentController>();
+                    break;
+                case TypeInfo.PointerReference:
+                    controller = new ListController<PointerReferenceController>();
+                    break;
+                case TypeInfo.DocumentReference:
+                    controller = new ListController<DocumentReferenceController>();
+                    break;
+                case TypeInfo.Operator:
+                    controller = new ListController<OperatorController>();
+                    break;
+                case TypeInfo.Point:
+                    controller = new ListController<PointController>();
+                    break;
+                case TypeInfo.List:
+                    Debug.Fail("idk why you got here");
+                    break;
+                case TypeInfo.Ink:
+                    controller = new ListController<InkController>();
+                    break;
+                case TypeInfo.RichTextField:
+                    controller = new ListController<RichTextController>();
+                    break;
+                case TypeInfo.Rectangle:
+                    controller = new ListController<RectController>();
+                    break;
+                case TypeInfo.Reference:
+                    controller = new ListController<ReferenceController>();
+                    break;
+                case TypeInfo.Key:
+                    controller = new ListController<KeyController>();
+                    break;
+                case TypeInfo.Any:
+                    Debug.Fail("idk why you got here");
+                    break;
+                default:
+                    break;
+            }
             return controller;
         }
 
