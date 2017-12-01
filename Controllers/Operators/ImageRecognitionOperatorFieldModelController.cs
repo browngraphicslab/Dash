@@ -58,7 +58,7 @@ namespace Dash.Controllers.Operators
                 }
                 catch
                 {
-                    //result = Task.Run(() => ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri)).Result;
+                    result = Task.Run(() => ComputerVision.AnalyzeUrl(controller.ImageFieldModel.Data.AbsoluteUri)).Result;
                 }
                 if (result == null)
                     return;
