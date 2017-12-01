@@ -120,14 +120,15 @@ namespace Dash
 
         public bool HasMatchingKey(string keyName)
         {
+            if (string.IsNullOrWhiteSpace(keyName))
+                return false;
+
             Debug.WriteLine("looking for : " + keyName);
 
-            //var dataContext = GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, null);
-            //var doc = dataContext?.Data ?? this;
             foreach (KeyController key in _fields.Keys)
             {
                 if (key.Name.StartsWith("_"))
-                    continue; 
+                    continue;
                 Debug.WriteLine("key: " + key.Name);
                 if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
                 {
@@ -135,7 +136,7 @@ namespace Dash
                     return true;
                 }
             }
-            return false; 
+            return false;
         }
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key

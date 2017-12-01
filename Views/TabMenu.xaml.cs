@@ -154,7 +154,7 @@ namespace Dash
 
         private void XSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            UpdateList(args.QueryText);
+            //UpdateList(args.QueryText);   // commented out; handlekeyup should technically be enough 
         }
 
         /// <summary>
@@ -210,18 +210,20 @@ namespace Dash
                 }
                 else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
                 {
-                    var fieldName = strings[1]; 
-                    var newTabItems = new List<ITabItemViewModel>(); 
+                    var fieldName = strings[1];
+                    var newTabItems = new List<ITabItemViewModel>();
                     foreach (ITabItemViewModel item in _allDocItems)
                     {
                         var nameMatches = item.Title.ToLowerInvariant().Contains(docName.ToLowerInvariant());
                         if (!nameMatches)
-                            continue; 
-                        var containsField = (item as GoToTabItemViewModel).Document.HasMatchingKey(fieldName);
+                            continue;
+
+                        var data = (item as GoToTabItemViewModel).Document.GetDataDocument(null); 
+                        var containsField = data.HasMatchingKey(fieldName);
                         if (containsField)
-                            newTabItems.Add(item);  
+                            newTabItems.Add(item);
                     }
-                    DisplayedTabItems = newTabItems; 
+                    DisplayedTabItems = newTabItems;
                 }
             }
             else
