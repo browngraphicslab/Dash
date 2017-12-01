@@ -117,19 +117,14 @@
             <ProgressRing x:Name="xProgressRing" Grid.Row="1" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
 
             <!--Rectangles that indicate whether document is a delegate or a copy-->
-            <Grid Grid.Row="0" Grid.Column="0" Margin="0,-23,12,0"
+            <Grid Grid.Row="0" Grid.Column="0" Margin="0,-23,0,0" HorizontalAlignment="Right" Width="23"
                 Visibility="{Binding Path=DocumentController.HasPrototype, Converter={StaticResource BoolToVisibilityConverter}}" Background="Transparent">
                 <Grid.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Prototype" Click="DeepestPrototypeFlyoutItem_OnClick"></MenuFlyoutItem>
                     </MenuFlyout>
                 </Grid.ContextFlyout>
-                <Canvas HorizontalAlignment="Right" Width="0">
-                    <Canvas.ContextFlyout>
-                        <MenuFlyout>
-                            <MenuFlyoutItem Text="Prototype" Click="DeepestPrototypeFlyoutItem_OnClick"></MenuFlyoutItem>
-                        </MenuFlyout>
-                    </Canvas.ContextFlyout>
+                <Canvas HorizontalAlignment="Center" IsHitTestVisible="False">
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="1"

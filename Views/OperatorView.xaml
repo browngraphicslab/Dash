@@ -39,7 +39,7 @@
                         <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted" DragEnter="UIElement_OnDragEnter" 
-                                     Drop="UIElement_OnDrop"/>
+                                     Drop="UIElement_OnDrop"  Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
                             <TextBlock Grid.Column="1"  Margin="10,0,0,0" VerticalAlignment="Top" Foreground="{StaticResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" />
                         </StackPanel>
                     </DataTemplate>

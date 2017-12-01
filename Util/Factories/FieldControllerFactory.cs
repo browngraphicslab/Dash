@@ -70,7 +70,7 @@ namespace Dash
                 case TypeInfo.Text:
                     controller = new TextController(model as TextModel);
                     break;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     controller = new RichTextController(model as RichTextModel);
                     break;
                 case TypeInfo.Image:
@@ -134,7 +134,7 @@ namespace Dash
                 case TypeInfo.Ink:
                     controller = new ListController<InkController>(model);
                     break;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     controller = new ListController<RichTextController>(model);
                     break;
                 case TypeInfo.Rectangle:
@@ -267,7 +267,7 @@ namespace Dash
                 case TypeInfo.Text:
                     controller = new TextController("");
                     break;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     controller = new RichTextController();
                     break;
                 case TypeInfo.Image:
@@ -323,7 +323,7 @@ namespace Dash
                 case TypeInfo.Ink:
                     controller = new ListController<InkController>();
                     break;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     controller = new ListController<RichTextController>();
                     break;
                 case TypeInfo.Rectangle:

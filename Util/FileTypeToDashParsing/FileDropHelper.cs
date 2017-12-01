@@ -85,7 +85,7 @@ namespace Dash
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     case ".rtf":
-                        t = TypeInfo.RichTextField;
+                        t = TypeInfo.RichText;
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     default:
@@ -140,7 +140,7 @@ namespace Dash
                     return new DocumentBox(reference, x, y, w, h).Document;
                 case TypeInfo.Point:
                     return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     return new RichTextBox(reference, x, y, w, h).Document;
                 default:
                     return null;
