@@ -1003,10 +1003,10 @@ namespace Dash
                     // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
-                        foreach (var opfieldOutput in opField.Outputs)
-                        {
-                            context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
-                        }
+                        //foreach (var opfieldOutput in opField.Outputs)
+                        //{
+                        //    context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
+                        //}
                         return context;
                     }
                 }
