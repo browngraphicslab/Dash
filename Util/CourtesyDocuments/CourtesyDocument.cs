@@ -75,7 +75,7 @@ namespace Dash
 
         private static int loaded = 0, unloaded = 0;
 
-        
+
         [Obsolete("Use FieldBindings and AddFieldBinding instead")]
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
@@ -230,7 +230,7 @@ namespace Dash
             //Set width and height
             BindWidth(element, docController, context);
             BindHeight(element, docController, context);
-                
+
             //Set alignments
             BindHorizontalAlignment(element, docController, context);
             BindVerticalAlignment(element, docController, context);
@@ -281,7 +281,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldControllerBase fmController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey)
         {
             //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;
@@ -305,7 +305,8 @@ namespace Dash
                 var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = true;
-                freeform?.StartDrag(new IOReference(reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                var field = reference.DereferenceToRoot(null);
+                freeform?.StartDrag(new IOReference(reference, true, field != null ? field.TypeInfo : TypeInfo.Any, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
@@ -318,7 +319,8 @@ namespace Dash
                 if (args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
-                    freeform?.StartDrag(new IOReference(reference, true, fmController.TypeInfo, args, renderElement,
+                    var field = reference.DereferenceToRoot(null);
+                    freeform?.StartDrag(new IOReference(reference, true, field != null ? field.TypeInfo : TypeInfo.Any, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -330,7 +332,8 @@ namespace Dash
                 if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
-                freeform?.EndDrag(new IOReference(reference, false, fmController.TypeInfo, args, renderElement,
+                var field = reference.DereferenceToRoot(null);
+                freeform?.EndDrag(new IOReference(reference, false, field != null ? field.TypeInfo : TypeInfo.Any, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };

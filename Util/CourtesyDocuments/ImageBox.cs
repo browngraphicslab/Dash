@@ -75,9 +75,8 @@ namespace Dash
 
 
             // set up interactions with operations
-            var imageFMController = docController.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-            BindOperationInteractions(image, GetImageReference(docController).GetFieldReference().Resolve(context), reference.FieldKey, imageFMController);
+            BindOperationInteractions(image, GetImageReference(docController).GetFieldReference().Resolve(context), reference.FieldKey);
 
           
             if(keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = image;
