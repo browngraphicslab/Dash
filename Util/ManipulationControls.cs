@@ -92,7 +92,8 @@ namespace Dash
 
         private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            _numberOfTimesSpeedReached = 0;
+            _numberOfTimesDirChanged = 0;
+            Debug.WriteLine("Manipulation completed");
 
         }
 
@@ -106,7 +107,10 @@ namespace Dash
             }
             _processManipulation = true;
 
-            _numberOfTimesSpeedReached = 0;
+            _numberOfTimesDirChanged = 0;
+
+            Debug.WriteLine("Manipulation started");
+
         }
 
         public void AddAllAndHandle()
@@ -192,9 +196,13 @@ namespace Dash
         }
 
         // keeps track of whether the node has been shaken hard enough
-        private static int _numberOfTimesSpeedReached = 0;
+        private static int _numberOfTimesDirChanged = 0;
         private static double _direction;
         private static DispatcherTimer _dispatcherTimer;
+
+        // these constants adjust the sensitivity of the shake
+        private static int _millisecondsToShake = 600;
+        private static int _sensitivity = 4;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -212,40 +220,31 @@ namespace Dash
                 // calculate the speed of the translation from the velocities property of the eventargs
                 var speed = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
 
-                // if the speed is higher than 4
-                if (speed > 6)
+                // calculate the direction of the velocity
+                var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
+                
+                // checks if a certain number of direction changes occur in a specified time span
+                if (_numberOfTimesDirChanged == 0)
                 {
-                    // if this is the first time we reach this speed, increment counter and store direction of translation
-                    if (_numberOfTimesSpeedReached == 0)
+                    StartTimer();
+                    _numberOfTimesDirChanged++;
+                    _direction = dir;
+                }
+                else if (_numberOfTimesDirChanged < _sensitivity)
+                {
+                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
                     {
-                        StartTimer();
-                        _numberOfTimesSpeedReached++;
-                        _direction = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X) - Math.PI;
-
+                        _numberOfTimesDirChanged++;
+                        _direction = dir;
                     }
-                    // if this is the second time, check if the direction of this translation is different enough 
-                    // from the old direction 
-                    else if (_numberOfTimesSpeedReached == 1)
+                }
+                else
+                {
+                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
                     {
-                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                        if (Math.Abs(newDir - _direction) < 50)
-                        {
-                            // if it is, increment counter and store the new direction
-                            _numberOfTimesSpeedReached++;
-                            _direction = newDir;
-                        }
-                    }
-                    // if this is the third time, check again if the direction is different enough
-                    // if it is, disconnect this documentview from its links
-                    else if (_numberOfTimesSpeedReached == 2)
-                    {
-                        var newDir = Math.Atan(e.Velocities.Linear.Y / e.Velocities.Linear.X);
-                        if (Math.Abs(newDir - _direction) < 50)
-                        {
-                            docView.DisconnectFromLink();
-                            _dispatcherTimer.Stop();
-                            _numberOfTimesSpeedReached = 0;
-                        }
+                        // if we've reached enough direction changes, break the connection
+                        docView.DisconnectFromLink();
+                        _numberOfTimesDirChanged = 0;
                     }
                 }
             }
@@ -253,20 +252,26 @@ namespace Dash
 
         private static void StartTimer()
         {
-            if(_dispatcherTimer != null)
+            Debug.WriteLine("Timer started");
+            if (_dispatcherTimer != null)
             {
                 _dispatcherTimer.Stop();
             }
-            _dispatcherTimer = new DispatcherTimer();
-            _dispatcherTimer.Tick += dispatcherTimer_Tick;
-            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 50);
+            else
+            {
+                _dispatcherTimer = new DispatcherTimer();
+                _dispatcherTimer.Tick += dispatcherTimer_Tick;
+            }
+            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, _millisecondsToShake);
+
             _dispatcherTimer.Start();
-           
+
         }
 
         private static void dispatcherTimer_Tick(object sender, object e)
         {
-            _numberOfTimesSpeedReached = 0;
+            Debug.WriteLine("TICK");
+            _numberOfTimesDirChanged = 0;
             _dispatcherTimer.Stop();
         }
 
@@ -368,7 +373,7 @@ namespace Dash
 
         private bool ClampScale(double scaleFactor)
         {
-            Debug.WriteLine(ElementScale);
+            //Debug.WriteLine(ElementScale);
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;
