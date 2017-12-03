@@ -8,12 +8,21 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top">
         <StackPanel Orientation="Vertical">
-            <Border Background="{StaticResource WindowsBlue}" VerticalAlignment="Top">
-                <TextBlock x:Name="xDisplayName" Foreground="White"></TextBlock>
-            </Border>
-            <StackPanel Padding="10,0,0,0" Background="{StaticResource WindowsBlue}" x:Name="xChildrenPanel">
+
+            <Grid>
+                <Border x:Name="xHeaderBackground" Background="{StaticResource DarkBackground}"></Border>
+            <Grid x:Name="xHeader" Tapped="xHeader_Tapped" Style="{StaticResource xMenuItemHeaderContainer}" Background="Transparent">
+                <TextBlock x:Name="xCollapsedArrow" Foreground="{x:Bind xDisplayName.Foreground}"  FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}" Text="{StaticResource ExpandArrowIcon}"  />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="xLeftIcon" Visibility="Collapsed"  Foreground="{x:Bind xDisplayName.Foreground}" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpand}" Text="{StaticResource DocumentPlainIcon}" />
+                    <TextBlock x:Name="xDisplayName" Style="{StaticResource xMenuItemHeader}"></TextBlock>
+                </StackPanel>
+            </Grid>
+
+            </Grid>
+            <StackPanel Padding="10,0,0,0" x:Name="xChildrenPanel" Background="{StaticResource DarkBackground}">
 
             </StackPanel>
         </StackPanel>

@@ -15,6 +15,9 @@ namespace Dash
     {
         private List<T> _typedData = new List<T>();
 
+        /// <summary>
+        /// Wrapper to retrieve the list items stored in the ListController.
+        /// </summary>
         public List<T> TypedData
         {
             get { return _typedData; }
@@ -50,7 +53,7 @@ namespace Dash
             //if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
             //    OnFieldModelUpdated(args.FieldArgs);
         }
-
+        
         public override object GetValue(Context context)
         {
             return TypedData.ToList();
@@ -280,5 +283,20 @@ namespace Dash
                 ChangedDocuments = changedDocuments;
             }
         }
+
+        // todo: replace with better value override
+        public override string ToString()
+        {
+            return "Items";
+        }
+        // override ToString() to get displayable string representation of field
+        public override string GetTypeAsString()
+        {
+            if (ListModel.SubTypeInfo == TypeInfo.Document)
+                return "List:Doc"; // uses truncated 'doc' instead of 'document'
+            else
+                return "List:" + ListModel.SubTypeInfo.ToString();
+        }
     }
+
 }

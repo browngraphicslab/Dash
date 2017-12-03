@@ -580,7 +580,7 @@
             <Setter Property="HorizontalAlignment" Value="Center"></Setter>
         </Style>
         <Style TargetType="Grid" x:Key="xMenuItemHeaderContainer">
-            <Setter Property="Padding" Value="11"></Setter>
+            <Setter Property="Padding" Value="8"></Setter>
             <Setter Property="Margin" Value="0,0,0,1"></Setter>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
@@ -595,9 +595,8 @@
 
         <Style TargetType="TextBlock" x:Key="xMenuItemHeader">
             <Setter Property="Foreground" Value="White"></Setter>
-            <Setter Property="Margin" Value="18,0,0,0"></Setter>
-            <Setter Property="Padding" Value="7,0,0,0"></Setter>
-            <Setter Property="FontSize" Value="11"></Setter>
+            <Setter Property="Padding" Value="0,0,0,0"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
             <Setter Property="HorizontalAlignment" Value="Left"></Setter>
         </Style>
         <Style TargetType="TextBlock" x:Key="xMenuItem">
@@ -608,9 +607,9 @@
         </Style>
         <Style TargetType="TextBlock" x:Key="xMenuItemExpand">
             <Setter Property="Foreground" Value="White"></Setter>
-            <Setter Property="FontSize" Value="14"></Setter>
-            <Setter Property="Width" Value="18"></Setter>
-            <Setter Property="TextAlignment" Value="Center"></Setter>
+            <Setter Property="FontSize" Value="13"></Setter>
+            <Setter Property="Padding" Value="0,1,7,0"></Setter>
+            <Setter Property="TextAlignment" Value="Left"></Setter>
             <Setter Property="HorizontalAlignment" Value="Left"></Setter>
         </Style>
         <Style TargetType="TextBlock" x:Key="xMenuItemExpandRight">

@@ -74,7 +74,15 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
-
+        /// <summary>
+        /// Returns the type of this field as a string. Can override this for more complex
+        /// string displays.
+        /// </summary>
+        /// <returns></returns>
+        public virtual String GetTypeAsString()
+        {
+            return TypeInfo.ToString();
+        }
         public abstract FieldControllerBase GetDefaultController();
 
         /// <summary>
