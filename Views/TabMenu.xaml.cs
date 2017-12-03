@@ -168,7 +168,7 @@ namespace Dash
         }
 
         private List<ITabItemViewModel> _allDocItems;
-        //Adds documentViews to tabmenu so we can navigate to them 
+        ///Adds documentViews to tabmenu so we can navigate to them 
         public void AddGoToTabItems()
         {
             _allDocItems = new List<ITabItemViewModel>();
@@ -202,11 +202,11 @@ namespace Dash
                 query = query.Substring(1, query.Length - 1);
                 var strings = query.Split('.');
                 var docName = strings[0];
-                if (strings.Count() == 1)       // "@<DocumentName>" --> zooms to a document with the name 
+                if (strings.Count() == 1)       // "@<DocumentName>" --> tabmenu shows documents with the name 
                 {
                     DisplayedTabItems = _allDocItems.Where(t => t.Title.ToLowerInvariant().Contains(docName.ToLowerInvariant())).ToList();
                 }
-                else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> zooms to a document containing that field 
+                else if (strings.Count() == 2)  // "@<DocumentName>.<FieldName>" --> tabmenu shows documents containing that field 
                 {
                     var fieldName = strings[1];
                     var newTabItems = new List<ITabItemViewModel>();
