@@ -28,6 +28,7 @@ namespace Dash
         public GetConverter<T> GetConverter;
         public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
         public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;
+        public Object FallbackValue;
 
         public Context Context;
 
@@ -48,11 +49,21 @@ namespace Dash
                 {
                     var converter = GetConverter != null ? GetConverter(field) : Converter;
                     var fieldData = field.GetValue(context);
-                    var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
+                    var xamlData = converter == null
+                        ? fieldData
+                        : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
                     if (xamlData != null)
                     {
                         element.SetValue(property, xamlData);
                     }
+                }
+                else if (FallbackValue != null)
+                {
+                    element.SetValue(property, FallbackValue);
+                }
+                else
+                {
+                    element.ClearValue(property);
                 }
             }
         }

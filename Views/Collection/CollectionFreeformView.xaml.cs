@@ -439,13 +439,12 @@ namespace Dash
         {
             foreach (var converter in LineToConverter.Values)
             {
-                DocumentView view1, view2;
-                try
+                if (converter.Element1 == null || converter.Element2 == null)
                 {
-                    view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                    view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                    return;
                 }
-                catch (ArgumentException) { return; }
+                DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 if (docView == view1)
                 {
                     if (becomeSmall)
