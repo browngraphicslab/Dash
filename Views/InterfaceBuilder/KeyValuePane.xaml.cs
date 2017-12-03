@@ -184,49 +184,49 @@ namespace Dash
             //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
             //fmController = _documentControllerDataContext.GetField(key);
 
-            // /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
-            ///                                         // and can't create image fields ? 
-            if (item == TypeInfo.Number)
-            {
-                double number;
-                // if specified type is number only add a new keyvalue pair if the value is a number 
-                if (double.TryParse(xNewValueField.Text, out number))
-                    fmController = new NumberFieldModelController(number);
-                else
-                    return false;
-            }
-            else if (item == TypeInfo.Image)
-            {
-                fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
-            }
-            else if (item == TypeInfo.Text)
-            {
-                fmController = new TextFieldModelController(xNewValueField.Text);
-            }
-            else if (item == TypeInfo.Collection)
-            {
-                fmController = new DocumentCollectionFieldModelController();
-            }
-            else if (item == TypeInfo.Document)
-            {
-                var fields = new Dictionary<KeyController, FieldControllerBase>
-                {
-                    [KeyStore.ActiveLayoutKey] =
-                    new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
-                };
+           // /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
+           ///                                         // and can't create image fields ? 
+           if (item == TypeInfo.Number)
+           {
+               double number;
+               // if specified type is number only add a new keyvalue pair if the value is a number 
+               if (double.TryParse(xNewValueField.Text, out number))
+                   fmController = new NumberFieldModelController(number);
+               else
+                   return false;
+           }
+           else if (item == TypeInfo.Image)
+           {
+               fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
+           }
+           else if (item == TypeInfo.Text)
+           {
+               fmController = new TextFieldModelController(xNewValueField.Text);
+           }
+           else if (item == TypeInfo.Collection)
+           {
+               fmController = new DocumentCollectionFieldModelController();
+           }
+           else if (item == TypeInfo.Document)
+           {
+               var fields = new Dictionary<KeyController, FieldControllerBase>
+               {
+                   [KeyStore.ActiveLayoutKey] =
+                   new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>()).Document)
+               };
 
-                fmController =
-                    new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType));
-            }
+               fmController =
+                   new DocumentFieldModelController(new DocumentController(fields, DocumentType.DefaultType));
+           }
+           //*/
             var keys = _documentControllerDataContext
-                           .GetDereferencedField<ListFieldModelController<TextFieldModelController>
-                           >(KeyStore.PrimaryKeyKey, null)?.Data?.Select(t => (t as TextFieldModelController).Data)
-                           ?.ToList() ?? new List<string>();
+                          .GetDereferencedField<ListFieldModelController<TextFieldModelController>
+                          >(KeyStore.PrimaryKeyKey, null)?.Data?.Select(t => (t as TextFieldModelController).Data)
+                          ?.ToList() ?? new List<string>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext),
-                keys.Contains(key.Id), TypeColumnWidth));
-            RealDataContext.SetField(key, fmController, true);
-            //*/ 
+           ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, RealDataContext),
+               keys.Contains(key.Id), TypeColumnWidth));
+           RealDataContext.SetField(key, fmController, true);
             return true;
         }
 

@@ -97,9 +97,8 @@ namespace Dash.Views.Document_Menu
         {
             _key = key;
             Action = action; 
-            //TextChangedHandler(dataDoc, null); 
-
-            DataDoc = dataDoc; 
+            DataDoc = dataDoc;
+            TextChangedHandler(dataDoc, null);
         }
 
         public void Dispose()

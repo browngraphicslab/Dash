@@ -280,7 +280,7 @@ namespace Dash
             var operatorModel = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionModel = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
-            var searchModel = new RadialActionModel("Search", Symbol.Find) { CollectionDropAction = onSearchAdd, IsDraggable = true };
+            //var searchModel = new RadialActionModel("Search", Symbol.Find) { CollectionDropAction = onSearchAdd, IsDraggable = true };
             var notesModel = new RadialActionModel("Notes", Symbol.Page) { CollectionDropAction = addNotes, IsDraggable = true };
             SetActionModel(importModel, ImportButton);
             SetActionModel(operatorModel, Operator);

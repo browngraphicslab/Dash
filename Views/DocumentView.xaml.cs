@@ -872,7 +872,6 @@ namespace Dash
         {
             // change the titlekey 
             ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-            //ViewModel.DocumentController.Title = box.Text; 
             _treeMenuItem.DocType = xTitle.Text;                                                    // have to call because the documentcontrollers in these items aren't updated 
         }
     }
