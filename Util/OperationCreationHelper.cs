@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Dash.Controllers.Operators.Demo;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,42 +16,41 @@ namespace Dash
 
         static OperationCreationHelper()
         {
-            AddOperator(() => new AddOperatorFieldModelController(), "Add");
-            AddOperator(() => new SubtractOperatorFieldModelController(), "Subtract");
-            AddOperator(() => new MultiplyOperatorFieldModelController(), "Multiply");
-            AddOperator(() => new DivideOperatorFieldModelController(), "Divide");
-            AddOperator(() => new IntersectionOperatorModelController(), "Intersection");
-            AddOperator(() => new UnionOperatorFieldModelController(), "Union");
-            AddOperator(() => new ZipOperatorFieldController(), "Zip");
-            AddOperator(() => new ConcatOperator(), "Concat");
+            AddOperator(() => new AddOperatorController(), "Add");
+            AddOperator(() => new SubtractOperatorController(), "Subtract");
+            AddOperator(() => new MultiplyOperatorController(), "Multiply");
+            AddOperator(() => new DivideOperatorController(), "Divide");
+            AddOperator(() => new IntersectionOperatorController(), "Intersection");
+            AddOperator(() => new UnionOperatorController(), "Union");
+            AddOperator(() => new ZipOperatorController(), "Zip");
+            AddOperator(() => new ConcatOperatorController(), "Concat");
             AddOperator(() => new DocumentAppendOperatorController(), "Append");
-            AddOperator(() => new ImageOperatorFieldModelController(), "UriToImage");
-            AddOperator(() => new FilterOperatorFieldModelController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
+            AddOperator(() => new ImageOperatorController(), "UriToImage");
+            AddOperator(() => new FilterOperatorController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
-            AddOperator(() => new CollectionMapOperator(), "Map", rfmc => new CollectionMapOperatorBox(rfmc));
-            AddOperator(() => new CompoundOperatorFieldController(), "Compound");
-            AddOperator(() => new MeltOperatorFieldModelController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
-            AddOperator(() => new ExtractSentencesOperatorFieldModelController(), "Extract Sentences", rfmc => new ExtractSentencesOperatorBox(rfmc));
-            AddOperator(() => new ExtractKeywordsOperatorFieldModelController(), "Extract KeyWords");
+            AddOperator(() => new CompoundOperatorController(), "Compound");
+            AddOperator(() => new MeltOperatorController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
+            AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
+            AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
 
             //TODO fix DB special case
-            //AddOperator<DBFilterOperatorFieldModelController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
+            //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
 
         }
 
-        public static void AddOperator(Func<OperatorFieldModelController> op, string title, Func<ReferenceFieldModelController, CourtesyDocument> layoutFunc = null)
+        public static void AddOperator(Func<OperatorController> op, string title, Func<ReferenceController, CourtesyDocument> layoutFunc = null)
         {
             Operators[title] = new OperatorBuilder(() => OperatorDocumentFactory.CreateOperatorDocument(op(), title, layoutFunc), op, title);
         }
 
 
         // TODO fix DB special case
-        public static void AddOperator<T>(string name, Func<DocumentController> docGeneratorFunc, string icon) where T : OperatorFieldModelController, new()
+        public static void AddOperator<T>(string name, Func<DocumentController> docGeneratorFunc, string icon) where T : OperatorController, new()
         {
             Operators[name] = new OperatorBuilder(docGeneratorFunc, () => new T(), name);
         }
 
-        public static OperatorFieldModelController GetOperatorController(string operatorType)
+        public static OperatorController GetOperatorController(string operatorType)
         {
             OperatorBuilder builder = null;
             Operators.TryGetValue(operatorType, out builder);

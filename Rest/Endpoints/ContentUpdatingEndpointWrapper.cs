@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 using DashShared.Models;
+using TypeInfo = DashShared.TypeInfo;
 
 namespace Dash
 {
@@ -24,7 +25,7 @@ namespace Dash
 
             foreach (var model in docs)
             {
-                if (!ContentController<DocumentModel>.HasController(model.Id))
+                if (!ContentController<FieldModel>.HasController(model.Id))
                 {
                     model.NewController();
                 }
@@ -32,7 +33,7 @@ namespace Dash
 
             foreach (var model in entityBases.OfType<KeyModel>())
             {
-                if (!ContentController<KeyModel>.HasController(model.Id))
+                if (!ContentController<FieldModel>.HasController(model.Id))
                 {
                     model.NewController();
                 }
@@ -40,10 +41,9 @@ namespace Dash
 
             var fields = entityBases.OfType<FieldModel>();
             var fieldModels = fields as IList<FieldModel> ?? fields.ToList();
-            var lists = fieldModels.OfType<ListFieldModel>();
-            var collections = fieldModels.OfType<DocumentCollectionFieldModel>();
+            var allLists = fieldModels.OfType<ListModel>().ToList();
 
-            foreach (var model in fieldModels.Where(i => !( i is ListFieldModel) && !(i is DocumentCollectionFieldModel)))
+            foreach (var model in fieldModels.Where(i => !(i is ListModel)))
             {
                 if (!ContentController<FieldModel>.HasController(model.Id))
                 {
@@ -52,15 +52,7 @@ namespace Dash
             }
 
 
-            foreach (var model in collections)
-            {
-                if (!ContentController<FieldModel>.HasController(model.Id))
-                {
-                    model.NewController();
-                }
-            }
-
-            foreach (var model in lists)
+            foreach (var model in allLists)
             {
                 if (!ContentController<FieldModel>.HasController(model.Id))
                 {
@@ -71,9 +63,10 @@ namespace Dash
             var modelList = models.ToList();
 
 
-            modelList.OfType<KeyModel>().ToList().ForEach(i => i.GetController().Init());
+            //modelList.OfType<KeyModel>().ToList().ForEach(i => i.GetController().Init());
+            //modelList.OfType<FieldModel>().ToList().ForEach(i => i.GetController().CreateReferences());
             modelList.OfType<FieldModel>().ToList().ForEach(i => i.GetController().Init());
-            modelList.OfType<DocumentModel>().ToList().ForEach(i => i.GetController().Init());
+            //modelList.OfType<DocumentModel>().ToList().ForEach(i => i.GetController().Init());
         }
 
         private Func<RestRequestReturnArgs, Task> GetSuccessFunc(Func<RestRequestReturnArgs, Task> success)

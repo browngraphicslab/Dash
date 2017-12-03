@@ -4,16 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
-    public class DocumentTypeLinqQuery : IQuery<DocumentModel> 
+    public class DocumentTypeLinqQuery : IQuery<FieldModel> 
     {
         public DocumentTypeLinqQuery(DocumentType type)
         {
-            Func = model => model.DocumentType.Equals(type);
+            Func = model => model is DocumentModel && ((DocumentModel)model).DocumentType.Equals(type);
         }
 
-        public Func<DocumentModel, bool> Func { private set; get; }
+        public Func<FieldModel, bool> Func { private set; get; }
     }
 }

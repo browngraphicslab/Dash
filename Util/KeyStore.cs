@@ -21,7 +21,9 @@ namespace Dash
         public static KeyController WidthFieldKey = new KeyController(DashConstants.KeyStore.WidthFieldKey);
         public static KeyController HeightFieldKey = new KeyController(DashConstants.KeyStore.HeightFieldKey);
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
+        public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
+        public static KeyController HtmlTextKey = new KeyController(DashConstants.KeyStore.DocumentHtmlKey);
         public static KeyController PositionFieldKey = new KeyController(DashConstants.KeyStore.PositionFieldKey);
         public static KeyController ScaleCenterFieldKey = new KeyController(DashConstants.KeyStore.ScaleCenterFieldKey);
         public static KeyController ScaleAmountFieldKey = new KeyController(DashConstants.KeyStore.ScaleAmountFieldKey);
@@ -44,5 +46,10 @@ namespace Dash
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+
+        /// <summary>
+        /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
+        /// </summary>
+        public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
     }
 }

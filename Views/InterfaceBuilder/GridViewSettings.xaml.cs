@@ -31,7 +31,7 @@ namespace Dash
 
         public GridViewSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == GridViewLayout.DocumentType);
+            Debug.Assert(docController.DocumentType.Equals(GridViewLayout.DocumentType));
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
@@ -45,7 +45,7 @@ namespace Dash
         public static void BindSpacing(DocumentController docController, Context context, TextBox tb)
         {
             var spacingController =
-                    docController.GetDereferencedField(GridViewLayout.GridViewKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(GridViewLayout.GridViewKey, context) as NumberController;
             Debug.Assert(spacingController != null);
 
             var spacingBinding = new Binding()

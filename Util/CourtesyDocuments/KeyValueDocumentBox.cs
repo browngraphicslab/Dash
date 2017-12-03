@@ -21,21 +21,21 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
 
-            ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out refToData);
+            ReferenceController refToData;
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out refToData);
 
-            if (fieldModelController is ImageFieldModelController)
+            if (fieldModelController is ImageController)
                 return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            if (fieldModelController is TextFieldModelController)
+            if (fieldModelController is TextController)
                 return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            var documentfieldModelController = fieldModelController as DocumentFieldModelController ?? 
-                                         docController.GetField(KeyStore.DocumentContextKey) as DocumentFieldModelController; // use DocumentContext if no explicit reference
+            var documentfieldModelController = fieldModelController as DocumentController ?? 
+                                         docController.GetField(KeyStore.DocumentContextKey) as DocumentController; // use DocumentContext if no explicit reference
             Debug.Assert(documentfieldModelController != null);
 
             var border = new Border();
@@ -44,7 +44,7 @@ namespace Dash
             docView.xKeyValueListView.CanDragItems = false;
             docView.xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
             docView.SetHeaderVisibility(DashShared.Visibility.Collapsed);
-            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
+            docView.SetDataContextToDocumentController(documentfieldModelController);
 
             border.Child = docView;
 
@@ -64,7 +64,7 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(border, docController);
+                return new SelectableContainer(border, docController, dataDocument);
             }
             return border;
         }

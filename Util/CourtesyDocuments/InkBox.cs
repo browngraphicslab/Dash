@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Dash.Views;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -23,7 +24,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            //Document.SetField(InkDataKey, new InkFieldModelController(), true);
+            //Document.SetField(InkDataKey, new InkController(), true);
             SetLayoutForDocument(Document, Document, true, true);
         }
 
@@ -31,7 +32,7 @@ namespace Dash
             Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
 
-            var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkFieldModelController;
+            var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
             if (fmController != null)
             {
                 var inkCanvas = new InkCanvasControl(fmController, isInterfaceBuilderLayout);
@@ -45,7 +46,7 @@ namespace Dash
                 }
 
                 //add to key to framework element dictionary
-                var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+                var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
                 if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = inkCanvas;
 
 
@@ -56,7 +57,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -66,15 +67,15 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var inkFieldModelController = new InkFieldModelController();
+            var inkFieldModelController = new InkController();
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), inkFieldModelController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             return prototypeDocument;
         }
 
-        private static ReferenceFieldModelController GetInkReference(DocumentController docController)
+        private static ReferenceController GetInkReference(DocumentController docController)
         {
-            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
     }
 }

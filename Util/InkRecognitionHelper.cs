@@ -64,31 +64,22 @@ namespace Dash
                 recognizedDocs = await GetDocsFromSelection();
             }
             _freeformInkControl.FreeformView.ViewModel.AddDocuments(recognizedDocs, null);
-            _freeformInkControl.UpdateInkFieldModelController();
+            _freeformInkControl.UpdateInkController();
         }
-
         private async Task<List<DocumentController>> GetDocsFromNewStroke()
         {
-            foreach (var inkStroke in _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes().Where(inkStroke => _newStroke.BoundingRect.Contains(inkStroke.BoundingRect)))
-            {
-                _analyzer.AddDataForStroke(inkStroke);
-                _remainingStrokes.Add(inkStroke);
-            }
-            _analyzer.AddDataForStroke(_newStroke);
-            _remainingStrokes.Add(_newStroke);
+            _analyzer.AddDataForStrokes(_remainingStrokes =
+                _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes()
+                    .Where(inkStroke => _newStroke.BoundingRect.Contains(inkStroke.BoundingRect))
+                    .Union(new List<InkStroke> { _newStroke }).ToList());
             return await GetDocs();
         }
 
-
         private async Task<List<DocumentController>> GetDocsFromSelection()
         {
-            var selectedStrokes = _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes()
-                .Where(stroke => stroke.Selected).ToList();
-            foreach (var stroke in selectedStrokes)
-            {
-                _analyzer.AddDataForStroke(stroke);
-                _remainingStrokes.Add(stroke);
-            }
+            _analyzer.AddDataForStrokes(_remainingStrokes = _freeformInkControl.TargetInkCanvas.InkPresenter
+                .StrokeContainer.GetStrokes()
+                .Where(stroke => stroke.Selected).ToList());
             return await GetDocs();
         }
 
@@ -120,10 +111,15 @@ namespace Dash
             if (result.Status == InkAnalysisStatus.Updated)
             {
                 var root = _analyzer.AnalysisRoot;
-                var orderedShapes = await OrderedShapeList();
+                var rectangles = await GetRectangles();
+                //_analyzer.ClearDataForAllStrokes();
+                //_analyzer.AddDataForStrokes(_remainingStrokes);
+                await GetRecognizedLines(rectangles);
                 _analyzer.ClearDataForAllStrokes();
                 _analyzer.AddDataForStrokes(_remainingStrokes);
-                await GetRecognizedLines();
+                var ellipses = await GetEllipses();
+                var orderedShapes = ellipses.Union(rectangles)
+                    .OrderBy(drawing => drawing.BoundingRect.Width * drawing.BoundingRect.Height).ToList();
                 _recognizedShapeTree = new RecognizedShapeTree(root, orderedShapes);
                 foreach (var child in _recognizedShapeTree.Root.Children)
                 {
@@ -134,12 +130,12 @@ namespace Dash
             return docs;
         }
 
-        private async Task GetRecognizedLines()
+        private async Task GetRecognizedLines(IEnumerable<InkAnalysisInkDrawing> rectangles)
         {
             await _analyzer.AnalyzeAsync();
             var heightCutoff = 75;
             //Get all InkLines within permitted size bounds and remove their strokes from RemainingStrokes
-            List<InkAnalysisLine> smallLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
+            List<InkAnalysisLine> smallLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord).Where(word => rectangles.Any(rect => rect.BoundingRect.Contains(word.BoundingRect))).Select(word => word.Parent)
                 .OfType<InkAnalysisLine>().ToList();
             MakeTextNodes(smallLines);
             if (_remainingStrokes.Count == 0) return;
@@ -153,17 +149,29 @@ namespace Dash
                 new Vector2((float)x, (float)y));
             List<InkStroke> scaledStrokes = new List<InkStroke>(_remainingStrokes);
             Dictionary<InkStroke, Rect> originalSizes = new Dictionary<InkStroke, Rect>();
-            foreach (var stroke in _remainingStrokes)
+            List<InkStroke> resizedStrokes = new List<InkStroke>();
+            foreach (var stroke in _remainingStrokes.Where(stroke => rectangles.Any(rect => rect.BoundingRect.Contains(stroke.BoundingRect))))
             {
-                _analyzer.RemoveDataForStroke(stroke.Id);
                 originalSizes[stroke] = stroke.BoundingRect;
                 stroke.PointTransform = Matrix3x2.Multiply(stroke.PointTransform, scaleMatrix);
+                resizedStrokes.Add(stroke);
             }
-            _analyzer.AddDataForStrokes(_remainingStrokes);
+            _analyzer.ClearDataForAllStrokes();
+            _analyzer.AddDataForStrokes(resizedStrokes);
             var result = await _analyzer.AnalyzeAsync();
             if (result.Status == InkAnalysisStatus.Updated)
             {
-                var inkLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line).OfType<InkAnalysisLine>();
+                var inkLines = new List<InkAnalysisLine>();
+                foreach (var inkWord in _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord))
+                {
+                    var rect = inkWord.GetStrokeIds().Select(id => originalSizes[GetStrokeByID(id)])
+                        .Aggregate((rect1, rect2) =>
+                        {
+                            rect1.Union(rect2);
+                            return rect1;
+                        });
+                        inkLines.Add(inkWord.Parent as InkAnalysisLine);
+                }
                 MakeScaledTextNodes(originalSizes, inkLines);
             }
             foreach (var stroke in scaledStrokes)
@@ -172,13 +180,17 @@ namespace Dash
             }
         }
 
+        public InkStroke GetStrokeByID(uint id)
+        {
+            return _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokeById(id);
+        }
+
         private void MakeScaledTextNodes(Dictionary<InkStroke, Rect> originalSizes, IEnumerable<InkAnalysisLine> inkLines)
         {
             foreach (var inkLine in inkLines)
             {
                 if(inkLine.RecognizedText.ToLower() == "o") continue;
                 var ids = inkLine.GetStrokeIds();
-                _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
                 List<WordNode> children = new List<WordNode>();
                 foreach (var child in inkLine.Children.OfType<InkAnalysisInkWord>())
                 {
@@ -208,7 +220,10 @@ namespace Dash
                     lineRect.Union(originalSizes[stroke]);
                 });
                 line.BoundingRect = lineRect;
+                _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
                 _recognizedLines.Add(line);
+                DeleteStrokesById(ids);
+                _analyzer.RemoveDataForStrokes(ids);
             }
         }
 
@@ -247,6 +262,7 @@ namespace Dash
 
         #endregion
 
+
         #region Delete with line
 
         /// <summary>
@@ -272,7 +288,7 @@ namespace Dash
                 newStroke.Selected = true;
                 _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                 _analyzer.RemoveDataForStroke(newStroke.Id);
-                _freeformInkControl.UpdateInkFieldModelController();
+                _freeformInkControl.UpdateInkController();
             }
             return deleted;
         }
@@ -291,6 +307,7 @@ namespace Dash
                     {
                         _freeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
                         _freeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
+
                             .DocumentController);
                         deleted = true;
                     }
@@ -334,7 +351,7 @@ namespace Dash
                     var fields = layoutDoc2.EnumFields().ToImmutableList();
                     var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
                     var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
-                    var dataRef = layoutDoc2.GetField(key2) as ReferenceFieldModelController;
+                    var dataRef = layoutDoc2.GetField(key2) as ReferenceController;
                     var referencesEqual =
                         view1.ViewModel.KeysToFrameworkElements[key1].Equals(converter.Element1) && view2
                             .ViewModel.KeysToFrameworkElements[key2].Equals(converter.Element2);
@@ -342,7 +359,7 @@ namespace Dash
                     {
                         //Case where we have layout document and need to get dataDoc;
                         view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
-                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceFieldModelController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
+                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
                         if (dataDoc != null)
                         {
                             dataDoc.SetField(key2, dataRef
@@ -357,6 +374,7 @@ namespace Dash
                         }
                         lineDeleted = true;
                     }
+
                 }
             }
             return lineDeleted;
@@ -400,10 +418,10 @@ namespace Dash
             }
             var documentController = Util.BlankCollection();
             documentController.SetField(KeyStore.CollectionKey,
-                new DocumentCollectionFieldModelController(recognizedDocuments), true);
+                new ListController<DocumentController>(recognizedDocuments), true);
             documentController.SetActiveLayout(
                 new CollectionBox(
-                    new DocumentReferenceFieldController(documentController.GetId(),
+                    new DocumentReferenceController(documentController.GetId(),
                         KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
                     region.BoundingRect.Height).Document, true, true);
             DeleteStrokesById(region.GetStrokeIds());
@@ -431,7 +449,7 @@ namespace Dash
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
             int fieldIndex = 0;
-            ListFieldModelController<TextFieldModelController> list = null;
+            ListController<TextController> list = null;
             // try making fields from at least partially intersected lines
             var intersectionEnumerable = new List<LineNode>();
             foreach (var line in _recognizedLines)
@@ -441,7 +459,7 @@ namespace Dash
                     intersectionEnumerable.Add(line);
                 }
             }
-            if (intersectionEnumerable.Count > 0) list = new ListFieldModelController<TextFieldModelController>();
+            if (intersectionEnumerable.Count > 0) list = new ListController<TextController>();
             foreach (var inkLine in intersectionEnumerable)
             {
                 var containedWords = GetContainedWords(inkLine, region.BoundingRect);
@@ -468,9 +486,9 @@ namespace Dash
                         {
                             //list.Add(field);
                         }
-                        var textBox = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), key),
+                        var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
                             relativePosition.X, relativePosition.Y, containedRect.Width + 75, containedRect.Height);
-                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
                         layoutDocs.Add(textBox.Document);
                     }
@@ -497,6 +515,55 @@ namespace Dash
         #endregion
 
         #region Helper methods
+        private async Task<List<InkAnalysisInkDrawing>> GetRectangles()
+        {
+            HashSet<InkAnalysisInkDrawing> unorderedShapes = new HashSet<InkAnalysisInkDrawing>();
+            for (int i = 0; i < 3; i++)
+            {
+                await _analyzer.AnalyzeAsync();
+                var shapes = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing)
+                    .OfType<InkAnalysisInkDrawing>()
+                    .Where(drawing => drawing.DrawingKind == InkAnalysisDrawingKind.Square ||
+                                      drawing.DrawingKind == InkAnalysisDrawingKind.Rectangle);
+                foreach (var shape in shapes)
+                {
+                    var ids = shape.GetStrokeIds();
+                    //Remove data from analyzer *after* using stroke ids from region otherwise stuff gets messed up
+                    DeleteStrokesById(ids);
+                    _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
+                    _analyzer.RemoveDataForStrokes(shape.GetStrokeIds());
+                    unorderedShapes.Add(shape);
+                }
+            }
+            var rectangles = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
+            return rectangles;
+        }
+
+        private async Task<List<InkAnalysisInkDrawing>> GetEllipses()
+        {
+            HashSet<InkAnalysisInkDrawing> unorderedShapes = new HashSet<InkAnalysisInkDrawing>();
+            for (int i = 0; i < 3; i++)
+            {
+                await _analyzer.AnalyzeAsync();
+                var shapes = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing)
+                    .OfType<InkAnalysisInkDrawing>()
+                    .Where(drawing =>
+                        drawing.DrawingKind == InkAnalysisDrawingKind.Circle ||
+                        drawing.DrawingKind == InkAnalysisDrawingKind.Ellipse);
+                foreach (var shape in shapes)
+                {
+                    var ids = shape.GetStrokeIds();
+                    //Remove data from analyzer *after* using stroke ids from region otherwise stuff gets messed up
+                    DeleteStrokesById(ids);
+                    _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
+                    _analyzer.RemoveDataForStrokes(shape.GetStrokeIds());
+                    unorderedShapes.Add(shape);
+                }
+            }
+            var ellipses = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
+            return ellipses;
+        }
+
         private void DeleteStrokesById(IEnumerable<uint> ids)
         {
             _freeformInkControl.UndoSelection();
@@ -521,7 +588,7 @@ namespace Dash
                                       drawing.DrawingKind == InkAnalysisDrawingKind.Rectangle);
                 foreach (var shape in shapes)
                 {
-                    var ids = shape.GetStrokeIds();
+                    var ids = shape.GetStrokeIds().ToList();
                     //Remove data from analyzer *after* using stroke ids from region otherwise stuff gets messed up
                     DeleteStrokesById(ids);
                     _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
@@ -560,8 +627,7 @@ namespace Dash
         private List<Point> RotatePoints(List<Point> points)
         {
             List<Point> newPoints = new List<Point>();
-            var ctrIndex = points.Count / 2;
-            var ctrPoint = points[ctrIndex];
+            var ctrPoint = points[points.Count / 2];
             foreach (var point in points)
             {
                 var dx = point.X - ctrPoint.X;
@@ -569,11 +635,13 @@ namespace Dash
                 var dist = Math.Sqrt(Math.Pow(dx, 2) + Math.Pow(dy, 2));
                 var currAngle = Math.Atan2(dy, dx);
                 if (dx < 0) currAngle += Math.PI;
-                var newPoint = new Point(Math.Cos(currAngle + Math.PI / 4) * dist + ctrPoint.X, Math.Sin(currAngle + Math.PI / 4) * dist + ctrPoint.Y);
+                var newPoint = new Point(Math.Cos(currAngle + Math.PI / 4) * dist + ctrPoint.X,
+                    Math.Sin(currAngle + Math.PI / 4) * dist + ctrPoint.Y);
                 newPoints.Add(newPoint);
             }
             return newPoints;
         }
+
 
         private bool PathIntersectsRect(IEnumerable<Point> path, Rect rect)
         {
@@ -629,7 +697,6 @@ namespace Dash
                 value = str;
                 key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
             }
-
         }
 
         #endregion
@@ -670,6 +737,7 @@ namespace Dash
         public IInkAnalysisNode InkRegion;
         public RecognizedShapeNode Parent;
 
+
         public bool IsRectangle
         {
             get
@@ -688,6 +756,7 @@ namespace Dash
                 return drawing != null && (drawing.DrawingKind == InkAnalysisDrawingKind.Circle ||
                                            drawing.DrawingKind == InkAnalysisDrawingKind.Ellipse);
             }
+
         }
 
         public RecognizedShapeNode(IInkAnalysisNode inkRegion)
@@ -696,7 +765,7 @@ namespace Dash
             Children = new List<RecognizedShapeNode>();
         }
     }
-
+    
     public struct LineNode
     {
         public string Text;
@@ -710,5 +779,6 @@ namespace Dash
         public string Text;
         public Rect BoundingRect;
         public List<InkStroke> Strokes;
+
     }
 }

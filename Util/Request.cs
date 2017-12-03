@@ -161,9 +161,9 @@ namespace Dash
                 DocumentController documentController = new JsonToDashUtil().ParseJsonString(Response.Content.ToString(),
                     Message.RequestUri.ToString());
                 var dcfm = documentController.EnumFields()
-                    .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as
-                DocumentCollectionFieldModelController;
-                if (dcfm != null) return new List<DocumentController>(dcfm.GetDocuments());
+                    .FirstOrDefault(keyFieldPair => keyFieldPair.Value is ListController<DocumentController>).Value as
+                ListController<DocumentController>;
+                if (dcfm != null) return new List<DocumentController>(dcfm.GetElements());
             }
             catch (Exception)
             {
