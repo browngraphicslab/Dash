@@ -13,26 +13,26 @@
     <Grid Name="LayoutGrid" GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          DragOver="xRichEitBox_DragOver" 
 
-                         Foreground="{StaticResource MainText}" 
-                         Background="{StaticResource DocumentBackground}" Opacity=".9"
+                         Foreground="{ThemeResource MainText}" 
+                         Background="{ThemeResource DocumentBackground}" Opacity=".9"
                          GotFocus="xRichEditBox_GotFocus" 
                          Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 
                          SelectionChanged="xRichEditBox_SelectionChanged"  
-                         BorderBrush="{StaticResource DocumentBackground}" 
+                         BorderBrush="{ThemeResource DocumentBackground}" 
                          BorderThickness="1"
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
+                         SelectionHighlightColor="{ThemeResource DarkWindowsBlue}"  />
         <Canvas VerticalAlignment="Bottom">
             <Grid x:Name="xFormatControls" HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
@@ -57,10 +57,9 @@
                     </Button>
                 </Grid>
                 <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{ThemeResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
         </Canvas>
     </Grid>
-
 </UserControl>

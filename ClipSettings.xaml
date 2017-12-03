@@ -21,10 +21,10 @@
                         <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,5,0">
-                        <TextBox x:Name="xClipXTextBox" Foreground="{StaticResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
+                        <TextBox x:Name="xClipXTextBox" Foreground="{ThemeResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,5"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipXTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Clip X" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
+                        <TextBlock Text="Clip X" FontSize="12" Foreground="{ThemeResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                             <Grid x:Name="xXMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -37,7 +37,7 @@
                             <Border x:Name="xHorizontalDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -46,7 +46,7 @@
                             <Border x:Name="xHorizontalIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -56,10 +56,10 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="0" Margin="5,0,0,0">
-                        <TextBox x:Name="xClipYTextBox" Foreground="{StaticResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
+                        <TextBox x:Name="xClipYTextBox" Foreground="{ThemeResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{ThemeResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,5"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipYTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Clip Y" Foreground="{StaticResource MainText}" FontSize="12" HorizontalAlignment="Center" Padding="3"></TextBlock>
+                        <TextBlock Text="Clip Y" Foreground="{ThemeResource MainText}" FontSize="12" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xYMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -72,7 +72,7 @@
                             <Border x:Name="xVerticalDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -82,7 +82,7 @@
                             <Border x:Name="xVerticalIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -92,10 +92,10 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Column="0" Grid.Row="1" Margin="0,5,5,0">
-                        <TextBox x:Name="xClipWidthTextBox" Foreground="{StaticResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}"
+                        <TextBox x:Name="xClipWidthTextBox" Foreground="{ThemeResource MainText}" Height="Auto" BorderBrush="Transparent" Background="{ThemeResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipWidthTextBox_OnTextChanged" LostFocus="XTextBox_OnLostFocus"/>
-                        <TextBlock Text="Width Ratio" FontSize="12" Foreground="{StaticResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
+                        <TextBlock Text="Width Ratio" FontSize="12" Foreground="{ThemeResource MainText}" HorizontalAlignment="Center" Padding="3"></TextBlock>
                         <Grid x:Name="xWidthMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
                               VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -108,7 +108,7 @@
                             <Border x:Name="xWidthDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -118,7 +118,7 @@
                             <Border x:Name="xWidthIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
 
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -127,11 +127,11 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
-                        <TextBox x:Name="xClipHeightTextBox" Height="Auto" BorderBrush="Transparent" Foreground="{StaticResource MainText}" Background="{StaticResource DocumentHighlightBackground}"
+                        <TextBox x:Name="xClipHeightTextBox" Height="Auto" BorderBrush="Transparent" Foreground="{ThemeResource MainText}" Background="{ThemeResource DocumentHighlightBackground}"
                                  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,30,0,0"
                                  TextAlignment="Center" FontSize="12" TextChanged="XClipHeightTextBox_OnTextChanged"
                                  LostFocus="XTextBox_OnLostFocus" />
-                        <TextBlock Text="Height Ratio" FontSize="12" Foreground="{StaticResource MainText}"
+                        <TextBlock Text="Height Ratio" FontSize="12" Foreground="{ThemeResource MainText}"
                                        HorizontalAlignment="Center" Padding="3"/>
                         <Grid x:Name="xHeightMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                               Background="Transparent"
@@ -144,7 +144,7 @@
 
                             <Border x:Name="xHeightDeduct" Tag="Deduct" Width="25" Height="25"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>
@@ -153,7 +153,7 @@
 
                             <Border x:Name="xHeightIncrement" Tag="Increment" Width="25" Height="25"
                                     HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0" Margin="0,22,0,0">
-                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{ThemeResource TranslucentWhite}"
                                            FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                            VerticalAlignment="Center">
                                 </TextBlock>

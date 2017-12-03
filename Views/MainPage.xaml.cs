@@ -35,6 +35,7 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.UI;
 using Dash.Views.Document_Menu;
 
 
@@ -60,7 +61,8 @@ namespace Dash
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             InitializeComponent();
@@ -531,6 +533,15 @@ namespace Dash
             DisplayDocument(del1);
         }
 
-       
+
+        private void ChangeTheme(object sender, TappedRoutedEventArgs e)
+        {
+            this.ThemeChange();
+        }
+
+        public void ThemeChange()
+        {
+            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+        }
     }
 }

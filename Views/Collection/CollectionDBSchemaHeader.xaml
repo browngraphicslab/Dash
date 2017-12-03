@@ -12,14 +12,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}"
     SizeChanged="DBS_OnSizeChanged">
-
     <Grid Width="{Binding Width}">
         <StackPanel Orientation="Horizontal">
-            <Grid x:Name="NameGrid"  Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
+            <Grid x:Name="NameGrid"  Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
                 <TextBox x:Name="Text" IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
             </Grid>
             <Grid Background="#CCDDDDDD" ManipulationMode="All" CanDrag="False" Width="7"
                   ManipulationStarted="Grid_ManipulationStarted" ManipulationDelta="Grid_ManipulationDelta" ManipulationCompleted="Grid_ManipulationCompleted"/>
         </StackPanel>
-    </Grid> 
+        </Grid> 
 </UserControl>

@@ -123,6 +123,9 @@ namespace Dash
 
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            xRichEditBox.FontFamily = fonts[1];
+            xFontComboBox.SelectedIndex = 1;
+
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
@@ -378,7 +381,7 @@ namespace Dash
         }
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.xRichEditBox.FontFamily = fonts[xFontComboBox.SelectedIndex];
+            xRichEditBox.FontFamily = fonts[xFontComboBox.SelectedIndex];
         }
 
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
@@ -480,7 +483,7 @@ namespace Dash
                 Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
-            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
             if (DocumentView.DragDocumentView != null)
             {

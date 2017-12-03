@@ -334,5 +334,10 @@ namespace Dash
         }
         
         #endregion
+
+        public static void ChangeTheme(ICollectionView collectionView, DragEventArgs e)
+        {
+            MainPage.Instance.ThemeChange();
+        }
     }
 }

@@ -10,7 +10,12 @@
     mc:Ignorable="d"
     d:DesignHeight="327"
     d:DesignWidth="547">
-
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="RadialMenuBackground" Color="{ThemeResource RadialMenuBackgroundColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="WindowsBlue" Color="{ThemeResource WindowsBlueColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="DocumentBackgroundSelected" Color="{ThemeResource DocumentBackgroundSelectedColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="RadialCenterForeground" Color="{ThemeResource RadialCenterForegroundColor}"></SolidColorBrush>
+    </UserControl.Resources>
 
     <userControl:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
         <Grid Visibility="Visible">
@@ -61,6 +66,7 @@
                             </components:RadialMenuButton.Submenu>
                         </components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Document" Label="Document" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="Theme" Label="Theme" IconSymbol="{x:Bind ThemeSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Operator" Label="Operator" IconSymbol="{x:Bind OperatorSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="ImportButton" Label="Import" IconSymbol="{x:Bind FilePickerSymbol}"></components:RadialMenuButton>
