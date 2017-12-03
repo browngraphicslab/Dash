@@ -107,7 +107,7 @@ namespace Dash
                 //}
             }
             //if (recognitionFromSelectedStrokes) Analyzer.ClearDataForAllStrokes();
-            
+
             NewStrokes.Clear();
             FreeformInkControl.UpdateInkController();
         }
@@ -217,9 +217,21 @@ namespace Dash
                         var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
                         if (dataDoc != null)
                         {
-                            dataDoc.SetField(key2, dataRef
-                                .DereferenceToRoot(new Context(dataDoc))
-                                ?.GetCopy(), true);
+                            bool copy = true;
+                            //TODO tfs: Make it so the user can choose to copy field to dest or just delete the field
+                            if (copy)
+                            {
+                                var field = dataRef.DereferenceToRoot(new Context(dataDoc));
+                                if (field != null)
+                                {
+                                    dataDoc.SetField(key2, field
+                                        .GetCopy(), true);
+                                }
+                            }
+                            else
+                            {
+                                dataDoc.RemoveField(key2);
+                            }
                         }
                         else
                         {
@@ -237,7 +249,7 @@ namespace Dash
         }
 
 
-       
+
 
         #endregion
 

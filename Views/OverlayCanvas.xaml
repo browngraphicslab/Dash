@@ -11,7 +11,7 @@
     d:DesignWidth="1280">
 
     <Grid x:Name="xOuterGrid" x:FieldModifier="public">
-        <Grid x:Name="xToolbar" Width="83" Background="{StaticResource WindowsBlue}" Padding="10,10" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
+        <Grid x:Name="xToolbar" Width="83" Background="{ThemeResource WindowsBlue}" Padding="10,10" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" Foreground="white">SOURCES</TextBlock>
                 <Image x:Name="image" Tapped="image_Tapped" Source="ms-appx:///Assets/addApi.png" Stretch="None"/>

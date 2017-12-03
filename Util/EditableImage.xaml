@@ -56,7 +56,7 @@
 
         <Button Background="Transparent" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped" VerticalContentAlignment="Center" >
             <ContentControl>
-                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="30" Width="50"  Background="{StaticResource WindowsBlue}" CornerRadius="10">
+                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="30" Width="50"  Background="{ThemeResource WindowsBlue}" CornerRadius="10">
                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="WhiteSmoke">Done</TextBlock>
                 </Border>
             </ContentControl>

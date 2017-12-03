@@ -91,7 +91,7 @@ namespace Dash
                         throw new NotImplementedException();
                     case TypeInfo.Ink:
                         return new InkModel(data.ToString());
-                    case TypeInfo.RichTextField:
+                    case TypeInfo.RichText:
                         return new RichTextModel(JsonConvert.DeserializeObject<RichTextModel.RTD>(data.ToString()));
                     case TypeInfo.Rectangle:
                         return new RectModel(JsonConvert.DeserializeObject<Rect>(data.ToString()));

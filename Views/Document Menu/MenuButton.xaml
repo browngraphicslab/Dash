@@ -7,6 +7,10 @@
     mc:Ignorable="d"
     d:DesignHeight="80"
     d:DesignWidth="70">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="MenuBackground" Color="{ThemeResource WindowsBlueColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="TitleColor" Color="{ThemeResource ButtonForegroundColor}"></SolidColorBrush>
+    </UserControl.Resources>
     <!--<Grid Width="55" Height="50">-->
     <StackPanel x:Name="xButtonStackPanel" Orientation="Vertical" Padding="2,0,0,0"></StackPanel>
     <!--</Grid>-->

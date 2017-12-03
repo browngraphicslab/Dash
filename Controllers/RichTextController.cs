@@ -63,7 +63,7 @@ namespace Dash
         }
         public ITextSelection SelectedText { get; set; }
 
-        public override TypeInfo TypeInfo => TypeInfo.RichTextField;
+        public override TypeInfo TypeInfo => TypeInfo.RichText;
 
         public override IEnumerable<DocumentController> GetReferences()
         {

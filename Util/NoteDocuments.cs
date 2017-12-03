@@ -47,7 +47,6 @@ namespace Dash
                 }
                 return prototype;
             }
-
         }
 
         public class CollectionNote : NoteDocument
@@ -110,7 +109,6 @@ namespace Dash
                 DataDocument = dataDocument;
                 createLayout(where, viewtype, width, height);
             }
-
 
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
             {
@@ -233,9 +231,62 @@ namespace Dash
             }
         }
 
+        public class HtmlNote : NoteDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("292C8EF7-D41D-49D6-8342-EC48AE014CBC", "Html Note");
+
+            public override DocumentController CreatePrototype()
+            {
+                var fields = new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [KeyStore.TitleKey] = new TextController("Prototype Title"),
+                    [KeyStore.HtmlTextKey] = new TextController("Prototype Content"),
+                    [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
+                };
+                return new DocumentController(fields, DocumentType, _prototypeID);
+            }
+
+            public override DocumentController CreatePrototypeLayout()
+            {
+                throw new NotImplementedException();
+            }
+            public DocumentController CreateLayout()
+            {
+                var prototype = GetDocumentPrototype();
+
+                var htmlLayout = new WebBox(new DocumentReferenceController(prototype.GetId(), KeyStore.HtmlTextKey), 0, 0, double.NaN, double.NaN);
+                var layoutDoc = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ htmlLayout.Document }).Document;
+                layoutDoc.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
+                layoutDoc.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                layoutDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+
+                return layoutDoc;
+            }
+
+
+            // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
+            public HtmlNote(string text = "", string title = "", Point where = new Point()) : base(HtmlNote.DocumentType)
+            {
+                _prototypeID = "223BB098-78FA-4D61-8D18-D9E15086AC39";
+
+                var dataDocument = GetDocumentPrototype().MakeDelegate();
+                dataDocument.SetField(KeyStore.TitleKey,    new TextController(title), true);
+                dataDocument.SetField(KeyStore.HtmlTextKey, new TextController(text ?? "Html stuff here"), true);
+                dataDocument.SetField(KeyStore.ThisKey,     dataDocument, true);
+                
+                var docLayout = CreateLayout();
+                docLayout.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
+                
+                docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
+                docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                Document = docLayout;
+            }
+        }
         public class PostitNote : NoteDocument
         {
-            public static KeyController NotesFieldKey = new KeyController("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
             public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Text Note");
             
             public override DocumentController CreatePrototype()

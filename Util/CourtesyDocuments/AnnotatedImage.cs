@@ -45,15 +45,16 @@ namespace Dash
 
             return prototypeLayout.Document;
         }
-        public AnnotatedImage(Uri imageUri, string imageBytes, string text, string title="", double width = 200, double height = 250, double x=0, double y=0)
+        public AnnotatedImage(Uri imageUri, string imageBytes, string text=null, string title="", double width = 200, double height = 250, double x=0, double y=0)
         {
             Document = _prototypeDoc.MakeDelegate();
             Document.SetField(Image1FieldKey, new ImageController(imageUri, imageBytes), true);
 
-            Document.SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+            if (text != null)
+                Document.SetField(KeyStore.DocumentTextKey, new TextController(text), true);
             Document.SetField(KeyStore.TitleKey, new TextController(title), true);
 
-            var docLayout = _prototypeLayout.MakeDelegate();
+            var docLayout = text == null ? new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document: _prototypeLayout.MakeDelegate();
             docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(x, y)), true);
             docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
             docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);

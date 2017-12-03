@@ -23,11 +23,11 @@ namespace DashShared
         Point = 0x100,
         List = 0x200,
         Ink = 0x300,
-        RichTextField = 0x800,
+        RichText = 0x800,
         Rectangle = 0x1000,
         Key = 0x2000,
         Reference = PointerReference | DocumentReference,
-        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichTextField | Rectangle | Key
+        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -53,6 +53,7 @@ namespace DashShared
         Regex,
         Melt,
         Sentence_Analyzer,
-        Extract_Keywords
+        Extract_Keywords,
+        ImageRecognition
     }
 }

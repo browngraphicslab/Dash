@@ -11,11 +11,11 @@
     MinWidth="800"
     MinHeight="545"
     Background="Transparent"
-    HeaderColor="{StaticResource DocumentBackgroundOpaque}">
+    HeaderColor="{ThemeResource DocumentBackgroundOpaque}">
     <local:WindowTemplate.InnerContent>
         <Grid>
             <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{StaticResource DocumentBackground}"/>
+            <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="{ThemeResource DocumentBackground}"/>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -69,7 +69,7 @@
                                 <StackPanel x:Name="GridButton">
                                     <Button Background="Transparent" IsHitTestVisible="False"  HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
                                         <ContentControl>
-                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                                 <SymbolIcon Symbol="ViewAll" Foreground="White"></SymbolIcon>
                                             </Border>
                                         </ContentControl>
@@ -79,7 +79,7 @@
                                 <StackPanel x:Name="ListButton">
                                     <Button  IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
                                         <ContentControl>
-                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                                 <SymbolIcon Symbol="List" Foreground="White"></SymbolIcon>
                                             </Border>
                                         </ContentControl>
@@ -89,7 +89,7 @@
                                 <StackPanel x:Name="FreeformButton">
                                     <Button  IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50">
                                         <ContentControl>
-                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                                 <SymbolIcon Symbol="View" Foreground="White"></SymbolIcon>
                                             </Border>
                                         </ContentControl>
@@ -118,7 +118,7 @@
                     <!--<StackPanel Orientation="Vertical" x:Name="GridButton" Padding="5,10,5,0" VerticalAlignment="Center">
                         <Button IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,0,0,-2.5">
                             <ContentControl>
-                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                     <SymbolIcon Symbol="ViewAll" Foreground="White"></SymbolIcon>
                                 </Border>
                             </ContentControl>
@@ -128,7 +128,7 @@
                     <StackPanel Orientation="Vertical" x:Name="ListButton" Padding="5,10,5,0"  VerticalAlignment="Center">
                         <Button IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,0,0,-2.5">
                             <ContentControl>
-                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                     <SymbolIcon Symbol="List" Foreground="White"></SymbolIcon>
                                 </Border>
                             </ContentControl>
@@ -138,7 +138,7 @@
                     <StackPanel Orientation="Vertical" x:Name="FreeformButton" Padding="5,10,5,0"  VerticalAlignment="Center">
                         <Button IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,0,0,-2.5">
                             <ContentControl>
-                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{StaticResource WindowsBlue}">
+                                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" CornerRadius="20" Background="{ThemeResource WindowsBlue}">
                                     <SymbolIcon Symbol="View" Foreground="White"></SymbolIcon>
                                 </Border>
                             </ContentControl>

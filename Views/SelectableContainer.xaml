@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" >
-        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsHitTestVisible="{x:Bind IsParentSelected, Mode=OneWay}" Background="Transparent" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
+        <Grid x:Name="XGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="2" BorderBrush="{StaticResource WindowsBlue}">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" UseLayoutRounding="True">
@@ -19,25 +19,25 @@
             <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
 
             <!--measurment lines-->
-            <Line x:Name="xTopHLine" StrokeThickness="1" X1="0" Y1="-10" Y2="-10" Stroke="{StaticResource WindowsBlue}" StrokeDashArray="3,5" Visibility="Collapsed"></Line>
-            <Line x:Name="xLeftVLine" StrokeThickness="1" Y1="0" X1="-10" X2="-10" Stroke="{StaticResource WindowsBlue}" StrokeDashArray="3,5" Visibility="Collapsed"></Line>
-            <Line x:Name="xBottomHLine" StrokeThickness="1" X1="0" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed" StrokeDashArray="3,5"></Line>
-            <Line x:Name="xRightVLine" StrokeThickness="1" Y1="0" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed" StrokeDashArray="3,5"></Line>
+            <Line x:Name="xTopHLine" StrokeThickness="1" X1="0" Y1="-10" Y2="-10" Stroke="{ThemeResource WindowsBlue}" StrokeDashArray="3,5" Visibility="Collapsed"></Line>
+            <Line x:Name="xLeftVLine" StrokeThickness="1" Y1="0" X1="-10" X2="-10" Stroke="{ThemeResource WindowsBlue}" StrokeDashArray="3,5" Visibility="Collapsed"></Line>
+            <Line x:Name="xBottomHLine" StrokeThickness="1" X1="0" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed" StrokeDashArray="3,5"></Line>
+            <Line x:Name="xRightVLine" StrokeThickness="1" Y1="0" Stroke="{ThemeResource WindowsBlue}" Visibility="Collapsed" StrokeDashArray="3,5"></Line>
 
             <!--measurement textboxes-->
-            <Border x:Name="xTopWidthTextBoxBorder" Background="{StaticResource SelectedGrey}" CornerRadius="3">
+            <Border x:Name="xTopWidthTextBoxBorder" Background="{ThemeResource DocumentBackgroundSelected}" CornerRadius="3">
                 <TextBlock x:Name="xTopWidthTextBox" Padding="0"></TextBlock>
             </Border>
-            <Border x:Name="xLeftHeightTextBoxBorder" Background="{StaticResource SelectedGrey}"  CornerRadius="3">
+            <Border x:Name="xLeftHeightTextBoxBorder" Background="{ThemeResource DocumentBackgroundSelected}"  CornerRadius="3">
                 <TextBlock x:Name="xLeftHeightTextBox" Padding="0"></TextBlock>
             </Border>
-            <Border x:Name="xBottomWidthTextBoxBorder" Background="{StaticResource SelectedGrey}" CornerRadius="3">
+            <Border x:Name="xBottomWidthTextBoxBorder" Background="{ThemeResource DocumentBackgroundSelected}" CornerRadius="3">
                 <TextBlock x:Name="xBottomWidthTextBox" Padding="0"></TextBlock>
             </Border>
-            <Border x:Name="xRightHeightTextBoxBorder" Background="{StaticResource SelectedGrey}"  CornerRadius="3">
+            <Border x:Name="xRightHeightTextBoxBorder" Background="{ThemeResource DocumentBackgroundSelected}"  CornerRadius="3">
                 <TextBlock x:Name="xRightHeightTextBox" Padding="0"></TextBlock>
             </Border>
-            <Border x:Name="xKeyNameTextBoxBorder" Background="{StaticResource WindowsBlue}" CornerRadius="5,5,0,0" Canvas.Left="0" Canvas.Top="-26">
+            <Border x:Name="xKeyNameTextBoxBorder" Background="{ThemeResource WindowsBlue}" CornerRadius="5,5,0,0" Canvas.Left="0" Canvas.Top="-26">
                 <TextBlock x:Name="xKeyNameTextBox" Foreground="White" Padding="10, 5" Text="Sample"></TextBlock>
             </Border>
         </Canvas>

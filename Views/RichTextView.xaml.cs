@@ -123,6 +123,9 @@ namespace Dash
 
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            xRichEditBox.FontFamily = fonts[1];
+            xFontComboBox.SelectedIndex = 1;
+
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
@@ -179,11 +182,12 @@ namespace Dash
                     }
                     else
                     {
-                        var WebDoc = DBTest.CreateWebPage(target);
-                        var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(WebDoc, pt);
+                        Windows.System.Launcher.LaunchUriAsync(new Uri(target));
+                        //var WebDoc = DBTest.CreateWebPage(target);
+                        //var pt = point;
+                        //pt.X -= 150;
+                        //pt.Y -= 50;
+                        //MainPage.Instance.DisplayDocument(WebDoc, pt);
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -228,7 +232,7 @@ namespace Dash
                         // see if we can find a document whose primary keys match the text
                         var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
 
-                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^");
+                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
                     }
                 }
             }
@@ -250,7 +254,7 @@ namespace Dash
             {
                 if (refText.StartsWith("http"))
                 {
-                     theDoc = DBTest.CreateWebPage(refText);
+                    theDoc = new HtmlNote(refText).Document;
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
@@ -266,18 +270,26 @@ namespace Dash
             return theDoc;
         }
 
-        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded)
+        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
         {
-            if (theDoc != null && this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition && 
-                this.xRichEditBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+            if (theDoc != null)
             {
-                // set the hyperlink for the matched text
-                this.xRichEditBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
-                // advance the end selection past the RTF embedded HYPERLINK keyword
-                s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                s1 = s2;
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                string link = "\"" + theDoc.GetId() + "\"";
+                if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null)?.Data?.StartsWith("http"))
+                {
+                    link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
+                }
+
+                if (xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition && xRichEditBox.Document.Selection.Link != link)
+                {
+                    // set the hyperlink for the matched text
+                    this.xRichEditBox.Document.Selection.Link = link;
+                    // advance the end selection past the RTF embedded HYPERLINK keyword
+                    s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                    s1 = s2;
+                    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                    this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                }
             }
         }
         
@@ -369,7 +381,7 @@ namespace Dash
         }
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.xRichEditBox.FontFamily = fonts[xFontComboBox.SelectedIndex];
+            xRichEditBox.FontFamily = fonts[xFontComboBox.SelectedIndex];
         }
 
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
@@ -444,10 +456,12 @@ namespace Dash
                 var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
                 theDoc = docCtrls.First();
             }
+            var forceLocal = true;
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
             if (sourceIsFileSystem)
             {
                 theDoc = await FileDropHelper.GetDroppedFile(e);
+                forceLocal = false;
             }
 
 
@@ -459,7 +473,7 @@ namespace Dash
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
-            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false);
+            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false, forceLocal);
 
             if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
             {
@@ -469,7 +483,7 @@ namespace Dash
                 Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
-            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
             if (DocumentView.DragDocumentView != null)
             {
