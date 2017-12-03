@@ -71,7 +71,7 @@ namespace Dash
             _analyzer.AddDataForStrokes(_remainingStrokes =
                 _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes()
                     .Where(inkStroke => _newStroke.BoundingRect.Contains(inkStroke.BoundingRect))
-                    .Union(new List<InkStroke> { _newStroke }).ToList());
+                    .Union(new List<InkStroke>{_newStroke}).ToList());
             return await GetDocs();
         }
 
@@ -112,8 +112,8 @@ namespace Dash
             {
                 var root = _analyzer.AnalysisRoot;
                 var rectangles = await GetRectangles();
-                //_analyzer.ClearDataForAllStrokes();
-                //_analyzer.AddDataForStrokes(_remainingStrokes);
+                _analyzer.ClearDataForAllStrokes();
+                _analyzer.AddDataForStrokes(_remainingStrokes);
                 await GetRecognizedLines(rectangles);
                 _analyzer.ClearDataForAllStrokes();
                 _analyzer.AddDataForStrokes(_remainingStrokes);
@@ -123,7 +123,7 @@ namespace Dash
                 _recognizedShapeTree = new RecognizedShapeTree(root, orderedShapes);
                 foreach (var child in _recognizedShapeTree.Root.Children)
                 {
-                    var doc = GetDocFromRecognizedNode(child);
+                    var doc = GetDocFromRecognizedNode(child); 
                     if (doc != null) docs.Add(doc);
                 }
             }
@@ -599,6 +599,7 @@ namespace Dash
             var orderedShapes = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
             return orderedShapes;
         }
+        
 
         private bool PointBetween(Point testPoint, Point a, Point b)
         {
