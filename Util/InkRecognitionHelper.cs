@@ -69,26 +69,18 @@ namespace Dash
 
         private async Task<List<DocumentController>> GetDocsFromNewStroke()
         {
-            foreach (var inkStroke in _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes().Where(inkStroke => _newStroke.BoundingRect.Contains(inkStroke.BoundingRect)))
-            {
-                _analyzer.AddDataForStroke(inkStroke);
-                _remainingStrokes.Add(inkStroke);
-            }
-            _analyzer.AddDataForStroke(_newStroke);
-            _remainingStrokes.Add(_newStroke);
+            _analyzer.AddDataForStrokes(_remainingStrokes =
+                _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes()
+                    .Where(inkStroke => _newStroke.BoundingRect.Contains(inkStroke.BoundingRect))
+                    .Union(new List<InkStroke>{_newStroke}).ToList());
             return await GetDocs();
         }
 
-
         private async Task<List<DocumentController>> GetDocsFromSelection()
         {
-            var selectedStrokes = _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes()
-                .Where(stroke => stroke.Selected).ToList();
-            foreach (var stroke in selectedStrokes)
-            {
-                _analyzer.AddDataForStroke(stroke);
-                _remainingStrokes.Add(stroke);
-            }
+            _analyzer.AddDataForStrokes(_remainingStrokes = _freeformInkControl.TargetInkCanvas.InkPresenter
+                .StrokeContainer.GetStrokes()
+                .Where(stroke => stroke.Selected).ToList());
             return await GetDocs();
         }
 
@@ -120,26 +112,31 @@ namespace Dash
             if (result.Status == InkAnalysisStatus.Updated)
             {
                 var root = _analyzer.AnalysisRoot;
-                var orderedShapes = await OrderedShapeList();
+                var rectangles = await GetRectangles();
                 _analyzer.ClearDataForAllStrokes();
                 _analyzer.AddDataForStrokes(_remainingStrokes);
-                await GetRecognizedLines();
+                await GetRecognizedLines(rectangles);
+                _analyzer.ClearDataForAllStrokes();
+                _analyzer.AddDataForStrokes(_remainingStrokes);
+                var ellipses = await GetEllipses();
+                var orderedShapes = ellipses.Union(rectangles)
+                    .OrderBy(drawing => drawing.BoundingRect.Width * drawing.BoundingRect.Height).ToList();
                 _recognizedShapeTree = new RecognizedShapeTree(root, orderedShapes);
                 foreach (var child in _recognizedShapeTree.Root.Children)
                 {
-                    var doc = GetDocFromRecognizedNode(child);
+                    var doc = GetDocFromRecognizedNode(child); 
                     if (doc != null) docs.Add(doc);
                 }
             }
             return docs;
         }
 
-        private async Task GetRecognizedLines()
+        private async Task GetRecognizedLines(IEnumerable<InkAnalysisInkDrawing> rectangles)
         {
             await _analyzer.AnalyzeAsync();
             var heightCutoff = 75;
             //Get all InkLines within permitted size bounds and remove their strokes from RemainingStrokes
-            List<InkAnalysisLine> smallLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
+            List<InkAnalysisLine> smallLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord).Where(word => rectangles.Any(rect => rect.BoundingRect.Contains(word.BoundingRect))).Select(word => word.Parent)
                 .OfType<InkAnalysisLine>().ToList();
             MakeTextNodes(smallLines);
             if (_remainingStrokes.Count == 0) return;
@@ -163,13 +160,31 @@ namespace Dash
             var result = await _analyzer.AnalyzeAsync();
             if (result.Status == InkAnalysisStatus.Updated)
             {
-                var inkLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line).OfType<InkAnalysisLine>();
+                var inkLines = new List<InkAnalysisLine>();
+                foreach (var inkWord in _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord))
+                {
+                    var rect = inkWord.GetStrokeIds().Select(id => originalSizes[GetStrokeByID(id)])
+                        .Aggregate((rect1, rect2) =>
+                        {
+                            rect1.Union(rect2);
+                            return rect1;
+                        });
+                    if (rectangles.Any(rectangle => rectangle.BoundingRect.Contains(rect)))
+                    {
+                        inkLines.Add(inkWord.Parent as InkAnalysisLine);
+                    }
+                }
                 MakeScaledTextNodes(originalSizes, inkLines);
             }
             foreach (var stroke in scaledStrokes)
             {
                 stroke.PointTransform = Matrix3x2.Multiply(stroke.PointTransform, reverseScale);
             }
+        }
+
+        public InkStroke GetStrokeByID(uint id)
+        {
+            return _freeformInkControl.TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokeById(id);
         }
 
         private void MakeScaledTextNodes(Dictionary<InkStroke, Rect> originalSizes, IEnumerable<InkAnalysisLine> inkLines)
@@ -531,6 +546,54 @@ namespace Dash
             }
             var orderedShapes = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
             return orderedShapes;
+        }
+        private async Task<List<InkAnalysisInkDrawing>> GetRectangles()
+        {
+            HashSet<InkAnalysisInkDrawing> unorderedShapes = new HashSet<InkAnalysisInkDrawing>();
+            for (int i = 0; i < 3; i++)
+            {
+                await _analyzer.AnalyzeAsync();
+                var shapes = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing)
+                    .OfType<InkAnalysisInkDrawing>()
+                    .Where(drawing => drawing.DrawingKind == InkAnalysisDrawingKind.Square ||
+                                      drawing.DrawingKind == InkAnalysisDrawingKind.Rectangle);
+                foreach (var shape in shapes)
+                {
+                    var ids = shape.GetStrokeIds();
+                    //Remove data from analyzer *after* using stroke ids from region otherwise stuff gets messed up
+                    DeleteStrokesById(ids);
+                    _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
+                    _analyzer.RemoveDataForStrokes(shape.GetStrokeIds());
+                    unorderedShapes.Add(shape);
+                }
+            }
+            var ellipses = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
+            return ellipses;
+        }
+
+        private async Task<List<InkAnalysisInkDrawing>> GetEllipses()
+        {
+            HashSet<InkAnalysisInkDrawing> unorderedShapes = new HashSet<InkAnalysisInkDrawing>();
+            for (int i = 0; i < 3; i++)
+            {
+                await _analyzer.AnalyzeAsync();
+                var shapes = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing)
+                    .OfType<InkAnalysisInkDrawing>()
+                    .Where(drawing =>
+                        drawing.DrawingKind == InkAnalysisDrawingKind.Circle ||
+                        drawing.DrawingKind == InkAnalysisDrawingKind.Ellipse);
+                foreach (var shape in shapes)
+                {
+                    var ids = shape.GetStrokeIds();
+                    //Remove data from analyzer *after* using stroke ids from region otherwise stuff gets messed up
+                    DeleteStrokesById(ids);
+                    _remainingStrokes.RemoveAll(stroke => ids.Contains(stroke.Id));
+                    _analyzer.RemoveDataForStrokes(shape.GetStrokeIds());
+                    unorderedShapes.Add(shape);
+                }
+            }
+            var rectangles = unorderedShapes.OrderBy(shape => shape.BoundingRect.Width * shape.BoundingRect.Height).ToList();
+            return rectangles;
         }
 
         private bool PointBetween(Point testPoint, Point a, Point b)
