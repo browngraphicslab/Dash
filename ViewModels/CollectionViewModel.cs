@@ -16,51 +16,59 @@ namespace Dash
 {
     public class CollectionViewModel : BaseCollectionViewModel
     {
-        private DocumentCollectionFieldModelController _collectionFieldModelController;
+        private ListController<DocumentController> _collectionFieldModelController;
 
-        public InkFieldModelController InkFieldModelController;
+        public InkController InkController;
 
-        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentController ContainerDocument;
+
+        public CollectionViewModel(DocumentController container, FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             Debug.Assert(collection != null);
-            _collectionFieldModelController = collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            AddViewModels(_collectionFieldModelController.Data, context);
+            _collectionFieldModelController = collection.DereferenceToRoot<ListController<DocumentController>>(context);
+            AddViewModels(_collectionFieldModelController.TypedData, context);
+            ContainerDocument = container;
 
             var copiedContext = new Context(context);
 
-            if (collection is ReferenceFieldModelController)
+            if (collection is ReferenceController)
             {
-                var reference = collection as ReferenceFieldModelController;
+                var reference = collection as ReferenceController;
                 _collectionKey = reference.FieldKey;
                 reference.GetDocumentController(context).AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                     {
-                        var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                         if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                         {
                             UpdateViewModels(cargs, copiedContext);
                         }
                         else
                         {
-                            _collectionFieldModelController = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context);
+
+                            _collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
                             if (_collectionFieldModelController == null) return;
-                            var documents = _collectionFieldModelController.GetDocuments();
-                            bool newDoc = DocumentViewModels.Count != documents.Count;
-                            if (!newDoc)
-                                foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
-                                    if (!documents.Contains(d))
-                                    {
-                                        newDoc = true;
-                                        break;
-                                    }
-                            if (newDoc)
-                            {
-                                if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                                    DocumentViewModels.Clear();
-                                if (cargs == null)
-                                    cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                                UpdateViewModels(cargs, copiedContext);
-                            }
+                            var documents = _collectionFieldModelController.GetElements();
+                            DocumentViewModels.Clear();
+                            AddViewModels(documents, context);
+                            //TODO tfs: I don't think we actually want to do this...
+                            //bool newDoc = DocumentViewModels.Count != documents.Count;
+                            //if (!newDoc)
+                            //    foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
+                            //        if (!documents.Contains(d))
+                            //        {
+                            //            newDoc = true;
+                            //            break;
+                            //        }
+                            //if (newDoc)
+                            //{
+                            //    if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                            //        DocumentViewModels.Clear();
+                            //    if (cargs == null)
+                            //        cargs = new ListController<DocumentController>.CollectionFieldUpdatedEventArgs(ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                            //    UpdateViewModels(cargs, copiedContext);
+                            //}
                         }
                     });
             }
@@ -68,7 +76,7 @@ namespace Dash
             {
                 collection.FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
-                    UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs,
+                    UpdateViewModels(args as ListController<DocumentController>.ListFieldUpdatedEventArgs,
                         copiedContext);
                 };
             }
@@ -96,7 +104,7 @@ namespace Dash
             SelectionGroup.Clear();
             foreach (var vmp in itemsToDelete)
             {
-                _collectionFieldModelController.RemoveDocument(vmp.DocumentController);
+                _collectionFieldModelController.Remove(vmp.DocumentController);
             }
         }
 
@@ -104,20 +112,20 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private void UpdateViewModels(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs args, Context c)
+        private void UpdateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
         {
-            switch (args.CollectionAction)
+            switch (args.ListAction)
             {
-                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
                     AddViewModels(args.ChangedDocuments, c);
                     break;
-                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
-                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
                     RemoveViewModels(args.ChangedDocuments);
                     break;
-                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
                     AddDocuments(args.ChangedDocuments, c);
                     break;
@@ -154,9 +162,9 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
-            if (doc.DocumentType == DashConstants.TypeStore.CollectionDocument)
+            if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
             {
-                var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
+                var coll = doc.GetDereferencedField<ListController<DocumentController>>(CollectionKey, context);
                 if (coll.Data.Contains(doc))
                     return;
             }
@@ -167,7 +175,7 @@ namespace Dash
             }
 
             // just update the collection, the colllection will update our view automatically
-            _collectionFieldModelController.AddDocument(doc);
+            _collectionFieldModelController.Add(doc);
         }
 
         public override void RemoveDocuments(List<DocumentController> documents)
@@ -181,7 +189,7 @@ namespace Dash
         public override void RemoveDocument(DocumentController document)
         {
             // just update the collection, the colllection will update our view automatically
-            _collectionFieldModelController.RemoveDocument(document);
+            _collectionFieldModelController.Remove(document);
         }
 
         #endregion

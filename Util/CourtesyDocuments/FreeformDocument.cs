@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Dash;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -18,18 +19,18 @@ namespace Dash
         public FreeFormDocument(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
             Document = GetLayoutPrototype().MakeDelegate();
-            var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
+            var layoutDocumentCollection = new ListController<DocumentController>(layoutDocuments);
             var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
             Document.SetFields(fields, true); //TODO add fields to constructor parameters     
 
-            Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            Document.SetField(KeyStore.IconTypeFieldKey, new NumberController((double)IconTypeEnum.Api), true);
         }
 
         public FreeFormDocument() : this(new List<DocumentController>()) { }
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -39,7 +40,7 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            var layoutDocCollection = new ListController<DocumentController>(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
             var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.FreeFormDocumentLayout, PrototypeId);
             return prototypeDocument;
@@ -64,28 +65,28 @@ namespace Dash
             };
 
             var c = new Context(context);
-            DocumentController.OnDocumentFieldUpdatedHandler onDocumentFieldUpdatedHandler = delegate (DocumentController sender,
-                DocumentController.DocumentFieldUpdatedEventArgs args)
+
+            void OnDocumentFieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c2)
             {
-                var collFieldArgs =
-                    args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
-                if (collFieldArgs.CollectionAction == DocumentCollectionFieldModelController
-                        .CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add)
+                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                var collFieldArgs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
                     AddDocuments(collFieldArgs.ChangedDocuments, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
                 else
                 {
-                    LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController) sender, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
-            };
+            }
+
             grid.Loaded += delegate
             {
-                docController.AddFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
+                docController.AddFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
             };
             grid.Unloaded += delegate
             {
-                docController.RemoveFieldUpdatedListener(KeyStore.DataKey, onDocumentFieldUpdatedHandler);
+                docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
             };
             if (isInterfaceBuilderLayout)
             {
@@ -103,15 +104,15 @@ namespace Dash
                 
                 var container = new SelectableContainer(grid, docController, dataDocument);
                 SetupBindings(container, docController, context);
-                // commented out since clipping grid on docs hides all useful selectable ocntainer parts anyway?
                 return container;
             }
+            
             return grid;
         }
 
         private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
-            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
+            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             grid.Children.Clear();
             if (isInterfaceBuilder)
             {
@@ -135,21 +136,23 @@ namespace Dash
             foreach (var layoutDocument in docs)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
-                layoutView.HorizontalAlignment = HorizontalAlignment.Left;
-                layoutView.VerticalAlignment = VerticalAlignment.Top;
-
+                // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
+                // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
+                // TODO it helps the freeformdocument position elements correctly
+                layoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+                layoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 BindPosition(layoutView, layoutDocument, context);
-                //if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
-
+                if (isInterfaceBuilder)
+                    SetupBindings(layoutView, layoutDocument, context);
                 grid.Children.Add(layoutView);
             }
         }
 
-        private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
+        private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.DataKey)?
-                .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+                .DereferenceToRoot<ListController<DocumentController>>(context);
         }
     }
 

@@ -50,7 +50,6 @@
     <Compile Include="Models\KeyModel.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />
-    <Compile Include="Models\AuthorizableEntityBase.cs" />
     <Compile Include="Models\FieldModelDTO.cs" />
     <Compile Include="Models\Result.cs" />
     <Compile Include="Models\ShapeModel.cs" />
@@ -68,7 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Windows.Foundation.UniversalApiContract">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.15063.0\Windows.Foundation.UniversalApiContract\4.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\References\10.0.15063.0\Windows.Foundation.UniversalApiContract\4.0.0.0\Windows.Foundation.UniversalApiContract.winmd</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

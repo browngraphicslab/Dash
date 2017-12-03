@@ -31,7 +31,7 @@ namespace Dash
 
         public ListViewSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == ListViewLayout.DocumentType);
+            Debug.Assert(docController.DocumentType.Equals(ListViewLayout.DocumentType));
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
@@ -45,7 +45,7 @@ namespace Dash
         public static void BindSpacing(DocumentController docController, Context context, TextBox tb)
         {
             var spacingController =
-                    docController.GetDereferencedField(ListViewLayout.SpacingKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(ListViewLayout.SpacingKey, context) as NumberController;
             Debug.Assert(spacingController != null);
 
             var spacingBinding = new Binding()

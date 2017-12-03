@@ -151,7 +151,7 @@ namespace Dash
             Tapped += CompositeLayoutContainer_Tapped;
             DoubleTapped += CompositeLayoutContainer_DoubleTapped;
 
-            var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
+            var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceController);
             var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
             xKeyNameTextBox.Text = keyName;
 

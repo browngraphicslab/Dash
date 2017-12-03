@@ -40,11 +40,11 @@ namespace Dash
         {
             RichTextView rtv = null;
             var refToRichText =
-                docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+                docController.GetField(KeyStore.DataKey) as ReferenceController;
             Debug.Assert(refToRichText != null);
             var fieldModelController = refToRichText.DereferenceToRoot(context);
             var referenceToText = GetTextReference(docController);
-            if (fieldModelController is RichTextFieldModelController)
+            if (fieldModelController is RichTextController)
             {
 
                 var richText = new RichTextView()
@@ -54,6 +54,7 @@ namespace Dash
                     
                 };
                 rtv = richText;
+                rtv.ManipulationMode = ManipulationModes.All;
                 rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
                 rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
                 //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
@@ -65,7 +66,7 @@ namespace Dash
 
 
             //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = rtv;
 
             if (isInterfaceBuilderLayout)
@@ -75,9 +76,9 @@ namespace Dash
             return rtv;
         }
 
-        private static ReferenceFieldModelController GetTextReference(DocumentController docController)
+        private static ReferenceController GetTextReference(DocumentController docController)
         {
-            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
         protected override DocumentController GetLayoutPrototype()

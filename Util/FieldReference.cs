@@ -66,13 +66,10 @@ namespace Dash
                 var newContext = context;
                 if (doc.ShouldExecute(context, FieldKey))
                 {
+                    newContext = doc.Execute(context, false);
+                    if (newContext.TryDereferenceToRoot(this, out controller))
                     {
-
-                        newContext = doc.Execute(context, false);
-                        if (newContext.TryDereferenceToRoot(this, out controller))
-                        {
-                            return controller;
-                        }
+                        return controller;
                     }
                 }
 
@@ -85,8 +82,9 @@ namespace Dash
 
         public FieldControllerBase DereferenceToRoot(Context context)
         {
+            context = context ?? new Context();
             FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceFieldModelController)
+            while (reference is ReferenceController)
             {
                 reference = reference.Dereference(context);
             }
@@ -115,6 +113,6 @@ namespace Dash
             return FieldKey.GetHashCode();
         }
 
-        public abstract ReferenceFieldModelController GetReferenceController();
+        public abstract ReferenceController GetReferenceController();
     }
 }

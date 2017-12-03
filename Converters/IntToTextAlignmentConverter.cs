@@ -8,9 +8,9 @@ namespace Dash.Converters
         {
             switch ((int) data)
             {
-                case 1:
-                    return TextAlignment.Center; // Center is 0!! // we need it to be 1 for interfacebuilder 
                 case 0:
+                    return TextAlignment.Center; // Center is 0!! // we need it to be 1 for interfacebuilder // can't change this -- Xaml wants Center to be 0; we must obey
+                case 1:
                     return TextAlignment.Left;
                 case 2:
                     return TextAlignment.Right;
@@ -23,10 +23,10 @@ namespace Dash.Converters
         {
             switch (alignment)
             {
-                case TextAlignment.Center:// Center is 0!!
-                    return 1;
-                case TextAlignment.Left:
+                case TextAlignment.Center:// Center is 0!! // can't change this -- Xaml wants Center to be 0; we must obey
                     return 0;
+                case TextAlignment.Left:
+                    return 1;
                 case TextAlignment.Right:
                     return 2;
                 default:

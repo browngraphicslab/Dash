@@ -1,4 +1,5 @@
 ﻿
+
 using Windows.Storage;
 
 namespace DashShared
@@ -10,18 +11,6 @@ namespace DashShared
         /// </summary>
         public const bool DEVELOP_LOCALLY = true;
 
-
-        public static class TypeStore
-        {
-            public static DocumentType FreeFormDocumentLayout =
-                new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
-
-            public static DocumentType CollectionDocument =
-                new DocumentType("2D4D93AE-6A88-4723-B254-7DA2959D0240", "collection");
-
-            public static DocumentType MainDocumentType = 
-                new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
-        }
 
         #region DocumentDB
 
@@ -163,7 +152,9 @@ namespace DashShared
             public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
             public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "Height");
             public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
-            public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "DocumentTextKey");
+            public static KeyModel SourceUriKey = new KeyModel("26594498-FF15-438D-A577-2C8506F4ECEF", "SourceUriKeys");
+            public static KeyModel DocumentHtmlKey = new KeyModel("50EB2B65-D111-4D61-9DB2-04123CAAB616", "Document Html Text");
+            public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "Position");
             public static KeyModel ScaleCenterFieldKey = new KeyModel("FE4IMA9J-NOE9-3NGS-G09Q-JFOE9038S82S" , "Scale Center");
             public static KeyModel ScaleAmountFieldKey = new KeyModel("AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE", "Scale Amount");
@@ -173,20 +164,24 @@ namespace DashShared
             public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
             public static KeyModel UserLinksKey = new KeyModel("D5E8B9F2-BDDC-4031-B40D-E4762E535E65", "_User-Created Links");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
+            public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "Parsed Fields");
         }
 
-        public static class DocumentTypeStore
+        public static class TypeStore
         {
             public static DocumentType FreeFormDocumentLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
             public static DocumentType CollectionDocument  = new DocumentType("2D4D93AE-6A88-4723-B254-7DA2959D0240", "collection");
             public static DocumentType FileLinkDocument = new DocumentType("54442257-4BF4-4EB0-B3E8-B8868951F198", "File link");
             public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
-            // TODO rename to CollectionBox Doc type
-            public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
-            public static readonly DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
-
+            public static DocumentType CollectionBoxType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
+            public static DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
             public static DocumentType OperatorBoxType =
                 new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
+            public static DocumentType MainDocumentType = 
+                new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
+            public static DocumentType FilterOperatorDocumentType = new DocumentType("30651C8A-C3EC-4CF6-999B-F8F1ED094D65", "Filter Operator Box");
+            public static DocumentType MeltOperatorBoxDocumentType = new DocumentType("8A0E72A1-0FF4-4AAB-9C12-9DF09DCF39CA", "Melt Operator Box");
+            public static DocumentType ExtractSentencesDocumentType = new DocumentType("3B6B9420-FD08-4CBA-99AA-5FAA261266AE", "Extract Sentences Operator Box");
         }
     }
 }

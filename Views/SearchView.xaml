@@ -18,7 +18,7 @@
         </Style>
     </UserControl.Resources>
     <Grid x:Name="OuterGrid" CornerRadius="0" MaxWidth="200" Padding="0" VerticalAlignment="Stretch"
-          Background="{StaticResource WindowsBlue}" Opacity="1">
+          Background="{ThemeResource WindowsBlue}" Opacity="1">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
@@ -29,6 +29,6 @@
                                 BorderBrush="Transparent" Margin="5" Text="Search all..." />
             </Border>
         </Grid>
-        <Grid x:Name="ListGrid" Grid.Row="1" Background="{StaticResource DocumentBackgroundOpaque}" />
+        <Grid x:Name="ListGrid" Grid.Row="1" Background="{ThemeResource DocumentBackgroundOpaque}" />
     </Grid>
 </UserControl>

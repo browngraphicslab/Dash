@@ -37,17 +37,17 @@ namespace Dash
             var key = kvp.Key;
             var context = new Context(docController);
             var fieldModelController = docController.GetDereferencedField(key, context);
-            var dropPointFMC = new PointFieldModelController(e.GetPosition(_dropTarget).X, e.GetPosition(_dropTarget).Y);
+            var dropPointFMC = new PointController(e.GetPosition(_dropTarget).X, e.GetPosition(_dropTarget).Y);
 
             // view factory
             CourtesyDocument box = null;
-            if (fieldModelController is TextFieldModelController)
+            if (fieldModelController is TextController)
             {
-                box = new TextingBox(new DocumentReferenceFieldController(docController.GetId(), key));
+                box = new TextingBox(new DocumentReferenceController(docController.GetId(), key));
             }
-            else if (fieldModelController is ImageFieldModelController)
+            else if (fieldModelController is ImageController)
             {
-                box = new ImageBox(new DocumentReferenceFieldController(docController.GetId(), key));
+                box = new ImageBox(new DocumentReferenceController(docController.GetId(), key));
             }
 
             // safety check
@@ -62,8 +62,8 @@ namespace Dash
                 box.Document.SetField(KeyStore.PositionFieldKey, dropPointFMC, forceMask: true);
             }
             var data =
-                _layoutDocument.GetField(KeyStore.DataKey) as DocumentCollectionFieldModelController;
-            data?.AddDocument(box.Document);
+                _layoutDocument.GetField(KeyStore.DataKey) as ListController<DocumentController>;
+            data?.Add(box.Document);
         }
     }
 }

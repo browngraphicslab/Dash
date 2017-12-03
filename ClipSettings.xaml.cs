@@ -40,12 +40,12 @@ namespace Dash
         private void BindClip(Context context)
         {
             var clipController =
-                _documentController.GetDereferencedField(ImageBox.ClipKey, context) as RectFieldModelController;
+                _documentController.GetDereferencedField(ImageBox.ClipKey, context) as RectController;
             Debug.Assert(clipController != null);
             InitializeClip(clipController);
         }
 
-        private void InitializeClip(RectFieldModelController clipController)
+        private void InitializeClip(RectController clipController)
         {
             ClipBindingHelper(xClipXTextBox, "X", clipController.Data);
             ClipBindingHelper(xClipYTextBox, "Y", clipController.Data);
@@ -59,14 +59,14 @@ namespace Dash
             {
                 Source = clipRect,
                 Path = new PropertyPath(path),
-                Converter = new DoubleToStringConverter()
+                Converter = new StringToDoubleConverter()
             };
             tb.SetBinding(TextBox.TextProperty, binding);
         }
         
-        private RectFieldModelController ClipController()
+        private RectController ClipController()
         {
-            return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectFieldModelController;
+            return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectController;
         }
 
         private void XClipXTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -109,35 +109,35 @@ namespace Dash
 
         #region ValueSlider
 
-        //private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (sender == xXMovementDetectionGrid)
-        //    {
-        //        xClipXTextBox.Focus(FocusState.Programmatic);
-        //        xXMovementDetectionGrid.IsHitTestVisible = false;
-        //        xXMovementDetectionGrid.Visibility = Visibility.Collapsed;
+        private void XMovementDetectionGrid_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (sender == xXMovementDetectionGrid)
+            {
+                xClipXTextBox.Focus(FocusState.Programmatic);
+                xXMovementDetectionGrid.IsHitTestVisible = false;
+                xXMovementDetectionGrid.Visibility = Visibility.Collapsed;
 
-        //    }
-        //    else if (sender == xYMovementDetectionGrid)
-        //    {
-        //        xClipYTextBox.Focus(FocusState.Programmatic);
-        //        xYMovementDetectionGrid.IsHitTestVisible = false;
-        //        xYMovementDetectionGrid.Visibility = Visibility.Collapsed;
-        //    }
-        //    else if (sender == xWidthMovementDetectionGrid)
-        //    {
-        //        xClipWidthTextBox.Focus(FocusState.Programmatic);
-        //        xWidthMovementDetectionGrid.IsHitTestVisible = false;
-        //        xWidthMovementDetectionGrid.Visibility = Visibility.Collapsed;
+            }
+            else if (sender == xYMovementDetectionGrid)
+            {
+                xClipYTextBox.Focus(FocusState.Programmatic);
+                xYMovementDetectionGrid.IsHitTestVisible = false;
+                xYMovementDetectionGrid.Visibility = Visibility.Collapsed;
+            }
+            else if (sender == xWidthMovementDetectionGrid)
+            {
+                xClipWidthTextBox.Focus(FocusState.Programmatic);
+                xWidthMovementDetectionGrid.IsHitTestVisible = false;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Collapsed;
 
-        //    }
-        //    else if (sender == xHeightMovementDetectionGrid)
-        //    {
-        //        xClipHeightTextBox.Focus(FocusState.Programmatic);
-        //        xHeightMovementDetectionGrid.IsHitTestVisible = false;
-        //        xHeightMovementDetectionGrid.Visibility = Visibility.Collapsed;
-        //    }
-        //}
+            }
+            else if (sender == xHeightMovementDetectionGrid)
+            {
+                xClipHeightTextBox.Focus(FocusState.Programmatic);
+                xHeightMovementDetectionGrid.IsHitTestVisible = false;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Collapsed;
+            }
+        }
 
         private void XMovementDetectionGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -175,29 +175,29 @@ namespace Dash
             e.Handled = true;
         }
 
-        //private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
-        //{
-        //    if (sender == xClipXTextBox)
-        //    {
-        //        xXMovementDetectionGrid.IsHitTestVisible = true;
-        //        xXMovementDetectionGrid.Visibility = Visibility.Visible;
-        //    }
-        //    else if (sender == xClipYTextBox)
-        //    {
-        //        xYMovementDetectionGrid.IsHitTestVisible = true;
-        //        xYMovementDetectionGrid.Visibility = Visibility.Visible;
-        //    }
-        //    else if (sender == xClipWidthTextBox)
-        //    {
-        //        xWidthMovementDetectionGrid.IsHitTestVisible = true;
-        //        xWidthMovementDetectionGrid.Visibility = Visibility.Visible;
-        //    }
-        //    else if (sender == xClipHeightTextBox)
-        //    {
-        //        xHeightMovementDetectionGrid.IsHitTestVisible = true;
-        //        xHeightMovementDetectionGrid.Visibility = Visibility.Visible;
-        //    }
-        //}
+        private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender == xClipXTextBox)
+            {
+                xXMovementDetectionGrid.IsHitTestVisible = true;
+                xXMovementDetectionGrid.Visibility = Visibility.Visible;
+            }
+            else if (sender == xClipYTextBox)
+            {
+                xYMovementDetectionGrid.IsHitTestVisible = true;
+                xYMovementDetectionGrid.Visibility = Visibility.Visible;
+            }
+            else if (sender == xClipWidthTextBox)
+            {
+                xWidthMovementDetectionGrid.IsHitTestVisible = true;
+                xWidthMovementDetectionGrid.Visibility = Visibility.Visible;
+            }
+            else if (sender == xClipHeightTextBox)
+            {
+                xHeightMovementDetectionGrid.IsHitTestVisible = true;
+                xHeightMovementDetectionGrid.Visibility = Visibility.Visible;
+            }
+        }
 
         private void CreateAndRunOpacityAnimation(UIElement target, double from, double to)
         {
@@ -240,43 +240,49 @@ namespace Dash
             repositionStoryboard.Begin();
         }
 
-        //private void XMovementDetectionGrid_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        //{
-        //    var deltaX = e.Delta.Translation.X;
-        //    if (deltaX > 0)
-        //    {
-        //        if (sender == xXMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xXMovementDetectionGrid,xClipXTextBox,true,false);
-        //        } else if (sender == xYMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xYMovementDetectionGrid,xClipYTextBox, true, false);
-        //        } else if (sender == xWidthMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xWidthMovementDetectionGrid, xClipWidthTextBox, true, false);
-        //        } else if (sender == xHeightMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xHeightMovementDetectionGrid, xClipHeightTextBox, true, false);
-        //        }
-        //    }
-        //    if (deltaX < 0)
-        //    {
-        //        if (sender == xXMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xXMovementDetectionGrid, xClipXTextBox, false,true);
-        //        } else if (sender == xYMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xYMovementDetectionGrid, xClipYTextBox, false, true);
-        //        } else if (sender == xWidthMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xWidthMovementDetectionGrid, xClipWidthTextBox, false, false);
-        //        } else if (sender == xHeightMovementDetectionGrid)
-        //        {
-        //            this.ChangeTextBoxText(xHeightMovementDetectionGrid, xClipHeightTextBox, false, false);
-        //        }
-        //    }
-        //    e.Handled = true;
-        //}
+        private void XMovementDetectionGrid_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var deltaX = e.Delta.Translation.X;
+            if (deltaX > 0)
+            {
+                if (sender == xXMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xXMovementDetectionGrid, xClipXTextBox, true, false);
+                }
+                else if (sender == xYMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xYMovementDetectionGrid, xClipYTextBox, true, false);
+                }
+                else if (sender == xWidthMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xWidthMovementDetectionGrid, xClipWidthTextBox, true, false);
+                }
+                else if (sender == xHeightMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xHeightMovementDetectionGrid, xClipHeightTextBox, true, false);
+                }
+            }
+            if (deltaX < 0)
+            {
+                if (sender == xXMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xXMovementDetectionGrid, xClipXTextBox, false, true);
+                }
+                else if (sender == xYMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xYMovementDetectionGrid, xClipYTextBox, false, true);
+                }
+                else if (sender == xWidthMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xWidthMovementDetectionGrid, xClipWidthTextBox, false, false);
+                }
+                else if (sender == xHeightMovementDetectionGrid)
+                {
+                    this.ChangeTextBoxText(xHeightMovementDetectionGrid, xClipHeightTextBox, false, false);
+                }
+            }
+            e.Handled = true;
+        }
 
         private void ChangeTextBoxText(Grid sender, TextBox textbox, bool isIncrement, bool canBeNegative)
         {
@@ -348,14 +354,14 @@ namespace Dash
                     this.CreateAndRunOpacityAnimation(child, child.Opacity, 0);
                 }
             }
-            //(xHorizontalIncrement.Child as TextBlock).FontSize = 20;
-            //(xVerticalIncrement.Child as TextBlock).FontSize = 20;
-            //(xHorizontalDeduct.Child as TextBlock).FontSize = 20;
-            //(xVerticalDeduct.Child as TextBlock).FontSize = 20;
-            //(xWidthIncrement.Child as TextBlock).FontSize = 20;
-            //(xHeightIncrement.Child as TextBlock).FontSize = 20;
-            //(xWidthDeduct.Child as TextBlock).FontSize = 20;
-            //(xHeightDeduct.Child as TextBlock).FontSize = 20;
+            (xHorizontalIncrement.Child as TextBlock).FontSize = 20;
+            (xVerticalIncrement.Child as TextBlock).FontSize = 20;
+            (xHorizontalDeduct.Child as TextBlock).FontSize = 20;
+            (xVerticalDeduct.Child as TextBlock).FontSize = 20;
+            (xWidthIncrement.Child as TextBlock).FontSize = 20;
+            (xHeightIncrement.Child as TextBlock).FontSize = 20;
+            (xWidthDeduct.Child as TextBlock).FontSize = 20;
+            (xHeightDeduct.Child as TextBlock).FontSize = 20;
         }
 
         #endregion

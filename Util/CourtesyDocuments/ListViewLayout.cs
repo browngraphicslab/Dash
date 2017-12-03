@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Diagnostics;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -25,7 +26,7 @@ namespace Dash
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
             Document = GetLayoutPrototype().MakeDelegate();
-            var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
+            var layoutDocumentCollection = new ListController<DocumentController>(layoutDocuments);
             var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
             Document.SetFields(fields, true); //TODO add fields to constructor parameters   
 
@@ -36,7 +37,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -46,7 +47,7 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            var layoutDocCollection = new ListController<DocumentController>(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
 
@@ -57,7 +58,7 @@ namespace Dash
 
         private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
         {
-            var currentSpacingField = new NumberFieldModelController(spacing);
+            var currentSpacingField = new NumberController(spacing);
             docController.SetField(SpacingKey, currentSpacingField, forceMask);
         }
 
@@ -68,7 +69,7 @@ namespace Dash
 
         private static void BindSpacing(ListView listView, DocumentController docController,  Context context)
         {
-            var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberFieldModelController;
+            var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberController;
             if (spacingController == null)
                 return;
 
@@ -123,6 +124,10 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
+            listView.Loaded += (s, e) =>
+            {
+                Util.FixListViewBaseManipulationDeltaPropagation(listView);
+            };
             listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
 
             listView.HorizontalContentAlignment = HorizontalAlignment.Center; 
@@ -131,12 +136,13 @@ namespace Dash
             LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
 
             var c = new Context(context);
-            docController.DocumentFieldUpdated += delegate (DocumentController sender,
-                DocumentController.DocumentFieldUpdatedEventArgs args)
+            docController.FieldModelUpdated += delegate (FieldControllerBase sender,
+                FieldUpdatedEventArgs args, Context context1)
             {
-                if (args.Reference.FieldKey.Equals(KeyStore.DataKey))
+                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                if (dargs.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments(sender, c, listView, isInterfaceBuilderLayout);
+                    LayoutDocuments((DocumentController)sender, c, listView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
                 }
             };
             grid.Children.Add(listView);
@@ -175,7 +181,7 @@ namespace Dash
 
         private static void LayoutDocuments(DocumentController docController, Context context, ListView list, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
-            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
+            var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             foreach (var layoutDocument in layoutDocuments)
             {
@@ -196,11 +202,11 @@ namespace Dash
             
         }
 
-        private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
+        private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.DataKey)?
-                .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+                .DereferenceToRoot<ListController<DocumentController>>(context);
         }
     }
 

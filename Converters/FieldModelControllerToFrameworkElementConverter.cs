@@ -8,38 +8,39 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    public class BoundFieldModelController
+    public class BoundController
     {
         public FieldControllerBase FieldModelController;
         public DocumentController   ContextDocumentController;
-        public BoundFieldModelController(FieldControllerBase fieldModelController, DocumentController contextDocument)
+        public BoundController(FieldControllerBase fieldModelController, DocumentController contextDocument)
         {
             FieldModelController = fieldModelController;
             ContextDocumentController = contextDocument;
         }
     }
-    public class BoundFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<BoundFieldModelController, FrameworkElement>
+    public class BoundControllerToFrameworkElementConverter : SafeDataToXamlConverter<BoundController, FrameworkElement>
     {
-        public override FrameworkElement ConvertDataToXaml(BoundFieldModelController data, object parameter = null)
+        public override FrameworkElement ConvertDataToXaml(BoundController data, object parameter = null)
         {
             if (data == null)
                 return new TextBox();
-            return data.FieldModelController.GetTableCellView(new Context(data.ContextDocumentController));
+            var convertDataToXaml = data.FieldModelController.GetTableCellView(new Context(data.ContextDocumentController));
+            return convertDataToXaml;
         }
 
-        public override BoundFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override BoundController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }
     }
-    public class ReferenceFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<ReferenceFieldModelController, FrameworkElement>
+    public class ReferenceFieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<ReferenceController, FrameworkElement>
     {
-        public override FrameworkElement ConvertDataToXaml(ReferenceFieldModelController data, object parameter = null)
+        public override FrameworkElement ConvertDataToXaml(ReferenceController data, object parameter = null)
         {
             return data?.GetTableCellView(null) ?? new Grid();
         }
 
-        public override ReferenceFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override ReferenceController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

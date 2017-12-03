@@ -9,13 +9,14 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash;
 using DashShared;
 using System.Collections.Generic;
+using DashShared.Models;
 
 namespace Dash
 {
 
     /// <summary>
     /// A generic document type containing a single image. The Data field on an ImageBox is a reference which eventually ends in an
-    /// ImageFieldModelController or an ImageFieldModelController
+    /// ImageController or an ImageController
     /// </summary>
     public class ImageBox : CourtesyDocument
     {
@@ -31,6 +32,8 @@ namespace Dash
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
+            (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
+            (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetOpacityField(Document, DefaultOpacity, true, null);
@@ -39,7 +42,7 @@ namespace Dash
 
         private static void SetClipField(DocumentController docController, RectangleGeometry defaultClip, bool forceMask, Context context)
         {
-            var currentClipField = new RectFieldModelController(defaultClip.Rect);
+            var currentClipField = new RectController(defaultClip.Rect);
             docController.SetField(ClipKey, currentClipField, forceMask);
         }
 
@@ -72,8 +75,8 @@ namespace Dash
 
 
             // set up interactions with operations
-            var imageFMController = docController.GetDereferencedField(KeyStore.DataKey, context) as ImageFieldModelController;
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            var imageFMController = docController.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             BindOperationInteractions(image, GetImageReference(docController).GetFieldReference().Resolve(context), reference.FieldKey, imageFMController);
 
           
@@ -93,18 +96,21 @@ namespace Dash
             Context context)
         {
             var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceFieldModelController)
+            if (data is ReferenceController)
             {
-                var reference = data as ReferenceFieldModelController;
+                var reference = data as ReferenceController;
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+                        DocumentController doc = (DocumentController) sender;
+                        DocumentController.DocumentFieldUpdatedEventArgs dargs =
+                            (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
                         {
                             return;
                         }
-                        BindImageSource(image, sender, args.Context, reference.FieldKey);
+                        BindImageSource(image, doc, c, reference.FieldKey);
                     });
             }
             BindImageSource(image, controller, context, KeyStore.DataKey);
@@ -112,7 +118,7 @@ namespace Dash
 
         protected static void BindImageSource(Image image, DocumentController docController, Context context, KeyController key)
         {
-            var data = docController.GetDereferencedField(key, context) as ImageFieldModelController;
+            var data = docController.GetDereferencedField(key, context) as ImageController;
             if (data == null)
             {
                 return;
@@ -143,11 +149,11 @@ namespace Dash
         private static void BindClip(Image image, DocumentController docController, Context context)
         {
             var widthController =
-                docController.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+                docController.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberController;
             var heightController =
-                docController.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+                docController.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberController;
             var clipController =
-                docController.GetDereferencedField(ClipKey, context) as RectFieldModelController;
+                docController.GetDereferencedField(ClipKey, context) as RectController;
             if (clipController == null) return;
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
@@ -162,8 +168,8 @@ namespace Dash
             };
         }
 
-        private static void AddClipBindingEvents(RectFieldModelController clipController,
-            NumberFieldModelController widthController, NumberFieldModelController heightController, Image image)
+        private static void AddClipBindingEvents(RectController clipController,
+            NumberController widthController, NumberController heightController, Image image)
         {
             clipController.FieldModelUpdated += (ss, args, cc) =>
             {
@@ -197,7 +203,7 @@ namespace Dash
 
         private static void BindOpacity(Image image, DocumentController docController, Context context)
         {
-            var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberFieldModelController;
+            var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberController;
             if (opacityController == null)
             {
                 return;
@@ -213,7 +219,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -223,8 +229,8 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var imFieldModelController = new ImageFieldModelController(DefaultImageUri);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imFieldModelController);
+            var imController = new ImageController(DefaultImageUri);
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             SetOpacityField(prototypeDocument, DefaultOpacity, true, null);
             return prototypeDocument;
@@ -234,14 +240,14 @@ namespace Dash
 
         private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
         {
-            var currentOpacityField = new NumberFieldModelController(opacity);
+            var currentOpacityField = new NumberController(opacity);
             docController.SetField(OpacityKey, currentOpacityField, forceMask);
             // set the field here so that forceMask is respected
         }
 
-        private static ReferenceFieldModelController GetImageReference(DocumentController docController)
+        private static ReferenceController GetImageReference(DocumentController docController)
         {
-            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
         #endregion

@@ -9,6 +9,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Dash.Controllers;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -22,7 +23,8 @@ namespace Dash
         Image,
         Json,
         Csv,
-        Pdf
+        Pdf,
+        Text
     }
 
 
@@ -53,7 +55,7 @@ namespace Dash
             var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
             var layout = doc.GetActiveLayout();
             var activeLayout =
-                layout.Data.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
+                layout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
             if (storageFile.IsOfType(StorageItemTypes.Folder))
             {
                 //Add collection of new documents?
@@ -70,7 +72,7 @@ namespace Dash
                         t = TypeInfo.Image;
                         //Todo: needs to be fixed bc the images wont display if you use the system uri (i.e. storageFile.Path)
                         var localFolder = ApplicationData.Current.LocalFolder;
-                        var file = await localFolder.CreateFileAsync("filename.jpg",
+                        var file = await localFolder.CreateFileAsync(storageFile.DisplayName+storageFile.FileType,
                             CreationCollisionOption.ReplaceExisting);
                         await storageFile.CopyAndReplaceAsync(file);
                         data = new Uri(file.Path);
@@ -84,7 +86,7 @@ namespace Dash
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     case ".rtf":
-                        t = TypeInfo.RichTextField;
+                        t = TypeInfo.RichText;
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     default:
@@ -117,7 +119,7 @@ namespace Dash
             return null;
         }
 
-        public static DocumentController CreateFieldLayoutDocumentFromReference(ReferenceFieldModelController reference,
+        public static DocumentController CreateFieldLayoutDocumentFromReference(ReferenceController reference,
             double x = 0, double y = 0, double w = 200, double h = 200, TypeInfo listType = TypeInfo.None)
         {
             var type = reference.DereferenceToRoot(null).TypeInfo;
@@ -129,13 +131,17 @@ namespace Dash
                     return new TextingBox(reference, x, y, w, h).Document;
                 case TypeInfo.Image:
                     return new ImageBox(reference, x, y, w, h).Document;
-                case TypeInfo.Collection:
-                    return new CollectionBox(reference, x, y, w, h).Document;
+                case TypeInfo.List:
+                    if (listType == TypeInfo.Document)
+                    {
+                        return new CollectionBox(reference, x, y, w, h).Document;
+                    }
+                    throw new NotImplementedException();
                 case TypeInfo.Document:
                     return new DocumentBox(reference, x, y, w, h).Document;
                 case TypeInfo.Point:
                     return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     return new RichTextBox(reference, x, y, w, h).Document;
                 default:
                     return null;
@@ -143,15 +149,28 @@ namespace Dash
         }
 
         public static DocumentController AddFieldFromData(object data, DocumentController document, KeyController key,
-            Point position, TypeInfo type, DocumentCollectionFieldModelController activeLayout)
+            Point position, TypeInfo type, ListController<DocumentController> activeLayout)
         {
             var fmc = FieldControllerFactory.CreateFromModel(TypeInfoHelper.CreateFieldModelHelper(type, data));
             document.SetField(key, fmc, true);
             var layoutDoc =
-                CreateFieldLayoutDocumentFromReference(new DocumentReferenceFieldController(document.GetId(), key),
+                CreateFieldLayoutDocumentFromReference(new DocumentReferenceController(document.GetId(), key),
                     position.X, position.Y);
-            activeLayout?.AddDocument(layoutDoc);
+            activeLayout?.Add(layoutDoc);
             return layoutDoc;
+        }
+
+        public static async Task< DocumentController> GetDroppedFile(DragEventArgs e)
+        {
+            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+
+            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            if (files.Count == 1)
+            {
+                var fileType = GetSupportedFileType(files.First());
+                return await ParseFileAsync(fileType, files.First(), new Point(), e).AsAsyncOperation();
+            }
+            return null;
         }
 
         /// <summary>
@@ -164,14 +183,19 @@ namespace Dash
         public static async Task HandleDropOnCollectionAsync(object sender, DragEventArgs e,
             ICollectionViewModel collectionViewModel)
         {
-            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>();
-            if (files.Any())
-            {
-                // the point where the items will be dropped
-                var where = sender is CollectionFreeformView
-                    ? Util.GetCollectionFreeFormPoint((CollectionFreeformView) sender, e.GetPosition(MainPage.Instance))
-                    : new Point();
 
+
+            // the point where the items will be dropped
+            var where = sender is CollectionFreeformView
+                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
+                : new Point();
+
+            // get all the files from the drag event
+            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+
+            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            if (files.Count == 1)
+            {
                 // for each file, get it's type, parse it, and add it to the collection in the proper position
                 foreach (var file in files)
                 {
@@ -183,6 +207,28 @@ namespace Dash
                         collectionViewModel.AddDocument(documentController, null);
                     }
                 }
+            }
+            else if (files.Any())
+            {
+                var outputCollection = new ListController<DocumentController>();
+
+                // for each file, get it's type, parse it, and add it to the output collection
+                foreach (var file in files)
+                {
+                    var fileType = GetSupportedFileType(file);
+                    var documentController = await ParseFileAsync(fileType, file, where, e);
+                    if (documentController != null)
+                    {
+                        outputCollection.Add(documentController);
+                    }
+                }
+
+                // add the output collection to the workspace at the proper position
+                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), "File Input Collection"));
+                outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
+                outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X, where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
+                collectionViewModel.AddDocument(outputDoc, null);
+
             }
             else
             {
@@ -204,11 +250,15 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
-                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
+                    var link = await e.DataView.GetWebLinkAsync();
+                    return new HtmlNote(link.AbsoluteUri, "", where).Document;
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                case FileType.Text:
+                    return await new TextToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null);
             }
-            throw new NotImplementedException("We need to implement the proper parser!");
         }
 
         /// <summary>
@@ -230,14 +280,16 @@ namespace Dash
                 return FileType.Ppt;
             if (storagePath.EndsWith(".pptx"))
                 return FileType.Ppt;
-            if (storageItem.FileType == ".url")
+            if (storageItem.FileType.EndsWith(".url"))
                 return FileType.Web;
-            if (storageItem.FileType == ".jpg" ||
-                storageItem.FileType == ".jpeg" ||
-                storageItem.FileType == ".png" ||
-                storageItem.FileType == ".png" ||
-                storageItem.FileType == ".gif")
+            if (storagePath.EndsWith(".jpg") || storageItem.FileType.EndsWith(".jpg") ||
+                storagePath.EndsWith(".jpeg") || storageItem.FileType.EndsWith(".jpeg") ||
+                storagePath.EndsWith(".png") || storageItem.FileType.EndsWith(".png") ||
+                storagePath.EndsWith(".gif") || storageItem.FileType.EndsWith(".gif") ||
+                storageItem.FileType == ".jpg")
                 return FileType.Image;
+            if (storagePath.EndsWith(".txt"))
+                return FileType.Text;
             throw new ArgumentException($"We do not support the file type for the passed in file: {storageItem.Path}");
         }
 
@@ -256,10 +308,10 @@ namespace Dash
                     var storageFile = item as StorageFile;
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
+                        [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
                     };
-                    var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
-                    var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey))
+                    var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
+                    var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey))
                         .Document;
                     doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document,
                         false, true);
@@ -279,10 +331,10 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.SystemUriKey] = new TextFieldModelController(storageFile.Path + storageFile.Name)
+                    [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
                 };
-                var doc = new DocumentController(fields, DashConstants.DocumentTypeStore.FileLinkDocument);
-                var tb = new TextingBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.SystemUriKey)).Document;
+                var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
+                var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey)).Document;
                 doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document, false,
                     true);
                 await AddFileAsField(doc, new Point(0, tb.GetHeightField().Data), storageFile);

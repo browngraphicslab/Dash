@@ -19,13 +19,10 @@
             </Grid.RowDefinitions>
 
             <!--EDIT-->
-            <Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                <Button Margin="0,5,0,10" Width="200" Height="35" HorizontalAlignment="Center" Content="EDIT">
-                    <Button.Background>
-                        <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
-                    </Button.Background>
+            <!--<Grid Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <Button Margin="0,5,0,10" Width="200" Height="35" HorizontalAlignment="Center" Content="EDIT" Background="{ThemeResource DarkWindowsBlue}">
                 </Button>
-            </Grid>
+            </Grid>-->
 
             <!--LAYOUT-->
             <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -59,10 +56,7 @@
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->
-                                <Button x:Name="xAddLayoutButton" Grid.Column="1" >
-                                    <Button.Background>
-                                        <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
-                                    </Button.Background>
+                                <Button x:Name="xAddLayoutButton" Grid.Column="1" Padding="3" Height="30" Width="30" Background="{ThemeResource DarkWindowsBlue}">
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>

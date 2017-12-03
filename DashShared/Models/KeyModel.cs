@@ -4,10 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared.Models;
 
 namespace DashShared
 {
-    public class KeyModel : EntityBase
+    [FieldModelType(TypeInfo.Key)]
+    public class KeyModel : FieldModel
     {
         /// <summary>
         /// The name of the entity, this is useful for search and provides a front end that

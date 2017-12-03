@@ -21,8 +21,8 @@ namespace Dash
 
         static ContentController()
         {
-            var t = typeof(T);
-            Debug.Assert(t == typeof(FieldModel) || t == typeof(DocumentModel) || t == typeof(KeyModel));
+            //var t = typeof(T);
+            //Debug.Assert(t == typeof(FieldModel) || t == typeof(DocumentModel) || t == typeof(KeyModel));
         }
 
         #region Controllers

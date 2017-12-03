@@ -1,11 +1,12 @@
-using System.Diagnostics;
-﻿using System;
+﻿using System.Diagnostics;
+ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dash.Controllers;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -49,7 +50,7 @@ namespace Dash
             {
                 docId = context.GetDeepestDelegateOf(docId) ?? docId;
             }
-            return ContentController<DocumentModel>.GetController<DocumentController>(docId);
+            return ContentController<FieldModel>.GetController<DocumentController>(docId);
         }
 
         public override FieldReference Copy()
@@ -65,7 +66,7 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            DocumentFieldReference reference = obj as DocumentFieldReference;
+            var reference = obj as DocumentFieldReference;
             if (reference == null)
             {
                 return false;
@@ -79,9 +80,9 @@ namespace Dash
             return base.GetHashCode() ^ DocumentId.GetHashCode();
         }
 
-        public override ReferenceFieldModelController GetReferenceController()
+        public override ReferenceController GetReferenceController()
         {
-            return new DocumentReferenceFieldController(DocumentId, FieldKey);
+            return new DocumentReferenceController(DocumentId, FieldKey);
         }
     }
 }

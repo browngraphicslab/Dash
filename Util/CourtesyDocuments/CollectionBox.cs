@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Dash;
 using DashShared;
 using System;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -20,8 +21,8 @@ namespace Dash
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
-            fields[KeyStore.CollectionViewTypeKey] = new TextFieldModelController(viewType.ToString());
-            fields[KeyStore.InkDataKey] = new InkFieldModelController();
+            fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
+            fields[KeyStore.InkDataKey] = new InkController();
 
 
             Document = GetLayoutPrototype().MakeDelegate();
@@ -31,7 +32,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId);
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
             if (prototype == null)
             {
                 prototype = InstantiatePrototypeLayout();
@@ -41,11 +42,12 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var docFieldModelController = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
-            fields[KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
+            var docController = new ListController<DocumentController>(new List<DocumentController>());
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docController);
+            fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
+            fields[KeyStore.AbstractInterfaceKey] = new TextController("CollectionBox Layout");
 
-            var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.DocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
 
             return prototypeDocument;
         }
@@ -61,25 +63,28 @@ namespace Dash
         {
             var data = docController.GetField(KeyStore.DataKey);
 
-            var opacity = (docController.GetDereferencedField(new KeyController("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
+            var opacity = (docController.GetDereferencedField(new KeyController("opacity", "opacity"), context) as NumberController)?.Data;
 
             double opacityValue = opacity.HasValue ? (double)opacity : 1;
 
-            var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            Debug.Assert(collectionFieldModelController != null);
+            var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
+            Debug.Assert(collectionController != null);
+            var collectionViewModel = new CollectionViewModel(docController, data, isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            
 
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(KeyStore.InkDataKey) as InkFieldModelController};
-
-            var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextFieldModelController).Data;
+            var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController).Data;
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
             var view       = new CollectionView(collectionViewModel,  viewType);
 
             //add to key to framework element dictionary
-            var reference = data as ReferenceFieldModelController;
+            var reference = data as ReferenceController;
             if (keysToFrameworkElementsIn != null)
             {
                 keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-              //  keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+                //TODO Why are we doing this?
+                docController.SetField(KeyStore.CollectionOutputKey,
+                    new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
             }
 
 
