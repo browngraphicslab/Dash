@@ -14,7 +14,7 @@
             <ListView.ItemContainerStyle>
                 <!-- TODO: abstract this bs out-->
                 <Style TargetType="ListViewItem">
-                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                    <Setter Property="Background" Value="{ThemeResource DocumentBackgroundOpaque}"></Setter>
                     <Setter Property="FontSize" Value="11"></Setter>
                     <Setter Property="Foreground" Value="DarkSlateGray"></Setter>
                     <Setter Property="Height" Value="1"></Setter>
@@ -22,7 +22,7 @@
                     <Setter Property="Margin" Value="0"></Setter>
                     <Setter Property="BorderThickness" Value="0,0,0,1"></Setter>
                     <Setter Property="BorderBrush" Value="#FF444444"></Setter>
-                    <Setter Property="Background" Value="{StaticResource DocumentBackgroundOpaque}"></Setter>
+                    <Setter Property="Background" Value="{ThemeResource DocumentBackgroundOpaque}"></Setter>
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>

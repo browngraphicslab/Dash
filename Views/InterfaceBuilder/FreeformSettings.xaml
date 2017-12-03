@@ -58,7 +58,7 @@
                     <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid>
-                                <TextBox x:Name="xSpacingTextbox" BorderBrush="Transparent" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center" FontSize="12" LostFocus="xSpacingTextbox_OnLostFocus"  TextAlignment="Center"/>
+                                    <TextBox x:Name="xSpacingTextbox" BorderBrush="Transparent" Background="{ThemeResource DocumentHighlightBackground}" VerticalAlignment="Center" FontSize="12" LostFocus="xSpacingTextbox_OnLostFocus"  TextAlignment="Center"/>
                                 <Grid x:Name="xSpacingMovementDetectionGrid" IsHitTestVisible="true" Width="Auto"
                                       Background="Transparent"
                                       VerticalAlignment="Stretch" Tapped="XMovementDetectionGrid_OnTapped"
@@ -69,14 +69,14 @@
                                       ManipulationCompleted="XMovementDetectionGrid_OnManipulationCompleted">
                                     <Border x:Name="xDeduct" Tag="Deduct" Width="25" Height="25"
                                             HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{StaticResource TranslucentWhite}"
+                                            <TextBlock Text="−" FontSize="20" TextAlignment="Left" Foreground="{ThemeResource TranslucentWhite}"
                                                    FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                    VerticalAlignment="Center">
                                         </TextBlock>
                                     </Border>
                                     <Border x:Name="xIncrement" Tag="Increment" Width="25" Height="25"
                                             HorizontalAlignment="Right" VerticalAlignment="Top" Opacity="0">
-                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{StaticResource TranslucentWhite}"
+                                            <TextBlock Text="+" FontSize="20" TextAlignment="Right" Foreground="{ThemeResource TranslucentWhite}"
                                                    FontWeight="ExtraBold" Padding="0" HorizontalAlignment="Center"
                                                    VerticalAlignment="Center">
                                         </TextBlock>

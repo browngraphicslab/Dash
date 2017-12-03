@@ -19,8 +19,8 @@
         </Storyboard>
         <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter" />
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
@@ -63,16 +63,16 @@
 
             <Canvas x:Name="xShadowHost"  Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Rectangle x:Name="xShadowTarget"  Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                   Fill="{StaticResource DocumentBackground}" >
+                   Fill="{ThemeResource DocumentBackground}" >
                 <Rectangle.Resources>
                     <!-- Animate background color -->
                     <Storyboard x:Name="colorStoryboard">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#EFFFFFFF" To="#FFe8f0f6" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentBackgroundColor}" To="{ThemeResource DocumentHighlightColor}" Duration="0:0:0.075"/>
                     </Storyboard>
                     <Storyboard x:Name="colorStoryboardOut">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="#FFe8f0f6" To="#EFFFFFFF" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentHighlightColor}" To="{ThemeResource DocumentBackgroundColor}" Duration="0:0:0.075"/>
                     </Storyboard>
                 </Rectangle.Resources>
             </Rectangle>
@@ -80,8 +80,8 @@
 
             <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
-                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{StaticResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
-                    <TextBox RequestedTheme="Light" Padding="0" Foreground="{StaticResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown"></TextBox>
+                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
+                    <TextBox Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown"></TextBox>
                 </StackPanel>
             </Border>
 
