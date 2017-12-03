@@ -299,6 +299,8 @@ namespace Dash
                     var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
                     if (firstDocValue is ListController<DocumentController> || firstDocValue.GetValue(null) is List<FieldControllerBase>)
                         showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    else if (firstDocValue is DocumentController)
+                        subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
@@ -362,60 +364,56 @@ namespace Dash
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
                 var strings = text.Split(new char[] { '\r' });
+                var htmlNote = new HtmlNote(html, "", where).Document;
+                foreach (var str in html.Split(new char[] { '\r' }))
+                {
+                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                    if (matches.Count != 0)
+                    {
+                        htmlNote.GetDataDocument(null).SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                        break;
+                    }
+                }
 
                 if (imgs.Count() == 0)
                 {
                     var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
                     var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
-                    var t = new RichTextNote(PostitNote.DocumentType, title, where);
-                    t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                    htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     if (title == "")
                         foreach (var match in matches)
                         {
                             var pair = new Regex(":").Split(match.ToString());
-                            t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                            htmlNote.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
                         }
-                    AddDocument(t.Document, null);
+                    else
+                        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
                 } else {
-                    DocumentController primary = null;
                     var related = new List<DocumentController>();
                     foreach (var img in imgs)
                     {
                         var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
                         var src = srcMatch.Substring(5, srcMatch.Length - 5);
-                        var i = new AnnotatedImage(new Uri(src), null, "", "", 200, 250, where.X, where.Y);
-                        if (img == imgs.First())
-                        {
-                            AddDocument(i.Document, null);
-                            primary = i.Document;
-                        }
-                        else
-                        {
-                            related.Add(i.Document);
-                        }
-                        var docText = "";
-                        foreach (var str in strings)
-                        {
-                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
-                            if (matches.Count != 0)
-                            {
-                                foreach (var match in matches)
-                                {
-                                    var pair = new Regex(":").Split(match.ToString());
-                                    i.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
-                                }
-                            }
-                            else
-                                docText += str + "\r\n";
-                        }
-                        i.Document.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(docText.Trim()), true);
+                        var i = new AnnotatedImage(new Uri(src), null, null, "", 200, 250, where.X, where.Y);
+                        related.Add(i.Document);
                     }
-                    primary.GetDataDocument(null).SetField(KeyStore.CollectionKey, new CollectionNote(new Point(), CollectionView.CollectionViewType.Grid, "", 300, 300, related).Document, true);
-                 }
-
-                //var n = new RichTextNote(PostitNote.DocumentType, "");
-                //n.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(html)), true);
-                //AddDocument(n.Document, null);
+                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;
+                    htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
+                    htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    foreach (var str in strings)
+                    {
+                        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                        if (matches.Count != 0)
+                        {
+                            foreach (var match in matches)
+                            {
+                                var pair = new Regex(":").Split(match.ToString());
+                                htmlNote.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                            }
+                        }
+                    }
+                }
+                AddDocument(htmlNote, null);
             }
             else if (e.DataView.Contains(StandardDataFormats.Rtf))
             {

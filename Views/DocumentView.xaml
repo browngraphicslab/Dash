@@ -89,18 +89,12 @@
             <Grid Grid.Row="1" Grid.Column="0">
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
-                    <Grid.Clip>
-                        <!--RectangleGeometry x:Name="xClipRect" Rect="0,0,300,300" /-->
-                    </Grid.Clip>
                     <FlyoutBase.AttachedFlyout >
                         <Flyout Placement="Bottom">
                             <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
                         </Flyout>
                     </FlyoutBase.AttachedFlyout>
-
                     <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" />
-
-                    <!--IsHitTestVisible="{Binding IsSelected}"-->
                 </Grid>
                 <!-- Dragger Button-->
                 <Button x:Name="DraggerButton"
@@ -123,9 +117,14 @@
             <ProgressRing x:Name="xProgressRing" Grid.Row="1" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
 
             <!--Rectangles that indicate whether document is a delegate or a copy-->
-            <Grid x:Name="xDelegateStatusCanvas" VerticalAlignment="Top" Margin="0,-20,0,0"
-                Visibility="{Binding Path=DocumentController.HasDelegatesOrPrototype, Converter={StaticResource BoolToVisibilityConverter}}" >
-                <Canvas HorizontalAlignment="Right" Width="50" Canvas.Top="0">
+            <Grid Grid.Row="0" Grid.Column="0" Margin="0,-23,0,0" HorizontalAlignment="Right" Width="23"
+                Visibility="{Binding Path=DocumentController.HasPrototype, Converter={StaticResource BoolToVisibilityConverter}}" Background="Transparent">
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Prototype" Click="DeepestPrototypeFlyoutItem_OnClick"></MenuFlyoutItem>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                <Canvas HorizontalAlignment="Center" IsHitTestVisible="False">
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
                        Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
                     <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="1"

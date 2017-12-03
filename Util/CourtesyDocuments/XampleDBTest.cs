@@ -40,13 +40,11 @@ namespace Dash
         //public static DocumentController PrototypeGame = CreatePrototypeGame();
         //public static DocumentController PrototypeVol = CreatePrototypeVol();
         //public static DocumentController PrototypeAssign = CreatePrototypeAssignment();
-        public static DocumentController PrototypeWeb = CreatePrototypeWeb();
 
         //public static DocumentController PrototypeUmpLayout = CreatePrototypeUmpLayout();
         //public static DocumentController PrototypeGameLayout = CreatePrototypeGameLayout();
         //public static DocumentController PrototypeVolLayout = CreatePrototypeVolLayout();
         //public static DocumentController PrototypeAssignmentLayout = CreatePrototypeAssignmentLayout();
-        public static DocumentController PrototypeWebLayout = CreatePrototypeWebLayout();
 
         public static DocumentController DBNull = CreateNull();
         public static DocumentController DBDoc = CreateDB();
@@ -133,17 +131,6 @@ namespace Dash
             //return dc;
             return null;
         }
-        static DocumentController CreatePrototypeWeb()
-        {
-            var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields.Add(WebUrlKey, new TextController("http://www.cs.brown.edu"));
-            fields.Add(KeyStore.AbstractInterfaceKey, new TextController("Web Data API"));
-            var dc = new DocumentController(fields, WebType);
-            dc.SetField(KeyStore.ThisKey, dc, true);
-            dc.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(WebUrlKey), true);
-            return dc;
-
-        }
 
         static DocumentController CreatePrototypeUmpLayout()
         {
@@ -214,43 +201,12 @@ namespace Dash
 
         }
 
-        static DocumentController CreatePrototypeWebLayout()
-        {
-            // set the default layout parameters on prototypes of field layout documents
-            // these prototypes will be overridden by delegates when an instance is created
-            //var prototypeLayout = new WebBox(new DocumentReferenceFieldController(PrototypeWeb.GetId(), WebUrlKey), 0, 0, 200, 50);
-            //prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-            //prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(800), true);
-            //prototypeLayout.Document.SetField(KeyStore.AbstractInterfaceKey, new TextController("Web Layout API"), true);
-
-            //return prototypeLayout.Document;
-            return null;
-
-        }
-
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
             dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
         public List<DocumentController> Documents = new List<DocumentController>();
-
-        public static DocumentController CreateWebPage(string target, Point ?where = null)
-        {
-            var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
-            WebDoc.SetField(KeyStore.ThisKey, WebDoc, true);
-            WebDoc.SetField(KeyStore.TitleKey, new TextController("Web Doc"), true);
-            WebDoc.SetField(DBTest.WebUrlKey, new TextController(target), true);
-            WebDoc.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(DBTest.WebUrlKey), true);
-
-            var webLayout = new WebBox(new DocumentReferenceController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
-            webLayout.SetField(KeyStore.DocumentContextKey, WebDoc, true);
-
-            webLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-            webLayout.SetField(KeyStore.HeightFieldKey, new NumberController(800), true);
-            webLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
-            return webLayout;
-
-        }
+        
 
 
         public DBTest()
