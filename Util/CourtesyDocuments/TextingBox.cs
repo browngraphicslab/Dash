@@ -128,19 +128,16 @@ namespace Dash
 
         protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
-            if (data != null)
+            var binding = new FieldBinding<FieldControllerBase>()
             {
-                var binding = new FieldBinding<FieldControllerBase>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = BindingMode.TwoWay,
-                    Context = context,
-                    GetConverter = GetFieldConverter
-                };
-                element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-            }
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.TwoWay,
+                Context = context,
+                GetConverter = GetFieldConverter,
+                FallbackValue = "<null>"
+            };
+            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
         protected static IValueConverter GetFieldConverter(FieldControllerBase Controller)
@@ -164,7 +161,7 @@ namespace Dash
 
             return new ObjectToStringConverter(null);
         }
-        
+
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
             var alignmentBinding = new FieldBinding<NumberController>()
@@ -220,7 +217,7 @@ namespace Dash
 
 
         #region GettersAndSetters
-        
+
 
         private static ReferenceController GetTextReference(DocumentController docController)
         {
