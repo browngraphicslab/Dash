@@ -880,7 +880,9 @@ namespace Dash
 
         public void UpdateTreeNode(DocumentController dc)
         {
-            (_treeMenuItem as DocumentAddMenuItem).LayoutDoc = dc; 
+            //(_treeMenuItem as DocumentAddMenuItem).LayoutDoc = dc;
+            //(_treeMenuItem as DocumentAddMenuItem).DataDoc = dc; 
+            (_treeMenuItem as DocumentAddMenuItem).DataDoc = ViewModel.DocumentController; 
         }
     }
 

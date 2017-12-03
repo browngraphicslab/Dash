@@ -42,7 +42,7 @@ namespace Dash
             Height = height;
             _view = view; 
 
-            SetUpInterfaceBuilder(docController, new Context(docController));
+            SetUpInterfaceBuilder(docController);
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -67,7 +67,7 @@ namespace Dash
             //xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
 
-        private void SetUpInterfaceBuilder(DocumentController docController, Context context)
+        private void SetUpInterfaceBuilder(DocumentController docController)
         {
             _editingDocument = docController;
             xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
@@ -293,7 +293,7 @@ namespace Dash
         {
             DocumentController cont = e.ClickedItem as DocumentController;
 
-            SetUpInterfaceBuilder(cont, new Context(cont));
+            SetUpInterfaceBuilder(cont);
         }
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {

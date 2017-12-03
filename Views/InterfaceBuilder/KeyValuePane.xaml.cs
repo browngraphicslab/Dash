@@ -230,7 +230,7 @@ namespace Dash
                 keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
-            OnKeyValuePairAdded?.Invoke(this, RealDataContext.GetActiveLayout().Data); // updates DocumentAddMenuItem associated with the documentcontroller for this keyvaluepane 
+            OnKeyValuePairAdded?.Invoke(this, RealDataContext); // RealDataContext.GetActiveLayout().Data); // updates DocumentAddMenuItem associated with the documentcontroller for this keyvaluepane 
             return true;
         }
 
