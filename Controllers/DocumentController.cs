@@ -680,6 +680,16 @@ namespace Dash
             return fieldChanged;
         }
 
+        /// <summary>
+        /// Removes the field mapped to by <paramref name="key"/> from the document
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool RemoveField(KeyController key)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
