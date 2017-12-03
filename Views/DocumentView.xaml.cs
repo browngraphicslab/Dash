@@ -150,9 +150,9 @@ namespace Dash
                         // if the tree contains the parent collection
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
-                            var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
-                            _treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                            //var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                            //var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                            _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
                         }
                     }
@@ -195,8 +195,9 @@ namespace Dash
                 //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
-                _treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                //var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
+                //_treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                     _treeMenuItem);
             }

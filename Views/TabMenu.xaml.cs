@@ -174,23 +174,23 @@ namespace Dash
         public void AddGoToTabItems()
         {
             _allDocItems = new List<ITabItemViewModel>();
-            var views = MainPage.Instance.GetDescendantsOfType<DocumentView>(); 
-            foreach (DocumentView view in views)
-            {
-                _allDocItems.Add(new GoToTabItemViewModel(view.ViewModel.DocumentController.Title, view.Choose, view.ViewModel.DocumentController)); 
-            }
-            //foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
+            //var views = MainPage.Instance.GetDescendantsOfType<DocumentView>(); 
+            //foreach (DocumentView view in views)
             //{
-            //    foreach (AddMenuItem menuItem in treeNode.ItemsList)
-            //    {
-            //        var docMenuItem = menuItem as DocumentAddMenuItem;
-            //        if (docMenuItem != null)
-            //        {
-            //            //var dc = docMenuItem.LayoutDoc.GetDataDocument(null); 
-            //            _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.DataDoc));// docMenuItem.LayoutDoc.GetDataDocument(null)));
-            //        }
-            //    }
+            //    _allDocItems.Add(new GoToTabItemViewModel(view.ViewModel.DocumentController.Title, view.Choose, view.ViewModel.DocumentController)); 
             //}
+            foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
+            {
+                foreach (AddMenuItem menuItem in treeNode.ItemsList)
+                {
+                    var docMenuItem = menuItem as DocumentAddMenuItem;
+                    if (docMenuItem != null)
+                    {
+                        //var dc = docMenuItem.LayoutDoc.GetDataDocument(null); 
+                        _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.DataDoc));// docMenuItem.LayoutDoc.GetDataDocument(null)));
+                    }
+                }
+            }
         }
 
         /// <summary>

@@ -91,18 +91,17 @@ namespace Dash.Views.Document_Menu
     public class DocumentAddMenuItem : AddMenuItem , IDisposable
     {
         private KeyController _key;
-        public DocumentController LayoutDoc;
         public DocumentController DataDoc;
         public Func<DocumentController> Action; 
-        public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController layoutDoc, KeyController key) : base(label, icon, action)
+        public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController dataDoc, KeyController key) : base(label, icon, action)
         {
             _key = key;
-            LayoutDoc = layoutDoc;
+            //LayoutDoc = layoutDoc;
             Action = action; 
-            var dataDoc = layoutDoc.GetDataDocument(null);
+            //var dataDoc = layoutDoc.GetDataDocument(null);
             // set the default title
-            dataDoc.GetTitleFieldOrSetDefault(null);
-            dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
+            //dataDoc.GetTitleFieldOrSetDefault(null);
+            //dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
             //TextChangedHandler(dataDoc, null); 
 
             DataDoc = dataDoc; 
@@ -110,7 +109,7 @@ namespace Dash.Views.Document_Menu
 
         public void Dispose()
         {
-            LayoutDoc.RemoveFieldUpdatedListener(_key, TextChangedHandler);
+            //LayoutDoc.RemoveFieldUpdatedListener(_key, TextChangedHandler);
         }
 
         private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -314,7 +313,10 @@ namespace Dash.Views.Document_Menu
             if (dc != null)
             {
                 e.Data.RequestedOperation = DataPackageOperation.Copy;
-                e.Data.Properties.Add(TreeNodeDragKey, dc.LayoutDoc);
+
+                var layout = dc.DataDoc.GetActiveLayout(null)?.Data ?? dc.DataDoc; 
+
+                e.Data.Properties.Add(TreeNodeDragKey, layout);
 
                 return;
             }
