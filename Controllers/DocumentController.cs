@@ -122,12 +122,10 @@ namespace Dash
         {
             if (string.IsNullOrWhiteSpace(keyName))
                 return false;
-            Debug.WriteLine(keyName); 
             foreach (KeyController key in _fields.Keys)
             {
                 if (key.Name.StartsWith("_"))
                     continue;
-                Debug.WriteLine("key: " + key.Name);
                 if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
                 {
                     return true;

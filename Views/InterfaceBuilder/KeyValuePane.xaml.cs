@@ -170,9 +170,6 @@ namespace Dash
             //}
         }
 
-        public delegate void KeyValueAddedHandler(KeyValuePane sender, DocumentController dc);
-        public event KeyValueAddedHandler OnKeyValuePairAdded; 
-
         /// <summary>
         ///     Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is
         ///     successful in adding the pair.
@@ -230,7 +227,6 @@ namespace Dash
                 keys.Contains(key.Id), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
-            //OnKeyValuePairAdded?.Invoke(this, RealDataContext); // RealDataContext.GetActiveLayout().Data); // updates DocumentAddMenuItem associated with the documentcontroller for this keyvaluepane 
             return true;
         }
 

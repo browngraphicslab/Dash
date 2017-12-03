@@ -96,12 +96,7 @@ namespace Dash.Views.Document_Menu
         public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController dataDoc, KeyController key) : base(label, icon, action)
         {
             _key = key;
-            //LayoutDoc = layoutDoc;
             Action = action; 
-            //var dataDoc = layoutDoc.GetDataDocument(null);
-            // set the default title
-            //dataDoc.GetTitleFieldOrSetDefault(null);
-            //dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
             //TextChangedHandler(dataDoc, null); 
 
             DataDoc = dataDoc; 

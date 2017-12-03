@@ -195,9 +195,7 @@ namespace Dash
                 //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                //var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
-                //_treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
-                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
+                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, ViewModel.DocumentController, KeyStore.TitleKey);
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
                     _treeMenuItem);
             }
@@ -737,7 +735,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController, view : this), new Point(10, 10), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(10, 10), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -876,14 +874,6 @@ namespace Dash
             ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = xTitle.Text;
             //ViewModel.DocumentController.Title = box.Text; 
             _treeMenuItem.DocType = xTitle.Text;                                                    // have to call because the documentcontrollers in these items aren't updated 
-
-        }
-
-        public void UpdateTreeNode(DocumentController dc)
-        {
-            //(_treeMenuItem as DocumentAddMenuItem).LayoutDoc = dc;
-            //(_treeMenuItem as DocumentAddMenuItem).DataDoc = dc; 
-            (_treeMenuItem as DocumentAddMenuItem).DataDoc = ViewModel.DocumentController; 
         }
     }
 
