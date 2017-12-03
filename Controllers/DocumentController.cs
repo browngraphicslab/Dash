@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
+using Dash.Controllers.Operators;
 using DashShared.Models;
 
 namespace Dash
@@ -339,11 +340,17 @@ namespace Dash
             if (opname == "Add")
                 return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorController());
             if (opname == "Subtract")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorController());
+            }
             if (opname == "Divide")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorController());
+            }
             if (opname == "Multiply")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorController());
+            }
 
             return null;
         }

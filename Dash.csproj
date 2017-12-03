@@ -93,7 +93,6 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\gridbg2.jpg" />
-    <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
@@ -114,6 +113,7 @@
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ImageRecognitionOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
@@ -142,6 +142,7 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -1086,6 +1087,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectOxford.Vision">
+      <Version>1.0.370</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>
