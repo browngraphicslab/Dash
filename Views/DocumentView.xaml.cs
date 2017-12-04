@@ -90,18 +90,17 @@ namespace Dash
             //handles drop from keyvaluepane 
             OnKeyValueDrop(e);
         }
-        
+
+        private void toFront()
+        {
+            if (ParentCollection == null) return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
 
         public DocumentController Choose()
         {
-            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-            if (ParentCollection != null)
-            {
-                ParentCollection.MaxZ += 1;
-                Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-            }
             OnSelected();
-
             // bring document to center? 
             var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
             if (mainView != null)
@@ -897,6 +896,11 @@ namespace Dash
             MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
             var same = deepestPrototype.Equals(ViewModel.DocumentController);
         }
-}
+
+        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            toFront();
+        }
+    }
     
 }
