@@ -10,11 +10,11 @@
     d:DesignWidth="500" d:DataContext="{d:DesignInstance local:CsvImportHelperViewModel}"
     MinWidth="500"
     MinHeight="400"
-    HeaderColor="{StaticResource DocumentBackgroundOpaque}"
+    HeaderColor="{ThemeResource DocumentBackgroundOpaque}"
     >
     
     <local:WindowTemplate.InnerContent>
-        <Grid Background="{StaticResource DocumentBackground}" MinWidth="400">
+        <Grid Background="{ThemeResource DocumentBackground}" MinWidth="400">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -41,7 +41,7 @@
             </ListView>
             <!--list of all the doc type to header mappings-->
             <TextBlock Grid.Row="2">Document Types</TextBlock>
-            <ListView Grid.Row="3" x:Name="xDocTypeList" ItemsSource="{Binding DocToColumnMaps}" Background="{StaticResource DocumentBackgroundOpaque}" AllowDrop="True">
+            <ListView Grid.Row="3" x:Name="xDocTypeList" ItemsSource="{Binding DocToColumnMaps}" Background="{ThemeResource DocumentBackgroundOpaque}" AllowDrop="True">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -58,7 +58,7 @@
                             <!--the document type-->
                             <Border BorderBrush="#20000000"
                                 BorderThickness="2"
-                                CornerRadius="5" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center">
+                                CornerRadius="5" Background="{ThemeResource DocumentHighlightBackground}" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding DocumentType.Type}" Margin="4" DragStarting="DocumentTypeDragStarting" PointerPressed="DocumentType_PointerPressed"/>
                             </Border>
                             <!--the list of headers associated with that document type-->
@@ -87,19 +87,19 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <!--add new doc type button-->
-                <Button x:Name="xAddNewDocTypeButton" Grid.ColumnSpan="3" Background="{StaticResource WindowsBlue}" 
+                <Button x:Name="xAddNewDocTypeButton" Grid.ColumnSpan="3" Background="{ThemeResource WindowsBlue}" 
                     HorizontalAlignment="Stretch" FontSize="23" Visibility="Visible"
                     Tapped="XAddNewDocTypeButton_OnTapped">+ Doc Type</Button>
                 <!--new doctype textbox-->
                 <TextBox x:Name="xNewDocTypeTextBox" Grid.Column="0" PlaceholderText="Enter a new document type" Visibility="Collapsed"
                      KeyDown="XNewDocTypeTextBox_OnKeyDown"></TextBox>
                 <!--accept new doc type buttton-->
-                <Button x:Name="xYesNewDocTypeButton" Grid.Column="1" Background="{StaticResource WindowsBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="23" Visibility="Collapsed"
+                <Button x:Name="xYesNewDocTypeButton" Grid.Column="1" Background="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="23" Visibility="Collapsed"
                     Tapped="XYesNewDocTypeButton_OnTapped">
                     <SymbolIcon Symbol="Accept"></SymbolIcon>
                 </Button>
                 <!--cancel new doc type button-->
-                <Button x:Name="xCancelNewDocTypeButton" Grid.Column="2" Background="{StaticResource WindowsBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="23" Visibility="Collapsed"
+                <Button x:Name="xCancelNewDocTypeButton" Grid.Column="2" Background="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="23" Visibility="Collapsed"
                     Tapped="XCancelNewDocTypeButton_OnTapped">
                     <SymbolIcon Symbol="Cancel"></SymbolIcon>
                 </Button>
@@ -111,13 +111,13 @@
                     <DataTemplate>
                         <Border BorderBrush="#20000000"
                                 BorderThickness="2"
-                                CornerRadius="5" Background="{StaticResource DocumentHighlightBackground}" VerticalAlignment="Center">
+                                CornerRadius="5" Background="{ThemeResource DocumentHighlightBackground}" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Type}" Margin="4"/>
                         </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-        <Button Grid.Row="7" x:Name="xParseButton" Grid.ColumnSpan="3" Background="{StaticResource WindowsBlue}" 
+        <Button Grid.Row="7" x:Name="xParseButton" Grid.ColumnSpan="3" Background="{ThemeResource WindowsBlue}" 
                 HorizontalAlignment="Stretch" FontSize="23" 
                 Tapped="xParseCSVButtonPressed">Parse</Button>
         </Grid>

@@ -62,9 +62,12 @@ namespace Dash
             var opView = new OperatorView(keysToFrameworkElements)
             {
                 DataContext = opfmc.GetFieldReference(),
-                OperatorContent = customLayout?.Invoke()
             };
 
+            if (customLayout != null)
+            {
+                opView.OperatorContent = customLayout.Invoke();
+            }
 
             SetupBindings(opView, docController, context);
 

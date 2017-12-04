@@ -113,13 +113,8 @@ namespace Dash
             // add bindings to work with operators
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
-                if (fmController is TextController)
-                    fmController = fmController as TextController;
-                else if (fmController is NumberController)
-                    fmController = fmController as NumberController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-                BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey);
             }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
@@ -128,19 +123,16 @@ namespace Dash
 
         protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
-            if (data != null)
+            var binding = new FieldBinding<FieldControllerBase>()
             {
-                var binding = new FieldBinding<FieldControllerBase>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = BindingMode.TwoWay,
-                    Context = context,
-                    GetConverter = GetFieldConverter
-                };
-                element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-            }
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.TwoWay,
+                Context = context,
+                GetConverter = GetFieldConverter,
+                FallbackValue = "<null>"
+            };
+            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
         protected static IValueConverter GetFieldConverter(FieldControllerBase Controller)
@@ -164,7 +156,7 @@ namespace Dash
 
             return new ObjectToStringConverter(null);
         }
-        
+
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
             var alignmentBinding = new FieldBinding<NumberController>()
@@ -220,7 +212,7 @@ namespace Dash
 
 
         #region GettersAndSetters
-        
+
 
         private static ReferenceController GetTextReference(DocumentController docController)
         {

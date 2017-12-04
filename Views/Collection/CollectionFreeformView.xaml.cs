@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Dash.Controllers;
 using static Dash.NoteDocuments;
@@ -66,7 +67,8 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -92,7 +94,8 @@ namespace Dash
 
         public void setBackgroundDarkness(bool isDark)
         {
-            _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+            //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+            _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
             if (isDark)
                 xDarkenBackground.Opacity = .1;
             else
@@ -101,7 +104,7 @@ namespace Dash
 
 
 
-        public IOReference GetCurrentReference()
+    public IOReference GetCurrentReference()
         {
             return _currReference;
         }
@@ -436,13 +439,12 @@ namespace Dash
         {
             foreach (var converter in LineToConverter.Values)
             {
-                DocumentView view1, view2;
-                try
+                if (converter.Element1 == null || converter.Element2 == null)
                 {
-                    view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                    view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                    return;
                 }
-                catch (ArgumentException) { return; }
+                DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 if (docView == view1)
                 {
                     if (becomeSmall)

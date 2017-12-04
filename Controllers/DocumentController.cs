@@ -687,6 +687,16 @@ namespace Dash
             return fieldChanged;
         }
 
+        /// <summary>
+        /// Removes the field mapped to by <paramref name="key"/> from the document
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool RemoveField(KeyController key)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
@@ -1010,6 +1020,10 @@ namespace Dash
                     // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
+                        //TODO this shouldn't need to be done
+                        //Right now it is done to make deleting links work better, but we shouldn't output an empty field if the operator doesn't run
+                        //Instead, deleting links should either try to copy the field and handle a failure, or just delete the field, depending on user preference
+                        //This requires the ability to delete fields on documents and fallback values field bindings
                         //foreach (var opfieldOutput in opField.Outputs)
                         //{
                         //    context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
