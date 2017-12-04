@@ -53,7 +53,7 @@ namespace Dash.Controllers.Operators
                 try
                 {
                     result = Task
-                        .Run(() => ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.AbsolutePath))
+                        .Run(() => ComputerVision.UploadAndAnalyzeImage(controller.ImageFieldModel.Data.LocalPath))
                         .Result;
                 }
                 catch
