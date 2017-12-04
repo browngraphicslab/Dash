@@ -63,6 +63,8 @@ namespace Dash
             _highlightedButtonBackgroud = xRichEditBox.SelectionHighlightColor;
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+
+            var a = new BrowserView("http://cs.brown.edu/research/ptc/NuSys/NuSysIndex.html");
         }
         long TextChangedCallbackToken;
 

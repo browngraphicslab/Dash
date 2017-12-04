@@ -98,6 +98,8 @@
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
@@ -229,6 +231,7 @@
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\GoToTabItemViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>

@@ -79,7 +79,6 @@ namespace Dash
             ViewModel = vm;
             
             Unloaded += CollectionView_Unloaded;
-
         }
 
         #region Background Translation Variables
@@ -158,7 +157,7 @@ namespace Dash
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
 
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
         }
 
         #endregion
