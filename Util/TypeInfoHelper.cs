@@ -12,12 +12,12 @@ namespace Dash
     {
         private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
         {
-            [typeof(NumberFieldModelController)] = TypeInfo.Number,
-            [typeof(TextFieldModelController)] = TypeInfo.Text,
-            [typeof(PointFieldModelController)] = TypeInfo.Point,
-            [typeof(ListFieldModelController<>)] = TypeInfo.List,
-            [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
-            [typeof(DocumentFieldModelController)] = TypeInfo.Document
+            [typeof(NumberController)] = TypeInfo.Number,
+            [typeof(TextController)] = TypeInfo.Text,
+            [typeof(PointController)] = TypeInfo.Point,
+            [typeof(ListController<>)] = TypeInfo.List,
+            [typeof(DocumentController)] = TypeInfo.Document,
+            [typeof(KeyController)] = TypeInfo.Key
         };
 
         /*
@@ -36,18 +36,21 @@ namespace Dash
                 switch (type)
                 {
                     case TypeInfo.Text:
-                        return new TextFieldModel(data.ToString());
+                        return new TextModel(data.ToString());
                     case TypeInfo.Number:
-                        return new NumberFieldModel(JsonConvert.DeserializeObject<double>(data.ToString()));
+                        return new NumberModel(JsonConvert.DeserializeObject<double>(data.ToString()));
                     case TypeInfo.Image:
-                        return new ImageFieldModel((Uri)data);
-                    case TypeInfo.Collection:
-                        return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()));
+                        return new ImageModel((Uri)data);
+                    //TODO tfs: fix this
+                    //case TypeInfo.Collection:
+                    //    return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()));
                     case TypeInfo.Document:
-                        return new DocumentFieldModel(data.ToString());
+                        //TODO tfs: FIX THIS
+                        throw new NotImplementedException();
+                        //return new DocumentFieldModel(data.ToString());
                     case TypeInfo.DocumentReference:
                         DocumentFieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
-                        return new DocumentReferenceFieldModel(docFieldRefence.DocumentId, docFieldRefence.FieldKey.Model.Id);
+                        return new DocumentReferenceModel(docFieldRefence.DocumentId, docFieldRefence.FieldKey.Model.Id);
                     case TypeInfo.PointerReference:
                         throw new NotImplementedException();
                     case TypeInfo.Operator: //TODO What should this do?
@@ -55,9 +58,9 @@ namespace Dash
                         //var typeAndCompound = data as Tuple<string, bool>;
                         //return new OperatorFieldModel(typeAndCompound.Item1, typeAndCompound.Item2, fieldModelDTO.Id);
                     case TypeInfo.Point:
-                        return new PointFieldModel(JsonConvert.DeserializeObject<Point>(data.ToString()));
+                        return new PointModel(JsonConvert.DeserializeObject<Point>(data.ToString()));
                     case TypeInfo.List:
-                        return new ListFieldModel(new List<string>(), TypeInfo.Text);
+                        return new ListModel(new List<string>(), TypeInfo.Text);
                     //switch (listType) //TODO support list of list?
                     //{
                     //    case TypeInfo.Number:
@@ -79,19 +82,19 @@ namespace Dash
                     //        return new ListFieldModelController<ReferenceFieldModelController>(
                     //            data as IEnumerable<ReferenceFieldModelController>);
                     //    case TypeInfo.Collection:
-                    //        return new ListFieldModelController<DocumentCollectionFieldModelController>(
-                    //            data as IEnumerable<DocumentCollectionFieldModelController>);
+                    //        return new ListFieldModelController<ListController<DocumentController>>(
+                    //            data as IEnumerable<ListController<DocumentController>>);
                     //    default:
                     //        return null;
                     //}
                     case TypeInfo.None:
                         throw new NotImplementedException();
                     case TypeInfo.Ink:
-                        return new InkFieldModel(data.ToString());
-                    case TypeInfo.RichTextField:
-                        return new RichTextFieldModel(JsonConvert.DeserializeObject<RichTextFieldModel.RTD>(data.ToString()));
+                        return new InkModel(data.ToString());
+                    case TypeInfo.RichText:
+                        return new RichTextModel(JsonConvert.DeserializeObject<RichTextModel.RTD>(data.ToString()));
                     case TypeInfo.Rectangle:
-                        return new RectFieldModel(JsonConvert.DeserializeObject<Rect>(data.ToString()));
+                        return new RectModel(JsonConvert.DeserializeObject<Rect>(data.ToString()));
                     default:
                         return null;
                 }

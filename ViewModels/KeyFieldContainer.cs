@@ -13,7 +13,7 @@ namespace Dash
         public KeyController Key { get; }
         public bool IsPrimary { get; }
 
-        public BoundFieldModelController Controller { get; set; }
+        public BoundController Controller { get; set; }
 
         // Type of field, ex) Text, Image, Number  
         public string Type { get; }
@@ -21,7 +21,7 @@ namespace Dash
         public GridLength TypeColumnWidth { get; set; }
         public GridLength PrimaryKeyColumnWidth { get; set; }
 
-        public KeyFieldContainer(KeyController key, BoundFieldModelController controller, bool isPrimary,
+        public KeyFieldContainer(KeyController key, BoundController controller, bool isPrimary,
             GridLength typeColumnWidth)
         {
             Key = key;

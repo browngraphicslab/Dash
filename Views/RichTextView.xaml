@@ -6,22 +6,35 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    Height="400"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
+    <Grid Name="LayoutGrid" GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition x:Name="xFormatRow" Height="0"/>
-        </Grid.RowDefinitions>
-        <Grid x:Name="xFormatControls" Grid.Row="1">
-            <Grid>
+        <RichEditBox x:FieldModifier="public" 
+                         AllowDrop="True"
+                         DragOver="xRichEitBox_DragOver" 
+
+                         Foreground="{ThemeResource MainText}" 
+                         Background="{ThemeResource DocumentBackground}" Opacity=".9"
+                         GotFocus="xRichEditBox_GotFocus" 
+                         Drop="xRichEditBox_Drop"   
+                         x:Name="xRichEditBox" 
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         SelectionChanged="xRichEditBox_SelectionChanged"  
+                         BorderBrush="{ThemeResource DocumentBackground}" 
+                         BorderThickness="1"
+                         IsColorFontEnabled="True" 
+                         SelectionHighlightColor="{ThemeResource DarkWindowsBlue}"  />
+        <Canvas VerticalAlignment="Bottom">
+            <Grid x:Name="xFormatControls" HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1*"/>
@@ -44,26 +57,9 @@
                     </Button>
                 </Grid>
                 <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{ThemeResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
-        </Grid >
-        <RichEditBox x:FieldModifier="public" 
-                         AllowDrop="True"
-                         DragOver="xRichEitBox_DragOver" 
-
-                         Foreground="{StaticResource MainText}" 
-                         Background="{StaticResource DocumentBackground}" Opacity=".9"
-                         GotFocus="xRichEditBox_GotFocus" 
-                         Drop="xRichEditBox_Drop"   
-                         x:Name="xRichEditBox" 
-                         VerticalAlignment="Stretch" 
-                         HorizontalAlignment="Stretch" 
-                         SelectionChanged="xRichEditBox_SelectionChanged"  
-                         BorderBrush="{StaticResource DocumentBackground}" 
-                         BorderThickness="1"
-                         IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
+        </Canvas>
     </Grid>
-
 </UserControl>

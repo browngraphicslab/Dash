@@ -28,18 +28,20 @@ namespace Dash
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
             var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceFieldModelController)
+            if (data is ReferenceController)
             {
-                var reference = data as ReferenceFieldModelController;
+                var reference = data as ReferenceController;
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+                        DocumentController doc = (DocumentController) sender;
+                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
                         {
                             return;
                         }
-                        BindTextSource(element, sender, args.Context, reference.FieldKey);
+                        BindTextSource(element, doc, context1, reference.FieldKey);
                     });
             }
             BindTextSource(element, controller, context, KeyStore.DataKey);
@@ -51,7 +53,7 @@ namespace Dash
             {
                 return;
             }
-            var textData = data as TextFieldModelController;
+            var textData = data as TextController;
             var sourceBinding = new Binding
             {
                 Source = textData,
@@ -77,19 +79,26 @@ namespace Dash
 
             ///* 
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
-                new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType)), out ReferenceFieldModelController refToData);
+                new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
 
-            var textfieldModelController = fieldModelController as TextFieldModelController;
+            var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
             var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
             var web = new WebView
             {
-                Source = new Uri(textfieldModelController.Data),
-                IsHitTestVisible = false,
+                IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
+            var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
+            if (html != null)
+                if (html.StartsWith("http"))
+                    web.Navigate(new Uri(html));
+                else web.NavigateToString(html.StartsWith("http") ? html : html.Substring(html.ToLower().IndexOf("<html"), html.Length-html.ToLower().IndexOf("<html")));
+            else web.Source = new Uri(textfieldModelController.Data);
+            web.NavigationStarting += Web_NavigationStarting;
+
             grid.Children.Add(web);
             var overgrid = new Grid
             {
@@ -98,12 +107,13 @@ namespace Dash
                 Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
                 Name = "overgrid"
             };
-            grid.Children.Add(overgrid);
+          //  grid.Children.Add(overgrid);
 
-            SetupBindings(web, docController, context);
+            if (html == null)
+                SetupBindings(web, docController, context);
 
             //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
+            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = web;
 
             if (isInterfaceBuilderLayout)
@@ -111,6 +121,15 @@ namespace Dash
                 return new SelectableContainer(grid, docController);
             }
             return grid;
+        }
+
+        private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+            if (args.Uri != null)
+            {
+                args.Cancel = true;
+                Windows.System.Launcher.LaunchUriAsync(args.Uri);
+            }
         }
 
         protected override DocumentController GetLayoutPrototype()

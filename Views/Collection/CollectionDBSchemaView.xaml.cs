@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
+using DashShared.Models;
 using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -42,9 +43,9 @@ namespace Dash
                 if (r.RecordFields.Count == slist.Count)
                 {
                     UpdateRecords((xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray().Select((xr)=> xr.Document));
-                    var stuff = new ListFieldModelController<TextFieldModelController>();
+                    var stuff = new ListController<TextController>();
                     foreach (var s in SchemaHeaders)
-                        stuff.Add(new TextFieldModelController(s.FieldKey.Id));
+                        stuff.Add(new TextController(s.FieldKey.Id));
                     ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
@@ -67,11 +68,11 @@ namespace Dash
                 if (value != null)
                 {
                     _parentDocument = _parentDocument.GetDataDocument(null);
-                    ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorFieldModelController.FilterFieldKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorFieldModelController.FilterFieldKey,
-                            new TextFieldModelController(""), true);
-                    ParentDocument.DocumentFieldUpdated += ParentDocument_DocumentFieldUpdated;
+                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
+                    if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
+                        ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
+                            new TextController(""), true);
+                    ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
         }
@@ -196,8 +197,9 @@ namespace Dash
 
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
-            dc.Document.ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, new Context(dc.Document)));
-            dc.DataReference = new DocumentReferenceFieldController(dc.Document.GetId(), dc.HeaderViewModel.FieldKey);
+            //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
+            dc.Document.GetDataDocument(null).ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument(null).GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -205,7 +207,7 @@ namespace Dash
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
             if (ParentDocument != null)
-                ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
+                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = null;
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
@@ -228,17 +230,17 @@ namespace Dash
             ViewModel = DataContext as BaseCollectionViewModel;
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
-                ParentDocument.DocumentFieldUpdated -= ParentDocument_DocumentFieldUpdated;
+                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateFields(new Context(ParentDocument));
         }
 
 
-        private void ParentDocument_DocumentFieldUpdated(DocumentController sender,
-            DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender,
+            FieldUpdatedEventArgs args, Context context)
         {
-            if (args.Reference.FieldKey.Equals(ViewModel.CollectionKey))
+            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel.CollectionKey))
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -256,7 +258,7 @@ namespace Dash
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
             var dbDocs = ParentDocument
-                   .GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, null)?.Data?.Select((d) => d.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? d);
+                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData?.Select((d) => d.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? d);
 
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
@@ -277,9 +279,9 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<DocumentCollectionFieldModelController>(ViewModel.CollectionKey, context)?.Data;
+            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
             var headerList = ParentDocument
-                .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
+                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
             {
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
@@ -287,21 +289,21 @@ namespace Dash
                 foreach (var h in headerList)
                 { 
                     SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
-                                                     FieldKey = ContentController<KeyModel>.GetController<KeyController>((h as TextFieldModelController).Data)  });
+                                                     FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentFieldModelController>(KeyStore.DocumentContextKey, null)?.Data ?? db))
+                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
                 {
-                    //if (d.GetField(RegexOperatorFieldModelController.TextKey) == null &&
+                    //if (d.GetField(RegexOperatorController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
                     //{
-                    //    var rd = OperatorDocumentFactory.CreateOperatorDocument(new RegexOperatorFieldModelController());
-                    //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController("^\\$[0-9.]+$"), true);
-                    //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController(" "), true);
-                    //    rd.SetField(RegexOperatorFieldModelController.ExpressionKey, new TextFieldModelController(".*"), true);
-                    //    rd.SetField(RegexOperatorFieldModelController.SplitExpressionKey, new TextFieldModelController("\\."), true);
-                    //    rd.SetField(RegexOperatorFieldModelController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
-                    //    d.SetField(RegexOperatorFieldModelController.MatchesKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorFieldModelController.MatchesKey), true);
+                    //    var rd = OperatorDocumentFactory.CreateOperatorDocument(new RegexOperatorController());
+                    //    rd.SetField(RegexOperatorController.ExpressionKey, new TextController("^\\$[0-9.]+$"), true);
+                    //    rd.SetField(RegexOperatorController.SplitExpressionKey, new TextController(" "), true);
+                    //    rd.SetField(RegexOperatorController.ExpressionKey, new TextController(".*"), true);
+                    //    rd.SetField(RegexOperatorController.SplitExpressionKey, new TextController("\\."), true);
+                    //    rd.SetField(RegexOperatorController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
+                    //    d.SetField(RegexOperatorController.MatchesKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorController.MatchesKey), true);
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
@@ -349,7 +351,7 @@ namespace Dash
                 if (SearchInDocumentForNamedField(dmc, selectedBars, visited))
                     collection.Add(dmc);
             }
-            ParentDocument.SetField(KeyStore.CollectionOutputKey, new DocumentCollectionFieldModelController(collection), true);
+            ParentDocument.SetField(KeyStore.CollectionOutputKey, new ListController<DocumentController>(collection), true);
         }
 
         private static bool SearchInDocumentForNamedField(DocumentController dmc, List<string> selectedBars,
@@ -359,10 +361,10 @@ namespace Dash
                 return false;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields()
-                .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentFieldModelController))
-                if (pfield.Value is DocumentFieldModelController)
+                .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentController))
+                if (pfield.Value is DocumentController)
                 {
-                    var nestedDoc = (pfield.Value as DocumentFieldModelController).Data;
+                    var nestedDoc = pfield.Value as DocumentController;
                     if (!visited.Contains(nestedDoc))
                     {
                         visited.Add(nestedDoc);
@@ -449,7 +451,7 @@ namespace Dash
                 // TODO parent doc is the data doc we might want to set this on the layout instead
                 // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
                 // TODO assumes a data doc
-                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new DocumentFieldModelController(recordDoc), true);
+                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
             }
         }
 
@@ -457,21 +459,21 @@ namespace Dash
         private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
         {
             var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data
+            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)
                 ?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
                 if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(dataDoc), true);
+                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
                 var layoutDoc =
-                    new KeyValueDocumentBox(new DocumentReferenceFieldController(dataDoc.GetId(), KeyStore.ThisKey));
+                    new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
 
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
+                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
+                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
                 dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
             }
 
-            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null).Data;
+            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
         }
     }
 }

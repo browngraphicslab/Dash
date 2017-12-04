@@ -56,7 +56,7 @@ namespace Dash.Views.Document_Menu
             this.DocType = label;
             Type = icon;
         }
-        
+
 
         public AddMenuItem(String label, AddMenuTypes icon, Func<DocumentController> action)
         {
@@ -88,17 +88,20 @@ namespace Dash.Views.Document_Menu
 
     }
 
-    public class DocumentAddMenuItem : AddMenuItem , IDisposable
+    public class DocumentAddMenuItem : AddMenuItem, IDisposable
     {
         private KeyController _key;
         public DocumentController DataDoc;
-        public Func<DocumentController> Action; 
+        public Func<DocumentController> Action;
         public DocumentAddMenuItem(string label, AddMenuTypes icon, Func<DocumentController> action, DocumentController dataDoc, KeyController key) : base(label, icon, action)
         {
             _key = key;
-            Action = action; 
+            Action = action;
             DataDoc = dataDoc;
-            TextChangedHandler(dataDoc, null);
+            // set the default title
+            dataDoc.GetTitleFieldOrSetDefault(null);
+            dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
+            TextChangedHandler(dataDoc, null, null);
         }
 
         public void Dispose()
@@ -106,21 +109,23 @@ namespace Dash.Views.Document_Menu
             //LayoutDoc.RemoveFieldUpdatedListener(_key, TextChangedHandler);
         }
 
-        private void TextChangedHandler(DocumentController documentController, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void TextChangedHandler(FieldControllerBase sender, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
-            //var textController = documentController.GetField(_key) as TextFieldModelController;
-            DocType = documentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data ?? "";
+
+            var doc = (DocumentController)sender;
+            DocType = doc.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ?? "";
         }
-        
+
     }
 
     // defines the header style and indendation behavior
-    public enum MenuDisplayType {
+    public enum MenuDisplayType
+    {
         Header,
         Subheader,
         Hierarchy
     }
-    
+
     /// <summary>
     /// Converts a type enum into the corresponding document icon.
     /// </summary>
@@ -130,8 +135,9 @@ namespace Dash.Views.Document_Menu
             object parameter, string language)
         {
             // given the enum, returns the corresponding icon as defined in App.xaml
-            AddMenuTypes v = (AddMenuTypes) value;
-            switch (v) {
+            AddMenuTypes v = (AddMenuTypes)value;
+            switch (v)
+            {
                 case AddMenuTypes.Collection: return App.Current.Resources["CollectionIcon"] as String;
                 case AddMenuTypes.Document: return App.Current.Resources["DocumentPlainIcon"] as String;
                 case AddMenuTypes.Operator: return App.Current.Resources["OperatorIcon"] as String;
@@ -167,7 +173,7 @@ namespace Dash.Views.Document_Menu
             get { return (string)GetValue(HeaderLabelProperty); }
             set { SetValue(HeaderLabelProperty, value); }
 
-            
+
         }
 
         // optional: the icon on the header, generally want to set this
@@ -180,9 +186,9 @@ namespace Dash.Views.Document_Menu
         public MenuDisplayType DisplayType;
 
         // containing parent
-        public TreeMenuNode TreeParent {get ; set; }
+        public TreeMenuNode TreeParent { get; set; }
         public double ListWidth { get { return xItemContainer.Width; } set { xItemContainer.Width = value; } }
-        
+
         #region Bindings
         // the text labelling the header
         // Using a DependencyProperty as the backing store for HeaderLabel.  This enables animation, styling, binding, etc...
@@ -193,7 +199,7 @@ namespace Dash.Views.Document_Menu
         public static readonly DependencyProperty HeaderIconProperty =
             DependencyProperty.Register("HeaderIcon", typeof(string), typeof(TreeMenuNode), new PropertyMetadata(0));
         #endregion
-        
+
         // == CONSTRUCTORS ==
         public TreeMenuNode()
         {
@@ -215,19 +221,21 @@ namespace Dash.Views.Document_Menu
             this.DisplayType = DisplayType;
 
             // stylize depending on type
-            if (DisplayType == MenuDisplayType.Subheader) {
+            if (DisplayType == MenuDisplayType.Subheader)
+            {
                 xHeader.Background = App.Current.Resources["AccentGreen"] as SolidColorBrush;
                 xLeftIcon.Visibility = Visibility.Collapsed;
                 xHeaderLabel.Style = App.Current.Resources["xMenuItem"] as Style;
-            } else if (DisplayType == MenuDisplayType.Hierarchy)
+            }
+            else if (DisplayType == MenuDisplayType.Hierarchy)
             {
                 xHeader.Background = new SolidColorBrush(Colors.Transparent);
-                xItemContainer.Padding = new Thickness(10,0,0,0);
+                xItemContainer.Padding = new Thickness(10, 0, 0, 0);
                 xHeader.BorderThickness = new Thickness(0, 0, 0, 1);
                 xHeaderLabel.FontWeight = FontWeights.Bold;
                 xHeader.BorderBrush = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
             }
-            
+
         }
 
         // == METHODS ==
@@ -239,7 +247,7 @@ namespace Dash.Views.Document_Menu
         {
             return xItemsList.Items.Count;
         }
-        
+
 
 
         /// <summary>
@@ -247,7 +255,8 @@ namespace Dash.Views.Document_Menu
         /// the corresponding list view item.
         /// </summary>
         /// <param name="item"></param>
-        public void Add(AddMenuItem item) {
+        public void Add(AddMenuItem item)
+        {
             xItemsList.Items.Insert(0, item);
         }
         public void Remove(AddMenuItem item)
@@ -265,7 +274,7 @@ namespace Dash.Views.Document_Menu
             xChildrenList.Children.Add(item);
 
         }
-        
+
         // == EVENT HANDLERS ==
         /// <summary>
         /// Tapped event handler. Collapses/uncollapses list items and updates corresponding icons.
@@ -308,13 +317,13 @@ namespace Dash.Views.Document_Menu
             {
                 e.Data.RequestedOperation = DataPackageOperation.Copy;
 
-                var layout = dc.DataDoc.GetActiveLayout(null)?.Data ?? dc.DataDoc; 
+                var layout = dc.DataDoc.GetActiveLayout(null) ?? dc.DataDoc;
 
                 e.Data.Properties.Add(TreeNodeDragKey, layout);
 
                 return;
             }
-            e.Data.RequestedOperation = DataPackageOperation.None;;
+            e.Data.RequestedOperation = DataPackageOperation.None; ;
 
 
         }

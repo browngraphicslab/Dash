@@ -13,7 +13,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("88549C01-5CFA-4580-A357-D7BE895B11DE", "DB Search Operator Box");
 
-        public DBSearchOperatorBox(ReferenceFieldModelController refToOp)
+        public DBSearchOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
             Document = new DocumentController(fields, DocumentType);
@@ -38,7 +38,7 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetField(KeyStore.DataKey);
-            var opfmc = (data as ReferenceFieldModelController);
+            var opfmc = (data as ReferenceController);
             OperatorView opView = new OperatorView { DataContext = opfmc.GetFieldReference()};
             var opDoc = opfmc.GetDocumentController(null);
             var stack = new Windows.UI.Xaml.Controls.StackPanel();
@@ -53,8 +53,8 @@ namespace Dash
             {
                 //DBTest.ResetCycleDetection();
                 if (opDoc != null)
-                    opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.ReturnDocKey,
-                        new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
+                    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.ReturnDocKey,
+                        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
             var searchBox = new Windows.UI.Xaml.Controls.TextBox();
             searchBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
@@ -66,11 +66,11 @@ namespace Dash
             {
                 //DBTest.ResetCycleDetection();
                 if (opDoc != null)
-                    opDoc.SetField(Controllers.Operators.DBSearchOperatorFieldModelController.FieldPatternKey,
-                        new TextFieldModelController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
+                    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.FieldPatternKey,
+                        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
 
-            var scopeDoc = new TextingBox(opDoc.GetField(Controllers.Operators.DBSearchOperatorFieldModelController.SearchForDocKey));
+            var scopeDoc = new TextingBox(opDoc.GetField(Controllers.Operators.DBSearchOperatorController.SearchForDocKey));
 
             stack.Children.Add(searchBox);
             stack.Children.Add(returnBox);

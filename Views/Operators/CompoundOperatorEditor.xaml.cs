@@ -40,11 +40,11 @@ namespace Dash
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
         { 
             if (e.Data == null) return; 
-            var isDraggedFromOperationsBar = e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] != null;
+            var isDraggedFromOperationsBar = e.Data.Properties[CompoundOperatorController.OperationBarDragKey] != null;
 
             if (isDraggedFromOperationsBar)
             {
-                var opBuilder = e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] as OperatorBuilder;
+                var opBuilder = e.Data.Properties[CompoundOperatorController.OperationBarDragKey] as OperatorBuilder;
 
                 var pos = Util.GetCollectionFreeFormPoint(xFreeFormEditor, e.GetPosition(MainPage.Instance));
 
@@ -54,7 +54,7 @@ namespace Dash
 
                 _collectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
 
-                e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] = null; 
+                e.Data.Properties[CompoundOperatorController.OperationBarDragKey] = null; 
             } 
         }
     }

@@ -19,7 +19,7 @@ namespace Dash
 
         public override DocumentController GetDocumentController(Context context)
         {
-            return DocumentReference.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
+            return DocumentReference.DereferenceToRoot<DocumentController>(context);
         }
 
         public override FieldReference Resolve(Context context)
@@ -47,9 +47,9 @@ namespace Dash
             return base.GetHashCode() ^ DocumentReference.GetHashCode();
         }
 
-        public override ReferenceFieldModelController GetReferenceController()
+        public override ReferenceController GetReferenceController()
         {
-            return new PointerReferenceFieldController(DocumentReference.GetReferenceController(), FieldKey);
+            return new PointerReferenceController(DocumentReference.GetReferenceController(), FieldKey);
         }
     }
 }

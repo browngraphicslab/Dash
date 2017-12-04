@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Dash.Controllers;
 using DashShared;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -17,7 +18,7 @@ namespace Dash
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>(new TextFieldModelController[] { new TextFieldModelController(KeyStore.TitleKey.ToString() ) } )
+                [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
             };
             return new DocumentController(fields, ImageDocType);
         }
@@ -33,8 +34,8 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 20);
-            var prototypeImage1Layout = new ImageBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
+            var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeDoc.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, 25);
+            var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN);
 
             var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, false);
 
@@ -44,46 +45,33 @@ namespace Dash
 
             return prototypeLayout.Document;
         }
-        public AnnotatedImage(Uri imageUri, string imageBytes, double width = 200, double height = 250, double x = 0, double y = 0)
+        public AnnotatedImage(Uri imageUri, string imageBytes, string text=null, string title="", double width = 200, double height = 250, double x=0, double y=0)
         {
             Document = _prototypeDoc.MakeDelegate();
-            Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
+            Document.SetField(Image1FieldKey, new ImageController(imageUri, imageBytes), true);
 
-            Document.SetField(KeyStore.TitleKey, new TextFieldModelController(imageUri.AbsolutePath), true);
-            var docLayout = new ImageBox(new DocumentReferenceFieldController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document;
+            if (text != null)
+                Document.SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+            Document.SetField(KeyStore.TitleKey, new TextController(title), true);
 
-            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(x, y)), true);
-            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
-            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
-
-            docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(Document), true);
+            var docLayout = text == null ? new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 0, double.NaN, double.NaN).Document: _prototypeLayout.MakeDelegate();
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(x, y)), true);
+            docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
+            docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
+            docLayout.SetField(KeyStore.DocumentContextKey, Document, true);
             Document = docLayout;
-           // SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
-        }
-        public AnnotatedImage(Uri imageUri, string imageBytes, string title, double width = 200, double height = 250, double x=0, double y=0)
-        {
-            Document = _prototypeDoc.MakeDelegate();
-            Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri, imageBytes), true);
-            Document.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
-            var docLayout = _prototypeLayout.MakeDelegate();
-            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(x, y)), true);
-            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
-            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
-            docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(Document), true);
-            Document = docLayout;
-            //SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
         }
 
         public AnnotatedImage(Uri imageUri, string title)
         {
             Document = _prototypeDoc.MakeDelegate();
-            Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri), true);
-            Document.SetField(KeyStore.TitleKey, new TextFieldModelController(title), true);
+            Document.SetField(Image1FieldKey, new ImageController(imageUri), true);
+            Document.SetField(KeyStore.TitleKey, new TextController(title), true);
             var docLayout = _prototypeLayout.MakeDelegate();
-            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);
-            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            docLayout.SetField(KeyStore.DocumentContextKey, new DocumentFieldModelController(Document), true);
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
+            docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(250), true);
+            docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(200), true);
+            docLayout.SetField(KeyStore.DocumentContextKey, Document, true);
             Document = docLayout;
             //SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
         }

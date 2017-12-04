@@ -10,6 +10,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -22,16 +23,16 @@ namespace Dash
         public readonly string PrototypeId = "D6FF4388-DB02-41F0-AD52-C895A5C07265";
 
 
-        public PreviewDocument(DocumentReferenceFieldController refToLayout, Point pos)
+        public PreviewDocument(DocumentReferenceController refToLayout, Point pos)
         {
             Document = GetLayoutPrototype().MakeDelegate();
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
-                [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
-                [KeyStore.WidthFieldKey] = new NumberFieldModelController(400),
-                [KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
+                [KeyStore.PositionFieldKey] = new PointController(pos),
+                [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
+                [KeyStore.ScaleCenterFieldKey] = new PointController(0, 0),
+                [KeyStore.WidthFieldKey] = new NumberController(400),
+                [KeyStore.HeightFieldKey] = new NumberController(400),
                 [KeyStore.DataKey] = refToLayout
             };
             Document.SetFields(fields, true);
@@ -46,7 +47,7 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, 
             bool isInterfaceBuilderLayout = false)
         {
-            var layout = docController.GetDereferencedField<DocumentFieldModelController>(KeyStore.DataKey, context)?.Data;
+            var layout = docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
             FrameworkElement innerContent = null;
             if (layout != null)
             {
@@ -63,12 +64,13 @@ namespace Dash
                 Content = innerContent       
             };
 
-            docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args) =>
+            docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args, c) =>
             {
-                var innerLayout = args.NewValue.DereferenceToRoot<DocumentFieldModelController>(args.Context).Data;
+                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                var innerLayout = dargs.NewValue.DereferenceToRoot<DocumentController>(c);
                 foreach (var field in innerLayout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey()))
                     docController.SetField(field.Key, field.Value, true);
-                var innerCont = innerLayout.MakeViewUI(args.Context, false);
+                var innerCont = innerLayout.MakeViewUI(c, false);
                 returnContent.Content = innerCont;
             });
 
@@ -77,7 +79,7 @@ namespace Dash
 
         protected override DocumentController GetLayoutPrototype()
         {
-            var prototype = ContentController<DocumentModel>.GetController<DocumentController>(PrototypeId) ??
+            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
                             InstantiatePrototypeLayout();
             return prototype;
         }

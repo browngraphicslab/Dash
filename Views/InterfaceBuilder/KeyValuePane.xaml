@@ -9,16 +9,16 @@
     d:DesignHeight="500"
     d:DesignWidth="300">
 
-    <Grid x:Name="xOuterGrid" Background="{StaticResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
-        <Grid.RowDefinitions>   
+
+    <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{ThemeResource WindowsBlue}">
+        <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!--column headers-->
             <RowDefinition Height="7*"/> <!--column values-->
             <RowDefinition Height="*"/> <!--random space-->
             <RowDefinition Height="Auto"/> <!--bottom button-->
         </Grid.RowDefinitions>
-        
-        <!--column headers-->
-        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AccentGreen}">
+
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource AccentGreen}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="*" MaxWidth="100"/>

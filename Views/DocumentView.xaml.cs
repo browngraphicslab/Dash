@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -150,8 +151,6 @@ namespace Dash
                         // if the tree contains the parent collection
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            //var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
-                            //var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null)?.Data ?? ViewModel.DocumentController;
                             _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
                             AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
                         }
@@ -201,8 +200,7 @@ namespace Dash
             }
         }
 
-        #endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
+
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
@@ -211,7 +209,6 @@ namespace Dash
         {
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection";
 
             // add item to menu
             if (ParentCollection != null)
@@ -238,20 +235,23 @@ namespace Dash
 
 
         }
+#endregion
 
         //}
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
         {
-            if (xKeyValPane.Width == 0)
+            if (xKeyValPane.Visibility == Visibility.Collapsed)
             {
                 xKeyValPane.Width = KeyValPaneWidth;
+                xKeyValPane.Visibility = Visibility.Visible;
                 ViewModel.Width += KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
             else
             {
+                xKeyValPane.Visibility = Visibility.Collapsed;
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
@@ -294,14 +294,14 @@ namespace Dash
 
             // apply position if we are dropping on a freeform
             var posInLayoutContainer = e.GetPosition(xFieldContainer);
-            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
-            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
-            var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberController).Data / 2;
+            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberController).Data / 2;
+            var positionController = new PointController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
             layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
 
             // add the document to the composite
-            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
-            data?.AddDocument(layoutDocument);
+            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
+            data?.Add(layoutDocument);
         }
         #endregion
 
@@ -309,31 +309,29 @@ namespace Dash
         MenuButton copyButton;
         private void SetUpMenu()
         {
-            var bgcolor = bgbrush.Color;// TODO: change back later
-            //var bgcolor = Colors.DarkSlateGray;
-            bgcolor.A = 0;
             var red = new Color();
             red.A = 204;
             red.R = 190;
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy, "Copy", bgcolor, CopyDocument);
-            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", bgcolor, null);
-            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", bgcolor, CopyDataDocument);
-            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", bgcolor, InstanceDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", bgcolor, CopyViewDocument);
-            var addButton = new MenuButton(Symbol.Add, "Add", bgcolor, OpenCloseKeyValuePane);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", CopyDocument);
+            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
+            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
+            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
+            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
+            var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
+
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
+                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
                 moveButton,
                 copyButton,
                // delegateButton,
                // copyDataButton
                 instanceDataButton,
                 copyViewButton,
-                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
+                new MenuButton(Symbol.Delete, "Delete",DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
                 , addButton
@@ -423,8 +421,8 @@ namespace Dash
             { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
                 var currentTranslate = ViewModel.GroupTransform.Translate;
                 var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                var layout = ViewModel.DocumentController.GetActiveLayout()?.Data ?? ViewModel.DocumentController;
-                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointFieldModelController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
+                var layout = ViewModel.DocumentController.GetActiveLayout() ?? ViewModel.DocumentController;
+                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
             }
         }
 
@@ -571,21 +569,22 @@ namespace Dash
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.Model.DocumentType;
+            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
             if (docType.Type != null)
             {
 
             }
             else
             {
-                ViewModel.DocumentController.Model.DocumentType.Type = docType.Id.Substring(0, 5);
+
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
             var sourceBinding = new Binding
             {
-                Source = ViewModel.DocumentController.Model.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.Model.DocumentType.Type)),
+                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -604,35 +603,41 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
+                updateIcon();
                 // binds the display title of the document to the back end representation
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
+                var keyList = dataDoc.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
+                var key = KeyStore.TitleKey;
+                if (key == null || !(keyList?.Data?.Count() > 0))
+                {
+                    dataDoc.GetTitleFieldOrSetDefault(context);
+                }
+                else
+                    key = keyList?.Data?.First() as KeyController;
 
-                // set the default title
-                dataDoc.GetTitleFieldOrSetDefault(context);
-
-                var binding = new FieldBinding<TextFieldModelController>()
+                var Binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = KeyStore.TitleKey,
+                    Key = key,
                     Context = context
                 };
+                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xTitle.AddFieldBinding(TextBox.TextProperty, binding);
-                xTitle.Text = dataDoc.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data;
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
-                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
-                xTitle.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                ViewModel.SetHasTitle(this.IsLowestSelected);
             }
+
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (ViewModel != null)
             {
-                xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+                // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -640,21 +645,27 @@ namespace Dash
             if (Height < MinHeight + 5)
             {
                 xFieldContainer.Visibility = Visibility.Collapsed;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Collapsed;
             }
             else
                 if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
-                updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Collapsed;
+                xShadowTarget.Visibility = Visibility.Collapsed;
+                if (xIcon.Visibility == Visibility.Collapsed)
+                    xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible)
+            else
             {
                 xFieldContainer.Visibility = Visibility.Visible;
+                xGradientOverlay.Visibility = Visibility.Visible;
+                xShadowTarget.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = .25;
                 UpdateBinding(false);
@@ -767,7 +778,7 @@ namespace Dash
 
         #region Activation
 
-        public Rect ClipRect { get { return xClipRect.Rect; } }
+        public Rect ClipRect { get { return new Rect(); } } //  xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -798,6 +809,10 @@ namespace Dash
             if (!isSelected)
             {
                 colorStoryboardOut.Begin();
+                colorStoryboardOut.Completed += delegate
+                {
+                    xShadowTarget.Fill = Resources["DocumentBackground"] as SolidColorBrush;
+                };
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
             }
@@ -838,6 +853,7 @@ namespace Dash
             {
                 ViewModel?.CloseMenu();
             }
+            ViewModel?.SetHasTitle(isLowestSelected);
         }
 
         #endregion
@@ -854,7 +870,7 @@ namespace Dash
         private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             var doc = ViewModel.DocumentController;
-            var text = doc.GetField(KeyStore.SystemUriKey) as TextFieldModelController;
+            var text = doc.GetField(KeyStore.SystemUriKey) as TextController;
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
         }
@@ -871,8 +887,16 @@ namespace Dash
         private void XTitle_LostFocus(object sender, RoutedEventArgs e)
         {
             // change the titlekey 
-            ViewModel.DocumentController.GetDereferencedField<TextFieldModelController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+            ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
             _treeMenuItem.DocType = xTitle.Text;                                                    // have to call because the documentcontrollers in these items aren't updated 
+        }
+
+        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
+            var deepestPrototype = prototypes.First.Value;
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
+            var same = deepestPrototype.Equals(ViewModel.DocumentController);
         }
     }
 

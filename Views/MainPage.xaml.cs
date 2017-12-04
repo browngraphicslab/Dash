@@ -35,6 +35,7 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.UI;
 using Dash.Views.Document_Menu;
 
 
@@ -55,32 +56,16 @@ namespace Dash
         public DocumentView MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
-        public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
+        public static InkController InkController = new InkController();
         public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             InitializeComponent();
-
-            /*
-            // create the collection document model using a request
-            var fields = new Dictionary<KeyController, FieldControllerBase>();
-            fields[KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-            
-            var collectionDocumentController =
-                new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), KeyStore.CollectionKey), w: MyGrid.ActualWidth, h: MyGrid.ActualHeight).Document;
-            //collectionDocumentController.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(HorizontalAlignment.Stretch.ToString()), true);
-            //collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-            //collectionDocumentController.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(VerticalAlignment.Stretch.ToString()), true);
-            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
-
-            // set the main view's datacontext to be the collection
-            xMainDocView.DataContext = new DocumentViewModel(MainDocument);
-            */
 
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
@@ -105,26 +90,31 @@ namespace Dash
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
                 {
-                    MainDocument = ContentController<DocumentModel>.GetController<DocumentController>(doc.Id);
+                    MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
 
-                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-                    MainDocument.SetActiveLayout(layout, true, true);
+                    if (MainDocument.GetActiveLayout() == null)
+                    {
+                        var layout =
+                            new CollectionBox(
+                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                        MainDocument.SetActiveLayout(layout, true, true);
+                    }
                 }
                 else
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
+                        [KeyStore.CollectionKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
 
-                    var layout = new CollectionBox(new DocumentReferenceFieldController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
                 xMainDocView.DataContext = new DocumentViewModel(MainDocument);
             }
 
-            await RESTClient.Instance.Documents.GetDocumentsByQuery<DocumentModel>(
+            await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
         }
 
@@ -234,9 +224,9 @@ namespace Dash
             {
                 docModel.GetPositionField().Data = (Point)where;
             }
-            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as DocumentCollectionFieldModelController;
+            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
             DBTest.ResetCycleDetection();
-            children?.AddDocument(docModel);
+            children?.Add(docModel);
             //DBTest.DBDoc.AddChild(docModel);
         }
 
@@ -420,10 +410,10 @@ namespace Dash
 
             var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+                [KeyStore.CollectionKey] = new ListController<DocumentController>(docs)
             }, DocumentType.DefaultType);
 
-            var colBox = new CollectionBox(new DocumentReferenceFieldController(doc.GetId(), KeyStore.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
+            var colBox = new CollectionBox(new DocumentReferenceController(doc.GetId(), KeyStore.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
             doc.SetActiveLayout(colBox, true, false);
             DisplayDocument(doc);
         }
@@ -469,9 +459,9 @@ namespace Dash
         private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
         {
             var protoNumbers = new Numbers("1").Document;
-            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberFieldModelController(1), true);
-            var protoLayout = protoNumbers.GetActiveLayout().Data;
-            protoLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberController(1), true);
+            var protoLayout = protoNumbers.GetActiveLayout();
+            protoLayout.SetField(KeyStore.PositionFieldKey, new PointController(0, 0), true);
 
             DisplayDocument(protoNumbers);
 
@@ -481,11 +471,11 @@ namespace Dash
                 var delNumbers = protoNumbers.MakeDelegate();
                 //if (i != 4)
                 delNumbers.SetField(Numbers.Number4FieldKey,
-                    new NumberFieldModelController(i + 2), true);
+                    new NumberController(i + 2), true);
                 delNumbers.SetField(Numbers.Number5FieldKey,
-                    new NumberFieldModelController(0), true);
+                    new NumberController(0), true);
                 var delLayout = protoLayout.MakeDelegate();
-                delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(400 + 200 * (i / 5), i % 5 * 200), true);
+                delLayout.SetField(KeyStore.PositionFieldKey, new PointController(400 + 200 * (i / 5), i % 5 * 200), true);
                 delNumbers.SetActiveLayout(delLayout, true, false);
 
                 DisplayDocument(delNumbers);
@@ -497,38 +487,47 @@ namespace Dash
             var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
             var innerDict = new Dictionary<KeyController, FieldControllerBase>
             {
-                [textKey] = new TextFieldModelController("Prototype text")
+                [textKey] = new TextController("Prototype text")
             };
             DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
             var dict = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.DataKey] = new DocumentFieldModelController(innerProto)
+                [KeyStore.DataKey] = innerProto
             };
             var proto = new DocumentController(dict, DocumentType.DefaultType);
 
             var freeform = new FreeFormDocument(new List<DocumentController>
                 {
-                    new TextingBox(new PointerReferenceFieldController(new DocumentReferenceFieldController(proto.GetId(), KeyStore.DataKey), textKey)).Document
+                    new TextingBox(new PointerReferenceController(new DocumentReferenceController(proto.GetId(), KeyStore.DataKey), textKey)).Document
                 },
                 new Point(0, 0), new Size(400, 400)).Document;
             proto.SetActiveLayout(freeform, true, false);
 
             var del1 = proto.MakeDelegate();
-            var delLayout = del1.GetActiveLayout().Data.MakeDelegate();
-            delLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            var delLayout = del1.GetActiveLayout().MakeDelegate();
+            delLayout.SetField(KeyStore.PositionFieldKey, new PointController(0, 0), true);
             del1.SetActiveLayout(delLayout, true, false);
 
             var innerDelDict = new Dictionary<KeyController, FieldControllerBase>
             {
-                [textKey] = new TextFieldModelController("Delegate 1 text")
+                [textKey] = new TextController("Delegate 1 text")
             };
             var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
-            del1.SetField(KeyStore.DataKey, new DocumentFieldModelController(innerDel1), true);
+            del1.SetField(KeyStore.DataKey, innerDel1, true);
 
             DisplayDocument(proto);
             DisplayDocument(del1);
         }
 
-       
+
+        private void ChangeTheme(object sender, TappedRoutedEventArgs e)
+        {
+            this.ThemeChange();
+        }
+
+        public void ThemeChange()
+        {
+            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+        }
     }
 }

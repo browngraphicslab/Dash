@@ -11,7 +11,7 @@
         <RowDefinition Height="Auto"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>-->
-    <Grid x:Name="xGrid" Grid.Row="0" MinWidth="5" MinHeight="5" Padding="0,0,0,10">
+    <Grid x:Name="xGrid" Grid.Row="0" MinWidth="5" MinHeight="5" Padding="0,0,0,0">
         <!--image-->
         <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" DoubleTapped="xImage_DoubleTapped" Source="null" />
 
@@ -56,7 +56,7 @@
 
         <Button Background="Transparent" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped" VerticalContentAlignment="Center" >
             <ContentControl>
-                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="30" Width="50"  Background="{StaticResource WindowsBlue}" CornerRadius="10">
+                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="30" Width="50"  Background="{ThemeResource WindowsBlue}" CornerRadius="10">
                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="WhiteSmoke">Done</TextBlock>
                 </Border>
             </ContentControl>
