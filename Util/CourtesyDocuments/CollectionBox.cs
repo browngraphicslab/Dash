@@ -82,7 +82,6 @@ namespace Dash
             {
                 keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
                 keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
-                //TODO Why are we doing this?
                 docController.SetField(KeyStore.CollectionOutputKey,
                     new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
             }
