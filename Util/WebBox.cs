@@ -145,7 +145,7 @@ namespace Dash
             var down = down_and_offset.Item1;
             var offset = down_and_offset.Item2;
             var parent = web.GetFirstAncestorOfType<DocumentView>();
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<CollectionView>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
             if (e.Value == "2") // right mouse button == 2
             {
                 var rt = parent.RenderTransform.TransformPoint(new Point());
@@ -165,7 +165,6 @@ namespace Dash
 
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {
-            Web_LoadCompleted(sender, null);
             if (args.Uri != null)
             {
                 args.Cancel = true;
