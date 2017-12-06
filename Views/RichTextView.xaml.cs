@@ -138,6 +138,15 @@ namespace Dash
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
+            this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
+        }
+
+        private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            e.Handled = true;
+
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            parent.OnTapped(null, null);
         }
 
         public string target = null;
