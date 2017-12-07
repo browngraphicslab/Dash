@@ -28,6 +28,10 @@ using Dash.Controllers;
 using Microsoft.AspNet.SignalR.Client.Hubs;
 using Microsoft.VisualBasic;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.ComponentModel;
+using System.Globalization;
+using Windows.UI.Xaml.Documents;
+using Flurl.Util;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,7 +39,6 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl
     {
-        public static bool HasFocus;
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
@@ -51,89 +54,108 @@ namespace Dash
         public RichTextFieldModelController  TargetRTFController = null;
         public ReferenceFieldModelController TargetFieldReference = null;
         public Context                       TargetDocContext = null;
-        private Brush _buttonBackground;
-        private Brush _highlightedButtonBackgroud;
 
+        /// <summary>
+        /// Default rich text paragraph format (text alignment, list, spacing... ect.)
+        /// </summary>
         private ITextParagraphFormat defaultParFormat;
+        /// <summary>
+        /// Default rich text character format (bold, italics, underlin, script, caps.. ect.)
+        /// </summary>
         private ITextCharacterFormat defaultCharFormat;
 
-        private Dictionary<string, ParagraphAlignment> alignments = new Dictionary<string, ParagraphAlignment>();
-        private Dictionary<string, MarkerType> markers = new Dictionary<string, MarkerType>();
-        private Dictionary<string, MarkerStyle> markerStyles = new Dictionary<string, MarkerStyle>();
-        private Dictionary<string, MarkerAlignment> markerAlignments = new Dictionary<string, MarkerAlignment>();
+        /// <summary>
+        /// A dictionary mapping names of text alignments to their corresponding ParagraphAlignment enums
+        /// </summary>
+        private IDictionary<string, ParagraphAlignment> alignments;
+        /// <summary>
+        /// A dictionary mapping names of list types to their coresponding MarkerType enums
+        /// </summary>
+        private IDictionary<string, MarkerType> markerTypes;
+        /// <summary>
+        /// A dictionary mapping names of list styles to their correspoding MarkerStyle enums
+        /// </summary>
+        private IDictionary<string, MarkerStyle> markerStyles;
+        /// <summary>
+        /// A dictionary mapping names of list alignmetns to their correspoding MarkerAlignment enums
+        /// </summary>
+        private IDictionary<string, MarkerAlignment> markerAlignments;
+
+        /// <summary>
+        /// Instance of a class made for word count and font size binding
+        /// </summary>
+        public WordCount WC;
+
+        /// <summary>
+        /// Keeps track of whether or not the flyout is opened
+        /// </summary>
+        private bool isFlyoutOpen = false;
+
+        public static bool HasFocus = false;
+
         public RichTextView()
         {
             this.InitializeComponent();
             Loaded   += OnLoaded;
             Unloaded += UnLoaded;
 
-            //this.AddFonts();
-            //this.AddColors();
-            //_buttonBackground = xBoldButton.Background;
-            //_highlightedButtonBackgroud = xRichEditBox.SelectionHighlightColor;
+            // store a clone of character format after initialization as default format
             defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+            // store a clone of paragraph format after initialization as default format
             defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-            SetUpEnumDictionaries();
-            AddSearchBoxHandlers();
+            WC = new WordCount(xRichEditBox);
+
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
         long TextChangedCallbackToken;
 
+        /// <summary>
+        /// Binds the font size of the current selection to the text property of the xFontSizeTextBox
+        /// </summary>
+        private void SetFontSizeBinding()
+        {
+            var fontSizeBinding = new Binding()
+            {
+                Source = WC,
+                Path = new PropertyPath(nameof(WC.Size)),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
+        }
+
+        /// <summary>
+        /// Sets up all format dictionaries (for creating the flyout menu for format options)
+        /// </summary>
         private void SetUpEnumDictionaries()
         {
-            var keys = Enum.GetNames(typeof(ParagraphAlignment));
-            var vals = Enum.GetValues(typeof(ParagraphAlignment));
+            SetUpDictionary<ParagraphAlignment>(typeof(ParagraphAlignment), out alignments);
+            SetUpDictionary<MarkerType>(typeof(MarkerType), out markerTypes);
+            SetUpDictionary<MarkerStyle>(typeof(MarkerStyle), out markerStyles);
+            SetUpDictionary<MarkerAlignment>(typeof(MarkerAlignment), out markerAlignments);
+        }
+
+        /// <summary>
+        /// Sets up an enum dictionary where the name of the enum is the key, and the enum itself
+        /// is the value
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="type"></param>
+        /// <param name="dict"></param>
+        private void SetUpDictionary<TValue>(Type type, out IDictionary<string,TValue> dict)
+        {
+            dict = new Dictionary<string, TValue>();
+            var keys = Enum.GetNames(type);
+            var vals = Enum.GetValues(type);
             var length = keys.Length;
             for (int i = 0; i < length; i++)
             {
-                if (keys[i].Equals("Undefined"))
-                    keys[i] = "Clear Alignment";
-                alignments.Add(keys[i], (ParagraphAlignment)vals.GetValue(i));
-            }
-            keys = Enum.GetNames(typeof(MarkerType));
-            vals = Enum.GetValues(typeof(MarkerType));
-            length = keys.Length;
-            for (int i = 0; i < length; i++)
-            {
-                if (keys[i].Equals("Undefined"))
-                    keys[i] = "Clear Marker";
-                markers.Add(keys[i], (MarkerType)vals.GetValue(i));
-            }
-            markers.Remove("None");
-            keys = Enum.GetNames(typeof(MarkerStyle));
-            vals = Enum.GetValues(typeof(MarkerStyle));
-            length = keys.Length;
-            for (int i = 0; i < length; i++)
-            {
-                if (vals.GetValue(i).Equals(Windows.UI.Text.MarkerStyle.Undefined))
-                    keys[i] = "Clear Style";
-                markerStyles.Add(keys[i], (MarkerStyle)vals.GetValue(i));
-            }
-            keys = Enum.GetNames(typeof(MarkerAlignment));
-            vals = Enum.GetValues(typeof(MarkerAlignment));
-            length = keys.Length;
-            for (int i = 0; i < length; i++)
-            {
-                if (keys[i].Equals("Undefined"))
-                    keys[i] = "Reset Alignment";
-                else
-                    keys[i] = string.Concat("List Align ", keys[i]);
-                markerAlignments.Add(keys[i], (MarkerAlignment)vals.GetValue(i));
+                var key = keys[i];
+                if (key != "Undefined") 
+                    dict.Add(key, (TValue)vals.GetValue(i));
             }
         }
 
-        //private Dictionary<string, Type> SetUpDictionary(Type type)
-        //{
-        //    var dictionary = new Dictionary<string, Type>();
-        //    var keys = Enum.GetNames(type);
-        //    var vals = Enum.GetValues(type);
-        //    var length = keys.Length;
-        //    for (int i = 0; i < length; i++)
-        //    {
-        //        dictionary.Add(keys[i], (Type)vals.GetValue(i));
-        //    }
-        //    return dictionary;
-        //}
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
@@ -148,6 +170,12 @@ namespace Dash
             }
             xRichEditBox.Document.Selection.SetRange(LastS1, LastS2);
         }
+
+        /// <summary>
+        /// Unsubscribes TextChanged handler on Unload
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
             xRichEditBox.TextChanged  -= xRichEditBoxOnTextChanged;
@@ -197,6 +225,13 @@ namespace Dash
         
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+            // Add handlers and and bindings to set up rich text formatting functionalities 
+            SetUpEnumDictionaries();
+            AddSearchBoxHandlers();
+            AddWordCountHandlers();
+            AddFontSizeHandlers();
+            AddFlyoutHandlers();
+            SetFontSizeBinding();
         }
 
         // freezes the app
@@ -246,6 +281,7 @@ namespace Dash
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            WC.CountWords();
         }
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
@@ -314,6 +350,9 @@ namespace Dash
             return atPos;
         }
 
+        /// <summary>
+        /// Adds delegates to handle search related events (search doesn't highlight results yet)
+        /// </summary>
         private void AddSearchBoxHandlers()
         {
             xSearchDelete.Tapped += delegate { xSearchBoxPanel.Visibility = Visibility.Collapsed; };
@@ -322,7 +361,47 @@ namespace Dash
             xSearchBox.QueryChanged += XSearchBox_OnQueryChanged;
         }
 
-        private string currentFont;
+        /// <summary>
+        /// Add delegates to manage word count in the lower left hand corner of the richtextbox
+        /// </summary>
+        private void AddWordCountHandlers()
+        {
+            xWordCountBorder.PointerEntered += delegate { xWordCountBorder.Opacity = 1; };
+            xWordCountBorder.PointerExited += delegate { xWordCountBorder.Opacity = 0.3; };
+            xWordCount.DataContext = WC;
+            WC.CountWords();
+        }
+
+        /// <summary>
+        /// Add delegates to manage font size in the lower left hand corner of the richtextbox (next to the word count)
+        /// </summary>
+        private void AddFontSizeHandlers()
+        {
+            xFontSizePanel.PointerEntered += delegate { xFontSizePanel.Opacity = 1; };
+            xFontSizePanel.PointerExited += delegate { xFontSizePanel.Opacity = 0.3; };
+            xFontSizeLabel.Tapped += delegate
+            {
+                xFontSizeTextBox.Focus(FocusState.Programmatic); 
+                xFontSizeTextBox.SelectAll();
+            };
+        }
+
+        /// <summary>
+        /// Add delegates to handle flyout (for format options) related events 
+        /// </summary>
+        private void AddFlyoutHandlers()
+        {
+            var flyout = FlyoutBase.GetAttachedFlyout(xRichEditBox);
+            flyout.Opened += delegate { isFlyoutOpen = true; };
+            flyout.Closed += delegate {
+                isFlyoutOpen = false;
+                xFormatTip.IsOpen = false;
+            };
+        }
+
+        /// <summary>
+        /// Add fonts to the format options flyout (under Fonts)
+        /// </summary>
         private void AddFonts()
         {
             var FontNames = new List<string>()
@@ -370,13 +449,11 @@ namespace Dash
             };
             foreach (var font in FontNames)
             {
-                fonts.Add(new FontFamily(font));
                 var item = new MenuFlyoutItem();
                 item.Text = font;
                 item.Foreground = new SolidColorBrush(Colors.White);
                 item.Click += delegate
                 {
-                    //currentFont = font;
                     currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
                     UpdateDocument();
                 };
@@ -388,7 +465,10 @@ namespace Dash
             }
         }
 
-        private Color currentForeground;
+        /// <summary>
+        /// Add colors to the format options flyout (under Highlight and Color)
+        /// </summary>
+        /// <param name="item"></param>
         private void AddColors(MenuFlyoutSubItem item)
         {
             AddColorRange(Colors.Red, Colors.Violet, item);
@@ -400,6 +480,12 @@ namespace Dash
             AddColorRange(Colors.White, Colors.Black, item);
         }
 
+        /// <summary>
+        /// Creates a range of color starting from color1 to color2
+        /// </summary>
+        /// <param name="color1"></param>
+        /// <param name="color2"></param>
+        /// <param name="item"></param>
         private void AddColorRange(Color color1, Color color2, MenuFlyoutSubItem item)
         {
             int r1 = color1.R;
@@ -417,19 +503,31 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Adds color as a menu item under the specified submenu tab (either Highlight or Color) in the format options flyout
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="submenu"></param>
+        /// <param name="height"></param>
         private void AddColorMenuItem(Color color, MenuFlyoutSubItem submenu, double height)
         {
             var item = new MenuFlyoutItem();
             item.Background = new SolidColorBrush(color);
             item.Height = height;
+            // handles what happens when the item gets focus and when it is clicked
             if (submenu == xColor)
             {
                 item.Click += delegate
                 {
                     UpdateDocument();
                     currentCharFormat = null;
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
                 };
-                item.GotFocus += delegate { Foreground(color, false); };
+                item.GotFocus += delegate
+                {
+                    Foreground(color, false);
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+                };
             }
             else if (submenu == xHighlight)
             {
@@ -437,13 +535,51 @@ namespace Dash
                 {
                     UpdateDocument();
                     currentCharFormat = null;
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
                 };
-                item.GotFocus += delegate { Highlight(color, false); };
+                item.GotFocus += delegate
+                {
+                    Highlight(color, false);
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+                };
             }
 
             submenu?.Items?.Add(item);
         }
 
+        /// <summary>
+        /// Add opacity levels to the format options flyout (under Highlight, in Opacity tab)
+        /// </summary>
+        private void AddHighlightOpacity()
+        {
+            // doesn't really work yet
+            //double opacity = 1;
+            //while (opacity > 0)
+            //{
+            //    var item = new MenuFlyoutItem();
+            //    var menuText = opacity.ToString();
+            //    item.Text = menuText.ToString();
+            //    item.Click += delegate
+            //    {
+            //        UpdateDocument();
+            //        currentCharFormat = null;
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
+            //    };
+            //    item.GotFocus += delegate
+            //    {
+            //        var highlight = xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
+            //        var color = Color.FromArgb((byte)(opacity * 255), highlight.R, highlight.G, highlight.B);
+            //        Highlight(color, false);
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+            //    };
+            //    xHighlightOpacity?.Items?.Add(item);
+            //    opacity -= 0.1;
+            //}
+        }
+
+        /// <summary>
+        /// Adds all character formats to their corresponding tab in the format options flyout
+        /// </summary>
         private void AddCharacterFormats()
         {
             var basics = new List<string>() {"Bold (ctrl+B)", "Italics (ctrl+I)", "Underline (ctrl+U)", "Strikethrough"};
@@ -463,15 +599,17 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Adds all paragraph formats to their corresponding tab in the format options flyout
+        /// </summary>
         private void AddParagraphFormats()
         {
-            //var alignments = new List<string>() {"Left", "Center", "Right", "Justify", "Reset"};
             var alignmentNames = alignments.Keys;
             foreach (var alignment in alignmentNames)
             {
                 AddFormatMenuItem(alignment, xAlignment, false);
             }
-            var listTypes = markers.Keys;
+            var listTypes = markerTypes.Keys;
             foreach (var type in listTypes)
             {
                 AddFormatMenuItem(type, xListTypes, false);
@@ -488,12 +626,20 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Adds character format to the format options flyout as a menu item under the specified submenu tab
+        /// </summary>
+        /// <param name="menuText"></param>
+        /// <param name="subMenu"></param>
+        /// <param name="charFormat"></param>
         private void AddFormatMenuItem(string menuText, MenuFlyoutSubItem subMenu, bool charFormat)
         {
             var item = new MenuFlyoutItem();
             item.Text = menuText;
             item.Foreground = new SolidColorBrush(Colors.White);
             item.Click += Format_OnClick;
+
+            // handles what happens when the item gets focus and when it is clicked
             if (charFormat)
             {
                 item.GotFocus += CharFormat_OnGotFocus;
@@ -505,8 +651,14 @@ namespace Dash
             subMenu?.Items?.Add(item);
         }
 
+        /// <summary>
+        /// Makes current selection in the xRichEditBox bold
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Bold(bool updateDocument)
         {
+            // on/off instead of toggle to know exactly what state it is in (to determine whether a selection is bold or not)
             if (this.xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On)
             {
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
@@ -515,19 +667,14 @@ namespace Dash
             {
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
             }
-            //var selected = GetSelected();
-            //if (selected != null)
-            //{
-            //    xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
-
-            //    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-            //    this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
-            //    UpdateDocument();
-            //}
-            //this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Toggle;
             if(updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Italicizes current selection in xRichEditBox
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Italicize(bool updateDocument)
         {
             if (this.xRichEditBox.Document.Selection.CharacterFormat.Italic == FormatEffect.On)
@@ -542,6 +689,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Underlines the current selection in xRichEditBox
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Underline(bool updateDocument)
         {
             if (this.xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None)
@@ -551,6 +703,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Strikethrough the current selection in xRichEditBox
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Strikethrough(bool updateDocument)
         {
             if (xRichEditBox.Document.Selection.CharacterFormat.Strikethrough == FormatEffect.On)
@@ -560,6 +717,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Formats the current selection in xRichEditBox into superscripts
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Superscript(bool updateDocument)
         {
             if (xRichEditBox.Document.Selection.CharacterFormat.Superscript == FormatEffect.On)
@@ -569,6 +731,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Formats the current selection in xRichEditBox into subscripts
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void Subscript(bool updateDocument)
         {
             if (xRichEditBox.Document.Selection.CharacterFormat.Subscript == FormatEffect.On)
@@ -578,12 +745,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
-        private void TextScript(TextScript script, bool updateDocument)
-        {
-            xRichEditBox.Document.Selection.CharacterFormat.TextScript = script;
-            if(updateDocument) UpdateDocument();
-        }
-
+        /// <summary>
+        /// Formats the current selection in xRichEditBox into smallcaps
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void SmallCaps(bool updateDocument)
         {
             if (xRichEditBox.Document.Selection.CharacterFormat.SmallCaps == FormatEffect.On)
@@ -593,6 +759,11 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Formats the current selection in xRichEditBox into allcaps
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="updateDocument"></param>
         private void AllCaps(bool updateDocument)
         {
             if (xRichEditBox.Document.Selection.CharacterFormat.AllCaps == FormatEffect.On)
@@ -602,9 +773,99 @@ namespace Dash
             if (updateDocument) UpdateDocument();
         }
 
+        /// <summary>
+        /// Highlights the current selection in xRichEditBox, the color of the highlight is specified by background
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="background"></param>
+        /// <param name="updateDocument"></param>
+        private void Highlight(Color background, bool updateDocument)
+        {
+            xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
+            if (updateDocument) UpdateDocument();
+        }
+
+        /// <summary>
+        /// Changes the color of the font of the current selection in xRichEditBox, the font color is specified by color
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="updateDocument"></param>
+        private void Foreground(Color color, bool updateDocument)
+        {
+            xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
+            if (updateDocument) UpdateDocument();
+        }
+
+        /// <summary>
+        /// Sets the paragraph alignment of the current selection to be what's specified by alignment
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="alignment"></param>
+        /// <param name="updateDocument"></param>
+        private void Alignment(object alignment, bool updateDocument)
+        {
+            if (alignment != null && alignment.GetType() == typeof(ParagraphAlignment))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        /// <summary>
+        /// Sets the list marker of the current selection to be what's specified by type
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="updateDocument"></param>
+        private void Marker(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerType))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        /// <summary>
+        /// Sets the list marker style of the current selection to be what's specified by type
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="updateDocument"></param>
+        private void MarkerStyle(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerStyle))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        /// <summary>
+        /// Sets the marker alignment of the current selection to be what's specified by type
+        /// Updates document if updateDocument is true
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="updateDocument"></param>
+        private void MarkerAlignment(object type, bool updateDocument)
+        {
+            if (type != null && type.GetType() == typeof(MarkerAlignment))
+            {
+                xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
+                if (updateDocument) UpdateDocument();
+            }
+        }
+
+        /// <summary>
+        /// Sets the character formatting of the current selection according to the name of the menu item (clicked/gotfocus)
+        /// in the format options flyout
+        /// </summary>
+        /// <param name="menuText"></param>
+        /// <param name="updateDocument"></param>
         private void CharFormat(String menuText, bool updateDocument)
         {
-            if (menuText == "BolBold (ctrl+B)")
+            if (menuText == "Bold (ctrl+B)")
             {
                 Bold(updateDocument);
             }
@@ -615,36 +876,47 @@ namespace Dash
             else if (menuText == "Underline (ctrl+U)")
             {
                 Underline(updateDocument);
-            } else if (menuText == "Strikethrough")
+            }
+            else if (menuText == "Strikethrough")
             {
                 Strikethrough(updateDocument);
-            } else if (menuText == "Superscript")
+            }
+            else if (menuText == "Superscript")
             {
                 Superscript(updateDocument);
-            } else if (menuText == "Subscript")
+            }
+            else if (menuText == "Subscript")
             {
                 Subscript(updateDocument);
-            } else if (menuText == "AllCaps")
+            }
+            else if (menuText == "AllCaps")
             {
                 AllCaps(updateDocument);
-            } else if (menuText == "SmallCaps")
+            }
+            else if (menuText == "SmallCaps")
             {
                 SmallCaps(updateDocument);
             }
         }
 
-        private void ParFormat(String menuText, bool updateDocument)
+        /// <summary>
+        /// Sets the paragraph formatting of the current selection according to the name of the menu item (clicked/gotfocus)
+        /// in the format options flyout
+        /// </summary>
+        /// <param name="menuText"></param>
+        /// <param name="updateDocument"></param>
+        private void ParFormat(string menuText, bool updateDocument)
         {
             ParagraphAlignment alignment;
-            if(alignments.TryGetValue(menuText, out alignment))
+            if (alignments.TryGetValue(menuText, out alignment))
                 Alignment(alignment, updateDocument);
 
             MarkerType listType;
-            if(markers.TryGetValue(menuText, out listType))
+            if (markerTypes.TryGetValue(menuText, out listType))
                 Marker(listType, updateDocument);
 
             MarkerStyle listStyle;
-            if(markerStyles.TryGetValue(menuText, out listStyle))
+            if (markerStyles.TryGetValue(menuText, out listStyle))
                 MarkerStyle(listStyle, updateDocument);
 
             MarkerAlignment listAlignment;
@@ -652,81 +924,6 @@ namespace Dash
                 MarkerAlignment(listAlignment, updateDocument);
         }
 
-        private void Highlight(Color background, bool updateDocument)
-        {
-            xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
-            if (updateDocument) UpdateDocument();
-        }
-
-        private void Foreground(Color color, bool updateDocument)
-        {
-            xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
-            if (updateDocument) UpdateDocument();
-        }
-  
-        private void Alignment(object alignment, bool updateDocument)
-        {
-            if (alignment != null && alignment.GetType() == typeof(ParagraphAlignment))
-            {
-                xRichEditBox.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
-                if (updateDocument) UpdateDocument();
-            }
-        }
-
-        private void Marker(object type, bool updateDocument)
-        {
-            if (type != null && type.GetType() == typeof(MarkerType))
-            {
-                xRichEditBox.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
-                if (updateDocument) UpdateDocument();
-            }
-        }
-
-        private void MarkerStyle(object type, bool updateDocument)
-        {
-            if (type != null && type.GetType() == typeof(MarkerStyle))
-            {
-                xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
-                if (updateDocument) UpdateDocument();
-            }
-        }
-
-        private void MarkerAlignment(object type, bool updateDocument)
-        {
-            if (type != null && type.GetType() == typeof(MarkerAlignment))
-            {
-                xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
-                if (updateDocument) UpdateDocument();
-            }
-        }
-
-        //private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Bold(true);
-        //}
-        //private void ItalicButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Italicize(true);
-        //}
-
-        //private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Underline(true);
-        //}
-        //private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    this.xRichEditBox.FontFamily = fonts[xFontComboBox.SelectedIndex];
-        //}
-        //private void Grid_GotFocus(object sender, RoutedEventArgs e)
-        //{
-
-        //    //xFormatRow.Height = new GridLength(30);
-        //}
-
-        //private void Grid_LostFocus(object sender, RoutedEventArgs e)
-        //{
-        //    xFormatRow.Height = new GridLength(0);
-        //}
         void UpdateDocument()
         {
             string allText;
@@ -738,18 +935,26 @@ namespace Dash
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
+        /// <summary>
+        /// Closes format options flyout and sets HasFocus to true (tab indents in this case instead of invoking the tab menu)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            //xFormatRow.Height = new GridLength(30);
-            HasFocus = true;
             FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide();
+            HasFocus = true;
             UpdateDocument();
         }
 
+        /// <summary>
+        /// Sets HasFocus to false (allows tab to invoke tab menu when richeditbox does not have focus)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XRichEditBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             HasFocus = false;
-
         }
 
         private void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -790,6 +995,7 @@ namespace Dash
         }
 
         int LastS1 = 0, LastS2 = 0;
+
         void xRichEditBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
@@ -835,80 +1041,23 @@ namespace Dash
             }
             LastS1 = s1;
             LastS2 = s2;
-            //this.HighlightFormatButtons();
+            // format and update the tooltip to reflect the properties of the current selection
+            if(xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition) this.FormatToolTipInfo(xRichEditBox.Document.Selection);
+            // set to display font size of the current selection on the lower left hand corner
+            WC.Size = xRichEditBox.Document.Selection.CharacterFormat.Size;
+            if (WC.Size < 0) WC.Size = 0;
         }
 
-        //private void HighlightFormatButtons()
-        //{
-        //    var selection = xRichEditBox.Document.Selection;
-        //    // for when cursor changes position
-        //    if (selection.StartPosition == selection.EndPosition)
-        //    {
-        //        var initialPosition = selection.StartPosition;
-        //        bool isBold = false;
-        //        bool isItalics = false;
-        //        bool isUnderlined = false;
-        //        // check character in front of the cursor
-        //        var previous = xRichEditBox.Document.GetRange(initialPosition - 1, initialPosition);
-        //        if (previous.CharacterFormat.Bold == FormatEffect.On)
-        //        {
-        //            isBold = true;
-        //        }
-        //        if (selection.CharacterFormat.Italic == FormatEffect.On)
-        //        {
-        //            isItalics = true;
-        //        }
-        //        if (previous.CharacterFormat.Underline == UnderlineType.Single)
-        //        {
-        //            isUnderlined = true;
-        //        }
-        //        // check character after the cursor
-        //        var next = xRichEditBox.Document.GetRange(initialPosition, initialPosition + 1);
-        //        if (next.CharacterFormat.Bold == FormatEffect.Off)
-        //        {
-        //            isBold = false;
-        //        }
-        //        if (next.CharacterFormat.Italic == FormatEffect.Off)
-        //        {
-        //            isItalics = false;
-        //        }
-        //        if (next.CharacterFormat.Underline == UnderlineType.None)
-        //        {
-        //            isUnderlined = false;
-        //        }
-        //        // if both the character before and after the cursor has a certain format, highlight the button for that format
-        //        xBoldButton.Background = isBold ? _highlightedButtonBackgroud : _buttonBackground;
-        //        xItalicButton.Background = isItalics ? _highlightedButtonBackgroud : _buttonBackground;
-        //        xUnderlineButton.Background = isUnderlined ? _highlightedButtonBackgroud : _buttonBackground;
-        //    }
-        //    // for when text is selected
-        //    else
-        //    {
-        //        bool isBold = false;
-        //        bool isItalics = false;
-        //        bool isUnderlined = false;
-        //        if (selection.CharacterFormat.Bold == FormatEffect.On)
-        //        {
-        //            isBold = true;
-        //        }
-        //        if (selection.CharacterFormat.Italic == FormatEffect.On)
-        //        {
-        //            isItalics = true;
-        //        }
-        //        if (selection.CharacterFormat.Underline == UnderlineType.Single)
-        //        {
-        //            isUnderlined = true;
-        //        }
-        //        xBoldButton.Background = isBold ? _highlightedButtonBackgroud : _buttonBackground;
-        //        xItalicButton.Background = isItalics ? _highlightedButtonBackgroud : _buttonBackground;
-        //        xUnderlineButton.Background = isUnderlined ? _highlightedButtonBackgroud : _buttonBackground;
-        //    }
-        //}
-
-
+        /// <summary>
+        /// Create short cuts for the xRichEditBox (ctrl+I creates indentation by default, ctrl-Z will get rid of the indentation, showing only the italized text)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+            // TODO: find way to override ctrl+I (which indents by default)
+            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
+                .HasFlag(CoreVirtualKeyStates.Down);
             var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
                 .HasFlag(CoreVirtualKeyStates.Down);
             var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
@@ -953,8 +1102,14 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Searches content of the xRichEditBox, highlights all results (not yet functional)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void XSearchBox_OnQueryChanged(SearchBox sender, SearchBoxQueryChangedEventArgs args)
         {
+            // TODO: find default way to highlight all search results (as well as how FindText works)
             var query = args.QueryText;
             //var s1 = xRichEditBox.Document.Selection.StartPosition;
             //var s2 = xRichEditBox.Document.Selection.EndPosition;
@@ -982,6 +1137,10 @@ namespace Dash
             //xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
         }
 
+        /// <summary>
+        /// Opens the format options flyout
+        /// </summary>
+        /// <param name="sender"></param>
         private void OpenContextMenu(object sender)
         {
             var element = sender as FrameworkElement;
@@ -989,10 +1148,19 @@ namespace Dash
             {
                 FlyoutBase.ShowAttachedFlyout(element);
                 FlyoutBase.GetAttachedFlyout(element)?.ShowAt(element);
+                AddFlyoutItems();
             }
             currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
         }
 
+        /// <summary>
+        /// When a format is clicked, it has already triggered the gotfocus event, which has already set
+        /// the format of the text (to create preview of the format), updating the document will confirm
+        /// the change
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Format_OnClick(object sender, RoutedEventArgs e)
         {
             UpdateDocument();
@@ -1000,41 +1168,64 @@ namespace Dash
             currentParagraphFormat = null;
         }
 
+        /// <summary>
+        /// Opens format options flyout on holding
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XRichEditBox_OnHolding(object sender, HoldingRoutedEventArgs e)
         {
             OpenContextMenu(sender);
             FlyoutBase.GetAttachedFlyout(xRichEditBox).AllowFocusOnInteraction = true;
             if (xFont.Items.Count == 0) AddFonts();
             if (xColor.Items.Count == 0) AddColors(xColor);
-            if (xHighlight.Items.Count == 0) AddColors(xHighlight);
+            if (xHighlight.Items.Count == 1) AddColors(xHighlight);
         }
 
+        /// <summary>
+        /// Remove font preview when the submenu tab (Font) gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FontGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (xFont.Items.Count == 0) AddFonts();
             if (currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
         }
 
-        private Color currentHighlight = Colors.Transparent;
+        /// <summary>
+        /// Remove highlight preview when the submenu tab (Highlight) gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void HighlightGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (xHighlight.Items.Count == 0) AddColors(xHighlight);
             if (currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
         }
 
+        /// <summary>
+        /// Remove highlight preview when the submenu tab (Color) gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ColorGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (xColor.Items.Count == 0) AddColors(xColor);
             if (currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
         }
 
+        /// <summary>
+        /// Remove character formatting preview when the Font tab gets focus
+        /// </summary>
         private ITextCharacterFormat currentCharFormat;
         private void FormatGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if(xFormat.Items.Count == 2) AddCharacterFormats();
             if(currentCharFormat != null) xRichEditBox.Document.Selection.CharacterFormat.SetClone(currentCharFormat);
         }
 
+        /// <summary>
+        /// Remove character formatting preview when submenu tab (under the Font tab) gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CharFormat_OnGotFocus(object sender, RoutedEventArgs e)
         {
             var menuFlyoutItem = sender as MenuFlyoutItem;
@@ -1043,6 +1234,11 @@ namespace Dash
             CharFormat(menuText, false);
         }
 
+        /// <summary>
+        /// Remove paragraph formatting preview when submenu tab (under the paragraph tab) gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ParFormat_OnGotFocus(object sender, RoutedEventArgs e)
         {
             var menuFlyoutItem = sender as MenuFlyoutItem;
@@ -1051,17 +1247,160 @@ namespace Dash
             ParFormat(menuText, false);
         }
 
+        /// <summary>
+        /// Clone of current selection's paragraph format before preview is set (for removing preview)
+        /// </summary>
         private ITextParagraphFormat currentParagraphFormat;
+
+        /// <summary>
+        /// Remove paragraph formatting preview when the Paragraph tab gets focus
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ParagraphGroup_OnGotFocus(object sender, RoutedEventArgs e)
         {
-            if (xAlignment.Items.Count == 0) AddParagraphFormats();
-            if(currentParagraphFormat != null) xRichEditBox.Document.Selection.ParagraphFormat.SetClone(currentParagraphFormat);
+            if (currentParagraphFormat != null) xRichEditBox.Document.Selection.ParagraphFormat.SetClone(currentParagraphFormat);
         }
 
+        /// <summary>
+        /// Creates the content of the format options flyout by adding items to all tabs/submenus
+        /// </summary>
+        private void AddFlyoutItems()
+        {
+            if (xAlignment.Items.Count == 0) AddParagraphFormats();
+            if (xFormat.Items.Count == 3) AddCharacterFormats();
+            if (xColor.Items.Count == 0) AddColors(xColor);
+            if (xHighlight.Items.Count == 1) AddColors(xHighlight);
+            if (xFont.Items.Count == 0) AddFonts();
+            if (xHighlightOpacity.Items.Count == 0) AddHighlightOpacity();
+        }
+
+        /// <summary>
+        /// Remove all character and paragraph formatting
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XResetAll_OnClick(object sender, RoutedEventArgs e)
         {
             xRichEditBox.Document.Selection.CharacterFormat.SetClone(defaultCharFormat);
             xRichEditBox.Document.Selection.ParagraphFormat.SetClone(defaultParFormat);
+        }
+
+        /// <summary>
+        /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
+        /// </summary>
+        /// <param name="range"></param>
+        private async void FormatToolTipInfo(ITextRange range)
+        {
+            // TODO: show tooltip at position of the mouse (horizontal & vertical offset (alone) do not work)
+            xFormatTipText.Inlines.Clear();
+            AddPropertyRun("Alignment", range.ParagraphFormat.Alignment.ToString());
+            AddPropertyRun("Font", range.CharacterFormat.Name);
+            AddPropertyRun("Size", range.CharacterFormat.Size.ToString(CultureInfo.InvariantCulture));
+            AddPropertyRun("Bold", range.CharacterFormat.Bold.ToString());
+            AddPropertyRun("Italic", range.CharacterFormat.Italic.ToString());
+            AddPropertyRun("Underline", range.CharacterFormat.Underline.ToString());
+            AddPropertyRun("Strikethrough", range.CharacterFormat.Strikethrough.ToString());
+            AddPropertyRun("Superscript", range.CharacterFormat.Superscript.ToString());
+            AddPropertyRun("Subscript", range.CharacterFormat.Subscript.ToString());
+            AddPropertyRun("ListType", range.ParagraphFormat.ListType.ToString());
+            // show tooltip at mouse position, does not work
+            //xFormatTip.Placement = PlacementMode.Mouse;
+            //Point point;
+            //xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Left, VerticalCharacterAlignment.Baseline, PointOptions.ClientCoordinates, out point);
+            //xFormatTip.HorizontalOffset = point.X;
+            //xFormatTip.VerticalOffset = -point.Y;
+            //xFormatTip.PlacementTarget = xRichEditBox;
+            xFormatTip.Placement = PlacementMode.Left;
+            xFormatTip.IsOpen = true;
+            await Task.Delay(3000);
+            if (!isFlyoutOpen)
+                xFormatTip.IsOpen = false;
+        }
+
+        /// <summary>
+        /// Adds format property to the tooltip if it is not None, Undefined, or Off
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        private void AddPropertyRun(string key, string value)
+        {
+            if (!value.Equals("None") && !value.Equals("Undefined") && !value.Equals("Off"))
+            {
+                var keyRun = new Run();
+                keyRun.Text = key + ": ";
+                var valRun = new Run();
+                if (value.StartsWith("-"))
+                    valRun.Text = "-";
+                else
+                    valRun.Text = value;
+                var lineBreak = new LineBreak();
+                xFormatTipText.Inlines.Add(keyRun);
+                xFormatTipText.Inlines.Add(valRun);
+                xFormatTipText.Inlines.Add(lineBreak);
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// Handles word count and font size bindings in RichTextView
+    /// </summary>
+    public class WordCount : INotifyPropertyChanged
+    {
+        public int Count
+        {
+            get => _count;
+            set
+            {
+                _count = value;
+                RaisePropertyChanged("Count");
+            }
+        }
+        private int _count;
+
+        public float Size
+        {
+            get => _size;
+            set
+            {
+                _size = value;
+                SetFontSize();
+                RaisePropertyChanged("Size");
+            }
+        }
+        private float _size;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private RichEditBox _box;
+        public WordCount(RichEditBox box)
+        {
+            _box = box;
+        }
+
+        public void CountWords()
+        {
+            string text;
+            _box.Document.GetText(TextGetOptions.None, out text);
+            var words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            Count = words.Length;
+        }
+
+        private void SetFontSize()
+        {
+            var selection = _box.Document.Selection;
+            if (!selection.CharacterFormat.Size.Equals(_size) && _size > 0)
+            {
+                selection.CharacterFormat.Size = _size;
+            }
+        }
+
+        protected void RaisePropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 }

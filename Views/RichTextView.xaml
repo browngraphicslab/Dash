@@ -29,24 +29,6 @@
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="5*"/>
                 </Grid.ColumnDefinitions>
-                <!--<Grid>
-                    <Button x:Name="xBoldButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
-                        <SymbolIcon Symbol="Bold"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="1">
-                    <Button x:Name="xItalicButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
-                        <SymbolIcon Symbol="Italic"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="2">
-                    <Button x:Name="xUnderlineButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
-                        <SymbolIcon Symbol="Underline"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
-                </Grid>-->
             </Grid>
         </Grid >
         <RichEditBox x:FieldModifier="public" 
@@ -67,7 +49,16 @@
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          KeyDown="XRichEditBox_OnKeyDown"
                          Holding="XRichEditBox_OnHolding"
-                         SelectionHighlightColorWhenNotFocused="Black">
+                         SelectionHighlightColorWhenNotFocused="Gray"
+                         >
+            <ToolTipService.ToolTip>
+                <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
+                    <ToolTip.Content>
+                        <TextBlock x:Name="xFormatTipText" Padding="2" FontSize="10" Foreground="White">
+                        </TextBlock>
+                    </ToolTip.Content>
+                </ToolTip>
+            </ToolTipService.ToolTip>
             <FlyoutBase.AttachedFlyout>
                 <MenuFlyout>
                     <MenuFlyout.MenuFlyoutPresenterStyle>
@@ -76,7 +67,8 @@
                             <Setter Property="Opacity" Value="0.8"></Setter>
                         </Style>
                     </MenuFlyout.MenuFlyoutPresenterStyle>
-                    <MenuFlyoutSubItem x:Name="xFormat" Text="Format" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
+                    <MenuFlyoutSubItem x:Name="xFormat" Text="Font" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
+                        <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
                         <MenuFlyoutSubItem x:Name="xScript" Text="Script" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
                         <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
@@ -86,8 +78,8 @@
                         <MenuFlyoutSubItem x:Name="xListStyles" Text="List Style" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
                         <MenuFlyoutSubItem x:Name="xListAlignments" Text="List Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
+                        <MenuFlyoutSubItem x:Name="xHighlightOpacity" Text="Opacity" GotFocus="HighlightGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
                     </MenuFlyoutSubItem>
                     <MenuFlyoutSubItem x:Name="xColor" Text="Color" GotFocus="ColorGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
                     <MenuFlyoutSeparator></MenuFlyoutSeparator>
@@ -95,6 +87,22 @@
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="25" Margin="10,0,0,0">
+            <StackPanel x:Name="xFontSizePanel" Orientation="Horizontal" Opacity="0.3" Margin="0,0,15,0">
+                <TextBlock x:Name="xFontSizeLabel" Foreground="DimGray" Padding="2" Text="Font Size: "></TextBlock>
+                <TextBox x:Name="xFontSizeTextBox" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" Padding="2"></TextBox>
+                <ToolTipService.ToolTip>
+                    <ToolTip Background="{StaticResource DarkBackground}" Padding="3" Content="Tap to edit" Foreground="White"/>
+                </ToolTipService.ToolTip>
+            </StackPanel>
+            <Border x:Name="xWordCountBorder" Opacity="0.3">
+                <TextBlock x:Name="xWordCount" Foreground="DimGray" Padding="2" >
+                    <Run x:Name="xCount" Text="{x:Bind WC.Count, Mode=OneWay}"></Run>
+                    <Run> words</Run>
+                </TextBlock>
+            </Border>
+        </StackPanel>
+
         <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5" Visibility="Collapsed" Opacity="0.5">
             <SearchBox x:Name="xSearchBox" Height="20" Width="100" BorderBrush="Transparent" Background="Gainsboro"></SearchBox>
             <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3" Height="20" Width="15" VerticalContentAlignment="Top" Background="Gainsboro">
