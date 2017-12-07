@@ -91,7 +91,7 @@ namespace Dash
             OnKeyValueDrop(e);
         }
 
-        private void toFront()
+        private void ToFront()
         {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
@@ -899,7 +899,7 @@ namespace Dash
 
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            toFront();
+            ToFront();
         }
     }
     
