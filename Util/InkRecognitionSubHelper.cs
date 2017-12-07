@@ -151,24 +151,30 @@ namespace Dash
         {
             var heightCutoff = 75;
             //Get all InkLines within permitted size bounds and remove their strokes from RemainingStrokes
-            List<RecognizedNode> nodes = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord)
+            List<RecognizedNode> nodes = new List<RecognizedNode>();
+            var inkLines = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkWord)
                 .Where(word => docNode.BoundingRect.Contains(word.BoundingRect)).Select(word => word.Parent)
-                .OfType<InkAnalysisLine>().ToList().Select(line => line.Children.OfType<InkAnalysisInkWord>()
-                    .Where(word => docNode.BoundingRect.Contains(word.BoundingRect)).Select(word => new RecognizedNode
-                    {
-                        RecognizedText = word.RecognizedText,
-                        Strokes = word.GetStrokeIds().Select(id => GetStrokeByID(id)).ToList(),
-                        BoundingRect = word.BoundingRect,
-                        Parent = docNode,
-                        NodeType = RecognizedNode.RecognizedNodeType.Text,
-                        InkRegion = line
-                    }).Aggregate((node1, node2) =>
-                    {
-                        node1.BoundingRect.Union(node2.BoundingRect);
-                        node1.Strokes.Union(node2.Strokes);
-                        node1.RecognizedText += " " + node2.RecognizedText;
-                        return node1;
-                    })).ToList();
+                .OfType<InkAnalysisLine>().ToList();
+            foreach (var line in inkLines)
+            {
+                var containedWords = line.Children.OfType<InkAnalysisInkWord>()
+                    .Where(word => docNode.BoundingRect.Contains(word.BoundingRect));
+                var node = containedWords.Select(word => new RecognizedNode
+                {
+                    RecognizedText = word.RecognizedText,
+                    Strokes = word.GetStrokeIds().Select(id => GetStrokeByID(id)).ToList(),
+                    BoundingRect = word.BoundingRect,
+                    Parent = docNode,
+                    NodeType = RecognizedNode.RecognizedNodeType.Text,
+                    InkRegion = line
+                }).Aggregate((node1, node2) =>
+                {
+                    node1.BoundingRect.Union(node2.BoundingRect);
+                    node1.Strokes.Union(node2.Strokes);
+                    node1.RecognizedText += " " + node2.RecognizedText;
+                    return node1;
+                });
+            }
 
             //foreach (var line in smallLines)
             //{
