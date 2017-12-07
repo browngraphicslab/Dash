@@ -49,7 +49,7 @@ namespace Dash
     {
         public static MainPage Instance { get; private set; }
 
-        public static InkRecognitionSubHelper InkRecognizer { get; private set; }
+        public static InkRecognitionHelper InkRecognizer { get; private set; }
 
         private RadialMenuView _radialMenu;
         private static CollectionView _mainCollectionView;
@@ -71,7 +71,7 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            InkRecognizer = new InkRecognitionSubHelper();
+            InkRecognizer = new InkRecognitionHelper();
 
             _radialMenu = new RadialMenuView(xCanvas);
 
