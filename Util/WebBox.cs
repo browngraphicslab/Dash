@@ -4,12 +4,13 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Dash;
 using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.UI.Xaml.Data;
-
+using System.Numerics;
 
 namespace Dash
 {    /// <summary>
@@ -94,20 +95,20 @@ namespace Dash
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
                 if (html.StartsWith("http"))
-                    web.Navigate(new Uri(html));
+                    web.Navigate(new Uri(html)); 
                 else web.NavigateToString(html.StartsWith("http") ? html : html.Substring(html.ToLower().IndexOf("<html"), html.Length-html.ToLower().IndexOf("<html")));
             else web.Source = new Uri(textfieldModelController.Data);
-            web.NavigationStarting += Web_NavigationStarting;
-
+            web.LoadCompleted += Web_LoadCompleted;
             grid.Children.Add(web);
-            var overgrid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-                Name = "overgrid"
-            };
-          //  grid.Children.Add(overgrid);
+            //var overgrid = new Grid
+            //{
+            //    HorizontalAlignment = HorizontalAlignment.Stretch,
+            //    VerticalAlignment = VerticalAlignment.Stretch,
+            //    Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+            //    Name = "overgrid"
+            //};
+            //grid.Children.Add(overgrid);
+            web.Tag = new Tuple<Point,Point>(new Point(), new Point()); // hack for allowing web page to be dragged with right mouse button
 
             if (html == null)
                 SetupBindings(web, docController, context);
@@ -121,6 +122,45 @@ namespace Dash
                 return new SelectableContainer(grid, docController);
             }
             return grid;
+        }
+        private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            var _WebView = sender as WebView;
+
+            _WebView.ScriptNotify -= _WebView_ScriptNotify;
+            _WebView.ScriptNotify += _WebView_ScriptNotify;
+            
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move'); } document.onmousemove=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up'); } document.onmouseup=x;" });
+
+            _WebView.NavigationStarting -= Web_NavigationStarting;
+            _WebView.NavigationStarting += Web_NavigationStarting;
+        }
+
+        private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
+        {
+            var web = sender as WebView;
+            var down_and_offset = (Tuple<Point,Point>)web.Tag;
+            var down = down_and_offset.Item1;
+            var offset = down_and_offset.Item2;
+            var parent = web.GetFirstAncestorOfType<DocumentView>();
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+            if (e.Value == "2") // right mouse button == 2
+            {
+                var rt = parent.RenderTransform.TransformPoint(new Point());
+                web.Tag = new Tuple<Point,Point>( pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
+            }
+            else if (e.Value == "move" && offset != new Point())
+            {
+                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X-offset.X, Y = pointerPosition.Y-offset.Y };
+            }
+            else if (e.Value == "up")
+            {
+                web.Tag = new Tuple<Point, Point>(new Point(), new Point());
+                if (Math.Sqrt((pointerPosition.X - down.X)*(pointerPosition.X-down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                    parent.OnTapped(null, null);
+            }
         }
 
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)

@@ -138,23 +138,38 @@ namespace Dash
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
+            this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
+        }
+
+        private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            e.Handled = true;
+
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            parent.OnTapped(null, null);
         }
 
         public string target = null;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-            // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
-            // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
-            if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-            {
-                target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-            }
         }
 
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+                if (s1 == s2)
+                {
+                    this.xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
+                }
+                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
+                {
+                    target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
+                }
+                this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            }
             if (target != null)
             {
                 var doc = GetDoc();
