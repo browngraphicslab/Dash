@@ -49,6 +49,7 @@
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          KeyDown="XRichEditBox_OnKeyDown"
                          Holding="XRichEditBox_OnHolding"
+                         IsTextPredictionEnabled="True"
                          >
             <ToolTipService.ToolTip>
                 <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">

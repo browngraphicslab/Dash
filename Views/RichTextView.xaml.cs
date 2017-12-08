@@ -1208,9 +1208,11 @@ namespace Dash
         private void XReplaceBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             xRichEditBox.Document.Selection.SetText(TextSetOptions.None,(sender as TextBox).Text);
-            var current = 0;
-            if (nextMatch != 0) current = nextMatch - 1;
-            xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormat[current]);
+            var start = xRichEditBox.Document.Selection.StartPosition;
+            ITextCharacterFormat clone;
+            originalCharFormat.TryGetValue(start, out clone);
+            if (clone != null)
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
         }
 
         /// <summary>
