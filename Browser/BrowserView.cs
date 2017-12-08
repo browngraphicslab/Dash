@@ -28,6 +28,7 @@ namespace Dash
             }
             set { _socket = value; }
         }
+
         private static DataWriter _dataMessageWriter;
 
 
@@ -122,6 +123,11 @@ namespace Dash
             {
                 throw new Exception("Exception caught during writing to server data writer.  Reason: " + e.Message);
             }
+        }
+
+        public static BrowserView OpenTab(String url)
+        {
+            return new BrowserView(url);
         }
 
         private string _url;

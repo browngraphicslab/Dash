@@ -46,6 +46,8 @@ namespace Dash
             set{ SetValue(TextProperty, value); }
         }
 
+        public DocumentController DataDocument { get; set; }
+
         public RichTextController  TargetRTFController = null;
         public ReferenceController TargetFieldReference = null;
         public Context                       TargetDocContext = null;
@@ -63,8 +65,6 @@ namespace Dash
             _highlightedButtonBackgroud = xRichEditBox.SelectionHighlightColor;
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-
-            var a = new BrowserView("http://cs.brown.edu/research/ptc/NuSys/NuSysIndex.html");
         }
         long TextChangedCallbackToken;
 
@@ -608,6 +608,36 @@ namespace Dash
             foreach (var font in FontNames)
             {
                 fonts.Add(new FontFamily(font));
+            }
+        }
+
+        private void XRichEditBox_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            {
+                var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
+                if (c != null)
+                {
+                    BrowserView.OpenTab(c.Data);
+                }
+            }
+        }
+
+        private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Control || e.Key == VirtualKey.Shift)
+            {
+                return;
+            }
+            if (BrowserView.Current != null)
+            {
+                TextController c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
+                if (c == null)
+                {
+                    c = new TextController();
+                    DataDocument.SetField(KeyStore.WebContextKey, c, true);
+                }
+                c.Data = BrowserView.Current.Url;
             }
         }
     }
