@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -181,19 +182,29 @@ namespace Dash
             if (!_processManipulation) return;
             e.Handled = true;
 
-            //Get mousepoint in canvas space 
-            var point = e.GetCurrentPoint(_element);
+            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            {
 
-            // get the scale amount
-            float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
-            //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+                //Get mousepoint in canvas space 
+                var point = e.GetCurrentPoint(_element);
 
-            //Clamp the scale factor 
-            ElementScale *= scaleAmount;
+                // get the scale amount
+                float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+                //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
-            if(!ClampScale(scaleAmount))
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
-                point.Position, new Point(scaleAmount, scaleAmount)));
+                //Clamp the scale factor 
+                ElementScale *= scaleAmount;
+
+                if (!ClampScale(scaleAmount))
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
+                        point.Position, new Point(scaleAmount, scaleAmount)));
+            }
+            else
+            {
+                var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
+                    new Point(),  new Point(1, 1)));
+            }
         }
 
         public void FitToParent()
