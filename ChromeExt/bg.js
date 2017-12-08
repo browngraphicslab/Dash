@@ -1,29 +1,39 @@
 console.log("background launched.")
 
-
-var handleMessage = function (message) {
-    console.log("Message: ")
-    console.log(message)
-    if (message.includes("{")) {
-        console.log("here");
-        var obj = JSON.parse(message);
-        if (obj.type == "newBrowser") {
-            console.log("in new");
-            newUrl = obj.url;
-            console.log(newUrl)
-            var tab = chrome.tabs.create({ url: newUrl });
-            console.log(tab)
-        }
-    }
-}
-
 $(window).bind('hashchange', function () {
     console.log(window.url)
     console.log("heree")
 });
 
+
 useSocket = true;
 var socket;
+
+var socketOpen = false;
+var messagesToSend = []
+var sending = false;
+
+var pollSend = function() {
+    if (socketOpen == true && messagesToSend.length > 0 && !sending) {
+        sending = true;
+        var array = JSON.stringify(messagesToSend)
+        messagesToSend.length = 0;
+        socket.send(array)
+        sending = false
+    }
+}
+
+setInterval(pollSend, 50);
+
+var sendFunction = function (messageObject) {
+    //console.log(socket)
+    messagesToSend.push(messageObject)
+    //socket.send(JSON.stringify(messageObject))
+}
+
+var manager = new tabManager(sendFunction);
+var handler = new requestHandler(manager);
+
 if (useSocket) {
     if ("WebSocket" in window) {
         socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
@@ -34,12 +44,13 @@ if (useSocket) {
     socket.onopen = function(){
         console.log("Connection Opened");
         socket.send("browser:123")
+        socketOpen = true;
     }
 
 
     socket.onmessage = function(msg){
         console.log(msg);
-        handleMessage(msg.data);
+        handler.handle(msg.data);
     }
 }
 

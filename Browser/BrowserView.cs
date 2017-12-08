@@ -55,6 +55,7 @@ namespace Dash
             _socket = new MessageWebSocket();
 
             _socket.Control.MessageType = SocketMessageType.Utf8;
+            _socket.Control.MaxMessageSize = UInt32.MaxValue;
             _socket.MessageReceived += MessageRecieved;
             _socket.Closed += SocketClosed;
 
@@ -88,7 +89,8 @@ namespace Dash
 
         private static async Task HandleIncomingMessage(string read)
         {
-            Debug.WriteLine(read);
+            var array = read.CreateObjectList<BrowserRequest>();
+            //array.ForEach(t => t.Handle(this.));
         }
 
         public static async void SendToServer(BrowserRequest req)

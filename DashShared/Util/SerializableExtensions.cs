@@ -25,6 +25,13 @@ namespace DashShared
             return (T)obj;
         }
 
+        public static List<T> CreateObjectList<T>(this string s) where T : ISerializable
+        {
+            var obj = JsonConvert.DeserializeObject<List<ISerializable>>(s, _settings);
+            Debug.Assert(obj.All(t => t is T));
+            return obj.Select(i => (T)i).ToList();
+        }
+
         /// <summary>
         /// Returns a string of a serializable object
         /// </summary>

@@ -20,7 +20,7 @@
     }],
 
   "background": {
-    "scripts": ["jquery.js", "bg.js"]
+    "scripts": ["jquery.js", "tabManager.js", "requestHandler.js","bg.js"]
   },
   "permissions": [
     "tabs",
