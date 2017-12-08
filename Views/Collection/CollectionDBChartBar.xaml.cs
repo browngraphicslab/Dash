@@ -73,7 +73,7 @@ namespace Dash
     {
         public override Brush ConvertDataToXaml(bool data, object parameter = null)
         {
-            return data ? new SolidColorBrush(Colors.CadetBlue) : new SolidColorBrush(Colors.BurlyWood);
+            return data ? new SolidColorBrush(Colors.LightSalmon) : new SolidColorBrush(Colors.Gainsboro);
         }
 
         public override bool ConvertXamlToData(Brush xaml, object parameter = null)

@@ -15,7 +15,7 @@
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         DisplayMemberPath="Name"
-                        Background="{StaticResource MainText}">
+                        Background="{ThemeResource MainText}">
         </AutoSuggestBox>
     </Grid>
 </UserControl>

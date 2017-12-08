@@ -34,7 +34,7 @@ namespace Dash
         private InkSelectionRect _rectangle;
         private CollectionView _collectionView;
         public CollectionFreeformView FreeformView;
-        public InkFieldModelController InkFieldModelController;
+        public InkController InkController;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
         public InkCanvas TargetInkCanvas { get; set; }
@@ -46,7 +46,7 @@ namespace Dash
             TargetInkCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
-            InkFieldModelController = view.InkFieldModelController;
+            InkController = view.InkController;
             LassoHelper = new LassoSelectHelper(FreeformView);
             InkRecognitionHelper = new InkRecognitionHelper(this);
             _collectionView = FreeformView.GetFirstAncestorOfType<CollectionView>();
@@ -70,7 +70,7 @@ namespace Dash
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
             TargetInkCanvas.InkPresenter.StrokeInput.StrokeContinued += StrokeInputOnStrokeContinued;
             TargetInkCanvas.RightTapped += TargetCanvasOnRightTapped;
-            InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
+            InkController.InkUpdated += InkControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
         }
 
@@ -149,9 +149,9 @@ namespace Dash
         /// <summary>
         /// Updates the InkFieldModel's data from the InkStrokes
         /// </summary>
-        public void UpdateInkFieldModelController()
+        public void UpdateInkController()
         {
-            InkFieldModelController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes(),
+            InkController?.UpdateStrokesFromList(TargetInkCanvas.InkPresenter.StrokeContainer.GetStrokes(),
                 TargetInkCanvas);
         }
 
@@ -161,8 +161,8 @@ namespace Dash
         private void UpdateStrokes()
         {
             TargetInkCanvas.InkPresenter.StrokeContainer.Clear();
-            if (InkFieldModelController?.GetStrokes() != null)
-                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes()
+            if (InkController?.GetStrokes() != null)
+                TargetInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkController.GetStrokes()
                     .Select(stroke => stroke.Clone()));
         }
 
@@ -329,7 +329,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
+        private void InkControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
         {
             if (!sender.Equals(TargetInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
                 UpdateStrokes();
@@ -343,7 +343,7 @@ namespace Dash
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
             //InkRecognitionHelper.RemoveStrokeData(new List<InkStroke>(e.Strokes));
-            UpdateInkFieldModelController();
+            UpdateInkController();
             UndoSelection();
         }
 
@@ -354,7 +354,7 @@ namespace Dash
         /// <param name="e"></param>
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
         {
-            UpdateInkFieldModelController();
+            UpdateInkController();
             InkRecognitionHelper.SetNewStrokes(new List<InkStroke>(e.Strokes));
             if(_analyzeStrokes) InkRecognitionHelper.RecognizeInk();
             _analyzeStrokes = false;

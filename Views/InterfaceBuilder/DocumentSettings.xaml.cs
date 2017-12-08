@@ -67,10 +67,10 @@ namespace Dash
             // listen to when the layout list changes
             var layoutList = dataDocument.GetLayoutList(context);
             layoutList.FieldModelUpdated += LayoutList_OnDocumentsChanged;
-            SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
+            SetActiveLayoutComboBoxItems(layoutList.GetElements());
 
             // listen to when the active layout changes
-            var activeLayout = dataDocument.GetActiveLayout(context).Data;
+            var activeLayout = dataDocument.GetActiveLayout(context);
             dataDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
             SetComboBoxSelectedItem(activeLayout);
 
@@ -80,7 +80,7 @@ namespace Dash
         private void XActiveLayoutComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedLayout = xActiveLayoutComboBox.SelectedItem as DocumentController;
-            var currLayoutDocument = _dataDocument.GetActiveLayout(_context).Data;
+            var currLayoutDocument = _dataDocument.GetActiveLayout(_context);
             if (currLayoutDocument.Equals(selectedLayout)  || selectedLayout == null)
             {
                 return;
@@ -90,9 +90,10 @@ namespace Dash
         }
 
 
-        private void DataDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void DataDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var newLayout = (args.NewValue as DocumentFieldModelController).Data;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            var newLayout = dargs.NewValue as DocumentController;
             SetComboBoxSelectedItem(newLayout);
         }
 
@@ -108,7 +109,7 @@ namespace Dash
 
         private void LayoutList_OnDocumentsChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
-            SetActiveLayoutComboBoxItems((sender as DocumentCollectionFieldModelController).GetDocuments());
+            SetActiveLayoutComboBoxItems((sender as ListController<DocumentController>).GetElements());
         }
 
         // to be rewritten this just cycles through our possible layouts for documents
@@ -125,7 +126,7 @@ namespace Dash
         /// </summary>
         private void SetNewActiveLayout(string layout)
         {
-            var currActiveLayout = _dataDocument.GetActiveLayout(_context).Data;
+            var currActiveLayout = _dataDocument.GetActiveLayout(_context);
             var currPos = currActiveLayout.GetPositionField(_context).Data;
             var currWidth = currActiveLayout.GetWidthField(_context).Data;
             var currHeight = currActiveLayout.GetHeightField(_context).Data;
@@ -144,8 +145,8 @@ namespace Dash
             else if (layout == "⊶ Key Value")
             {
                 if (_dataDocument.GetField(KeyStore.ThisKey) == null)
-                    _dataDocument.SetField(KeyStore.ThisKey, new DocumentFieldModelController(_dataDocument), true);
-                newLayout = new KeyValueDocumentBox(new DocumentReferenceFieldController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
+                    _dataDocument.SetField(KeyStore.ThisKey, _dataDocument, true);
+                newLayout = new KeyValueDocumentBox(new DocumentReferenceController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
             }
             else
             {
@@ -156,12 +157,12 @@ namespace Dash
             _dataDocument.SetActiveLayout(newLayout, true, true);
 
             // get docs which have an active layout which was a delegate of the prev active layout
-            var delegateDocs = _dataDocument.GetDelegates().GetDocuments()
-                .Where(dc => dc.GetActiveLayout().Data.IsDelegateOf(currActiveLayout.GetId()));
+            var delegateDocs = _dataDocument.GetDelegates().GetElements()
+                .Where(dc => dc.GetActiveLayout().IsDelegateOf(currActiveLayout.GetId()));
 
             foreach (var dataDocDelegate in delegateDocs)
             {
-                var dataDocLayout = dataDocDelegate.GetActiveLayout().Data;
+                var dataDocLayout = dataDocDelegate.GetActiveLayout();
                 var dataDocPos = dataDocLayout.GetPositionField().Data;
                 var dataDocWidth = dataDocLayout.GetWidthField().Data;
                 var dataDocHeight = dataDocLayout.GetHeightField().Data;

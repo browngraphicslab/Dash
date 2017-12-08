@@ -8,18 +8,20 @@ using DashShared;
 namespace Dash
 {
     //Abstract class from "KeyController<T>" should inherit.
-    public class KeyController : IController<KeyModel>
+    public class KeyController : FieldModelController<KeyModel>
     {
 
         public string Name
         {
-            get => Model.Name;
+            get => KeyModel.Name;
             set
             {
-                Model.Name = value;
+                KeyModel.Name = value;
                 UpdateOnServer();
             }
         }
+        
+        public KeyModel KeyModel => Model as KeyModel;
         public KeyController(string guid, bool saveOnServer = true) : this(new KeyModel(guid))
         {
             if (saveOnServer)
@@ -68,7 +70,7 @@ namespace Dash
         /// <returns></returns>
         public string GetName()
         {
-            return Model.Name;
+            return KeyModel.Name;
         }
 
         public override bool Equals(object obj)
@@ -84,9 +86,14 @@ namespace Dash
 
         }
 
+        public override FieldModelController<KeyModel> Copy()
+        {
+            return this;
+        }
+
         public bool IsUnrenderedKey()
         {
-            return Model.Name.StartsWith("_");
+            return KeyModel.Name.StartsWith("_");
             //return Equals(KeyStore.DelegatesKey) ||
             //       Equals(KeyStore.PrototypeKey) ||
             //       Equals(KeyStore.LayoutListKey) ||
@@ -94,11 +101,27 @@ namespace Dash
             //       Equals(KeyStore.IconTypeFieldKey);
         }
 
-        public virtual void Dispose()
+        public override TypeInfo TypeInfo { get; }
+        public override bool SetValue(object value)
         {
-
+            var name = value as string;
+            if (name != null)
+            {
+                Name = name;
+                return true;
+            }
+            return false;
         }
 
+        public override object GetValue(Context context)
+        {
+            return Name;
+        }
+
+        public override FieldControllerBase GetDefaultController()
+        {
+            throw new NotImplementedException();
+        }
         /*
 
         public static Dictionary<staticKey, Tuple<string, string>> _dict = new Dictionary<staticKey, Tuple<string, string>>()

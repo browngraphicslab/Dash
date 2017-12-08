@@ -146,7 +146,7 @@ namespace Dash
             Unloaded += SelectableContainer_Unloaded;
             Tapped += CompositeLayoutContainer_Tapped;
 
-            var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceFieldModelController);
+            var refToField = (layoutDocument.GetField(KeyStore.DataKey) as ReferenceController);
             var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
             xKeyNameTextBox.Text = keyName;
 

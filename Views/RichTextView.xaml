@@ -6,31 +6,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    Height="400"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <!--<Grid x:Name="xMainGrid" GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus">-->
-    <Grid x:Name="xMainGrid">
+    <Grid Name="LayoutGrid">
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition x:Name="xFormatRow" Height="0"/>
-        </Grid.RowDefinitions>
-        <Grid x:Name="xFormatControls" Grid.Row="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="5*"/>
-                </Grid.ColumnDefinitions>
-            </Grid>
-        </Grid >
+        <!--<Canvas VerticalAlignment="Bottom">-->
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          Grid.Row="0"
@@ -103,24 +90,24 @@
             </Border>
         </StackPanel>
 
-        <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
+            <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
                     VerticalAlignment="Top" Margin="5" Visibility="Collapsed" Opacity="0.5">
-            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8"></Button>
-                <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="Gainsboro"></SearchBox>
-                <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
+                <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8" Background="Gainsboro"></Button>
+                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="Gainsboro"></SearchBox>
+                    <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
                         Height="25" Width="15" VerticalContentAlignment="Top" Background="Gainsboro">
-                    <TextBlock Text="x" Padding="0"></TextBlock>
-                </Button>
+                        <TextBlock Text="x" Padding="1"></TextBlock>
+                    </Button>
+                </StackPanel>
+                <StackPanel x:Name="xReplaceBoxPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
+                    <TextBlock Padding="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10">Replace:</TextBlock>
+                    <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90" BorderBrush="Transparent" Background="Gainsboro" FontSize="10"></TextBox>
+                    <StackPanel.Clip>
+                        <RectangleGeometry Rect="0,0,150,20"></RectangleGeometry>
+                    </StackPanel.Clip>
+                </StackPanel>
             </StackPanel>
-            <StackPanel x:Name="xReplaceBoxPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
-                <TextBlock Padding="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10">Replace: </TextBlock>
-                <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90" BorderBrush="Transparent" Background="Gainsboro" FontSize="10"></TextBox>
-                <StackPanel.Clip>
-                    <RectangleGeometry Rect="0,0,150,20"></RectangleGeometry>
-                </StackPanel.Clip>
-            </StackPanel>
-        </StackPanel>
+        <!--</Canvas>-->
     </Grid>
-
 </UserControl>

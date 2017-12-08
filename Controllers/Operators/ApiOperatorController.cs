@@ -25,7 +25,7 @@ namespace Dash
         public KeyController Key { get; set; }
     }
 
-    public class ApiOperatorController : OperatorFieldModelController
+    public class ApiOperatorController : OperatorController
     {
         public static readonly DocumentType ApiType = new DocumentType("478628DA-AB98-4402-B827-F8CB625D4233", "Api");
 
@@ -43,11 +43,11 @@ namespace Dash
         public static readonly KeyController Test2Key = new KeyController("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
         public static readonly KeyController Test3Key = new KeyController("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
 
-        public ApiOperatorController() : base(new OperatorFieldModel(OperatorType.Api))
+        public ApiOperatorController() : base(new OperatorModel(OperatorType.Api))
         {
         }
 
-        public ApiOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public ApiOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
@@ -55,7 +55,7 @@ namespace Dash
         {
         }
 
-        public override FieldModelController<OperatorFieldModel> Copy()
+        public override FieldModelController<OperatorModel> Copy()
         {
             return new ApiOperatorController(this);
         }
@@ -174,7 +174,7 @@ namespace Dash
 
                     continue;
                 }
-                TextFieldModelController p = (TextFieldModelController)param;
+                TextController p = (TextController)param;
                 var split = p.Data.Split(':');
                 var value = String.Join(":", split.Skip(1));
                 outParameters.Add(new KeyValuePair<string, string>(split[0], value));
@@ -184,8 +184,8 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            var url = (inputs[UrlKey] as TextFieldModelController).Data;
-            var method = (inputs[MethodKey] as TextFieldModelController).Data;
+            var url = (inputs[UrlKey] as TextController).Data;
+            var method = (inputs[MethodKey] as TextController).Data;
 
             bool useAuth = false;
             string authUrl = "", authMethod = "", authKey = "", authSecret = "";
@@ -193,10 +193,10 @@ namespace Dash
             if (inputs.ContainsKey(AuthUrlKey) && inputs.ContainsKey(AuthMethodKey) &&
                 inputs.ContainsKey(AuthKeyKey) && inputs.ContainsKey(AuthSecretKey))
             {
-                authUrl = (inputs[AuthUrlKey] as TextFieldModelController).Data;
-                authMethod = (inputs[AuthMethodKey] as TextFieldModelController).Data;
-                authKey = (inputs[AuthKeyKey] as TextFieldModelController).Data;
-                authSecret = (inputs[AuthSecretKey] as TextFieldModelController).Data;
+                authUrl = (inputs[AuthUrlKey] as TextController).Data;
+                authMethod = (inputs[AuthMethodKey] as TextController).Data;
+                authKey = (inputs[AuthKeyKey] as TextController).Data;
+                authSecret = (inputs[AuthSecretKey] as TextController).Data;
                 autHttpMethod = GetMethodFromString(authMethod);
                 useAuth = true;
             }
@@ -236,7 +236,7 @@ namespace Dash
             var newRequest = Task.Run(() => request.TrySetResponse()).Result;
 
             var doc = newRequest.GetResult();
-            outputs[OutputKey] = new DocumentFieldModelController(doc);
+            outputs[OutputKey] = doc;
         }
     }
 }

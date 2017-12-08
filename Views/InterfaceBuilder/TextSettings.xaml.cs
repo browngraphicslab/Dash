@@ -32,7 +32,7 @@ namespace Dash
         public TextSettings(DocumentController editedLayoutDocument, Context context) : this()
         {
             if (editedLayoutDocument.GetField(TextingBox.BackgroundColorKey) == null)
-                editedLayoutDocument.SetField(TextingBox.BackgroundColorKey, new TextFieldModelController("white"), true);
+                editedLayoutDocument.SetField(TextingBox.BackgroundColorKey, new TextController("white"), true);
             xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(editedLayoutDocument,context));
@@ -45,7 +45,7 @@ namespace Dash
         private void BindFontAlignment(DocumentController docController, Context context)
         {
             var textAlignmentController =
-                docController.GetDereferencedField(TextingBox.TextAlignmentKey, context) as NumberFieldModelController;
+                docController.GetDereferencedField(TextingBox.TextAlignmentKey, context) as NumberController;
             Debug.Assert(textAlignmentController != null);
 
             var fontAlignmentBinding = new Binding()
@@ -64,9 +64,9 @@ namespace Dash
         private void BindBackgroundColor(DocumentController docController, Context context)
         {
             var backColorController =
-                    docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextFieldModelController;
+                    docController.GetDereferencedField(TextingBox.BackgroundColorKey, context) as TextController;
             Debug.Assert(backColorController != null);
-            var backgroundBinding = new FieldBinding<TextFieldModelController>()
+            var backgroundBinding = new FieldBinding<TextController>()
             {
                 Key = TextingBox.BackgroundColorKey,
                 Document = docController,
@@ -80,7 +80,7 @@ namespace Dash
         private void BindFontWeight(DocumentController docController, Context context)
         {
             var fontWeightController =
-                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as TextFieldModelController;
+                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as TextController;
             Debug.Assert(fontWeightController != null);
 
             _fontWeights = new ObservableCollection<string>()
@@ -103,7 +103,7 @@ namespace Dash
 
         private void BindFontSize(DocumentController docController, Context context)
         {
-            var fontSizeBinding = new FieldBinding<NumberFieldModelController>()
+            var fontSizeBinding = new FieldBinding<NumberController>()
             {
                 Key = TextingBox.FontSizeKey,
                 Document = docController,
@@ -116,7 +116,7 @@ namespace Dash
 
         private void ColorSelectionChanged(DocumentController docController, Context context)
         {
-            var field = docController.GetDereferencedField<TextFieldModelController>(TextingBox.BackgroundColorKey, context);
+            var field = docController.GetDereferencedField<TextController>(TextingBox.BackgroundColorKey, context);
             var col = (xBackgroundColorComboBox.SelectedItem as NamedColor).Color;
             field.SetValue(col.ToString());
         }

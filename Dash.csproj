@@ -93,8 +93,6 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\gridbg2.jpg" />
-    <Content Include="Assets\pokemon_species.csv" />
-    <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
@@ -102,32 +100,35 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\DocumentReferenceFieldController.cs" />
+    <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\ConcatOperator.cs" />
-    <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\DBFilterOperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
-    <Compile Include="Controllers\Operators\RegexOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
-    <Compile Include="Controllers\PointerReferenceFieldController.cs" />
+    <Compile Include="Controllers\Operators\ImageRecognitionOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
+    <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
-    <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
+    <Compile Include="Controllers\Operators\CompoundOperatorController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
+    <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
-    <Compile Include="Models\PointerReferenceFieldModel.cs" />
-    <Compile Include="Models\PointFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\CompoundOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorModel.cs" />
+    <Compile Include="Models\PointerReferenceModel.cs" />
+    <Compile Include="Models\PointModel.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
@@ -137,10 +138,11 @@
     <Compile Include="Rest\Endpoints\IModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\IQuery.cs" />
     <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
-    <Compile Include="Rest\Endpoints\LocalDocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalEverythingEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -187,7 +189,44 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\ImageResolvingEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\LinkClickedEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\MarkdownRenderedEventArgs.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\MarkdownTextBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\IImageResolver.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\ILinkRegister.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\MarkdownTable.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Display\XamlRenderer.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Helpers\Common.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Helpers\DebuggingReporter.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownDocument.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownElement.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\MarkdownInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\CodeBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\HeaderBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\HorizontalRuleBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\LinkReferenceBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\ListBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\ParagraphBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\QuoteBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Blocks\TableBlock.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\BoldTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\CodeInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\EmojiInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\EmojiInline.EmojiCodes.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\HyperlinkInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\IInlineContainer.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\IInlineLeaf.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ILinkElement.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ImageInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\ItalicTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\MarkdownLinkInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\StrikethroughTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
+    <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
+    <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\GoToTabItemViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
@@ -277,14 +316,11 @@
       <DependentUpon>CollectionTextView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
-    <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
-    <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
-    <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
-    <Compile Include="Controllers\RectFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Set\FilterOperatorController.cs" />
+    <Compile Include="Controllers\RectController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
     <Compile Include="Converters\StringToFontweightConverter.cs" />
-    <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
-    <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Models\RectModel.cs" />
     <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
     <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
     <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
@@ -323,9 +359,6 @@
     <Compile Include="Views\Operators\ApiView.xaml.cs">
       <DependentUpon>ApiView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Operators\CollectionMapView.xaml.cs">
-      <DependentUpon>CollectionMapView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\CompoundOperatorEditor.xaml.cs">
       <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
@@ -355,10 +388,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\InkFieldModelController.cs" />
-    <Compile Include="Models\InkFieldModel.cs" />
-    <Compile Include="Controllers\BaseListFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
+    <Compile Include="Controllers\InkController.cs" />
+    <Compile Include="Models\InkModel.cs" />
+    <Compile Include="Controllers\BaseListController.cs" />
+    <Compile Include="Controllers\Operators\DBSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
@@ -415,8 +448,8 @@
     <Compile Include="Views\InterfaceBuilder\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\RichTextFieldModel.cs" />
-    <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Models\RichTextModel.cs" />
+    <Compile Include="Controllers\RichTextController.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
@@ -459,18 +492,16 @@
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\IController.cs" />
-    <Compile Include="Controllers\DocumentCollectionFieldModelController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
-    <Compile Include="Controllers\DocumentFieldModelController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
-    <Compile Include="Controllers\ImageFieldModelController.cs" />
-    <Compile Include="Controllers\ListFieldModelController.cs" />
-    <Compile Include="Controllers\NumberFieldModelController.cs" />
-    <Compile Include="Controllers\OperatorFieldModelController.cs" />
-    <Compile Include="Controllers\PointFieldModelController.cs" />
-    <Compile Include="Controllers\ReferenceFieldModelController.cs" />
-    <Compile Include="Controllers\TextFieldModelController.cs" />
-    <Compile Include="Models\ListFieldModel.cs" />
+    <Compile Include="Controllers\ImageController.cs" />
+    <Compile Include="Controllers\ListController.cs" />
+    <Compile Include="Controllers\NumberController.cs" />
+    <Compile Include="Controllers\OperatorController.cs" />
+    <Compile Include="Controllers\PointController.cs" />
+    <Compile Include="Controllers\ReferenceController.cs" />
+    <Compile Include="Controllers\TextController.cs" />
+    <Compile Include="Models\ListModel.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
@@ -484,22 +515,19 @@
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
-    <Compile Include="Models\DocumentCollectionFieldModel.cs" />
-    <Compile Include="Models\DocumentFieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />
-    <Compile Include="Models\ImageFieldModel.cs" />
-    <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\ImageModel.cs" />
+    <Compile Include="Models\NumberModel.cs" />
     <Compile Include="Models\OperatorDocumentFactory.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\Set\IntersectionOperatorModelController.cs" />
-    <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
-    <Compile Include="Models\ReferenceFieldModel.cs" />
-    <Compile Include="Models\TextFieldModel.cs" />
-    <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ImageOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Set\IntersectionOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Set\UnionOperatorController.cs" />
+    <Compile Include="Models\ReferenceModel.cs" />
+    <Compile Include="Models\TextModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
@@ -651,6 +679,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
+    <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -673,6 +702,10 @@
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Util\UWPCommunityToolkit\Markdown\MarkdownTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
       <SubType>Designer</SubType>
@@ -797,10 +830,6 @@
     <Page Include="Views\Operators\ApiView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Collection\CollectionMapView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Operators\CompoundOperatorEditor.xaml">
       <SubType>Designer</SubType>
@@ -1035,7 +1064,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Models\OperatorModels\Set\" />
     <Folder Include="Push\" />
   </ItemGroup>
   <ItemGroup />
@@ -1060,6 +1088,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectOxford.Vision">
+      <Version>1.0.370</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>

@@ -18,7 +18,7 @@
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
     >
 
-    <Grid x:Name="xOuterGrid" Background="White" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnDoubleTapped"
+    <Grid x:Name="xOuterGrid" Background="{ThemeResource CollectionViewBackground}" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnDoubleTapped"
           SizeChanged="XOuterGrid_OnSizeChanged" >
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
