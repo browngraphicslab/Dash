@@ -359,10 +359,19 @@ namespace Dash
         {
             xSearchDelete.Tapped += delegate { xSearchBoxPanel.Visibility = Visibility.Collapsed; };
             xSearchBox.LostFocus += delegate { xSearchBoxPanel.Opacity = 0.5; };
+            xReplaceBox.LostFocus += delegate { xSearchBoxPanel.Opacity = 0.5; };
             xSearchBox.GotFocus += delegate { xSearchBoxPanel.Opacity = 1; };
+            xReplaceBox.GotFocus += delegate { xSearchBoxPanel.Opacity = 1; };
             xSearchBox.QueryChanged += XSearchBox_OnQueryChanged;
             xSearchBox.QuerySubmitted += XSearchBox_QuerySubmitted;
             xReplaceBox.TextChanged += XReplaceBox_TextChanged;
+            xReplaceModeButton.Tapped += delegate
+            {
+                xReplaceBoxPanel.Visibility = xReplaceBoxPanel.Visibility == Visibility.Visible
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
+                xReplaceModeButton.Content = xReplaceModeButton.Content.Equals("▲") ? "▼" : "▲";
+            };
         }
 
         /// <summary>
@@ -1106,9 +1115,16 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// A dictionary of the original character formats of all of the highlighted search results
+        /// </summary>
+        private Dictionary<int, ITextCharacterFormat> originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
 
-        private Dictionary<int, ITextCharacterFormat> originalCharFormatting = new Dictionary<int, ITextCharacterFormat>();
+        /// <summary>
+        /// The length of the previous search query
+        /// </summary>
         private int prevQueryLength;
+
         /// <summary>
         /// Searches content of the xRichEditBox, highlights all results
         /// </summary>
@@ -1134,7 +1150,7 @@ namespace Dash
                 var selectedText = xRichEditBox.Document.Selection;
                 if (i > 0)
                 {
-                    originalCharFormatting.Add(s, selectedText.CharacterFormat.GetClone());
+                    originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
                 }
                 if (selectedText != null)
                 {
@@ -1155,7 +1171,7 @@ namespace Dash
         /// <param name="args"></param>
         private void XSearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
         {
-            var keys = originalCharFormatting.Keys;
+            var keys = originalCharFormat.Keys;
             var start = keys.ElementAt(nextMatch);
             xRichEditBox.Document.Selection.StartPosition = start;
             xRichEditBox.Document.Selection.EndPosition = start + prevQueryLength;
@@ -1173,22 +1189,28 @@ namespace Dash
         private void ClearSearchHighlights()
         {
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            var keys = originalCharFormatting.Keys;
+            var keys = originalCharFormat.Keys;
             foreach (var key in keys)
             {
                 xRichEditBox.Document.Selection.StartPosition = key;
                 xRichEditBox.Document.Selection.EndPosition = key + prevQueryLength;
-                xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormatting[key]);
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormat[key]);
             }
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-            originalCharFormatting.Clear();
+            originalCharFormat.Clear();
         }
 
+        /// <summary>
+        /// Replaces the selected search result with text entered into the textbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XReplaceBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            //var enterState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Enter)
-            //    .HasFlag(CoreVirtualKeyStates.Down);
-                xRichEditBox.Document.Selection.SetText(TextSetOptions.None,(sender as TextBox).Text);
+            xRichEditBox.Document.Selection.SetText(TextSetOptions.None,(sender as TextBox).Text);
+            var current = 0;
+            if (nextMatch != 0) current = nextMatch - 1;
+            xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormat[current]);
         }
 
         /// <summary>
