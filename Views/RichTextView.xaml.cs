@@ -93,6 +93,7 @@ namespace Dash
 
         public static bool HasFocus = false;
 
+        private SolidColorBrush highlightNotFocused = new SolidColorBrush(Colors.Gray) {Opacity=0.5};
         public RichTextView()
         {
             this.InitializeComponent();
@@ -225,6 +226,7 @@ namespace Dash
         
             
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
             // Add handlers and and bindings to set up rich text formatting functionalities 
             SetUpEnumDictionaries();
             AddSearchBoxHandlers();
@@ -359,6 +361,8 @@ namespace Dash
             xSearchBox.LostFocus += delegate { xSearchBoxPanel.Opacity = 0.5; };
             xSearchBox.GotFocus += delegate { xSearchBoxPanel.Opacity = 1; };
             xSearchBox.QueryChanged += XSearchBox_OnQueryChanged;
+            xSearchBox.QuerySubmitted += XSearchBox_QuerySubmitted;
+            xReplaceBox.TextChanged += XReplaceBox_TextChanged;
         }
 
         /// <summary>
@@ -521,7 +525,7 @@ namespace Dash
                 {
                     UpdateDocument();
                     currentCharFormat = null;
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
                 };
                 item.GotFocus += delegate
                 {
@@ -535,7 +539,7 @@ namespace Dash
                 {
                     UpdateDocument();
                     currentCharFormat = null;
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
+                    xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
                 };
                 item.GotFocus += delegate
                 {
@@ -1102,39 +1106,89 @@ namespace Dash
             }
         }
 
+
+        private Dictionary<int, ITextCharacterFormat> originalCharFormatting = new Dictionary<int, ITextCharacterFormat>();
+        private int prevQueryLength;
         /// <summary>
-        /// Searches content of the xRichEditBox, highlights all results (not yet functional)
+        /// Searches content of the xRichEditBox, highlights all results
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
         private void XSearchBox_OnQueryChanged(SearchBox sender, SearchBoxQueryChangedEventArgs args)
         {
-            // TODO: find default way to highlight all search results (as well as how FindText works)
+            this.ClearSearchHighlights();
+            nextMatch = 0;
             var query = args.QueryText;
-            //var s1 = xRichEditBox.Document.Selection.StartPosition;
-            //var s2 = xRichEditBox.Document.Selection.EndPosition;
-                // temporary, find way to find end of file
+            prevQueryLength = query.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
-            if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+            xRichEditBox.Document.Selection.StartPosition = 0;
+            xRichEditBox.Document.Selection.EndPosition = 0;
+            int i = 1;
+            // find and highlight all matches
+            while (i > 0)
             {
-                xRichEditBox.Document.Selection.SetRange(0, length);
+                i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
+                var s = xRichEditBox.Document.Selection.StartPosition;
+                var selectedText = xRichEditBox.Document.Selection;
+                if (i > 0)
+                {
+                    originalCharFormatting.Add(s, selectedText.CharacterFormat.GetClone());
+                }
+                if (selectedText != null)
+                {
+                    selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
+                }
             }
-            //int i = 1;
-            //while (i > 0)
-            //{
-            //    i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
-            //    var selectedText = xRichEditBox.Document.Selection;
-            //    if (selectedText != null)
-            //    {
-            //        selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
-            //    }
-            //}
-            var found = xRichEditBox.Document.GetRange(0, length).FindText(query, length, FindOptions.None);
-            var start = xRichEditBox.Document.Selection.StartPosition;
-            var end = xRichEditBox.Document.Selection.StartPosition;
-            //xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+        }
+
+        /// <summary>
+        /// Index of the next highlighted search result
+        /// </summary>
+        private int nextMatch = 0;
+
+        /// <summary>
+        /// Selects the next highlighted search result on enter in the xRichEditBox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void XSearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
+        {
+            var keys = originalCharFormatting.Keys;
+            var start = keys.ElementAt(nextMatch);
+            xRichEditBox.Document.Selection.StartPosition = start;
+            xRichEditBox.Document.Selection.EndPosition = start + prevQueryLength;
+            xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
+            if (nextMatch < keys.Count - 1)
+                nextMatch++;
+            else
+                nextMatch = 0;
+        }
+
+        /// <summary>
+        /// Clears the highlights that result from searching within the xRichEditBox (to make sure that
+        /// original highlights wouldn't get erased)
+        /// </summary>
+        private void ClearSearchHighlights()
+        {
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+            var keys = originalCharFormatting.Keys;
+            foreach (var key in keys)
+            {
+                xRichEditBox.Document.Selection.StartPosition = key;
+                xRichEditBox.Document.Selection.EndPosition = key + prevQueryLength;
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormatting[key]);
+            }
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
+            originalCharFormatting.Clear();
+        }
+
+        private void XReplaceBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            //var enterState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Enter)
+            //    .HasFlag(CoreVirtualKeyStates.Down);
+                xRichEditBox.Document.Selection.SetText(TextSetOptions.None,(sender as TextBox).Text);
         }
 
         /// <summary>
@@ -1151,7 +1205,7 @@ namespace Dash
                 AddFlyoutItems();
             }
             currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-            xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
         }
 
         /// <summary>
