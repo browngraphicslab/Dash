@@ -465,7 +465,7 @@ namespace Dash
             xReplaceBox.GotFocus += delegate { xSearchBoxPanel.Opacity = 1; };
             xSearchBox.QueryChanged += XSearchBox_OnQueryChanged;
             xSearchBox.QuerySubmitted += XSearchBox_QuerySubmitted;
-            xReplaceBox.TextChanged += XReplaceBox_TextChanged;
+            //xReplaceBox.TextChanged += XReplaceBox_TextChanged;
             xReplaceModeButton.Tapped += delegate
             {
                 xReplaceBoxPanel.Visibility = xReplaceBoxPanel.Visibility == Visibility.Visible
@@ -473,6 +473,9 @@ namespace Dash
                     : Visibility.Visible;
                 xReplaceModeButton.Content = xReplaceModeButton.Content.Equals("▲") ? "▼" : "▲";
             };
+            xReplaceBox.KeyDown += XReplaceBox_KeyDown;
+            xSearchBox.GotFocus += delegate { HasFocus = true; };
+            xSearchBox.LostFocus += delegate { HasFocus = false; };
         }
 
         /// <summary>
@@ -1289,15 +1292,26 @@ namespace Dash
         /// <param name="args"></param>
         private void XSearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
         {
+            this.NextResult();
+        }
+
+        /// <summary>
+        /// Selects the next highlighted search result on enter in the xRichEditBox
+        /// </summary>
+        private void NextResult()
+        {
             var keys = originalCharFormat.Keys;
-            var start = keys.ElementAt(nextMatch);
-            xRichEditBox.Document.Selection.StartPosition = start;
-            xRichEditBox.Document.Selection.EndPosition = start + prevQueryLength;
-            xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
-            if (nextMatch < keys.Count - 1)
-                nextMatch++;
-            else
-                nextMatch = 0;
+            if (keys.Count != 0)
+            {
+                var start = keys.ElementAt(nextMatch);
+                xRichEditBox.Document.Selection.StartPosition = start;
+                xRichEditBox.Document.Selection.EndPosition = start + prevQueryLength;
+                xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
+                if (nextMatch < keys.Count - 1)
+                    nextMatch++;
+                else
+                    nextMatch = 0;
+            }
         }
 
         /// <summary>
@@ -1319,20 +1333,26 @@ namespace Dash
         }
 
         /// <summary>
-        /// Replaces the selected search result with text entered into the textbox
+        /// Pressing enter when the replace text box has focus selects the next highlighted search result
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void XReplaceBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void XReplaceBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            xRichEditBox.Document.Selection.SetText(TextSetOptions.None,(sender as TextBox).Text);
-            var start = xRichEditBox.Document.Selection.StartPosition;
-            ITextCharacterFormat clone;
-            originalCharFormat.TryGetValue(start, out clone);
-            if (clone != null)
+            if (e.Key.Equals(VirtualKey.Enter))
             {
-                xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
-                originalCharFormat.Remove(start);
+                xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
+                var start = xRichEditBox.Document.Selection.StartPosition;
+                ITextCharacterFormat clone;
+                originalCharFormat.TryGetValue(start, out clone);
+                if (clone != null)
+                {
+                    xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
+                    originalCharFormat.Remove(start);
+                    if (nextMatch >= originalCharFormat.Keys.Count) nextMatch = 0;
+                    else nextMatch--;
+                    this.NextResult();
+                }
             }
         }
 
