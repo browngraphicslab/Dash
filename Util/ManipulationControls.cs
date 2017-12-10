@@ -86,18 +86,11 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.PointerPressed += Element_PointerPressed;
         }
 
-        bool blockRightButtonManipulation = false;
-        private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            blockRightButtonManipulation = e.GetCurrentPoint(MainPage.Instance).Properties.IsRightButtonPressed && _element is CollectionFreeformView;
-            _element.ManipulationMode = blockRightButtonManipulation ? ManipulationModes.None : ManipulationModes.All;
-        }
-            private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (e.PointerDeviceType == BlockedInputType && FilterInput || _element.ManipulationMode == ManipulationModes.None)
+            if (e.PointerDeviceType == BlockedInputType && FilterInput)
             {
                 _processManipulation = false;
                 e.Handled = true;
