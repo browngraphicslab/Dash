@@ -1189,7 +1189,6 @@ namespace Dash
         /// <param name="e"></param>
         private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            // TODO: find way to override ctrl+I (which indents by default)
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
                 .HasFlag(CoreVirtualKeyStates.Down);
             var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
