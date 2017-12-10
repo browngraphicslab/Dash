@@ -101,8 +101,6 @@ namespace Dash
 
             _numberOfTimesDirChanged = 0;
 
-            Debug.WriteLine("Manipulation started");
-
         }
 
         public void AddAllAndHandle()
@@ -244,7 +242,6 @@ namespace Dash
 
         private static void StartTimer()
         {
-            Debug.WriteLine("Timer started");
             if (_dispatcherTimer != null)
             {
                 _dispatcherTimer.Stop();
@@ -262,7 +259,6 @@ namespace Dash
 
         private static void dispatcherTimer_Tick(object sender, object e)
         {
-            Debug.WriteLine("TICK");
             _numberOfTimesDirChanged = 0;
             _dispatcherTimer.Stop();
         }
