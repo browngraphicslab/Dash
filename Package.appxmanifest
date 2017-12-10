@@ -23,6 +23,16 @@
           <uap:Rotation Preference="landscape" />
         </uap:InitialRotationPreference>
       </uap:VisualElements>
+      <uap:ApplicationContentUriRules>
+        <uap:Rule Match="http://*" Type="include" WindowsRuntimeAccess="all" />
+        <uap:Rule Match="http://*.*" Type="include" WindowsRuntimeAccess="all" />
+        <uap:Rule Match="http://*.*.*" Type="include" WindowsRuntimeAccess="all" />
+        <uap:Rule Match="https://*" Type="include" WindowsRuntimeAccess="all" />
+        <uap:Rule Match="https://*.*" Type="include" WindowsRuntimeAccess="all" />
+        <uap:Rule Match="https://*.*.*" Type="include" WindowsRuntimeAccess="none" />
+        <uap:Rule Match="https://*.*.*.*" Type="include" WindowsRuntimeAccess="none" />
+        <uap:Rule Match="http://*.*.*.*" Type="include" WindowsRuntimeAccess="none" />
+      </uap:ApplicationContentUriRules>
     </Application>
   </Applications>
   <Capabilities>
