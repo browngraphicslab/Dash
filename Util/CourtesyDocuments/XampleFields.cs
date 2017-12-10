@@ -32,16 +32,18 @@ namespace Dash
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Text " + i), "Text " + i);
+                    KeyController key = new KeyController(UtilShared.GetDeterministicGuid("Text " + i), "Text " + i);
                     fields[key] = new TextController("This is example text " + i);
+
                 }
             }
             else if (fieldType == TypeInfo.Text)
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
+                    KeyController key = new KeyController(UtilShared.GetDeterministicGuid("Number " + i), "Number " + i);
                     fields[key] = new NumberController(r.NextDouble() * 100);
+
                 }
             }
             else throw new ArgumentException();
