@@ -316,7 +316,7 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.PointerArgs = args;
                 args.Handled = true;
-                if (false && args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
+                if (args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
                     var field = reference.DereferenceToRoot(null);
