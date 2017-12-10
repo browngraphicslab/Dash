@@ -1206,13 +1206,18 @@ namespace Dash
                 if (e.Key.Equals(VirtualKey.B))
                 {
                     Bold(true);
+                    FormatToolTipInfo(xRichEditBox.Document.Selection);
                 } else if (e.Key.Equals(VirtualKey.I))
                 {
                     Italicize(true);
-                } else if (e.Key.Equals(VirtualKey.U))
+                    FormatToolTipInfo(xRichEditBox.Document.Selection);
+                    e.Handled = true;
+                }
+                else if (e.Key.Equals(VirtualKey.U))
                 {
                     Underline(true);
-                } 
+                    FormatToolTipInfo(xRichEditBox.Document.Selection);
+                }
                 else if (e.Key.Equals(VirtualKey.F))
                 {
                     xSearchBoxPanel.Visibility = Visibility.Visible;

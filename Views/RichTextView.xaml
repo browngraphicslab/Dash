@@ -18,7 +18,7 @@
             </Style>
         </Grid.Resources>
         <!--<Canvas VerticalAlignment="Bottom">-->
-        <local:CustomRichEdit x:FieldModifier="public" 
+        <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          Grid.Row="0"
                          Foreground="{StaticResource MainText}" 
@@ -75,7 +75,7 @@
                     <MenuFlyoutItem x:Name="xResetAll" Text="Reset All" Foreground="White" Click="XResetAll_OnClick"></MenuFlyoutItem>
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
-        </local:CustomRichEdit>
+        </RichEditBox>
        
         <Canvas VerticalAlignment="Bottom">
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="25">
