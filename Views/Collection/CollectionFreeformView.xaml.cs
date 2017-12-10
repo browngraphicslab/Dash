@@ -373,8 +373,10 @@ namespace Dash
 
         public void RemoveReference(DocumentController doc, KeyController fieldKey, FieldReference reference)
         {
+            var outputCopy = reference.DereferenceToRoot(null)?.GetCopy();
+            if (outputCopy == null) return;
             doc.SetField(fieldKey,
-                reference.DereferenceToRoot(null)?.GetCopy(), true);
+                outputCopy, true);
         }
 
         public void DeleteConnection(KeyValuePair<FieldReference, Path> pair)
