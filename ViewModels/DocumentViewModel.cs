@@ -150,17 +150,6 @@ namespace Dash
             }
         }
 
-        public static bool PointEquals(Point a, Point b)
-        {
-            var ax = double.IsNaN(a.X);
-            var ay = double.IsNaN(a.Y);
-            var bx = double.IsNaN(b.X);
-            var by = double.IsNaN(b.Y);
-            if (!ax && !ay) return a == b;
-            if (ax == ay) return bx && by;
-            return ax ? bx : by;
-        }
-
         public Brush BackgroundBrush
         {
             get { return _backgroundBrush; }
