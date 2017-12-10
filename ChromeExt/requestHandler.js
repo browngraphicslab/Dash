@@ -10,7 +10,7 @@ function requestHandler(tabManager) {
     //to handle a set url request
     var handleSetUrl = function (request) {
         newUrl = request.url;
-        console.log("request sent to update tab");
+        tabManager.setTabUrl(request.tabId, newUrl)
     }
 
 
@@ -27,10 +27,13 @@ function requestHandler(tabManager) {
                     handleNewTab(obj)
                     break;
 
-                case "SetUrlBrowserRequest":
+                case "SetUrlRequest":
                     handleSetUrl(obj)
                     break;
             }
+        }
+        else if (message.toLowerCase() === "both") {
+            tabManager.sendAllTabs();
         }
 
     }

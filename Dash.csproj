@@ -101,6 +101,7 @@
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\SetUrlRequest.cs" />
+    <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>

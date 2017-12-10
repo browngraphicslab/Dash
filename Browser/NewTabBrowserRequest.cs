@@ -13,7 +13,6 @@ namespace Dash.Browser
 
         public NewTabBrowserRequest()
         {
-            this.type = "newBrowser";
             var a = this.Serialize();
         }
 

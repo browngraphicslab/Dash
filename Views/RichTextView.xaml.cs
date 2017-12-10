@@ -639,6 +639,11 @@ namespace Dash
                 }
                 c.Data = BrowserView.Current.Url;
             }
+
+            if (VirtualKeyModifiers.Control != 0)
+            {
+                BrowserView.OpenTab("http://www.google.com");
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ console.log("background launched.")
 
 $(window).bind('hashchange', function () {
     console.log(window.url)
-    console.log("heree")
 });
 
 
@@ -14,7 +13,7 @@ var messagesToSend = []
 var sending = false;
 
 var pollSend = function() {
-    if (socketOpen == true && messagesToSend.length > 0 && !sending) {
+    if (socketOpen === true && messagesToSend.length > 0 && !sending) {
         sending = true;
         var array = JSON.stringify(messagesToSend)
         messagesToSend.length = 0;
@@ -27,8 +26,8 @@ setInterval(pollSend, 50);
 
 var sendFunction = function (messageObject) {
     //console.log(socket)
-    messagesToSend.push(messageObject)
-    //socket.send(JSON.stringify(messageObject))
+    //messagesToSend.push(messageObject)
+    messagesToSend.push(JSON.stringify(messageObject))
 }
 
 var manager = new tabManager(sendFunction);

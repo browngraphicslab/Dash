@@ -7,11 +7,10 @@ using DashShared;
 
 namespace Dash.Browser
 {
-    public abstract class BrowserRequest : EntityBase
+    public class BrowserRequest : EntityBase
     {
-        public string type { get; set; }
-        public string tabId { get; set; }
-        public abstract void Handle(BrowserView browser);
+        public int tabId { get; set; }
+        public virtual void Handle(BrowserView browser) { }
 
         public void Send()
         {

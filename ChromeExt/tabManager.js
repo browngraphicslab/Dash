@@ -6,12 +6,12 @@ function tabManager(sendRequestFunction) {
     var updateTab = function(tabId) {
         var update = function (tab) {
             var requestBody = {
-                "id": tab.id,
+                "$type": "Dash.UpdateTabBrowserRequest, Dash",
+                "tabId": tab.id,
                 "current": tab.active,
                 "url": tab.url,
                 "title": tab.title,
                 "index": tab.index,
-                "$type": "Dash.Browser.UpdateTabBrowserRequest, Dash"
             }
             sendRequestFunction(requestBody)
         }
@@ -62,7 +62,7 @@ function tabManager(sendRequestFunction) {
 
 
     this.addNewTab = function (url)
-    {
+    {   
         var tabHandler = function (tab) {
             console.log("in tab handler");
             console.log(tab);
@@ -70,5 +70,15 @@ function tabManager(sendRequestFunction) {
 
         console.log("Creating new tab with url: " + url)
         chrome.tabs.create({url: url}, tabHandler);
+    }
+
+    this.setTabUrl = function (tabId, url) {
+        chrome.tabs.update(tabId, { url: myNewUrl });
+    }
+
+    this.sendAllTabs = function () {
+        Object.keys(tabs).forEach(function (tabId) {
+            updateTab(parseInt(tabId))
+        });
     }
 }

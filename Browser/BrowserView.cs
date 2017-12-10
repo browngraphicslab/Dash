@@ -26,25 +26,45 @@ namespace Dash
                 }
                 return _socket;
             }
-            set { _socket = value; }
+            set => _socket = value;
         }
 
         private static DataWriter _dataMessageWriter;
+        public static event EventHandler<BrowserView> CurrentTabChanged;
+        private static readonly Dictionary<int, BrowserView> _browserViews = new Dictionary<int, BrowserView>();
 
-
-        private static BrowserView _current;
+        private static int _currentBrowserId = 0;
         public static BrowserView Current
         {
-            get { return _current; }
+            get => GetBrowserView(_currentBrowserId);
             private set
             {
-                _current = value;
+                _currentBrowserId = value.Id;
                 CurrentTabChanged?.Invoke(value, value);
             }
         }
 
-        public static event EventHandler<BrowserView> CurrentTabChanged;
+        /// <summary>
+        /// Should only be called by server code
+        /// </summary>
+        /// <param name="browserId"></param>
+        public static void UpdateCurrentFromServer(int browserId)
+        {
+            if (Current != null)
+            {
+                Current.SetIsCurrent(false);
+            }
 
+            Debug.Assert(_browserViews.ContainsKey(browserId));
+            _browserViews[browserId].SetIsCurrent(true);
+
+            Current = _browserViews[browserId];
+        }
+
+        public static BrowserView GetBrowserView(int browserId)
+        {
+            return _browserViews.ContainsKey(browserId) ? _browserViews[browserId] : null;
+        }
 
         private static async Task InitSocket()
         {
@@ -90,8 +110,19 @@ namespace Dash
 
         private static async Task HandleIncomingMessage(string read)
         {
-            var array = read.CreateObjectList<BrowserRequest>();
-            //array.ForEach(t => t.Handle(this.));
+            if (read.Equals("both"))
+            {
+                Debug.WriteLine("Connected to server and browser!");
+            }
+            else
+            {
+                var array = read.CreateObjectList<BrowserRequest>();
+                foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
+                {
+                    var browser = new BrowserView(request.tabId);
+                }
+                array.ToList().ForEach(t => t.Handle(_browserViews[t.tabId]));
+            }
         }
 
         public static async void SendToServer(BrowserRequest req)
@@ -125,27 +156,31 @@ namespace Dash
             }
         }
 
-        public static BrowserView OpenTab(String url)
+        public static void OpenTab(string url)
         {
-            return new BrowserView(url);
+            var r = new NewTabBrowserRequest();
+            r.url = url;
+            SendToServer(r.Serialize());
+            var a = r.Serialize();
         }
 
         private string _url;
         private double _scroll;
-        private string Id = Guid.NewGuid().ToString("N");
+        private bool _isCurrent = false;
+        private readonly int Id;
 
+        public double Scroll => _scroll;
+        public bool IsCurrent => _isCurrent;
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
+        public event EventHandler<bool> CurrentChanged;
 
-        public string Url { get { return _url; } }
+        public string Url => _url;
 
-        public BrowserView(string initialUrl = "http://www.google.com")
+        private BrowserView(int id)
         {
-            var r = new NewTabBrowserRequest();
-            r.tabId = Id;
-            r.url = initialUrl;
-            SendToServer(r.Serialize());
-
+            Id = id;
+            _browserViews.Add(id, this);
         }
 
         public void FireUrlUpdated(string url)
@@ -156,11 +191,18 @@ namespace Dash
 
         public void SetUrl(string url)
         {
-            _url = url;
             var request = new SetUrlRequest();
+            request.tabId = Id;
             request.url = url;
             request.Send();
-            UrlChanged?.Invoke(this, url);
+        }
+
+        /// <summary>
+        /// called to tell the browser to set the current Tab to this browser view
+        /// </summary>
+        public void MakeCurrent()
+        {
+            //TODO   
         }
 
         public void FireScrollUpdated(double scroll)
@@ -171,11 +213,17 @@ namespace Dash
 
         public void SetScroll(double scroll)
         {
-            _scroll = scroll;
             //var request = new SetUrlRequest();
-            //request. = url;
+            //request.url = url;
             //request.Send();
-            ScrollChanged?.Invoke(this, scroll);
+
+            //tODO set scroll request
+        }
+
+        private void SetIsCurrent(bool current)
+        {
+            _isCurrent = current;
+            CurrentChanged?.Invoke(this, current);
         }
     }
 }
