@@ -115,7 +115,7 @@ namespace Dash
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            //BrowserView.OpenTab("http://www.cs.brown.edu");
+            BrowserView.OpenTab("http://www.cs.brown.edu");
             //BrowserView.CurrentTabChanged +=
             //    (sender, view) => UITask.Run(() =>
             //    {
