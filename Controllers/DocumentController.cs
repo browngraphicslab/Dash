@@ -697,7 +697,18 @@ namespace Dash
         /// <returns></returns>
         public bool RemoveField(KeyController key)
         {
-            throw new NotImplementedException();
+            var proto = GetPrototypeWithFieldKey(key);
+
+            if (proto._fields.ContainsKey(key))
+            {
+                return false;
+            }
+
+            //TODO Remove fieldUpdated listener
+            //var field = proto._fields[key];
+            //field.FieldModelUpdated -= 
+
+            return proto._fields.Remove(key);
         }
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)

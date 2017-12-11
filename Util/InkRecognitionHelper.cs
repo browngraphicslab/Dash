@@ -227,6 +227,10 @@ namespace Dash
                                     dataDoc.SetField(key2, field
                                         .GetCopy(), true);
                                 }
+                                else
+                                {
+                                    dataDoc.RemoveField(key2);
+                                }
                             }
                             else
                             {

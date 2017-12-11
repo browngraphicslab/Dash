@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -36,6 +37,7 @@ namespace Dash
         public PointerDeviceType BlockedInputType;
         public bool FilterInput;
         private bool _processManipulation;
+        private bool _isManipulating;
 
         /// <summary>
         /// Ensure pointerwheel only changes size of documents when it's selected 
@@ -86,21 +88,38 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
+            element.ManipulationCompleted += ElementOnManipulationCompleted;
+        }
 
+        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            _isManipulating = false;
         }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            if (_isManipulating)
+            {
+                e.Complete();
+                return;
+            }
             if (e.PointerDeviceType == BlockedInputType && FilterInput)
             {
+                e.Complete();
                 _processManipulation = false;
                 e.Handled = true;
                 return;
             }
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            {
+                e.Complete();
+                return;
+            }
+            _isManipulating = true;
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
-
         }
 
         public void AddAllAndHandle()
@@ -178,7 +197,6 @@ namespace Dash
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-
             TranslateAndScale(e);
 
             DetectShake(sender, e);
