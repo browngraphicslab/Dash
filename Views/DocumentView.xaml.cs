@@ -1067,7 +1067,10 @@ namespace Dash
         private void XTitle_LostFocus(object sender, RoutedEventArgs e)
         {
             // change the titlekey 
-            ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+            var titleField = ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+            if (titleField == null)
+                ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
+            else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
             if (_treeMenuItem != null)
                 _treeMenuItem.DocType = xTitle.Text; // have to call because the documentcontrollers in these items aren't updated 
         }

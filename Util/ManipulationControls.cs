@@ -110,12 +110,12 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
-            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
-            {
-                e.Complete();
-                return;
-            }
+            //if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+            //    (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            //{
+            //    e.Complete();
+            //    return;
+            //}
             _isManipulating = true;
             _processManipulation = true;
 

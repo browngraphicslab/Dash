@@ -248,11 +248,13 @@ namespace Dash
 
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
-            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
+            this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
+            this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
         }
+        Tuple<Point, Point> HackToDragWithRightMouseButton = null;
 
         private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
@@ -265,6 +267,29 @@ namespace Dash
         public string target = null;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                var down_and_offset = HackToDragWithRightMouseButton;
+                var parent = this.GetFirstAncestorOfType<DocumentView>();
+                var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+
+                var rt = parent.RenderTransform.TransformPoint(new Point());
+                HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
+          
+            }
+        }
+        private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && HackToDragWithRightMouseButton != null)
+            {
+                var down_and_offset = HackToDragWithRightMouseButton;
+                var down   = down_and_offset.Item1;
+                var offset = down_and_offset.Item2;
+                var parent = this.GetFirstAncestorOfType<DocumentView>();
+                var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+
+                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
+            }
         }
 
         private void tapped(object sender, TappedRoutedEventArgs e)
@@ -376,6 +401,7 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
+            Tag = null;
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 
@@ -1036,8 +1062,15 @@ namespace Dash
                 if (delta < 0)
                     lastMax = curSize;
                 else lastMin = curSize;
-                charFormatting.Size = curSize + delta / 2;
-                selectedText.CharacterFormat = charFormatting;
+                try
+                {
+                    charFormatting.Size = curSize + delta / 2;
+                    selectedText.CharacterFormat = charFormatting;
+                }
+                catch (Exception)
+                {
+
+                }
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
