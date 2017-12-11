@@ -240,21 +240,12 @@ namespace Dash
             // default to MainPage collection view
             CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
-            if (sender == TabMenu.Instance)
-            {
-                freeForm = TabMenu.AddsToThisCollection;
-                if (freeForm == null)
-                    return;
-            }
-
             // fetch the coordinates of the caller on canvas
             var searchView = sender;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point());
             translate = new Point(translate.X + 300, translate.Y + 100);
-
-            //var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)

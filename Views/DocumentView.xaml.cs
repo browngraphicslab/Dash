@@ -278,6 +278,7 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
+
         public DocumentController Choose()
         {
             OnSelected();
@@ -300,7 +301,8 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        private AddMenuItem treeMenuItem;
+        private AddMenuItem _treeMenuItem;
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -330,11 +332,8 @@ namespace Dash
                         // if the tree contains the parent collection
                         if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
                         {
-                            var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
-                            var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-                            treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Document, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                                    treeMenuItem);
+                            _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
+                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
                         }
                     }
                 }
@@ -354,7 +353,7 @@ namespace Dash
             new ManipulationControls(xKeyValuePane, false, false);
         }
 
-        #region Xaml Styling Methods (used by operator/colelction view)
+        #region Xaml Styling Methods (used by operator/collection view)
         private bool isOperator = false;
         private bool addItem = false;
         /// <summary>
@@ -376,15 +375,12 @@ namespace Dash
                 //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-                treeMenuItem = new DocumentAddMenuItem(dataDoc.Title, AddMenuTypes.Operator, Choose, layoutDoc, KeyStore.TitleKey); // TODO: change this line for tree menu
+                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, ViewModel.DocumentController, KeyStore.TitleKey);
                 AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                    treeMenuItem);
+                    _treeMenuItem);
             }
         }
 
-#endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
@@ -396,7 +392,7 @@ namespace Dash
 
             // add item to menu
             if (ParentCollection != null)
-                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], treeMenuItem); // removes docview of collection from menu
+                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem); // removes docview of collection from menu
 
             if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
             {
@@ -419,6 +415,7 @@ namespace Dash
 
 
         }
+#endregion
 
         //}
         #region KEYVALUEPANE
@@ -484,7 +481,7 @@ namespace Dash
 
             // add the document to the composite
             var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
-            data?.Add(layoutDocument); 
+            data?.Add(layoutDocument);
         }
         #endregion
 
@@ -498,7 +495,7 @@ namespace Dash
             red.B = 25;
             red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy,         "Copy", CopyDocument);
+            copyButton = new MenuButton(Symbol.Copy, "Copy", CopyDocument);
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
@@ -820,7 +817,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-               // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+                // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -844,8 +841,7 @@ namespace Dash
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-
-            else 
+            else
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xGradientOverlay.Visibility = Visibility.Visible;
@@ -878,7 +874,7 @@ namespace Dash
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
 
-                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(treeMenuItem);
+                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(_treeMenuItem);
 
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
@@ -923,9 +919,6 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            // KBTODO remove itself from tab menu 
-            //if (!IsMainCollection) TabMenu.Instance.SearchView.SearchList.RemoveFromList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault());
-
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
             ViewModel.CloseMenu();
@@ -933,7 +926,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0, 0), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(10, 10), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -1060,16 +1053,23 @@ namespace Dash
             var text = doc.GetField(KeyStore.SystemUriKey) as TextController;
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
-            Debug.WriteLine(query);
-
         }
 
         private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
             {
+                this.Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
+        }
+
+        private void XTitle_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // change the titlekey 
+            ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+            if (_treeMenuItem != null)
+                _treeMenuItem.DocType = xTitle.Text; // have to call because the documentcontrollers in these items aren't updated 
         }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)

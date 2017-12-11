@@ -328,9 +328,6 @@ namespace Dash
 
         private void AddOperatorFromRegion(InkAnalysisInkDrawing region)
         {
-            TabMenu.AddsToThisCollection = FreeformInkControl.FreeformView;
-            if (MainPage.Instance.xCanvas.Children.Contains(TabMenu.Instance)) return;
-            MainPage.Instance.xCanvas.Children.Add(TabMenu.Instance);
             Point absPos =
                 Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
                     FreeformInkControl.TargetInkCanvas, MainPage.Instance);

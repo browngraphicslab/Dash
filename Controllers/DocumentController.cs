@@ -37,8 +37,6 @@ namespace Dash
                 return currentDelegates.Data.Any();
             }
         }
-
-        
         public bool HasPrototype {
             get
             {
@@ -109,9 +107,30 @@ namespace Dash
                 }
                 return DocumentType.Type;
             }
+            set
+            {
+                var textFieldModelController = GetField(KeyStore.TitleKey) as TextController;
+                if (textFieldModelController != null)
+                    textFieldModelController.Data = value;
+            }
         }
 
         public bool IsConnected { get; set; }
+        public bool HasMatchingKey(string keyName)
+        {
+            if (string.IsNullOrWhiteSpace(keyName))
+                return false;
+            foreach (KeyController key in _fields.Keys)
+            {
+                if (key.Name.StartsWith("_"))
+                    continue;
+                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed
@@ -610,7 +629,7 @@ namespace Dash
 
                 return true;
             }
-            return false; 
+            return false;
         }
 
 
@@ -1018,7 +1037,7 @@ namespace Dash
             // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
             var outputs = new Dictionary<KeyController, FieldControllerBase>(opField.Outputs.Count);
-            
+
             // iterate over the operator inputs adding them to our preparing dictionaries if they 
             // exist, and returning if there is a required field that we are missing
             foreach (var opFieldInput in opField.Inputs)
@@ -1027,7 +1046,7 @@ namespace Dash
                 var field = GetField(opFieldInput.Key);
                 // dereference the inputs so that the field is now the actual field from the output document
                 field = field?.DereferenceToRoot(context);
-                
+
                 if (field == null)
                 {
                     // if the reference was null and the reference was recquired just return the context
@@ -1158,7 +1177,7 @@ namespace Dash
             }
             if (DocumentType.Equals(WebBox.DocumentType))
             {
-                return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return WebBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {

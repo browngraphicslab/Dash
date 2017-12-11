@@ -39,7 +39,7 @@ namespace Dash
                 ? _documentControllerDataContext
                     .GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null)
                 : _documentControllerDataContext;
-
+        
         public KeyValuePane()
         {
             InitializeComponent();
@@ -49,7 +49,13 @@ namespace Dash
 
             //ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
-            xTypeComboBox.SelectedItem = TypeInfo.None;
+        }
+
+        public void DisableInteraction()
+        {
+            xKeyValueListView.CanDragItems = false;
+            xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
+            SetHeaderVisibility(DashShared.Visibility.Collapsed); 
         }
 
         public void SetHeaderVisibility(Visibility vis)
@@ -432,26 +438,6 @@ namespace Dash
             _selectedKV = e.ClickedItem as KeyFieldContainer;
         }
 
-
-        /// <summary>
-        ///     Corrects the column widths of headers upon load
-        /// </summary>
-        private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //for (int i = 0; i < 3; i++)
-            //    xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
-        }
-
-        /// <summary>
-        ///     Corrects the column widths of new grid list items
-        /// </summary>
-        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            // not sure what this was fixing, but it breaks the doc test example
-            //for (int i = 0; i < 3; i++)
-            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
-        }
-
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
         {
             ToggleAddKVPane();
@@ -485,6 +471,14 @@ namespace Dash
             //    new BoundController(new TextController(""), RealDataContext), false,
             //    TypeColumnWidth);
             //ListItemSource.Add(newField);
+        }
+
+        public void SetUpForDocumentBox(DocumentController dc)
+        {
+            xKeyValueListView.CanDragItems = false;
+            xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
+            SetHeaderVisibility(DashShared.Visibility.Collapsed);
+            SetDataContextToDocumentController(dc);
         }
     }
 }

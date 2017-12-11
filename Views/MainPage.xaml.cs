@@ -139,24 +139,9 @@ namespace Dash
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
-                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
 
-                // TODO write a method called (AddItemToTabMenu) which takes in a view model, limit your publicly available variables
-                // TODO when you have publicly accessible variables that are changed from anywhere you create spaghetti
-                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.AllTabItems);
-                // TODO why are we adding the document views when we press tab, are they goin to be added over and over again?
-                // no because we make an entirely new list of them everytime apparently??
-
-                /*
-                foreach (DocumentView dv in docViews)
-                {
-                    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-                }
-                */
-
-                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
-                TabMenu.ShowAt(xCanvas);
-                TabMenu.Instance.SetTextBoxFocus();
+                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu
@@ -175,9 +160,7 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
-            TabMenu.ShowAt(xCanvas, true);
-            TabMenu.Instance.SetTextBoxFocus();
+            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
             e.Handled = true;
         }
 
@@ -205,12 +188,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
-            xCanvas.Children.Add(TabMenu.Instance);
-            Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(TabMenu.Instance, absPos.X);
-            Canvas.SetTop(TabMenu.Instance, absPos.Y);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas); 
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -258,10 +236,18 @@ namespace Dash
             xMainDocView.Height = e.NewSize.Height;
         }
 
-        public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
+        public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
-            //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
             var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
+            // make sure elementToDisplay is never cut from screen 
+            if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
+            {
+                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50; 
+            }
+            if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
+            {
+                dropPoint.Y = xCanvas.ActualHeight - elementToDisplay.Height - 10;
+            }
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
