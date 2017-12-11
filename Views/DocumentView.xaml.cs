@@ -75,9 +75,9 @@ namespace Dash
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
 
-            this.Holding += OperatorHolding;
             this.ManipulationCompleted += DocumentView_ManipulationCompleted;
-           // this.ManipulationDelta += DocumentView_ManipulationDelta;
+            // this.ManipulationDelta += DocumentView_ManipulationDelta;
+            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
         }
 
         
@@ -260,18 +260,6 @@ namespace Dash
             ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
         }
 
-
-
-        public void OperatorHolding(object sender, HoldingRoutedEventArgs e)
-        {
-            var opview = sender as DocumentView;
-            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
-            AddHandler(PointerPressedEvent, new PointerEventHandler(hdlr), true);
-        }
-
-        private void hdlr(object sender, PointerRoutedEventArgs e)
-        {
-        }
 
         private void OnDrop(object sender, DragEventArgs e)
         {
