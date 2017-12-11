@@ -9,13 +9,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid x:Name="MenuGrid">
         <StackPanel x:Name="xCollectionButtonsStackPanel" HorizontalAlignment="Left"
                     Margin="{Binding ElementName=xDocumentButtonsStackPanel, Path=Margin}"
                     Width="{Binding ElementName=xDocumentButtonsStackPanel, Path=Width}">
             <StackPanel.Resources>
                 <Style TargetType="dash:MenuButton">
-                    <Setter Property="Margin" Value="0,10,0,0"/>
+                    <Setter Property="Margin" Value="-70,10,0,0"/>
                 </Style>
             </StackPanel.Resources>
         </StackPanel>

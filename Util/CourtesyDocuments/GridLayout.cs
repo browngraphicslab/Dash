@@ -29,7 +29,7 @@ namespace Dash
         public GridLayout(Point position, Size size)
         {
             var fields = DefaultLayoutFields(position, size,
-                new DocumentCollectionFieldModelController());
+                new ListController<DocumentController>());
             Document = new DocumentController(fields, GridPanelDocumentType);
         }
 
@@ -58,9 +58,9 @@ namespace Dash
         { 
             var rowTypesAA =
                 docController.GetDereferencedField(GridRowsTypeKey, context);
-            var rowTypes = rowTypesAA as ListFieldModelController<NumberFieldModelController>;
+            var rowTypes = rowTypesAA as ListController<NumberController>;
             var rowValues =
-                docController.GetDereferencedField(GridRowsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
+                docController.GetDereferencedField(GridRowsValueKey, context) as ListController<NumberController>;
             if (rowTypes == null || rowValues == null) return;
             var typeData = rowTypes.TypedData;
             var valueData = rowValues.TypedData;
@@ -80,9 +80,9 @@ namespace Dash
             Context context)
         {
             var columnTypes =
-                docController.GetDereferencedField(GridColumnsTypeKey, context) as ListFieldModelController<NumberFieldModelController>;
+                docController.GetDereferencedField(GridColumnsTypeKey, context) as ListController<NumberController>;
             var columnValues =
-                docController.GetDereferencedField(GridColumnsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
+                docController.GetDereferencedField(GridColumnsValueKey, context) as ListController<NumberController>;
             if (columnTypes == null || columnValues == null) return;
             var typeData = columnTypes.TypedData;
             var valueData = columnValues.TypedData;
@@ -117,9 +117,9 @@ namespace Dash
             SetupBindings(grid, docController, context);
 
             var col = docController.GetDereferencedField(KeyStore.DataKey, context)
-                ?.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+                ?.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(col != null);
-            foreach (var documentController in col.GetDocuments())
+            foreach (var documentController in col.GetElements())
             {
                 var element = documentController.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn);
                 grid.Children.Add(element);
@@ -139,14 +139,14 @@ namespace Dash
         public static void SetGridRowDefinitions(this DocumentController document, List<RowDefinition> rows)
         {
             Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
-            ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
-            ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
+            ListController<NumberController> types = new ListController<NumberController>();
+            ListController<NumberController> values = new ListController<NumberController>();
             foreach (var row in rows)
             {
                 int type = (int)row.Height.GridUnitType;
                 double value = row.Height.Value;
-                types.Add(new NumberFieldModelController(type));
-                values.Add(new NumberFieldModelController(value));
+                types.Add(new NumberController(type));
+                values.Add(new NumberController(value));
             }
             document.SetField(GridLayout.GridRowsTypeKey, types, true);
             document.SetField(GridLayout.GridRowsValueKey, values, true);
@@ -155,14 +155,14 @@ namespace Dash
         public static void SetGridColumnDefinitions(this DocumentController document, List<ColumnDefinition> columns)
         {
             Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
-            ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
-            ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
+            ListController<NumberController> types = new ListController<NumberController>();
+            ListController<NumberController> values = new ListController<NumberController>();
             foreach (var column in columns)
             {
                 int type = (int)column.Width.GridUnitType;
                 double value = column.Width.Value;
-                types.Add(new NumberFieldModelController(type));
-                values.Add(new NumberFieldModelController(value));
+                types.Add(new NumberController(type));
+                values.Add(new NumberController(value));
             }
             document.SetField(GridLayout.GridColumnsTypeKey, types, true);
             document.SetField(GridLayout.GridColumnsValueKey, values, true);
@@ -170,10 +170,10 @@ namespace Dash
 
         public static void AddChild(this DocumentController document, DocumentController child, Context context = null)
         {
-            var children = document.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
+            var children = document.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
             Debug.Assert(children != null);
-            if (!children.GetDocuments().Contains(child))
-                children.AddDocument(child);
+            if (!children.GetElements().Contains(child))
+                children.Add(child);
         }
     }
 }

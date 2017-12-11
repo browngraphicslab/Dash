@@ -27,11 +27,6 @@ namespace Dash
             }
             return (_dict[typeof(T)]) as IModelEndpoint<T>;
         }
-
-        public IModelEndpoint<KeyModel> Keys => GetEndpoint<KeyModel>();
-
         public IModelEndpoint<FieldModel> Fields => GetEndpoint<FieldModel>();   
-
-        public IModelEndpoint<DocumentModel> Documents => GetEndpoint<DocumentModel>();
     }
 }

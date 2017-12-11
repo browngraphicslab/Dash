@@ -10,15 +10,15 @@
     ManipulationStarted="UserControl_ManipulationStarted"
     AllowDrop="True"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}">
-
-    <Grid>
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaHeader+HeaderViewModel}"
+    SizeChanged="DBS_OnSizeChanged">
+    <Grid Width="{Binding Width}">
         <StackPanel Orientation="Horizontal">
-            <Grid Width="{Binding Width}" Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource DocumentBackground}">
-                <TextBox IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="White" Text="{Binding}"/>
+            <Grid x:Name="NameGrid"  Tapped="SelectTap" DoubleTapped="TextBlock_DoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
+                <TextBox x:Name="Text" IsHitTestVisible="False"  FontSize="12" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
             </Grid>
-            <Grid Background="Black" ManipulationMode="All" CanDrag="False" Width="5"
+            <Grid Background="#CCDDDDDD" ManipulationMode="All" CanDrag="False" Width="7"
                   ManipulationStarted="Grid_ManipulationStarted" ManipulationDelta="Grid_ManipulationDelta" ManipulationCompleted="Grid_ManipulationCompleted"/>
         </StackPanel>
-    </Grid> 
+        </Grid> 
 </UserControl>

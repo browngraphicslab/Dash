@@ -78,25 +78,25 @@ namespace Dash
             var method = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                {ApiOperatorController.MethodKey, new TextFieldModelController(method) },
-                {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) }
+                {ApiOperatorController.MethodKey, new TextController(method) },
+                {ApiOperatorController.UrlKey, new TextController(xApiURLTB.Text) }
             };
 
             if (xAuthControl.AuthURL != "")
             {
-                fields[ApiOperatorController.AuthUrlKey] = new TextFieldModelController(xAuthControl.AuthURL);
+                fields[ApiOperatorController.AuthUrlKey] = new TextController(xAuthControl.AuthURL);
             }
             if (xAuthControl.AuthMethod != "")
             {
-                fields[ApiOperatorController.AuthMethodKey] = new TextFieldModelController(xAuthControl.AuthMethod);
+                fields[ApiOperatorController.AuthMethodKey] = new TextController(xAuthControl.AuthMethod);
             }
             if (xAuthControl.Key != "")
             {
-                fields[ApiOperatorController.AuthKeyKey] = new TextFieldModelController(xAuthControl.Key);
+                fields[ApiOperatorController.AuthKeyKey] = new TextController(xAuthControl.Key);
             }
             if (xAuthControl.Secret != "")
             {
-                fields[ApiOperatorController.AuthSecretKey] = new TextFieldModelController(xAuthControl.Secret);
+                fields[ApiOperatorController.AuthSecretKey] = new TextController(xAuthControl.Secret);
             }
 
             void BuildParams(Dictionary<KeyController, string> keys, Dictionary<KeyController, string> values, Dictionary<KeyController, FieldControllerBase> fieldDict)
@@ -105,7 +105,7 @@ namespace Dash
                 {
                     string value = "";
                     values.TryGetValue(key.Key, out value);
-                    fieldDict[key.Key] = new TextFieldModelController(key.Value + ":" + value);
+                    fieldDict[key.Key] = new TextController(key.Value + ":" + value);
                 }
                 foreach (var key in values)
                 {
@@ -115,7 +115,7 @@ namespace Dash
                     }
                     string value = "";
                     keys.TryGetValue(key.Key, out value);
-                    fieldDict[key.Key] = new TextFieldModelController(value + ":" + key.Value);
+                    fieldDict[key.Key] = new TextController(value + ":" + key.Value);
                 }
             }
 

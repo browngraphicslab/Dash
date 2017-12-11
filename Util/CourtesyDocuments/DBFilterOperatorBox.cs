@@ -18,7 +18,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("88549C01-5CFA-4580-A357-D7BE895B11DE", "DB Search Operator Box");
 
-        public DBFilterOperatorBox(ReferenceFieldModelController refToOp)
+        public DBFilterOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
             Document = new DocumentController(fields, DocumentType);
@@ -43,7 +43,7 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetField(KeyStore.DataKey);
-            var opfmc = (data as ReferenceFieldModelController);
+            var opfmc = (data as ReferenceController);
             var opDoc = opfmc.GetDocumentController(null);
 
             var stack = new StackPanel() { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Top };
@@ -52,15 +52,16 @@ namespace Dash
             stack.Children.Add(chart);
            
 
-            opDoc.DocumentFieldUpdated += (sender, args) =>
+            opDoc.FieldModelUpdated += (sender, args, c) =>
             {
-                var opFieldModelController = opDoc.GetField(KeyStore.OperatorKey) as OperatorFieldModelController;
+                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                var opFieldModelController = opDoc.GetField(KeyStore.OperatorKey) as OperatorController;
                 bool allOutputsSet = true;
                 foreach (var o in opFieldModelController.Outputs)
-                    if (!args.Context.ContainsDataKey(o.Key))
+                    if (!c.ContainsDataKey(o.Key))
                         allOutputsSet = false;
-                if (allOutputsSet && opFieldModelController.Outputs.ContainsKey(args.Reference.FieldKey))
-                    chart.OperatorOutputChanged(args.Context);
+                if (allOutputsSet && opFieldModelController.Outputs.ContainsKey(dargs.Reference.FieldKey))
+                    chart.OperatorOutputChanged(c);
             };
 
             if (isInterfaceBuilderLayout)

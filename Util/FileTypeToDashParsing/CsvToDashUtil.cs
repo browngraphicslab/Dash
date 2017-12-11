@@ -41,8 +41,8 @@ namespace Dash
             var protoFieldDict = new Dictionary<KeyController, FieldControllerBase>()
 
             { // dictionary of fields to set on the prototype document
-                [KeyStore.AbstractInterfaceKey] = new TextFieldModelController(protoDoc.DocumentType.Id),
-                [KeyStore.PrimaryKeyKey] = new ListFieldModelController<TextFieldModelController>()
+                [KeyStore.AbstractInterfaceKey] = new TextController(protoDoc.DocumentType.Id),
+                [KeyStore.PrimaryKeyKey] = new ListController<KeyController>()
             };
             var headerToFieldMap = new Dictionary<string, FieldControllerBase>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
@@ -72,10 +72,9 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
       
-
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), "CSV Collection"));
-            outputDoc.SetField(KeyStore.DataKey, new DocumentCollectionFieldModelController(rowDocs), true);
-            outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceFieldController(outputDoc.GetId(), KeyStore.DataKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
+            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(UtilShared.GenerateNewId(), "CSV Collection"));
+            outputDoc.SetField(KeyStore.DataKey, new ListController<DocumentController>(rowDocs), true);
+            outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
              
             return outputDoc;
         }

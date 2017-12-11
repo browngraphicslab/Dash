@@ -15,7 +15,7 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <TextBlock Text="HTTP API Builder" Grid.Row="0" HorizontalAlignment="Center" Style="{StaticResource xTitleStyle}" FontWeight="Normal"/>
+        <TextBlock Text="HTTP API Builder" Grid.Row="0" HorizontalAlignment="Center" FontWeight="Normal"/>
         <StackPanel Orientation="Vertical" Grid.Row="1" >
             <Grid>
                 <Grid.ColumnDefinitions>

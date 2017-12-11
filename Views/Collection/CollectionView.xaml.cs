@@ -24,6 +24,7 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -86,7 +87,8 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -153,7 +155,8 @@ namespace Dash
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
                 (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
@@ -237,7 +240,7 @@ namespace Dash
             else
                 refKey = ViewModel.CollectionKey;
 
-            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.Collection, e, el, ParentDocument);
+            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.List, e, el, ParentDocument);
 
             var freeform = ParentCollection.CurrentView as CollectionFreeformView;
             if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
@@ -255,10 +258,10 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView() { InkFieldModelController = ViewModel.InkFieldModelController };
+            CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Freeform.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
 
             ViewModes?.HighlightAction(SetFreeformView);
         }
@@ -268,8 +271,8 @@ namespace Dash
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Text.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
 
             ViewModes?.HighlightAction(SetTextView);
         }
@@ -279,8 +282,8 @@ namespace Dash
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.DB.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
 
             ViewModes?.HighlightAction(SetDBView);
         }
@@ -289,8 +292,8 @@ namespace Dash
             if (CurrentView is CollectionDBSchemaView) return;
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Schema.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
 
             ViewModes?.HighlightAction(SetSchemaView);
         }
@@ -307,8 +310,8 @@ namespace Dash
             if (CurrentView is CollectionPageView) return;
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Page.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
 
             ViewModes?.HighlightAction(SetBrowseView);
         }
@@ -318,8 +321,8 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.Data?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionViewType.Grid.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
 
             ViewModes?.HighlightAction(SetGridView);
         }
@@ -392,24 +395,23 @@ namespace Dash
         
         private void MakeMenu()
         {
-            var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.TouchPointer, "Select", menuColor, MakeSelectionModeMultiple)
+                new MenuButton(Symbol.TouchPointer, "Select", MakeSelectionModeMultiple)
                 {
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, 
                     new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
+                new MenuButton(Symbol.Camera, "ScrCap", ScreenCap)
 
 
             };
 
             // Create preview button with special properties so the user can drag off of it
-            var previewButton = new MenuButton(Symbol.Preview, "Preview", menuColor, null);
+            var previewButton = new MenuButton(Symbol.Preview, "Preview", null);
             var previewButtonView = previewButton.View;
             previewButtonView.CanDrag = true;
             previewButton.ManipulationMode = ManipulationModes.All;
@@ -425,14 +427,13 @@ namespace Dash
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", menuColor, MakeSelectionModeNone)
+                new MenuButton(Symbol.Back, "Back", MakeSelectionModeNone)
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.Edit, "Interface", menuColor, null),
-                new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
-                new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
-
+                new MenuButton(Symbol.Edit, "Interface", null),
+                new MenuButton(Symbol.SelectAll, "All", SelectAllItems),
+                new MenuButton(Symbol.Delete, "Delete", DeleteSelection),
             };
 
 
@@ -448,7 +449,6 @@ namespace Dash
         {
             if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
-            xMenuColumn.Width = new GridLength(50);
             _collectionMenu.AddAndPlayOpenAnimation();
         }
 

@@ -34,7 +34,7 @@ namespace Dash
         private void BindOpacity(DocumentController docController, Context context)
         {
             var opacityController =
-                    docController.GetDereferencedField(ImageBox.OpacityKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(ImageBox.OpacityKey, context) as NumberController;
             Debug.Assert(opacityController != null);
 
             var opacityBinding = new Binding

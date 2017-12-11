@@ -24,24 +24,26 @@ namespace Dash
             // create a document with two images
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
 
-            fields[IdKey] = new NumberFieldModelController(id);
-            fields[KeyStore.WidthFieldKey] = new NumberFieldModelController(300);
-            fields[KeyStore.HeightFieldKey] = new NumberFieldModelController(300);
+            fields[IdKey] = new NumberController(id);
+            fields[KeyStore.WidthFieldKey] = new NumberController(300);
+            fields[KeyStore.HeightFieldKey] = new NumberController(300);
 
             if (fieldType == TypeInfo.Text)
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid("Text " + i), "Text " + i);
-                    fields[key] = new TextFieldModelController("This is example text " + i);
+                    KeyController key = new KeyController(UtilShared.GetDeterministicGuid("Text " + i), "Text " + i);
+                    fields[key] = new TextController("This is example text " + i);
+
                 }
             }
             else if (fieldType == TypeInfo.Text)
             {
                 for (int i = 0; i < numFields; ++i)
                 {
-                    KeyController key = new KeyController(DashShared.UtilShared.GetDeterministicGuid("Number " + i), "Number " + i);
-                    fields[key] = new NumberFieldModelController(r.NextDouble() * 100);
+                    KeyController key = new KeyController(UtilShared.GetDeterministicGuid("Number " + i), "Number " + i);
+                    fields[key] = new NumberController(r.NextDouble() * 100);
+
                 }
             }
             else throw new ArgumentException();

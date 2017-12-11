@@ -7,21 +7,21 @@ using DashShared;
 
 namespace Dash
 {
-    public class DocumentAppendOperatorController : OperatorFieldModelController
+    public class DocumentAppendOperatorController : OperatorController
     {
         public static readonly KeyController InputDocumentKey = new KeyController("F7CE7746-EDBA-4DAD-8D75-BEAEAC491B28", "Input Document");
         public static readonly KeyController FieldKey = new KeyController("DC93BDC1-A354-4CAA-8F04-E6EA20F7E030", "Input Field");
 
         public static readonly KeyController OutputDocumentKey = new KeyController("114C5C68-7A02-491D-8B52-43A27EC63BE4", "OutputDocument");
 
-        public DocumentAppendOperatorController() : base(new OperatorFieldModel(OperatorType.DocumentAppend))
+        public DocumentAppendOperatorController() : base(new OperatorModel(OperatorType.DocumentAppend))
         {
         }
-        public DocumentAppendOperatorController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public DocumentAppendOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public override FieldModelController<OperatorFieldModel> Copy()
+        public override FieldModelController<OperatorModel> Copy()
         {
             return new DocumentAppendOperatorController();
         }
@@ -47,13 +47,13 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            DocumentController doc = ((DocumentFieldModelController) inputs[InputDocumentKey]).Data;
+            DocumentController doc = (DocumentController) inputs[InputDocumentKey];
             FieldControllerBase field = inputs[FieldKey];
 
             var del = doc.MakeDelegate();
             del.SetField(new KeyController(Guid.NewGuid().ToString(), "Concat output"), field, true);
 
-            outputs[OutputDocumentKey] = new DocumentFieldModelController(del);
+            outputs[OutputDocumentKey] = del;
         }
     }
 }

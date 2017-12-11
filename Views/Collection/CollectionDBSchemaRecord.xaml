@@ -18,7 +18,7 @@
         </Grid.ColumnDefinitions>
         <Grid Width="30" Height="25" Background="Gray" ManipulationMode="All" PointerPressed="CollectionDBSchemaRecordField_PointerPressed" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" CanDrag="True"  />
         <ListView Grid.Column="1" 
-                    Style="{StaticResource xSchemaListView}"
+                    Style="{ThemeResource xSchemaListView}"
                     ItemsSource="{Binding RecordFields}"
                     SelectionMode="None"
                     CanDrag="False">

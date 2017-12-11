@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -87,12 +88,12 @@ namespace Dash
             return true;
         }
 
-        public FieldControllerBase Dereference(ReferenceFieldModelController reference)
+        public FieldControllerBase Dereference(ReferenceController reference)
         {
             return reference.GetFieldReference().Dereference(this);
         }
 
-        public FieldControllerBase DereferenceToRoot(ReferenceFieldModelController reference)
+        public FieldControllerBase DereferenceToRoot(ReferenceController reference)
         {
             return reference.GetFieldReference().DereferenceToRoot(this);
         }
@@ -139,7 +140,7 @@ namespace Dash
         /// <returns></returns>
         public string GetDeepestDelegateOf(string referenceDocId)
         {
-            Debug.Assert(ContentController<DocumentModel>.GetController<DocumentController>(referenceDocId) != null, "the passed in documentId is not actually associated with any document in the system!");
+            Debug.Assert(ContentController<FieldModel>.GetController<DocumentController>(referenceDocId) != null, "the passed in documentId is not actually associated with any document in the system!");
 
             // flag to say if we found a delegate
             var found = false;    

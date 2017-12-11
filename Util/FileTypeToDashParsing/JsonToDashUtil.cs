@@ -63,10 +63,10 @@ namespace Dash
 
         private void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
         {
-            var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
+            var activeLayout = schema.Prototype.GetActiveLayout().MakeDelegate();
             protoInstance.SetActiveLayout(activeLayout, true, false);
             var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
-            defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextFieldModelController(CollectionView.CollectionViewType.Schema.ToString()));
+            defaultLayoutFields.Add(KeyStore.CollectionViewTypeKey, new TextController(CollectionView.CollectionViewType.Schema.ToString()));
             activeLayout.SetFields(defaultLayoutFields, true);
         }
 
@@ -79,7 +79,7 @@ namespace Dash
             var protoInstance = ParseObject(jtoken, childSchema);
 
             // wrap the document we found in a field model since it is not a root
-            var docFieldModelController = new DocumentFieldModelController(protoInstance);
+            var docFieldModelController = protoInstance;
             return docFieldModelController;
         }
 
@@ -139,21 +139,21 @@ namespace Dash
 
             if (fieldList.Count == 0 && docList.Count != 0) // if we have documents but not fields
             {
-                return new DocumentCollectionFieldModelController(docList); // return a document collection
+                return new ListController<DocumentController>(docList); // return a document collection
 
             }
             if (fieldList.Count != 0 && docList.Count == 0 && fieldTypes.Count == 1) // if we have homogeneous fields but not documents
             {
                 var fieldType = fieldTypes.FirstOrDefault();
-                var genericListType = typeof(ListFieldModelController<>);
+                var genericListType = typeof(ListController<>);
                 var specificListType = genericListType.MakeGenericType(fieldType);
-                var listController = Activator.CreateInstance(specificListType) as BaseListFieldModelController;
+                var listController = Activator.CreateInstance(specificListType) as BaseListController;
                 listController.AddRange(fieldList);
                 return listController; // return a new list
             }
             if (fieldList.Count != 0 && docList.Count == 0)
             {
-                var listController = new ListFieldModelController<FieldControllerBase>();
+                var listController = new ListController<FieldControllerBase>();
                 listController.AddRange(fieldList);
                 return listController;
             }
@@ -171,10 +171,10 @@ namespace Dash
                 switch (type)
                 {
                     case JTokenType.Null: // occurs on null fields
-                        return new TextFieldModelController("");
+                        return new TextController("");
                     case JTokenType.Integer:
                     case JTokenType.Float:
-                        return new NumberFieldModelController(jtoken.ToObject<double>());
+                        return new NumberController(jtoken.ToObject<double>());
                     case JTokenType.String:
                     case JTokenType.Boolean:
                     case JTokenType.Date:
@@ -198,9 +198,9 @@ namespace Dash
             string[] imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
             if (imageExtensions.Any(text.EndsWith))
             {
-                return new ImageFieldModelController(new Uri(text));
+                return new ImageController(new Uri(text));
             }
-            return new TextFieldModelController(text);
+            return new TextController(text);
         }
 
         private void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<KeyController, FieldControllerBase> fields)
@@ -226,13 +226,9 @@ namespace Dash
         public DocumentSchema(string basePath)
         {
             BasePath = basePath;
-//<<<<<<< HEAD
-//            Prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), 
-//                new DocumentType(DashShared.UtilShared.GetDeterministicGuid(BasePath), BasePath));
-//=======
             Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                new DocumentType(DashShared.UtilShared.GetDeterministicGuid(BasePath), BasePath));
-            Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextFieldModelController(Prototype.DocumentType.Type + "API"), true);
+                new DocumentType(UtilShared.GetDeterministicGuid(BasePath), BasePath));
+            Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(Prototype.DocumentType.Type + "API"), true);
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
         }

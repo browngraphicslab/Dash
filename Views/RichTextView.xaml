@@ -6,55 +6,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    Height="400"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid GotFocus="Grid_GotFocus" LostFocus="Grid_LostFocus"   >
+    <Grid Name="LayoutGrid">
         <Grid.Resources>
             <Style TargetType="Button">
-                <Setter Property="Background" Value="{StaticResource DocumentHighlightBackground}"></Setter>
-                <Setter Property="Foreground" Value="{StaticResource TranslucentWhite}"></Setter>
+                <Setter Property="Background" Value="{ThemeResource DocumentHighlightBackground}"></Setter>
+                <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition x:Name="xFormatRow" Height="0"/>
-        </Grid.RowDefinitions>
-        <Grid x:Name="xFormatControls" Grid.Row="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="5*"/>
-                </Grid.ColumnDefinitions>
-                <Grid>
-                    <Button x:Name="xBoldButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
-                        <SymbolIcon Symbol="Bold"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="1">
-                    <Button x:Name="xItalicButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
-                        <SymbolIcon Symbol="Italic"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="2">
-                    <Button x:Name="xUnderlineButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
-                        <SymbolIcon Symbol="Underline"></SymbolIcon>
-                    </Button>
-                </Grid>
-                <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontComboBox"  BorderThickness="0" Foreground="{StaticResource TranslucentWhite}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
-                </Grid>
-            </Grid>
-        </Grid >
+        <!--<Canvas VerticalAlignment="Bottom">-->
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
-                         DragOver="xRichEitBox_DragOver" 
-
+                         Grid.Row="0"
                          Foreground="{StaticResource MainText}" 
                          Background="{StaticResource DocumentBackground}" Opacity=".9"
-                         GotFocus="xRichEditBox_GotFocus" 
+                         GotFocus="xRichEditBox_GotFocus"
+                         LostFocus="XRichEditBox_OnLostFocus"
                          Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
@@ -63,7 +33,92 @@
                          BorderBrush="{StaticResource DocumentBackground}" 
                          BorderThickness="1"
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"  />
-    </Grid>
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
+                         KeyDown="XRichEditBox_OnKeyDown"
+                         Holding="XRichEditBox_OnHolding"
+                         IsTextPredictionEnabled="True"
+                         >
+            <!--FORMAT PROPERTIES TOOLTIP-->
+            <ToolTipService.ToolTip>
+                <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
+                    <ToolTip.Content>
+                        <TextBlock x:Name="xFormatTipText" Padding="2" FontSize="10" Foreground="White">
+                        </TextBlock>
+                    </ToolTip.Content>
+                </ToolTip>
+            </ToolTipService.ToolTip>
+            <!--FORMAT OPTIONS FLYOUT-->
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout>
+                    <MenuFlyout.MenuFlyoutPresenterStyle>
+                        <Style TargetType="MenuFlyoutPresenter">
+                            <Setter Property="Background"  Value="{StaticResource DarkBackground}"></Setter>
+                            <Setter Property="Opacity" Value="0.8"></Setter>
+                        </Style>
+                    </MenuFlyout.MenuFlyoutPresenterStyle>
+                    <MenuFlyoutSubItem x:Name="xFormat" Text="Font" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
+                        <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xScript" Text="Script" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus">
+                        <MenuFlyoutSubItem x:Name="xAlignment" Text="Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListTypes" Text="List" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListStyles" Text="List Style" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem x:Name="xListAlignments" Text="List Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
+                        <MenuFlyoutSubItem x:Name="xHighlightOpacity" Text="Opacity" GotFocus="HighlightGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSubItem x:Name="xColor" Text="Color" GotFocus="ColorGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
+                    <MenuFlyoutSeparator></MenuFlyoutSeparator>
+                    <MenuFlyoutItem x:Name="xResetAll" Text="Reset All" Foreground="White" Click="XResetAll_OnClick"></MenuFlyoutItem>
+                </MenuFlyout>
+            </FlyoutBase.AttachedFlyout>
+        </RichEditBox>
+       
+        <Canvas VerticalAlignment="Bottom">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="25">
+                <!--FONT SIZE-->
+                <StackPanel x:Name="xFontSizePanel" Orientation="Horizontal" Opacity="0.3" Margin="0,0,15,0">
+                    <TextBlock x:Name="xFontSizeLabel" Foreground="DimGray" Padding="2" Text="Font Size: "></TextBlock>
+                    <TextBox x:Name="xFontSizeTextBox" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" Padding="2"></TextBox>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Background="{StaticResource DarkBackground}" Padding="3" Content="Tap to edit" Foreground="White"/>
+                    </ToolTipService.ToolTip>
+                </StackPanel>
+                <!--WORD COUNT-->
+                <Border x:Name="xWordCountBorder" Opacity="0.3">
+                    <TextBlock x:Name="xWordCount" Foreground="DimGray" Padding="2" >
+                        <Run x:Name="xCount" Text="{x:Bind WC.Count, Mode=OneWay}"></Run>
+                        <Run> words</Run>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
+        </Canvas>
 
+            <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
+                        VerticalAlignment="Top" Margin="5" Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
+                    <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8" Background="WhiteSmoke"></Button>
+                    <!--SEARCH BOX-->
+                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="WhiteSmoke"></SearchBox>
+                    <!--BUTTON FOR CLOSING SEARCH REGION-->
+                    <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
+                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke">
+                        <TextBlock Text="x" Padding="1"></TextBlock>
+                    </Button>
+                </StackPanel>
+                <!--REPLACE BOX-->
+                <StackPanel x:Name="xReplaceBoxPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
+                    <TextBlock Padding="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="10" Foreground="DimGray">Replace:</TextBlock>
+                    <TextBox x:Name="xReplaceBox" Padding="2" HorizontalAlignment="Stretch" Width="90" BorderBrush="Transparent" Background="WhiteSmoke" FontSize="10"></TextBox>
+                    <StackPanel.Clip>
+                        <RectangleGeometry Rect="0,0,150,20"></RectangleGeometry>
+                    </StackPanel.Clip>
+                </StackPanel>
+            </StackPanel>
+        <!--</Canvas>-->
+    </Grid>
 </UserControl>

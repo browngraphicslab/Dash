@@ -37,6 +37,7 @@ namespace Dash
             else
             {
                 this.MakeCollectionMenu();
+                MenuGrid.Margin = new Thickness(0, -20, 0, 0);
             }
         }
 

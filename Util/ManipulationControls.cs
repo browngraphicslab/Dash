@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -36,6 +37,7 @@ namespace Dash
         public PointerDeviceType BlockedInputType;
         public bool FilterInput;
         private bool _processManipulation;
+        private bool _isManipulating;
 
         /// <summary>
         /// Ensure pointerwheel only changes size of documents when it's selected 
@@ -87,30 +89,37 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationCompleted += ElementOnManipulationCompleted;
-
         }
 
-        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
-            _numberOfTimesDirChanged = 0;
-            Debug.WriteLine("Manipulation completed");
-
+            _isManipulating = false;
         }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            if (_isManipulating)
+            {
+                e.Complete();
+                return;
+            }
             if (e.PointerDeviceType == BlockedInputType && FilterInput)
             {
+                e.Complete();
                 _processManipulation = false;
                 e.Handled = true;
                 return;
             }
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            {
+                e.Complete();
+                return;
+            }
+            _isManipulating = true;
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
-
-            Debug.WriteLine("Manipulation started");
-
         }
 
         public void AddAllAndHandle()
@@ -188,7 +197,6 @@ namespace Dash
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-
             TranslateAndScale(e);
 
             DetectShake(sender, e);
@@ -252,7 +260,6 @@ namespace Dash
 
         private static void StartTimer()
         {
-            Debug.WriteLine("Timer started");
             if (_dispatcherTimer != null)
             {
                 _dispatcherTimer.Stop();
@@ -270,7 +277,6 @@ namespace Dash
 
         private static void dispatcherTimer_Tick(object sender, object e)
         {
-            Debug.WriteLine("TICK");
             _numberOfTimesDirChanged = 0;
             _dispatcherTimer.Stop();
         }
@@ -350,17 +356,16 @@ namespace Dash
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
-            // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl, ElementScale);
-
-            //Clamp the scale factor 
             var scaleFactor = e.Delta.Scale;
             ElementScale *= scaleFactor;
 
+            // set up translation transform
+            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+
+            //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
-                // TODO we may need to take into account the _element's render transform here with regards to scale
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                    e.Position, new Point(scaleFactor, scaleFactor)));
+            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
+                e.Position, new Point(scaleFactor, scaleFactor)));
         }
 
         public void Dispose()
@@ -373,7 +378,6 @@ namespace Dash
 
         private bool ClampScale(double scaleFactor)
         {
-            //Debug.WriteLine(ElementScale);
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;

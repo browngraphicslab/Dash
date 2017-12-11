@@ -293,7 +293,7 @@ namespace Dash.Views
 
         public void Dispose()
         {
-            _freeformView.InkControl.UpdateInkFieldModelController();
+            _freeformView.InkControl.UpdateInkController();
             _strokeContainer = null;
             _startingTransforms = null;
             _editAttributes = false;
