@@ -114,6 +114,14 @@ namespace Dash
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
+
+            //BrowserView.OpenTab("http://www.cs.brown.edu");
+            //BrowserView.CurrentTabChanged +=
+            //    (sender, view) => UITask.Run(() =>
+            //    {
+            //        (MainDocument.GetField(KeyStore.CollectionKey) as ListController<DocumentController>)
+            //            .Add(new RichTextNote(DocumentType.DefaultType).Document);
+            //    });
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
