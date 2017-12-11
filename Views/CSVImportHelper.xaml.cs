@@ -301,7 +301,7 @@ namespace Dash
             {
                 _vm.DocToColumnMaps.Add(
                     new DocumentTypeToColumnMapViewModel(
-                        new DocumentType(DashShared.Util.GenerateNewId(), type.Trim())
+                        new DocumentType(DashShared.UtilShared.GenerateNewId(), type.Trim())
                     )
                 );
             }

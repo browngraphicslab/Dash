@@ -17,7 +17,7 @@ namespace DashShared
 
         protected EntityBase(string id = null)
         {
-            Id = id ?? Util.GenerateNewId();
+            Id = id ?? UtilShared.GenerateNewId();
 
         }
 

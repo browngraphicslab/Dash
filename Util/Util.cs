@@ -550,6 +550,23 @@ namespace Dash
         /// <summary>
         /// Return the union of all the keys, along with their types from a collection
         /// </summary>
+        /// <param name="a"> First point </param>
+        /// <param name="b"> Seconds point </param>
+        /// <returns> True if the points have equal x, y and false otherwise</returns>
+        public static bool PointEquals(Point a, Point b)
+        {
+            var ax = double.IsNaN(a.X);
+            var ay = double.IsNaN(a.Y);
+            var bx = double.IsNaN(b.X);
+            var by = double.IsNaN(b.Y);
+            if (!ax && !ay) return a == b;
+            if (ax == ay) return bx && by;
+            return ax ? bx : by;
+        }
+
+        /// <summary>
+        /// Return the union of all the keys, along with their types from a collection
+        /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
         public static Dictionary<KeyController, HashSet<TypeInfo>> GetTypedHeaders(ListController<DocumentController> collection)

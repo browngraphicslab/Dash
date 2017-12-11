@@ -130,7 +130,7 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab)
+            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
             {
                 var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
                 var x = pointerPosition.X - Window.Current.Bounds.X;

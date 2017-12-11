@@ -392,9 +392,9 @@ namespace Dash
                     var related = new List<DocumentController>();
                     foreach (var img in imgs)
                     {
-                        var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
-                        var src = srcMatch.Substring(5, srcMatch.Length - 5);
-                        var i = new AnnotatedImage(new Uri(src), null, null, "", 200, 250, where.X, where.Y);
+                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                        var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
                     var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;

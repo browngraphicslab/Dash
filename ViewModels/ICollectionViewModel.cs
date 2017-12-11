@@ -14,6 +14,7 @@ namespace Dash
         ObservableCollection<DocumentViewModel> DocumentViewModels { get; }
 
         bool IsSelected { get; }
+
         bool IsLowestSelected { get; }
 
         List<DocumentViewModel> SelectionGroup { get;  }

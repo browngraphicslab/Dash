@@ -37,6 +37,7 @@ namespace Dash
         public PointerDeviceType BlockedInputType;
         public bool FilterInput;
         private bool _processManipulation;
+        private bool _isManipulating;
 
         /// <summary>
         /// Ensure pointerwheel only changes size of documents when it's selected 
@@ -87,17 +88,38 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
+            element.ManipulationCompleted += ElementOnManipulationCompleted;
+        }
+
+        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            _isManipulating = false;
         }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            if (_isManipulating)
+            {
+                e.Complete();
+                return;
+            }
             if (e.PointerDeviceType == BlockedInputType && FilterInput)
             {
+                e.Complete();
                 _processManipulation = false;
                 e.Handled = true;
                 return;
             }
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            {
+                e.Complete();
+                return;
+            }
+            _isManipulating = true;
             _processManipulation = true;
+
+            _numberOfTimesDirChanged = 0;
         }
 
         public void AddAllAndHandle()
@@ -168,13 +190,95 @@ namespace Dash
             e.Handled = _handle;
         }
 
+
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-
             TranslateAndScale(e);
+
+            DetectShake(sender, e);
+
+        }
+
+        // keeps track of whether the node has been shaken hard enough
+        private static int _numberOfTimesDirChanged = 0;
+        private static double _direction;
+        private static DispatcherTimer _dispatcherTimer;
+
+        // these constants adjust the sensitivity of the shake
+        private static int _millisecondsToShake = 600;
+        private static int _sensitivity = 4;
+
+        /// <summary>
+        /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void DetectShake(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            // get the document view that's being manipulated
+            var grid = sender as Grid;
+            var docView = grid?.GetFirstAncestorOfType<DocumentView>();
+
+            if (docView != null)
+            {
+                // calculate the speed of the translation from the velocities property of the eventargs
+                var speed = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
+
+                // calculate the direction of the velocity
+                var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
+                
+                // checks if a certain number of direction changes occur in a specified time span
+                if (_numberOfTimesDirChanged == 0)
+                {
+                    StartTimer();
+                    _numberOfTimesDirChanged++;
+                    _direction = dir;
+                }
+                else if (_numberOfTimesDirChanged < _sensitivity)
+                {
+                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
+                    {
+                        _numberOfTimesDirChanged++;
+                        _direction = dir;
+                    }
+                }
+                else
+                {
+                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
+                    {
+                        // if we've reached enough direction changes, break the connection
+                        docView.DisconnectFromLink();
+                        _numberOfTimesDirChanged = 0;
+                    }
+                }
+            }
+        }
+
+        private static void StartTimer()
+        {
+            if (_dispatcherTimer != null)
+            {
+                _dispatcherTimer.Stop();
+            }
+            else
+            {
+                _dispatcherTimer = new DispatcherTimer();
+                _dispatcherTimer.Tick += dispatcherTimer_Tick;
+            }
+            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, _millisecondsToShake);
+
+            _dispatcherTimer.Start();
+
+        }
+
+        private static void dispatcherTimer_Tick(object sender, object e)
+        {
+            _numberOfTimesDirChanged = 0;
+            _dispatcherTimer.Stop();
         }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
@@ -227,7 +331,7 @@ namespace Dash
             //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
             //    return;
             //}
-            
+
             var r = Rect.Empty;
             foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
             {
@@ -245,7 +349,7 @@ namespace Dash
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left+r.Width/2, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left + r.Width / 2, r.Top), scaleAmt));
             }
         }
 
@@ -286,7 +390,7 @@ namespace Dash
             if (ElementScale > MaxScale)
             {
                 ElementScale = MaxScale;
-                return scaleFactor > 1;              
+                return scaleFactor > 1;
             }
 
             if (ElementScale < MinScale)
