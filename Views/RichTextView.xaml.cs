@@ -1353,8 +1353,10 @@ namespace Dash
                 {
                     xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
                     originalCharFormat.Remove(start);
-                    if (nextMatch >= originalCharFormat.Keys.Count) nextMatch = 0;
-                    else nextMatch--;
+                    if (nextMatch >= originalCharFormat.Keys.Count || nextMatch == 0)
+                        nextMatch = 0;
+                    else
+                        nextMatch--;
                     this.NextResult();
                 }
             }
