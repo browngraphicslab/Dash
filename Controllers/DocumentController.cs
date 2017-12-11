@@ -37,6 +37,8 @@ namespace Dash
                 return currentDelegates.Data.Any();
             }
         }
+
+        
         public bool HasPrototype {
             get
             {
@@ -109,6 +111,7 @@ namespace Dash
             }
         }
 
+        public bool IsConnected { get; set; }
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed

@@ -225,6 +225,7 @@
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\StrikethroughTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
+    <Compile Include="Controllers\UserCreatedLink.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
