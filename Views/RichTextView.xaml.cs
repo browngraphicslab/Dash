@@ -269,6 +269,8 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                docView?.ToFront();
                 var down_and_offset = HackToDragWithRightMouseButton;
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);

@@ -271,7 +271,7 @@ namespace Dash
             OnKeyValueDrop(e);
         }
 
-        private void ToFront()
+        public void ToFront()
         {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;

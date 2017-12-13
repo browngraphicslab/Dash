@@ -110,6 +110,9 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
+            var docView = _element.GetFirstAncestorOfType<DocumentView>();
+            docView?.ToFront();
+
             //if (e.PointerDeviceType == PointerDeviceType.Mouse &&
             //    (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
             //{

@@ -204,6 +204,8 @@ namespace Dash
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
             if (e.Value == "2") // right mouse button == 2
             {
+                var docView = web.GetFirstAncestorOfType<DocumentView>();
+                docView?.ToFront();
                 var rt = parent.RenderTransform.TransformPoint(new Point());
                 web.Tag = new Tuple<Point,Point>( pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
             }
