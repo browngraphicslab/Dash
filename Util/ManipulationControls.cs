@@ -88,12 +88,19 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.ManipulationCompleted += ElementOnManipulationCompleted;
+            element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
 
         private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             _isManipulating = false;
+            if (!manipulationCompletedRoutedEventArgs.Handled)
+            {
+                manipulationCompletedRoutedEventArgs.Handled = true;
+                   var parent = _element.GetFirstAncestorOfType<DocumentView>();
+                if (parent != null)
+                    parent.MoveToContainingCollection();
+            }
         }
 
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

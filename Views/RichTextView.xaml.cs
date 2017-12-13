@@ -250,6 +250,7 @@ namespace Dash
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
             this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
+            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
@@ -293,7 +294,12 @@ namespace Dash
                 parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
             }
         }
-
+        private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            if (parent != null)
+                parent.MoveToContainingCollection();
+        }
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))

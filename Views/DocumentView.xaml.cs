@@ -75,7 +75,8 @@ namespace Dash
             Unloaded += This_Unloaded;
             this.Drop += OnDrop;
 
-            this.ManipulationCompleted += DocumentView_ManipulationCompleted;
+            AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
+            //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
             // this.ManipulationDelta += DocumentView_ManipulationDelta;
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
         }
@@ -1066,6 +1067,8 @@ namespace Dash
 
         private void XTitle_LostFocus(object sender, RoutedEventArgs e)
         {
+            if (ViewModel == null)
+                return;
             // change the titlekey 
             var titleField = ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             if (titleField == null)
@@ -1086,6 +1089,36 @@ namespace Dash
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
+        }
+
+        public void MoveToContainingCollection()
+        {
+            var rawPointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var rawWindowBounds = Windows.UI.Core.CoreWindow.GetForCurrentThread().Bounds;
+            var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(rawPointerPosition);
+            var self = this.ViewModel.DocumentController;
+            var opos = new Windows.Foundation.Point(rawPointerPosition.X - rawWindowBounds.Left, rawPointerPosition.Y - rawWindowBounds.Top);
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            if (collection != null)
+            {
+                var eles = VisualTreeHelper.FindElementsInHostCoordinates(opos, MainPage.Instance);
+                foreach (var nestedCollection in eles.Select((el) => el as CollectionView))
+                    if (nestedCollection != null)
+                    {
+                        var nestedCollectionDocument = nestedCollection.ViewModel.ContainerDocument;
+                        if (nestedCollectionDocument.Equals(self))
+                            continue;
+                        if (!nestedCollection.Equals(collection) )
+                        {
+                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), opos) :
+                                new Point();
+                           nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        }
+                        break;
+                    }
+            }
         }
     }
 

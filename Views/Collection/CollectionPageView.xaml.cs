@@ -208,7 +208,7 @@ namespace Dash
             // hack because Selecting in the listView is broken
             var xx = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(MainPage.Instance), this);
             foreach (var x in xx)
-                if (x is DocumentView)
+                if (x is DocumentView && (x as DocumentView).ViewModel != null)
                 {
                     var d = (x as DocumentView).ViewModel.DocumentController.GetDataDocument(null);
                     foreach (var dv in ViewModel.ThumbDocumentViewModels)

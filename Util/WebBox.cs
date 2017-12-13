@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using System.Numerics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Dash
 {    /// <summary>
@@ -201,6 +202,8 @@ namespace Dash
             var down = down_and_offset.Item1;
             var offset = down_and_offset.Item2;
             var parent = web.GetFirstAncestorOfType<DocumentView>();
+            if (parent == null)
+                return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
             if (e.Value == "2") // right mouse button == 2
             {
@@ -218,6 +221,10 @@ namespace Dash
                 web.Tag = new Tuple<Point, Point>(new Point(), new Point());
                 if (Math.Sqrt((pointerPosition.X - down.X)*(pointerPosition.X-down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
                     parent.OnTapped(null, null);
+                else
+                {
+                    parent.MoveToContainingCollection();
+                }
             }
         }
 
