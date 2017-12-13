@@ -275,7 +275,7 @@ namespace Dash
 
                 var rt = parent.RenderTransform.TransformPoint(new Point());
                 HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
-          
+                this.CapturePointer(e.Pointer);
             }
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
