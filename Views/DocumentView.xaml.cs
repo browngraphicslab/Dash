@@ -500,6 +500,7 @@ namespace Dash
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
+            var keyValueButton = new MenuButton(Symbol.SetTile, "KeyValues", KeyValueViewDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
             var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
 
@@ -510,63 +511,44 @@ namespace Dash
                 copyButton,
                // delegateButton,
                // copyDataButton
-                instanceDataButton,
+               // instanceDataButton,
+                keyValueButton,
                 copyViewButton,
                 new MenuButton(Symbol.Delete, "Delete",DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
                 , addButton
             };
-            var moveButtonView = moveButton.View;
-            moveButtonView.CanDrag = true;
-            moveButton.ManipulationMode = ManipulationModes.All;
-            moveButton.ManipulationDelta += (s, e) => e.Handled = true;
-            moveButton.ManipulationStarted += (s, e) => e.Handled = true;
-            moveButtonView.DragStarting += (s, e) =>
+            moveButton.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Move;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            moveButtonView.DropCompleted += ButtonView_DropCompleted;
-            var copyButtonView = copyButton.View;
-            copyButtonView.CanDrag = true;
-            copyButton.ManipulationMode = ManipulationModes.All;
-            copyButton.ManipulationDelta += (s, e) => e.Handled = true;
-            copyButton.ManipulationStarted += (s, e) => e.Handled = true;
+            moveButton.DropCompleted += ButtonView_DropCompleted;
             copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
-            copyButtonView.DragStarting += (s, e) =>
+            copyButton.DragStarting += (s, e) =>
             {
                 _moveTimer.Stop();
                 e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            copyButtonView.DropCompleted += ButtonView_DropCompleted;
-            var copyDataButtonView = copyDataButton.View;
-            copyDataButtonView.CanDrag = true;
-            copyDataButton.ManipulationMode = ManipulationModes.All;
-            copyDataButton.ManipulationDelta += (s, e) => e.Handled = true;
-            copyDataButton.ManipulationStarted += (s, e) => e.Handled = true;
-            copyDataButtonView.DragStarting += (s, e) =>
+            copyButton.DropCompleted += ButtonView_DropCompleted;
+            copyDataButton.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            var instanceDataButtonView = instanceDataButton.View;
-            instanceDataButtonView.CanDrag = true;
-            instanceDataButtonView.ManipulationMode = ManipulationModes.All;
-            instanceDataButtonView.ManipulationDelta += (s, e) => e.Handled = true;
-            instanceDataButtonView.ManipulationStarted += (s, e) => e.Handled = true;
-            instanceDataButtonView.DragStarting += (s, e) =>
+            instanceDataButton.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            var copyViewButtonView = copyViewButton.View;
-            copyViewButtonView.CanDrag = true;
-            copyViewButton.ManipulationMode = ManipulationModes.All;
-            copyViewButton.ManipulationDelta += (s, e) => e.Handled = true;
-            copyViewButton.ManipulationStarted += (s, e) => e.Handled = true;
-            copyViewButtonView.DragStarting += (s, e) =>
+            keyValueButton.DragStarting += (s, e) =>
+            {
+                e.Data.RequestedOperation = DataPackageOperation.Link;
+                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
+            };
+            copyViewButton.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 e.Data.Properties.Add("View", true);
@@ -899,6 +881,10 @@ namespace Dash
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
+        private void KeyValueViewDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
+        }
         private void InstanceDataDocument()
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
@@ -1114,7 +1100,7 @@ namespace Dash
                                 Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), opos) :
                                 new Point();
                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                           collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
                         }
                         break;
                     }

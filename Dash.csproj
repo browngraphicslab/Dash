@@ -108,6 +108,7 @@
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScript.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />

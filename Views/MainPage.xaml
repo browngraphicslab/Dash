@@ -14,6 +14,7 @@
 
         <!-- negative margin here hides the collection's output dot-->
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
+        <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
             <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             </Canvas>

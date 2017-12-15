@@ -108,7 +108,7 @@ namespace Dash
             };
             SetupBindings(tb, docController, context);
 
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
+            if (keysToFrameworkElementsIn != null && referenceToText != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
 
             // add bindings to work with operators
             if (referenceToText != null) // only bind operation interactions if text is a reference

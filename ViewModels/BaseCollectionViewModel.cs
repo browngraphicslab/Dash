@@ -279,6 +279,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            KeyValuePane.DragModel = null;
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
@@ -503,7 +504,7 @@ namespace Dash
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
                     var newDoc = e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
                     if (double.IsNaN(newDoc.GetWidthField().Data))
                         newDoc.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                     if (double.IsNaN(newDoc.GetHeightField().Data))

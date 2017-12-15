@@ -29,6 +29,7 @@ namespace Dash
             AddOperator(() => new FilterOperatorController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
             AddOperator(() => new CompoundOperatorController(), "Compound");
+            AddOperator(() => new ExecuteHtmlJavaScript(), "HtmlScript");
             AddOperator(() => new MeltOperatorController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
             AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");

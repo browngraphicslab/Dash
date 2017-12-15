@@ -500,6 +500,8 @@ namespace Dash
                     else if (curField is ListController<DocumentController>)
                         (curField as ListController<DocumentController>).TypedData =
                             new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    else if (curField is RichTextController)
+                        (curField as RichTextController).Data = new RichTextModel.RTD(textInput);
                     else return false;
                 }
                 else

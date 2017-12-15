@@ -26,9 +26,13 @@ namespace Dash
 
         public DocumentController ParseJsonString(string json, string path)
         {
-            var jtoken = JToken.Parse(json);
-            var newSchema = new DocumentSchema(path);
-            return ParseRoot(jtoken, newSchema);
+            if (!string.IsNullOrEmpty(json))
+            {
+                var jtoken = JToken.Parse(json);
+                var newSchema = new DocumentSchema(path);
+                return ParseRoot(jtoken, newSchema);
+            }
+            return null;
         }
 
         /// <summary>

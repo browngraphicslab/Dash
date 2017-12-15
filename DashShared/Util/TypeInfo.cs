@@ -52,6 +52,7 @@ namespace DashShared
         Multiply,
         Regex,
         Melt,
+        ExecuteHtmlJavaScript,
         Sentence_Analyzer,
         Extract_Keywords,
         ImageRecognition

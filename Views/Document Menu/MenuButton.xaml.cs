@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -34,10 +36,27 @@ namespace Dash
             this.InstantiateButton(icon, name);
             this.CreateAndRunInstantiationAnimation(false);
             IsComposite = false;
+            PointerPressed += MenuButton_PointerPressed;
         }
-        
+
+        private void MenuButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e != null && (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
+            {
+                StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+            }
+        }
+
+        private PointerPoint _lastPointerPoint;
         private List<Button> _buttons = new List<Button>();
         private Border _border;
+        private Border Border {
+            get => _border;
+            set { _border = value;
+                _border.PointerPressed += (s, e) => _lastPointerPoint = e.GetCurrentPoint(s as UIElement);
+                _border.DragStarting += (s,e) =>  StartDragAsync(_lastPointerPoint);
+            }
+        }
 
         public new Brush Background
         {
@@ -86,7 +105,7 @@ namespace Dash
                     Foreground = new SolidColorBrush(Colors.Black)
                 };
                 // create rounded(circular) border to hold the symbol
-                _border = new Border()
+                Border = new Border()
                 {
                     Height = 40,
                     Width = 40,
@@ -144,7 +163,7 @@ namespace Dash
             // create button to contain the border with the symbol
             content = new MenuButtonContainer(icon, name);
             _descriptionText = content.Label;
-            _border = content.Border;
+            Border = content.Border;
             // makes buttons appear circular 
             content.Border.Background = Resources["MenuBackground"] as SolidColorBrush;
             //_descriptionText.Foreground = Resources["TitleColor"] as SolidColorBrush;

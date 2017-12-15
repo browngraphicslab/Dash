@@ -160,6 +160,26 @@ namespace Dash
             activeLayout?.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
             return doc;
         }
+        public static DocumentController GetKeyValueAlias(this DocumentController doc, Point? where = null)
+        {
+            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc)) ?? doc;
+            var activeLayout =  new KeyValueDocumentBox(null).Document;
+            activeLayout.SetField(KeyStore.DocumentContextKey, docContext, true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(200), false);
+            if (where != null)
+            {
+                activeLayout.SetField(KeyStore.PositionFieldKey, new PointController((Point)where), true);
+            }
+            var oldPosition = doc.GetPositionField();
+            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
+            {
+                activeLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                        true);
+            }
+
+            return activeLayout;
+        }
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
             var activeLayout = doc.GetActiveLayout();

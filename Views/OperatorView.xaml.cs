@@ -434,9 +434,47 @@ namespace Dash
                         }
                     }
                 }
+            }
+            if (KeyValuePane.DragModel != null)
+            {
+                var km = KeyValuePane.DragModel;
+                // and the header has a field key
+                if (KeyValuePane.DragModel.FieldKey != null)
+                {
+                    // get the document containing the operator
+                    var refToOp = DataContext as FieldReference;
+                    var operatorDoc = refToOp?.GetDocumentController(null);
 
+                    // get the key from the sending ellipse
+                    var frameworkElement = sender as FrameworkElement;
+                    if (frameworkElement != null)
+                    {
+                        var key = ((DictionaryEntry)frameworkElement.DataContext).Key as KeyController;
+
+                        if (_operator.Inputs[key].Type == TypeInfo.Text)
+                        {
+                            // User selected an item from the suggestion list, take an action on it here.
+                            if (operatorDoc != null)
+                            {
+                                operatorDoc.SetField(key, km.Document.GetDereferencedField(km.FieldKey.Key, null), true);
+                                return;
+                            }
+
+                        }
+                    }
+                }
             }
             return;
+        }
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Ellipse_Drop(object sender, DragEventArgs e)
+        {
+
         }
     }
 }
