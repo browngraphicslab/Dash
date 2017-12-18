@@ -43,31 +43,16 @@ namespace Dash
                 [OutputDocument] = TypeInfo.Document
             };
 
-        WebView _web = null;
         public ExecuteHtmlJavaScript() : base(new OperatorModel(OperatorType.ExecuteHtmlJavaScript))
         {
-            _web = MainPage.Instance.JavaScriptHack;
-            _web.ScriptNotify += _web_ScriptNotify;
         }
+        
 
-        private void _web_ScriptNotify(object sender, NotifyEventArgs e)
-        {
-            scripoutput = e.Value;
-            var jsonlist = new JsonToDashUtil().ParseJsonString(scripoutput, "");
-            var cnote = (CollectionNote)_web.Tag;
-            var children = cnote.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
-            Debug.Assert(children != null);
-            if (!children.GetElements().Contains(jsonlist))
-                children.Add(jsonlist);
-        }
-
-        string scripoutput = "";
         public ExecuteHtmlJavaScript(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
-            _web.ScriptNotify += _web_ScriptNotify;
         }
 
-        public override async void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var html    = (inputs[HtmlINput] as TextController).Data;
@@ -75,22 +60,54 @@ namespace Dash
             var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
             var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-            var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Freeform);
-            await MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
-                async () =>
-                {
-                    _web.NavigateToString(correctedHtml);
-                    _web.LoadCompleted += (s, e) =>
-                    {
-                        _web.Tag = doc;
-                         _web.InvokeScriptAsync("eval", new[] { script });
-                    };
+            var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema, "Json Collection");
 
-                }));
+            MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
+                async () => new execClass(correctedHtml, script, doc)));
 
-            
             outputs[OutputDocument] = doc.Document;
         }
+
+        class execClass
+        {
+            WebView _web = MainPage.Instance.JavaScriptHack;
+            CollectionNote Cnote;
+            static int id = 10000;
+            static string prefix = "window.external.notify(";
+            int Id = 0;
+            public execClass(string correctedHtml, string script, CollectionNote doc)
+            {
+                Cnote = doc;
+                _web.ScriptNotify += _web_ScriptNotify1;
+                _web.NavigateToString(correctedHtml);
+                Id = id++;
+                _web.LoadCompleted += (s, e) =>
+                {
+                    if (Id == id-1)
+                    {
+                        _web.InvokeScriptAsync("eval", new[] { script.Replace(prefix, prefix +"\'" + Id + "\'+") });
+                    }
+                };
+                if (id > 99999)
+                    id = 10000; 
+            }
+
+            private void _web_ScriptNotify1(object sender, NotifyEventArgs e)
+            {
+                var id = int.Parse(e.Value.Substring(0, 5));
+                var res = e.Value.Substring(5, e.Value.Length - 5);
+                if (id == Id)
+                {
+                    var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
+                    var children = Cnote.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
+                    foreach (var f in jsonlist.EnumFields(true))
+                        if (f.Value is ListController<DocumentController>)
+                            foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
+                                if (!children.GetElements().Contains(d))
+                                    children.Add(d);
+                }
+            }
+        };
         
 
         public override bool SetValue(object value)

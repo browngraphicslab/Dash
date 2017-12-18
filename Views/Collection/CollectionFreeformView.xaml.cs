@@ -976,13 +976,23 @@ namespace Dash
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 var pos = e.GetCurrentPoint(this).Position;
-                var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
+                var outputDoc = _currReference.FieldReference.GetReferenceController()?.DereferenceToRoot<DocumentController>(null);
+                if (outputDoc != null)
                 {
-                    [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
-                }, DocumentType.DefaultType);
-                var layout = new DocumentBox(new DocumentReferenceController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
-                doc.SetActiveLayout(layout, true, false);
-                ViewModel.AddDocument(doc, null);
+                    outputDoc.GetPositionField().Data = where;
+                    ViewModel.AddDocument(outputDoc, null);
+                }
+                else
+                {
+                    var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                    {
+                        [KeyStore.DataKey] = _currReference.FieldReference.GetReferenceController()
+                    }, DocumentType.DefaultType);
+                    var layout = new DocumentBox(new DocumentReferenceController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                    doc.SetActiveLayout(layout, true, false);
+                    ViewModel.AddDocument(doc, null);
+                }
             }
             else if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.List)
             {

@@ -242,7 +242,8 @@ namespace Dash
         public KeyController GetKey(JToken jToken)
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
-            return new KeyController(DashShared.UtilShared.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
+            // bcz: if jToken.Path is "", then it seems to cause problems later on because the key doesn't have a name (I think it gets filtered out of the KeyValue pane list)
+            return new KeyController(DashShared.UtilShared.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

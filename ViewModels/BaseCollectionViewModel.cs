@@ -279,10 +279,25 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            KeyValuePane.DragModel = null;
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
+
+            if (KeyValuePane.DragModel != null)
+            {
+                if (KeyValuePane.DragModel.FieldKey.Key.Equals(KeyStore.HtmlTextKey))
+                {
+                    var opController = OperatorDocumentFactory.CreateOperatorDocument(new ExecuteHtmlJavaScript(), "HtmlScript", null);
+
+                    // using this as a setter for the transform massive hack - LM
+                    var _ = new DocumentViewModel(opController)
+                    {
+                        GroupTransform = new TransformGroupData(where, new Point(), new Point(1, 1))
+                    };
+                    AddDocument(opController, null);
+                }
+            }
+            KeyValuePane.DragModel = null;
             if (e.DataView != null &&
                   (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
             {
