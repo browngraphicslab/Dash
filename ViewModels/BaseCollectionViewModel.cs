@@ -287,7 +287,7 @@ namespace Dash
             {
                 if (KeyValuePane.DragModel.FieldKey.Key.Equals(KeyStore.HtmlTextKey))
                 {
-                    var opController = OperatorDocumentFactory.CreateOperatorDocument(new ExecuteHtmlJavaScript(), "HtmlScript", null);
+                    var opController = ExecuteHtmlJavaScriptController.CreateController(new DocumentReferenceController(KeyValuePane.DragModel.Document.GetId(), KeyValuePane.DragModel.FieldKey.Key));
 
                     // using this as a setter for the transform massive hack - LM
                     var _ = new DocumentViewModel(opController)

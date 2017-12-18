@@ -1205,6 +1205,10 @@ namespace Dash
             {
                 return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
+            if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
+            {
+                return ExecuteHtmlOperatorBox.MakeView(this, context, isInterfaceBuilder); //
+            }
             if (DocumentType.Equals(RichTextBox.DocumentType))
             {
                 return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //

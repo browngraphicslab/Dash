@@ -49,7 +49,7 @@ namespace Dash
                 {
                     var converter = GetConverter != null ? GetConverter(field) : Converter;
                     var fieldData = field.GetValue(context);
-                    var xamlData = converter == null
+                    var xamlData = converter == null || fieldData == null
                         ? fieldData
                         : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
                     if (xamlData != null)

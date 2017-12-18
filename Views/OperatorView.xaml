@@ -21,7 +21,7 @@
 
             <!--Inner Content-->
             <Border Grid.Column="1" Padding="10,0">
-                <ContentPresenter x:Name="xOpContentPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                <ContentPresenter x:Name="xOpContentPresenter" x:FieldModifier="public" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
             </Border>
 
             <!-- Input Operator Handles & Labels-->

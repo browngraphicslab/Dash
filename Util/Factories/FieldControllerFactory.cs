@@ -215,7 +215,7 @@ namespace Dash
                     controller = new RegexOperatorController(model);
                     break;
                 case OperatorType.ExecuteHtmlJavaScript:
-                    controller = new ExecuteHtmlJavaScript(model);
+                    controller = new ExecuteHtmlJavaScriptController(model);
                     break;
                 case OperatorType.Melt:
                     controller = new MeltOperatorController(model);

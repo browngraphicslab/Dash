@@ -79,9 +79,17 @@ namespace Dash
             //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
             // this.ManipulationDelta += DocumentView_ManipulationDelta;
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
+            PointerPressed += DocumentView_PointerPressed;
+            PointerReleased += DocumentView_PointerReleased;
         }
 
-        
+        private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+        }
+
+        private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+        }
 
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
@@ -1036,10 +1044,12 @@ namespace Dash
 
         private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            this.OnTapped(sender, new TappedRoutedEventArgs());
             var doc = ViewModel.DocumentController;
             var text = doc.GetField(KeyStore.SystemUriKey) as TextController;
             if (text == null) return;
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+
         }
 
         private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)

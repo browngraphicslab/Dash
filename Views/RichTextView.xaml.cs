@@ -266,9 +266,11 @@ namespace Dash
         }
 
         public string target = null;
+        private bool _rightPressed = false;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            if (_rightPressed)
             {
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
@@ -299,6 +301,10 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             if (parent != null)
                 parent.MoveToContainingCollection();
+            if (_rightPressed)
+            {
+                parent.OnTapped(sender, new TappedRoutedEventArgs());
+            }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)
         {

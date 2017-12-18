@@ -10,7 +10,7 @@ using static Dash.NoteDocuments;
 
 namespace Dash
 {
-    public class ExecuteHtmlJavaScript : OperatorController
+    public class ExecuteHtmlJavaScriptController : OperatorController
     {
         //Input Keys
 
@@ -18,54 +18,72 @@ namespace Dash
         /// This key contains a ListController<DocumentController> which is the input
         /// to the melt operator
         /// </summary>
-        public static readonly KeyController HtmlINput =
+        public static readonly KeyController HtmlInputKey =
             new KeyController("4B55E588-D6C9-4C0D-B5A8-AB61BD4B2E9B", "Html Input");
 
-        public static readonly KeyController Script =
+        public static readonly KeyController ScriptKey =
             new KeyController("44ACDEBC-D6E5-4491-9755-B4E462202BA7", "Script");
 
         // Output Keys
-        public static readonly KeyController OutputDocument =
+        public static readonly KeyController OutputDocumentKey =
             new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
 
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
             {
-                [HtmlINput] = new IOInfo(TypeInfo.Text, true),
-                [Script]    = new IOInfo(TypeInfo.Text, true),
+                [HtmlInputKey] = new IOInfo(TypeInfo.Text, true),
+                [ScriptKey]    = new IOInfo(TypeInfo.Text, true),
 
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
             new ObservableDictionary<KeyController, TypeInfo>
             {
-                [OutputDocument] = TypeInfo.Document
+                [OutputDocumentKey] = TypeInfo.Document
             };
 
-        public ExecuteHtmlJavaScript() : base(new OperatorModel(OperatorType.ExecuteHtmlJavaScript))
+
+        public static DocumentController CreateController(DocumentReferenceController htmlRef)
+        {
+            var fieldController = new ExecuteHtmlJavaScriptController();
+            var execOp = OperatorDocumentFactory.CreateOperatorDocument(fieldController);
+            execOp.SetField(HtmlInputKey, htmlRef, true);
+            execOp.SetField(ScriptKey,    new TextController(""), true);
+            execOp.SetField(OutputDocumentKey, new TextController(""), true);
+
+            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp.GetId(), KeyStore.OperatorKey)).Document;
+            execOp.SetActiveLayout(layoutDoc, true, true);
+            return execOp;
+        }
+        
+
+        public ExecuteHtmlJavaScriptController() : base(new OperatorModel(OperatorType.ExecuteHtmlJavaScript))
         {
         }
         
 
-        public ExecuteHtmlJavaScript(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        public ExecuteHtmlJavaScriptController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            var html    = (inputs[HtmlINput] as TextController).Data;
-            var script  = (inputs[Script] as RichTextController).Data.ReadableString;
-            var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-            var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+            var html    = (inputs[HtmlInputKey] as TextController).Data;
+            var script  = (inputs[ScriptKey] as TextController).Data;
+            if (html.Contains("<html>"))
+            {
+                var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+                var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-            var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema, "Json Collection");
+                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema, "Json Collection");
 
-            MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
-                async () => new execClass(correctedHtml, script, doc)));
+                MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
+                    async () => new execClass(correctedHtml, script, doc)));
 
-            outputs[OutputDocument] = doc.Document;
+                outputs[OutputDocumentKey] = doc.Document;
+            }
         }
 
         class execClass
@@ -117,12 +135,12 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public override FieldModelController<OperatorModel> Copy()
         {
-            return new MeltOperatorController();
+            return new ExecuteHtmlJavaScriptController();
         }
     }
 }
