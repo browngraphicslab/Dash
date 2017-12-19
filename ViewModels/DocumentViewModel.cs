@@ -33,6 +33,19 @@ namespace Dash
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
+
+        bool _hasTitle = false;
+        public bool HasTitle
+        {
+            get { return _hasTitle; }
+            set { SetProperty(ref _hasTitle, value); }
+        }
+        public void SetHasTitle(bool active)
+        {
+            if (active)
+                HasTitle = active;
+            else HasTitle = DocumentController.GetDataDocument(null).HasTitle && !Undecorated;
+        }
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -212,8 +225,14 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
+            
+            DocumentController.GetDataDocument(context).AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
+            titleChanged(null, null, null);
         }
-
+        void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            SetHasTitle(!Undecorated && DocumentController.GetDataDocument(null).HasTitle);
+        }
         private void SetUpSmallIcon()
         {
             var iconFieldModelController =

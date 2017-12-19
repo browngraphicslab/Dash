@@ -21,6 +21,12 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
 using DashShared.Models;
+using static Dash.NoteDocuments;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
+using System.Diagnostics;
+using Windows.System;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -76,7 +82,8 @@ namespace Dash
         }
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
-            xRichEditBox.TextChanged  -= xRichEditBoxOnTextChanged;
+            xRichEditBox.KeyUp -= XRichEditBox_KeyUp;
+            MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
         }
 
         RichTextModel.RTD GetText()
@@ -117,17 +124,81 @@ namespace Dash
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
-            
-            if (GetText() != null)
-                xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
-        
-            
-            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
+            {
+                if (GetText() != null)
+                    xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
+            });
+
+            xRichEditBox.KeyUp += XRichEditBox_KeyUp;
+            MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
+            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
+            this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
         }
 
-        // freezes the app
-        private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
+        public string target = null;
+        private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+            // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
+            // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
+            if (this.xRichEditBox.Document.Selection.Link.Length > 1)
+            {
+                target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
+            }
+        }
+
+        private void tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (target != null)
+            {
+                var doc = GetDoc();
+                var point = doc.GetPositionField().Data;
+
+                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
+                {
+                    var pt = point;
+                    pt.X -= 150;
+                    pt.Y -= 50;
+                    if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
+                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
+                    MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
+                }
+                else if (target.StartsWith("http"))
+                {
+                    theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
+                    if (theDoc != null && theDoc != DBTest.DBNull)
+                    {
+                        var pt = point;
+                        pt.X -= 150;
+                        pt.Y -= 50;
+                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                    }
+                    else
+                    {
+                        Windows.System.Launcher.LaunchUriAsync(new Uri(target));
+                        //var WebDoc = DBTest.CreateWebPage(target);
+                        //var pt = point;
+                        //pt.X -= 150;
+                        //pt.Y -= 50;
+                        //MainPage.Instance.DisplayDocument(WebDoc, pt);
+                    }
+                }
+                this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
+            }
+            target = null;
+        }
+
+        private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
+            if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
+            {
+                return;
+            }
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
 
@@ -158,20 +229,18 @@ namespace Dash
                         // see if we can find a document whose primary keys match the text
                         var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
 
-                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^");
+                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
                     }
                 }
             }
 
-            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
-            {
-                string allRtfText;
-                xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
-                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-            }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+            e.Handled = true;
+        }
+
+        private async void released(object sender, PointerRoutedEventArgs e)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
@@ -182,7 +251,7 @@ namespace Dash
             {
                 if (refText.StartsWith("http"))
                 {
-                     theDoc = DBTest.CreateWebPage(refText);
+                    theDoc = new HtmlNote(refText).Document;
                 }
                 else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
                 {
@@ -198,18 +267,26 @@ namespace Dash
             return theDoc;
         }
 
-        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded)
+        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
         {
-            if (theDoc != null && this.xRichEditBox.Document.Selection.StartPosition != this.xRichEditBox.Document.Selection.EndPosition && 
-                this.xRichEditBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+            if (theDoc != null)
             {
-                // set the hyperlink for the matched text
-                this.xRichEditBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
-                // advance the end selection past the RTF embedded HYPERLINK keyword
-                s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                s1 = s2;
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                string link = "\"" + theDoc.GetId() + "\"";
+                if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null)?.Data?.StartsWith("http"))
+                {
+                    link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
+                }
+
+                if (xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition && xRichEditBox.Document.Selection.Link != link)
+                {
+                    // set the hyperlink for the matched text
+                    this.xRichEditBox.Document.Selection.Link = link;
+                    // advance the end selection past the RTF embedded HYPERLINK keyword
+                    s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                    s1 = s2;
+                    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                    this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                }
             }
         }
         
@@ -306,18 +383,59 @@ namespace Dash
 
         private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(30);
+            xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }
 
         private void Grid_GotFocus(object sender, RoutedEventArgs e)
         {
+            xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        }
 
-            xFormatRow.Height = new GridLength(30);
+        private void SizeToFit()
+        {
+            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+            var str = "";
+            this.xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out str);
+            xRichEditBox.Document.Selection.SetRange(0, str.Length);
+            var selectedText = xRichEditBox.Document.Selection;
+            xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+            int count = 0;
+            float lastMax = 20;
+            float lastMin = 6;
+            while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 5 && selectedText != null && count++ < 10)
+            {
+                var charFormatting = selectedText.CharacterFormat;
+                var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
+                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
+                if (delta < 0)
+                    lastMax = curSize;
+                else lastMin = curSize;
+                charFormatting.Size = curSize + delta / 2;
+                selectedText.CharacterFormat = charFormatting;
+                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+            }
+            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
         private void Grid_LostFocus(object sender, RoutedEventArgs e)
         {
-            xFormatRow.Height = new GridLength(0);
+            string allText;
+            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
+            {
+                string allRtfText;
+                xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            }
+            var ele = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (!ele.GetAncestors().Contains(this) && (xFontComboBox.ItemsPanelRoot == null || !xFontComboBox.ItemsPanelRoot.Children.Contains(ele)))
+            {
+                xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
+            }
         }
 
 
@@ -326,14 +444,23 @@ namespace Dash
         }
 
 
-        private void xRichEditBox_Drop(object sender, DragEventArgs e)
+        private async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             DocumentController theDoc = null;
             if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
             {
                 var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
                 theDoc = docCtrls.First();
             }
+            var forceLocal = true;
+            var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
+            if (sourceIsFileSystem)
+            {
+                theDoc = await FileDropHelper.GetDroppedFile(e);
+                forceLocal = false;
+            }
+
 
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
@@ -343,7 +470,7 @@ namespace Dash
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
-            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false);
+            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false, forceLocal);
 
             if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
             {
@@ -369,42 +496,6 @@ namespace Dash
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             if (LastS1 != s1 || LastS2 != s2)  // test if the selection has actually changed... seem to get in here when nothing has happened perhaps because of losing focus?
             {
-                // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
-                // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
-                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-                {
-                    var doc = GetDoc();
-                    var point = doc.GetPositionField().Data;
-
-                    var target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                    if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
-                    {
-                        var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
-                    }
-                    else if (target.StartsWith("http"))
-                    {
-                        theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                        if (theDoc != null && theDoc != DBTest.DBNull)
-                        {
-                            var pt = point;
-                            pt.X -= 150;
-                            pt.Y -= 50;
-                            MainPage.Instance.DisplayDocument(theDoc, pt);
-                        }
-                        else
-                        {
-                            var WebDoc = DBTest.CreateWebPage(target);
-                            var pt = point;
-                            pt.X -= 150;
-                            pt.Y -= 50;
-                            MainPage.Instance.DisplayDocument(WebDoc, pt);
-                        }
-                    }
-                }
             }
             LastS1 = s1;
             LastS2 = s2;

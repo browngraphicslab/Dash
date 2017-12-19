@@ -11,7 +11,7 @@ namespace Dash
     /// <summary>
     /// A Field Model which holds rich text data
     /// </summary>
-    [FieldModelTypeAttribute(TypeInfo.RichTextField)]
+    [FieldModelTypeAttribute(TypeInfo.RichText)]
     public class RichTextModel:FieldModel
     {
         public class RTD {

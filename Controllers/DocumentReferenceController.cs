@@ -38,6 +38,7 @@ namespace Dash
                 DocumentId = docId;
             var docController2 = GetDocumentController(null);
             docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            UpdateOnServer();
         }
 
         public override FieldModelController<ReferenceModel> Copy()

@@ -93,6 +93,11 @@ namespace Dash
             Init();
         }
 
+        public ListController(T item) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        {
+            Init();
+        }
+
         public override void Init()
         {
             TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
@@ -249,6 +254,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Provides data about how the list changed. Similar to NotifyCollectionChangedEventArgs.
+        /// </summary>
         public class ListFieldUpdatedEventArgs : FieldUpdatedEventArgs
         {
             public enum ListChangedAction

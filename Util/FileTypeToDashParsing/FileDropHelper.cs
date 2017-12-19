@@ -9,6 +9,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Dash.Controllers;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -85,7 +86,7 @@ namespace Dash
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     case ".rtf":
-                        t = TypeInfo.RichTextField;
+                        t = TypeInfo.RichText;
                         data = await FileIO.ReadTextAsync(storageFile);
                         break;
                     default:
@@ -140,7 +141,7 @@ namespace Dash
                     return new DocumentBox(reference, x, y, w, h).Document;
                 case TypeInfo.Point:
                     return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichTextField:
+                case TypeInfo.RichText:
                     return new RichTextBox(reference, x, y, w, h).Document;
                 default:
                     return null;
@@ -157,6 +158,19 @@ namespace Dash
                     position.X, position.Y);
             activeLayout?.Add(layoutDoc);
             return layoutDoc;
+        }
+
+        public static async Task< DocumentController> GetDroppedFile(DragEventArgs e)
+        {
+            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+
+            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            if (files.Count == 1)
+            {
+                var fileType = GetSupportedFileType(files.First());
+                return await ParseFileAsync(fileType, files.First(), new Point(), e).AsAsyncOperation();
+            }
+            return null;
         }
 
         /// <summary>
@@ -236,7 +250,8 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
-                    return DBTest.CreateWebPage((await e.DataView.GetWebLinkAsync()).AbsoluteUri, where);
+                    var link = await e.DataView.GetWebLinkAsync();
+                    return new HtmlNote(link.AbsoluteUri, "", where).Document;
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
                 case FileType.Text:

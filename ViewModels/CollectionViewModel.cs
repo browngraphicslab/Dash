@@ -9,16 +9,19 @@ namespace Dash
 {
     public class CollectionViewModel : BaseCollectionViewModel
     {
-        private ListController<DocumentController> _collectionController;
-        public ListController<DocumentController> CollectionController { get { return _collectionController; } }
+        private ListController<DocumentController> _collectionFieldModelController;
+        public ListController<DocumentController> CollectionController { get { return _collectionFieldModelController; } }
 
         public InkController InkController;
 
-        public CollectionViewModel(FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentController ContainerDocument;
+
+        public CollectionViewModel(DocumentController container, FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             Debug.Assert(collection != null);
-            _collectionController = collection.DereferenceToRoot<ListController<DocumentController>>(context);
-            AddViewModels(_collectionController.TypedData, context);
+            _collectionFieldModelController = collection.DereferenceToRoot<ListController<DocumentController>>(context);
+            AddViewModels(_collectionFieldModelController.TypedData, context);
+            ContainerDocument = container;
 
             var copiedContext = new Context(context);
 
@@ -38,9 +41,9 @@ namespace Dash
                         else
                         {
 
-                            _collectionController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
-                            if (_collectionController == null) return;
-                            var documents = _collectionController.GetElements();
+                            _collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
+                            if (_collectionFieldModelController == null) return;
+                            var documents = _collectionFieldModelController.GetElements();
                             DocumentViewModels.Clear();
 
                             AddViewModels(documents, context);
@@ -96,7 +99,7 @@ namespace Dash
             SelectionGroup.Clear();
             foreach (var vmp in itemsToDelete)
             {
-                _collectionController.Remove(vmp.DocumentController);
+                _collectionFieldModelController.Remove(vmp.DocumentController);
             }
         }
 
@@ -169,7 +172,7 @@ namespace Dash
 
 
             // just update the collection, the colllection will update our view automatically
-            _collectionController.Add(doc);
+            _collectionFieldModelController.Add(doc);
         }
 
         public override void RemoveDocuments(List<DocumentController> documents)
@@ -183,7 +186,7 @@ namespace Dash
         public override void RemoveDocument(DocumentController document)
         {
             // just update the collection, the colllection will update our view automatically
-            _collectionController.Remove(document);
+            _collectionFieldModelController.Remove(document);
         }
 
         #endregion

@@ -44,7 +44,21 @@ namespace Dash
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
             }
         }
+        public bool HasTitle
+        {
+            get
+            {
+                return _fields.ContainsKey(KeyStore.TitleKey) &&
+                                        (_fields[KeyStore.TitleKey] as TextController).Data != "Title?";
+            }
+        }
 
+        /// <summary>
+        /// Add: Used when a field is added to a document with a key that is didn't previously contain
+        /// Remove: Used when a field is removed from a document
+        /// Replace: Used when a field in the document is replaced with a different field
+        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
+        /// </summary>
         public enum FieldUpdatedAction
         {
             Add,
@@ -86,9 +100,9 @@ namespace Dash
             {
                 if (GetField(KeyStore.TitleKey) is TextController)
                 {
-                    var textFieldModelController = GetField(KeyStore.TitleKey) as TextController;
-                    if (textFieldModelController != null)
-                        return textFieldModelController.Data;
+                    var textController = GetField(KeyStore.TitleKey) as TextController;
+                    if (textController != null)
+                        return textController.Data;
                 }
                 return DocumentType.Type;
             }
@@ -191,7 +205,7 @@ namespace Dash
             var fieldList = docModel.Fields.Values.ToArray();
             var keyList = docModel.Fields.Keys.ToArray();
 
-            var fieldDict = new Dictionary<KeyController, FieldModelController>();
+            var fieldDict = new Dictionary<KeyController, Controller>();
 
             for (var i = 0; i < docModel.Fields.Count(); i++)
             {
@@ -207,7 +221,7 @@ namespace Dash
                 if (keyController.Equals(KeyStore.LayoutListKey))
                     continue;
 
-                var fieldController = await FieldModelController.CreateFromServer(field);
+                var fieldController = await Controller.CreateFromServer(field);
 
                 if (keyController.Equals(KeyStore.ActiveLayoutKey))
                 {
@@ -274,7 +288,7 @@ namespace Dash
 
         public override FieldModelController<DocumentModel> Copy()
         {
-            throw new NotImplementedException();
+            return this.MakeCopy();
         }
 
         /// <summary>
@@ -287,17 +301,16 @@ namespace Dash
             foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
                 if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
-                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<TextController>;
+                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
                     if (primaryKeys != null)
                     {
                         bool found = true;
                         foreach (var value in primaryKeyValues)
                         {
                             bool foundValue = false;
-                            foreach (var kf in primaryKeys.Data)
+                            foreach (var key in primaryKeys.Data)
                             {
-                                var key = new KeyController((kf as TextController).Data);
-                                var derefValue = (dmc.GetDereferencedField(key, null) as TextController)?.Data;
+                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
                                 if (derefValue != null)
                                 {
                                     if (value == derefValue)
@@ -364,8 +377,8 @@ namespace Dash
 
             //if (searchAllDocsIfFail)
             //{
-            //    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
-            //    return new ReferenceFieldModelController(searchDoc.GetId(), KeyStore.CollectionOutputKey); // return  {AllDocs}.<FieldName=a> = this
+            //    var searchDoc = DBSearchOperatorController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+            //    return new ReferenceController(searchDoc.GetId(), KeyStore.CollectionOutputKey); // return  {AllDocs}.<FieldName=a> = this
             //}
             return null;
         }
@@ -442,7 +455,13 @@ namespace Dash
                     else if (curField is TextController)
                         (curField as TextController).Data = textInput;
                     else if (curField is ImageController)
-                        ((curField as ImageController).Data as BitmapImage).UriSource = new Uri(textInput);
+                         try
+                        {
+                            ((curField as ImageController).Data as BitmapImage).UriSource = new Uri(textInput);
+                        } catch (Exception)
+                        {
+                            ((curField as ImageController).Data as BitmapImage).UriSource = null;
+                        }
                     else if (curField is DocumentController)
                     {
                         //TODO tfs: fix this
@@ -467,7 +486,7 @@ namespace Dash
 
         /// <summary>
         ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
-        ///     returns null if no level of inheritance has a <see cref="FieldModelController" /> associated with the passed in
+        ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
         ///     <see cref="KeyControllerGeneric{T}" />
         /// </summary>
         /// <param name="key"></param>
@@ -498,13 +517,13 @@ namespace Dash
             if (!_fields.ContainsKey(KeyStore.PrototypeKey))
                 return null;
 
-            // otherwise try to convert the field associated with the prototype key into a DocumentFieldModelController
-            var documentFieldModelController =
+            // otherwise try to convert the field associated with the prototype key into a DocumentController
+            var documentController =
                 _fields[KeyStore.PrototypeKey] as DocumentController;
 
 
-            // if the field contained a DocumentFieldModelController return its data, otherwise return null
-            return documentFieldModelController;
+            // if the field contained a DocumentController return its data, otherwise return null
+            return documentController;
         }
 
 
@@ -625,7 +644,7 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
+        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
         ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
         ///     created in this <see cref="DocumentController" />.
         ///     <para>
@@ -690,7 +709,7 @@ namespace Dash
 
 
         /// <summary>
-        ///     returns the <see cref="FieldModelController" /> for the specified <see cref="KeyControllerGeneric{T}" /> by looking first in this
+        ///     returns the <see cref="Controller" /> for the specified <see cref="KeyControllerGeneric{T}" /> by looking first in this
         ///     <see cref="DocumentController" />
         ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
         ///     key is not found then it returns null.
@@ -922,7 +941,7 @@ namespace Dash
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             var fieldController = GetField(key);
-            return fieldController?.DereferenceToRoot(context);
+            return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
@@ -984,10 +1003,10 @@ namespace Dash
                     // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
-                        foreach (var opfieldOutput in opField.Outputs)
-                        {
-                            context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
-                        }
+                        //foreach (var opfieldOutput in opField.Outputs)
+                        //{
+                        //    context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
+                        //}
                         return context;
                     }
                 }
@@ -1269,7 +1288,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public override FieldControllerBase GetDefaultController()

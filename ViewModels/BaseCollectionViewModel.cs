@@ -169,6 +169,7 @@ namespace Dash
                         {
                             FieldControllerBase field = null;
 
+                            //TODO tfs: why are we making copies of all of these fields?
                             if (items.First() is TextController)
                                 field = (items.Count == 1) ? (FieldControllerBase)new TextController((items.First() as TextController).Data) :
                                                 new ListController<TextController>(items.OfType<TextController>());
@@ -179,9 +180,8 @@ namespace Dash
                                 field = (items.Count == 1) ? (FieldControllerBase)new RichTextController((items.First() as RichTextController).Data) :
                                                 new ListController<RichTextController>(items.OfType<RichTextController>());
                             else if (items.First() is DocumentController)
-                                field = (items.Count == 1)
-                                    ? (FieldControllerBase) (items.First() as DocumentController).MakeCopy(new List<KeyController>())
-                                    : new ListController<DocumentController>(items.OfType<DocumentController>());
+                                field = (items.Count == 1) ? (FieldControllerBase)(items.First() as DocumentController) :
+                                               new ListController<DocumentController>(items.OfType<DocumentController>());
                             if (field != null)
                                 doc.SetField(f.Key, field, true);
                         }
@@ -202,7 +202,7 @@ namespace Dash
                 if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>() {
-                        [KeyStore.PrimaryKeyKey] = new ListController<TextController>(new TextController[] { new TextController(pivotKey.Id) })
+                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                         }, DocumentType.DefaultType);
                     if (obj is string)
                     {
@@ -299,6 +299,8 @@ namespace Dash
                     var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
                     if (firstDocValue is ListController<DocumentController> || firstDocValue.GetValue(null) is List<FieldControllerBase>)
                         showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    else if (firstDocValue is DocumentController)
+                        subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
@@ -355,16 +357,72 @@ namespace Dash
                     Console.WriteLine(exception);
                 }
             }
-            if (false && e.DataView.Contains(StandardDataFormats.Html))
+            else if (e.DataView.Contains(StandardDataFormats.Html))
             {
+                var html = await e.DataView.GetHtmlFormatAsync();
+                var splits = new Regex("<").Split(html);
+                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
+                var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                var strings = text.Split(new char[] { '\r' });
+                var htmlNote = new HtmlNote(html, "", where).Document;
+                foreach (var str in html.Split(new char[] { '\r' }))
+                {
+                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                    if (matches.Count != 0)
+                    {
+                        htmlNote.GetDataDocument(null).SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                        break;
+                    }
+                }
 
-                var text = await e.DataView.GetHtmlFormatAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, "");
-                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
-                AddDocument(t.Document, null);
+                if (imgs.Count() == 0)
+                {
+                    var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
+                    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                    htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    if (title == "")
+                        foreach (var match in matches)
+                        {
+                            var pair = new Regex(":").Split(match.ToString());
+                            htmlNote.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                        }
+                    else
+                        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
+                } else {
+                    var related = new List<DocumentController>();
+                    foreach (var img in imgs)
+                    {
+                        var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(5, srcMatch.Length - 5);
+                        var i = new AnnotatedImage(new Uri(src), null, null, "", 200, 250, where.X, where.Y);
+                        related.Add(i.Document);
+                    }
+                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;
+                    htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
+                    htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    foreach (var str in strings)
+                    {
+                        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                        if (matches.Count != 0)
+                        {
+                            foreach (var match in matches)
+                            {
+                                var pair = new Regex(":").Split(match.ToString());
+                                htmlNote.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                            }
+                        }
+                    }
+                }
+                AddDocument(htmlNote, null);
             }
             else if (e.DataView.Contains(StandardDataFormats.Rtf))
-                ;
+            {
+                var text = await e.DataView.GetRtfAsync();
+
+                var t = new RichTextNote(PostitNote.DocumentType, "");
+                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text, text)), true);
+                AddDocument(t.Document, null);
+            }
             else if (e.DataView.Contains(StandardDataFormats.Text))
             {
                 var text = await e.DataView.GetTextAsync();
@@ -376,6 +434,19 @@ namespace Dash
                     var pair = new Regex(":").Split(match.ToString());
                     t.Document.GetDataDocument(null).SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
                 }
+                AddDocument(t.Document, null);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Bitmap))
+            {
+                var bmp = await e.DataView.GetBitmapAsync();
+                IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+                byte[] buffer = new byte[streamWithContent.Size];
+                using (DataReader reader = new DataReader(streamWithContent))
+                {
+                    await reader.LoadAsync((uint)streamWithContent.Size);
+                    reader.ReadBytes(buffer);
+                }
+                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
                 AddDocument(t.Document, null);
             }
 

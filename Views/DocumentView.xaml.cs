@@ -215,14 +215,16 @@ namespace Dash
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
         {
-            if (xKeyValPane.Width == 0)
+            if (xKeyValPane.Visibility == Visibility.Collapsed)
             {
                 xKeyValPane.Width = KeyValPaneWidth;
+                xKeyValPane.Visibility = Visibility.Visible;
                 ViewModel.Width += KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth*ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));  
             }
             else
             {
+                xKeyValPane.Visibility = Visibility.Collapsed;
                 xKeyValPane.Width = 0;
                 ViewModel.Width -= KeyValPaneWidth;
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth* ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
@@ -581,26 +583,26 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-                var keyList = dataDoc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<TextController>;
-                string key = KeyStore.TitleKey.Id;
-                if (key == null || !(keyList?.Data?.Count() > 0)) { 
+                var keyList = dataDoc.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
+                var key = KeyStore.TitleKey;
+                if (key == null || !(keyList?.Data?.Count() > 0))
+                {
                     dataDoc.GetTitleFieldOrSetDefault(context);
-                    key = KeyStore.TitleKey.Id;
-                } else
-                    key = keyList?.Data?.Select((k) => (k as TextController)?.Data)?.First();
+                }
+                else
+                    key = keyList?.Data?.First() as KeyController;
 
                 var Binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = dataDoc,
-                    Key = new KeyController(key),
+                    Key = key,
                     Context = context
                 };
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
                 xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
-                xKeyValPane.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
-                xTitleBorder.Visibility = ViewModel.Undecorated ? Visibility.Collapsed : Visibility.Visible;
+                ViewModel.SetHasTitle(this.IsLowestSelected);
             }
 
             //initDocumentOnDataContext();
@@ -610,7 +612,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+               // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -753,7 +755,7 @@ namespace Dash
 
         #region Activation
 
-        public Rect ClipRect { get { return xClipRect.Rect; } }
+        public Rect ClipRect { get { return new Rect(); } } //  xClipRect.Rect; } }
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         { 
@@ -824,6 +826,7 @@ namespace Dash
             {
                 ViewModel?.CloseMenu();
             }
+            ViewModel?.SetHasTitle(isLowestSelected);
         }
 
         #endregion
@@ -854,6 +857,14 @@ namespace Dash
                 e.Handled = true;
             }
         }
-    }
+
+        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
+            var deepestPrototype = prototypes.First.Value;
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
+            var same = deepestPrototype.Equals(ViewModel.DocumentController);
+        }
+}
     
 }

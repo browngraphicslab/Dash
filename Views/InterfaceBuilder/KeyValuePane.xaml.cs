@@ -85,12 +85,18 @@ namespace Dash
         private void SetListItemSourceToCurrentDataContext()
         {
             ListItemSource.Clear();
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
-            foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
-                if (!keyFieldPair.Key.Name.StartsWith("_"))
-                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-                        new BoundController(keyFieldPair.Value, _documentControllerDataContext),
-                        keys.Contains(keyFieldPair.Key.Id), TypeColumnWidth));
+            if (_documentControllerDataContext != null)
+            {
+                var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.ToList() ?? new List<KeyController>();
+                foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
+                    if (!keyFieldPair.Key.Name.StartsWith("_"))
+                        ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
+                            new BoundController(keyFieldPair.Value, _documentControllerDataContext),
+                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+            } else
+            {
+
+            }
         }
 
         private void _documentControllerDataContext_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -105,13 +111,12 @@ namespace Dash
 
         private void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.ToList() ?? new List<KeyController>();
 
             for (var i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, RealDataContext), keys.Contains(fieldKey.Id),
-                        TypeColumnWidth);
+                        new BoundController(fieldValue, RealDataContext), keys.Contains(fieldKey),TypeColumnWidth);
         }
 
         private void FocusOn(TextBox tb)
@@ -202,10 +207,9 @@ namespace Dash
 
                 fmController = new DocumentController(fields, DocumentType.DefaultType);
             }
-            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.Select(t => t.Id).ToList() ?? new List<string>();
+            var keys = _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)?.TypedData?.ToList() ?? new List<KeyController>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, RealDataContext),
-                keys.Contains(key.Id), TypeColumnWidth));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, RealDataContext), keys.Contains(key), TypeColumnWidth));
             RealDataContext.SetField(key, fmController, true);
             //*/ 
             return true;
@@ -237,12 +241,10 @@ namespace Dash
                 return;
             }
             var primaryKeys =
-                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(
-                    KeyStore.PrimaryKeyKey, null);
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>( KeyStore.PrimaryKeyKey, null);
             if (primaryKeys == null)
             {
-                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey,
-                    new ListController<KeyController>(new List<KeyController> {kf.Key}), false);
+                _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(kf.Key), false);
             }
             else
             {
@@ -261,8 +263,7 @@ namespace Dash
                 return;
             }
             var primaryKeys =
-                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(
-                    KeyStore.PrimaryKeyKey, null);
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>( KeyStore.PrimaryKeyKey, null);
             if(primaryKeys != null)
             {
                 if (primaryKeys.TypedData.Contains(kf.Key))

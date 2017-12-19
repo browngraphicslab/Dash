@@ -45,6 +45,7 @@ namespace Dash
             var docController = new ListController<DocumentController>(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docController);
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
+            fields[KeyStore.AbstractInterfaceKey] = new TextController("CollectionBox Layout");
 
             var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
 
@@ -68,7 +69,7 @@ namespace Dash
 
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            var collectionViewModel = new CollectionViewModel(docController, data, isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
             
 
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController).Data;

@@ -114,14 +114,13 @@ namespace Dash
         ///     Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space
         /// </summary>
         /// <returns></returns>
-        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate,
-            double elemScale = 1.0)
+        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate)
         {
             var p = DeltaTransformFromVisual(delta, toTranslate);
             return new TranslateTransform
             {
-                X = p.X * elemScale,
-                Y = p.Y * elemScale
+                X = p.X,
+                Y = p.Y
             };
         }
 
