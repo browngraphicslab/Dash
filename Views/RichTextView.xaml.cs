@@ -262,7 +262,7 @@ namespace Dash
             e.Handled = true;
 
             var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent.OnTapped(null, null);
+            parent?.OnTapped(null, null);
         }
 
         public string target = null;

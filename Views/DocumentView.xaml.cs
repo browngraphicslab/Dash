@@ -508,7 +508,6 @@ namespace Dash
             var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
-            var keyValueButton = new MenuButton(Symbol.SetTile, "KeyValues", KeyValueViewDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
             var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
 
@@ -520,7 +519,6 @@ namespace Dash
                // delegateButton,
                // copyDataButton
                // instanceDataButton,
-                keyValueButton,
                 copyViewButton,
                 new MenuButton(Symbol.Delete, "Delete",DeleteDocument)
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
@@ -551,7 +549,7 @@ namespace Dash
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
             };
-            keyValueButton.DragStarting += (s, e) =>
+            addButton.DragStarting += (s, e) =>
             {
                 e.Data.RequestedOperation = DataPackageOperation.Link;
                 ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
@@ -576,7 +574,6 @@ namespace Dash
 
             if (!useFixedMenu)
                 xMenuCanvas.Children.Add(_docMenu);
-            _moveTimer.Interval = new TimeSpan(0, 0, 0, 0, 600);
             _moveTimer.Tick += Timer_Tick;
         }
 
@@ -597,11 +594,14 @@ namespace Dash
             }
         }
 
-        DispatcherTimer _moveTimer = new DispatcherTimer();
+        DispatcherTimer _moveTimer = new DispatcherTimer()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 600),
+        };
 
         private void CopyButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _moveTimer.Start();
+           // _moveTimer.Start();
         }
 
         private void Timer_Tick(object sender, object e)
