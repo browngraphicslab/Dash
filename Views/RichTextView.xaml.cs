@@ -299,11 +299,16 @@ namespace Dash
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             var parent = this.GetFirstAncestorOfType<DocumentView>();
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+
             if (parent != null)
                 parent.MoveToContainingCollection();
             if (_rightPressed)
             {
-                parent.OnTapped(sender, new TappedRoutedEventArgs());
+                var delta = new Point(pointerPosition.X - HackToDragWithRightMouseButton.Item1.X, pointerPosition.Y - HackToDragWithRightMouseButton.Item1.Y);
+                var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+                if (dist < 100)
+                    parent.OnTapped(sender, new TappedRoutedEventArgs());
             }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)
@@ -1152,7 +1157,6 @@ namespace Dash
         {
             FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide();
             HasFocus = true;
-            UpdateDocument();
         }
 
         /// <summary>
@@ -1163,6 +1167,7 @@ namespace Dash
         private void XRichEditBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             HasFocus = false;
+            UpdateDocument();
         }
 
         private async void xRichEditBox_Drop(object sender, DragEventArgs e)
