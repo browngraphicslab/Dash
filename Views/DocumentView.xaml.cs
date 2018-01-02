@@ -513,17 +513,17 @@ namespace Dash
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
-                moveButton,
+                //moveButton,
+                new MenuButton(Symbol.Delete, "Delete",DeleteDocument),
                 copyButton,
                // delegateButton,
                // copyDataButton
                // instanceDataButton,
                 copyViewButton,
-                new MenuButton(Symbol.Delete, "Delete",DeleteDocument)
+                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
-                , addButton
+                addButton
             };
             moveButton.DragStarting += (s, e) =>
             {
