@@ -640,6 +640,9 @@
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WebViewWrapper.xaml.cs">
+      <DependentUpon>WebViewWrapper.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
@@ -1049,6 +1052,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TabMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\WebViewWrapper.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
