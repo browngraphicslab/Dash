@@ -160,8 +160,11 @@ namespace Dash
             }
         }
 
+
         public override void AddDocument(DocumentController doc, Context context)
         {
+            doc.CaptureNeighboringContext();
+
             if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
             {
                 var coll = doc.GetDereferencedField<ListController<DocumentController>>(CollectionKey, context);

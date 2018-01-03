@@ -6,6 +6,8 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Dash.Controllers;
 using DashShared.Models;
+using System;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -221,6 +223,64 @@ namespace Dash
             return newDoc;
         }
 
+        public class SetContextClass
+        {
+            public DocumentController DataDocument;
+            int yPos;
+            public SetContextClass()
+            {
+                MainPage.Instance.WebContext.LoadCompleted += WebContext_LoadCompleted;
+            }
+
+            private void WebContext_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+            {
+                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.scrollTo(0," + yPos + ");" });
+            }
+
+            public void UpdateNeighboringContext()
+            {
+                var neighboring = DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+                if (neighboring != null && neighboring.TypedData.Count == 2)
+                {
+                    var uri = neighboring.TypedData.First().Data;
+                    var where = neighboring.TypedData.Last().Data;
+                    if (int.TryParse(where, out yPos))
+                    {
+                        MainPage.Instance.WebContext.Navigate(new Uri(uri));
+                    }
+                }
+            }
+        }
+        public class GetContextClass
+        {
+            public DocumentController DataDocument;
+            public void CaptureNeighboringContext()
+            {
+                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString());" });
+            }
+            public GetContextClass()
+            {
+                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                MainPage.Instance.WebContext.ScriptNotify += scriptNotify;
+            }
+            private void scriptNotify(object sender, NotifyEventArgs e)
+            {
+                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                DataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
+                    new TextController(MainPage.Instance.WebContextUri.AbsoluteUri),
+                    new TextController(e.Value)}), true);
+            }
+        }
+        public static void RestoreNeighboringContext(this DocumentController doc)
+        {
+            new SetContextClass() { DataDocument = doc.GetDataDocument(null) }.UpdateNeighboringContext();
+        }
+
+        public static void CaptureNeighboringContext(this DocumentController doc)
+        {
+
+            new GetContextClass() { DataDocument = doc.GetDataDocument(null) }.CaptureNeighboringContext();
+        }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {

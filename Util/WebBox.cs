@@ -231,7 +231,13 @@ namespace Dash
                 {
                     parent.MoveToContainingCollection();
                 }
-            }
+
+
+                // web.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString()); " });
+
+                //web.InvokeScriptAsync("eval", new[] { "window.scrollTo(0, 572); " });
+                // web.InvokeScriptAsync("eval", new[] { "window.open('http://www.msn.com', window.name, '');" });
+            } 
         }
 
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)

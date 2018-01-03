@@ -529,5 +529,11 @@ namespace Dash
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         }
+
+        public Uri WebContextUri;
+        private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            WebContextUri = args.Uri;
+        }
     }
 }

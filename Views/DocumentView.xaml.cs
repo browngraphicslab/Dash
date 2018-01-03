@@ -446,6 +446,12 @@ namespace Dash
                 ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
             }
         }
+
+
+        private void ShowContext()
+        {
+            ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
+        }
         private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
@@ -510,6 +516,7 @@ namespace Dash
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
             var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
+            var showContextButton = new MenuButton(Symbol.Add, "Context", ShowContext);
 
             var documentButtons = new List<MenuButton>
             {
@@ -523,7 +530,8 @@ namespace Dash
                 new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
                 //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
                 //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
-                addButton
+                addButton,
+                showContextButton
             };
             moveButton.DragStarting += (s, e) =>
             {
