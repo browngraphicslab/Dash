@@ -277,7 +277,7 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
             Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNote;
             Action<ICollectionView, DragEventArgs> changeTheme = Actions.ChangeTheme;
             var importModel =
                 new RadialActionModel("", "") {CollectionDropAction = onImportDropped, IsDraggable = true};

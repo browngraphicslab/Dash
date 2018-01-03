@@ -180,14 +180,15 @@ namespace Dash
         {
             if (where != null)
             {
-                var h = docController.GetHeightField().Data; 
-                var w = docController.GetWidthField().Data;
-
                 var pos = (Point)where;
-                docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = pos;
+
+                // TODO this is arbitrary should not be getting set here
+                //var h = docController.GetHeightField().Data;
+                //var w = docController.GetWidthField().Data;
+                //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -261,11 +262,22 @@ namespace Dash
         }
 
 
-        public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
+        public static void AddNote(ICollectionView collectionView, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(collectionView, postitNote, where);
+            AddNote(collectionView, where);
+        }
+
+        public static void AddNote(ICollectionView collectionView, TappedRoutedEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            AddNote(collectionView, where);
+        }
+
+        public static void AddNote(ICollectionView collectionView, Point mainPageCoord)
+        {
+            DocumentController postitNote = new RichTextNote(PostitNote.DocumentType).Document;
+            DisplayDocument(collectionView, postitNote, mainPageCoord);
         }
 
         public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)

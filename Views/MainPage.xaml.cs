@@ -389,7 +389,7 @@ namespace Dash
 
         private void NotesTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNote;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
 

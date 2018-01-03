@@ -15,6 +15,7 @@ using Windows.Devices.HumanInterfaceDevice;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -26,6 +27,7 @@ using Dash.Controllers;
 using static Dash.NoteDocuments;
 using Dash.Controllers.Operators;
 using Dash.Views;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -956,10 +958,33 @@ namespace Dash
         /// <param name="e"></param>
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
-            OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
-            (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add((sender as DocumentView));
-            //TryLoadLinks((sender as DocumentView).ViewModel);
+            var documentView = sender as DocumentView;
+            Debug.Assert(documentView != null);
+            if (documentView is null) return;
+            OnDocumentViewLoaded?.Invoke(this, documentView);
+            documentView.OuterGrid.Tapped += DocumentView_Tapped;
+            _documentViews.Add(documentView);
+
+
+            TryLoadPermanentTextbox(documentView);
+        }
+
+        private void TryLoadPermanentTextbox(DocumentView documentView)
+        {
+            if (loadingPermanentTextbox)
+            {
+                var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
+                if (richEditBox != null)
+                {
+                    richEditBox.Focus(FocusState.Programmatic);
+                    previewTextbox.Visibility = Visibility.Collapsed;
+                    var text = previewTextbox.Text;
+                    previewTextbox.Text = string.Empty;
+                    richEditBox.Document.SetText(TextSetOptions.None, text);
+                    richEditBox.Document.Selection.SetRange(text.Length - 1, text.Length - 1);
+                    loadingPermanentTextbox = false;
+                }
+            }
         }
 
         /// <summary>
@@ -1071,7 +1096,8 @@ namespace Dash
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (IsLowestSelected) return;
+
+            RenderPreviewTextbox(e);
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1082,7 +1108,21 @@ namespace Dash
 
             if (ViewModel.IsInterfaceBuilder)
                 return;
-            OnSelected();
+
+            if (!IsLowestSelected) OnSelected();
+
+        }
+
+        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
+            Canvas.SetLeft(previewTextbox, @where.X);
+            Canvas.SetTop(previewTextbox, @where.Y);
+            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Visibility = Visibility.Visible;
+            previewTextbox.Text = string.Empty;
+            previewTextbox.Focus(FocusState.Programmatic);
+            Debug.WriteLine("preview got focus");
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -1250,12 +1290,18 @@ namespace Dash
 
         public InkController InkController;
         public FreeformInkControl InkControl;
+        private bool loadingPermanentTextbox;
+
         public double Zoom { get { return ManipulationControls.ElementScale; } }
+        private TextBox previewTextbox { get; set; }
+
 
         private void MakeInkCanvas()
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
             SelectionCanvas = new Canvas();
+            MakePreviewTextbox();
+
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
@@ -1264,12 +1310,44 @@ namespace Dash
             InkHostCanvas.Children.Add(XInkCanvas);
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
-        #endregion
 
-        private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        private void MakePreviewTextbox()
         {
-            if (e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
-                Debug.WriteLine("Pointer entered: " + sender.GetType());
+            previewTextbox = new TextBox
+            {
+                Width = 200,
+                Height = 50,
+                Background = new SolidColorBrush(Colors.Transparent),
+                Visibility = Visibility.Collapsed
+            };
+            AddHandler(KeyDownEvent, new KeyEventHandler(PreviewTextbox_KeyDown), true);
+            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            loadingPermanentTextbox = false;
+            InkHostCanvas.Children.Add(previewTextbox);
         }
+
+        private void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            previewTextbox.Visibility = Visibility.Collapsed;
+            Debug.WriteLine("preview Lost Focus");
+        }
+
+        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (previewTextbox.Visibility == Visibility.Collapsed) return;
+            e.Handled = true;
+            var text = e.Key.ToString();
+            if (!loadingPermanentTextbox && text.Length > 0)
+            {
+                loadingPermanentTextbox = true;
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text).Document;
+                Actions.DisplayDocument(this, postitNote, where);
+            }
+        }
+
+
+
+        #endregion
     }
 }

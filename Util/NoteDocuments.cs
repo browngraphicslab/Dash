@@ -162,13 +162,13 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?", Point where = new Point()) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
                 dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-                dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD("Something to fill this space?")), true);
+                dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
 
                 if (_prototypeLayout == null)
