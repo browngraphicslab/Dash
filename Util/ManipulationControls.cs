@@ -321,8 +321,17 @@ namespace Dash
             else
             {
                 var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
-                    new Point(),  new Point(1, 1)));
+                if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+                {
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0),
+                        new Point(), new Point(1, 1)));
+                }
+                else
+                {
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
+                        new Point(), new Point(1, 1)));
+                }
+
             }
         }
 
