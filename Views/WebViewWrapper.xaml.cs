@@ -56,7 +56,6 @@ namespace Dash
         private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if(WebContext.CanGoBack) WebContext.GoBack();
-            UrlBox.Text = WebContext.
         }
 
         private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
