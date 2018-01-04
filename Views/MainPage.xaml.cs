@@ -58,6 +58,8 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
         public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
+        public WebView WebContext;
+        public Uri WebContextUri => WebBoxWrapper.WebContextUri;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -179,6 +181,7 @@ namespace Dash
                 
             };
 
+            WebContext = WebBoxWrapper.WebContext;
         }
 
         public CollectionView GetMainCollectionView()
@@ -530,10 +533,46 @@ namespace Dash
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         }
 
-        public Uri WebContextUri;
-        private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
-        {
-            WebContextUri = args.Uri;
-        }
+        //public Uri WebContextUri;
+        //public Stack<Uri> BackUris = new Stack<Uri>();
+        //public Stack<Uri> ForwardUris = new Stack<Uri>();
+        //private bool _navigationFromButton;
+
+        //private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        //{
+        //    WebContextUri = args.Uri;
+        //    if (!_navigationFromButton)
+        //    {
+        //        ForwardUris.Clear();
+        //    }
+        //    _navigationFromButton = false;
+        //}
+
+        //private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (BackUris.Count > 0)
+        //    {
+        //        var prevUri = BackUris.Pop();
+        //        ForwardUris.Push(WebContextUri);
+        //        _navigationFromButton = true;
+        //        WebContext.Navigate(prevUri);
+        //    }
+        //}
+
+        //private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (ForwardUris.Count > 0)
+        //    {
+        //        var prevUri = ForwardUris.Pop();
+        //        _navigationFromButton = true;
+        //        WebContext.Navigate(prevUri);
+        //    }
+        //}
+
+        //private void UrlBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        //{
+        //    var uri = new Uri(UrlBox.Text);
+        //    WebContext.Navigate(uri);
+        //}
     }
 }
