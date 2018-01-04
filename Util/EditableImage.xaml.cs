@@ -25,7 +25,7 @@ namespace Dash
     public partial class EditableImage
     {
         #region FIELDS 
-        public Image Image { get { return xImage; } }
+        public Image Image => xImage;
 
         public Rect ClipRect { get; set; } = new Rect(0, 0, 0, 0);
 

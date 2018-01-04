@@ -15,7 +15,7 @@ namespace Dash
         public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
         {
             var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            var apath = Path.GetFileName(sFile.Path) == "" ? Guid.NewGuid().ToString() + ".jpg" : Path.GetFileName(sFile.Path);
+            var apath = Path.GetFileName(sFile.Path) == "" ? Guid.NewGuid() + ".jpg" : Path.GetFileName(sFile.Path);
             var localFile = await localFolder.CreateFileAsync(apath, CreationCollisionOption.ReplaceExisting);
             await sFile.CopyAndReplaceAsync(localFile);
             

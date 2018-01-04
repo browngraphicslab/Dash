@@ -93,6 +93,7 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\gridbg2.jpg" />
+    <None Include="Assets\example_pdf.pdf" />
     <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
@@ -147,6 +148,7 @@
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
@@ -283,6 +285,9 @@
     </Compile>
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PdfView.xaml.cs">
+      <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Radial Menu\RadialColorPicker.xaml.cs">
       <DependentUpon>RadialColorPicker.xaml</DependentUpon>
@@ -772,6 +777,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\PdfView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Radial Menu\RadialColorPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1106,6 +1115,12 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>10.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Syncfusion.Pdf.UWP46">
+      <Version>15.4.0.20</Version>
+    </PackageReference>
+    <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
+      <Version>15.4.0.20</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.19.0</Version>

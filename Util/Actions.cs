@@ -109,10 +109,9 @@ namespace Dash
                         case ".jpg":
                         case ".png":
                             var imgController = new ImageController();
-                            var btmp = new BitmapImage(new Uri(storageFile.Path, UriKind.Absolute));
-                            imgController.Data = btmp;
+                            imgController.Data = new Uri(storageFile.Path, UriKind.Absolute);
                             doc.SetField(key, imgController, true);
-                            var imgBox = new ImageBox(new DocumentReferenceController(doc.GetId(), key), 0, 0, btmp.PixelWidth, btmp.PixelHeight);
+                            var imgBox = new ImageBox(new DocumentReferenceController(doc.GetId(), key));
                             data?.Add(imgBox.Document);
                             break;
                         case ".txt":

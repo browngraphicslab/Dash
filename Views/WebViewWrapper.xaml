@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Grid.Column="2" Background="WhiteSmoke" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+    <Grid Background="WhiteSmoke" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
         <Grid.RowDefinitions>
             <RowDefinition Height="40"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -36,7 +36,7 @@
                 <SymbolIcon Symbol="Refresh" Height="25" Width="35"></SymbolIcon>
             </Button.Content>
         </Button>
-        <WebView x:Name="xWebContext" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.msn.com"  
+        <WebView x:Name="xWebContext" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" NavigationCompleted="WebContext_NavigationCompleted" Source="https://www.google.com/"  
                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                  />
     </Grid>

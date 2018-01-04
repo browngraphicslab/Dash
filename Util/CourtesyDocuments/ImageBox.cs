@@ -61,14 +61,13 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        private static EditableImage _editableImage;
 
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
-            _editableImage = new EditableImage(docController, context);
-            var image = _editableImage.Image;
+            var editableImage = new EditableImage(docController, context);
+            var image = editableImage.Image;
 
 
             SetupBindings(image, docController, context);
@@ -83,12 +82,12 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                _editableImage.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(_editableImage, docController);
+                editableImage.IsHitTestVisible = false;
+                var selectableContainer = new SelectableContainer(editableImage, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return _editableImage;
+            return editableImage;
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,
@@ -127,7 +126,8 @@ namespace Dash
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                Converter = UriToBitmapImageConverter.Instance
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
         }

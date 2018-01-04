@@ -6,6 +6,9 @@ namespace Dash
 {
     public class UriToBitmapImageConverter : SafeDataToXamlConverter<Uri, BitmapImage>
     {
+
+        private UriToBitmapImageConverter() { }
+
         public static UriToBitmapImageConverter Instance;
 
         static UriToBitmapImageConverter()
