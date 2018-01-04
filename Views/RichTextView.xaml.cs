@@ -1247,6 +1247,8 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
             var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
                 .HasFlag(CoreVirtualKeyStates.Down);
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down);
             if (tabState)
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -1289,6 +1291,18 @@ namespace Dash
             if (altState)
             {
                 OpenContextMenu(sender);
+            }
+
+            if (ctrlState && shiftState && e.Key.Equals(VirtualKey.L))
+            {
+                if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.None)
+                {
+                    xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.Bullet;
+                }
+                else if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
+                {
+                    xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
+                }
             }
         }
 
