@@ -1306,11 +1306,8 @@ namespace Dash
         private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            if (e.Key == VirtualKey.Shift || e.Key == VirtualKey.Control || e.Key == VirtualKey.CapitalLock)
-                return;
-            var text = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ||
-                        Window.Current.CoreWindow.GetKeyState(VirtualKey.CapitalLock).HasFlag(CoreVirtualKeyStates.Locked)) ? e.Key.ToString() : e.Key.ToString().ToLower();
-            Debug.WriteLine("Key: " + text);
+            var text = KeyCodeToUnicode(e.Key);
+            if (text is null) return;
             previewTextBuffer += text;
             if (previewTextbox.Visibility == Visibility.Collapsed)
                 return;
@@ -1322,6 +1319,59 @@ namespace Dash
                 var postitNote = new RichTextNote(PostitNote.DocumentType, text: text).Document;
                 Actions.DisplayDocument(this, postitNote, where);
             }
+        }
+
+        private string KeyCodeToUnicode(VirtualKey key)
+        {
+
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            var capState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
+                .HasFlag(CoreVirtualKeyStates.Down) || CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
+                               .HasFlag(CoreVirtualKeyStates.Locked);
+            var virtualKeyCode = (uint)key;
+
+            string character = null;
+
+            // take care of symbols
+            if (key == VirtualKey.Space)
+            {
+                character = " ";
+            }
+            if (key == VirtualKey.Multiply)
+            {
+                character = "*";
+            }
+            // TODO take care of more symbols
+
+            //Take care of letters
+            if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
+            {
+                if (shiftState == false && capState == false ||
+                    shiftState && capState)
+                {
+                    character = key.ToString().ToLower();
+                } 
+                else
+                {
+                    character = key.ToString();
+                }
+            }
+
+            //Take care of numbers
+            if (virtualKeyCode >= 48 && virtualKeyCode <= 57)
+            {
+                character = (virtualKeyCode - 48).ToString();
+            }
+
+            //Take care of numpad numbers
+            if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
+            {
+
+                character = (virtualKeyCode - 96).ToString();
+            }
+
+            return character;
         }
 
         /// <summary>
