@@ -24,10 +24,6 @@ namespace Dash
         public WebView WebContext => xWebContext;
         public Uri WebContextUri { get; set; }
 
-        private readonly Stack<Uri> _backUris = new Stack<Uri>();
-        private readonly Stack<Uri> _forwardUris = new Stack<Uri>();
-        private bool _backNavigation, _fwdNavigation;
-
         public WebViewWrapper()
         {
             this.InitializeComponent();
@@ -36,12 +32,10 @@ namespace Dash
         public void TryNavigate(string uri)
         {
             Uri uriResult;
-            bool result = Uri.TryCreate(uri, UriKind.Absolute, out uriResult);
+            var result = Uri.TryCreate(uri, UriKind.Absolute, out uriResult);
             if (!result)
-            {
-                if(uri.Contains(".")) Uri.TryCreate("http://" + uri, UriKind.Absolute, out uriResult);
-                else uriResult = new Uri("https://google.com/search?q=" + uri);
-            }
+                if (!(uri.Contains(".") && Uri.TryCreate("http://" + uri, UriKind.Absolute, out uriResult)))
+                    uriResult = new Uri("https://google.com/search?q=" + uri);
             UrlBox.Text = uriResult.AbsoluteUri;
             WebContext.Navigate(uriResult);
         }
@@ -50,41 +44,24 @@ namespace Dash
         {
             if (args.IsSuccess)
             {
-                if (!_backNavigation && WebContextUri != null) _backUris.Push(WebContextUri);
-                bool newPage = !_backNavigation && !_fwdNavigation;
-                if (newPage)
-                {
-                    _forwardUris.Clear();
-                }
-                _backNavigation = _fwdNavigation = false;
                 WebContextUri = args.Uri;
                 UrlBox.Text = WebContextUri.AbsoluteUri;
             }
             else
             {
-                _backNavigation = true;
-                _fwdNavigation = false;
-                WebContext.Navigate(WebContextUri);
+                WebContext.GoBack();
             }
         }
 
         private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_backUris.Count <= 0) return;
-            var uri = _backUris.Pop();
-            _forwardUris.Push(WebContextUri);
-            _backNavigation = true;
-            UrlBox.Text = uri.AbsoluteUri;
-            WebContext.Navigate(uri);
+            if(WebContext.CanGoBack) WebContext.GoBack();
+            UrlBox.Text = WebContext.
         }
 
         private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_forwardUris.Count <= 0) return;
-            var uri = _forwardUris.Pop();
-            _fwdNavigation = true;
-            UrlBox.Text = uri.AbsoluteUri;
-            WebContext.Navigate(uri);
+            if(WebContext.CanGoForward) WebContext.GoForward();
         }
 
         private void UrlBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -94,7 +71,6 @@ namespace Dash
                 TryNavigate(UrlBox.Text);
             }
         }
-        
 
         private void WebRefreshButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
