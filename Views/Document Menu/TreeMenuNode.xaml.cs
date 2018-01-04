@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // NOTE: there's a couple of classes in this fiel, all related to the tree notes.
-namespace Dash.Views.Document_Menu
+namespace Dash
 {
     /// <summary>
     /// Represents the type of Add Menu Node: ie. Document, Operator, etc.

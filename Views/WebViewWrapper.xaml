@@ -1,8 +1,8 @@
 ﻿<UserControl
-    x:Class="Dash.Views.WebViewWrapper"
+    x:Class="Dash.WebViewWrapper"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -36,6 +36,8 @@
                 <SymbolIcon Symbol="Refresh" Height="25" Width="35"></SymbolIcon>
             </Button.Content>
         </Button>
-        <WebView x:Name="xWebContext" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.msn.com"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <WebView x:Name="xWebContext" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.msn.com"  
+                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                 />
     </Grid>
 </UserControl>

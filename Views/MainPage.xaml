@@ -1,13 +1,11 @@
-﻿<Page xmlns:my="using:Microsoft.Toolkit.Uwp.UI.Controls" 
+﻿<Page 
+    xmlns:my="using:Microsoft.Toolkit.Uwp.UI.Controls" 
     x:Class="Dash.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:views="using:Dash"
-    xmlns:local1="using:Dash.Views.Document_Menu"
-    xmlns:views1="using:Dash.Views"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
@@ -44,7 +42,7 @@
         </Grid.ColumnDefinitions>
         <my:GridSplitter />
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <views:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
+        <local:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
             <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             </Canvas>
             <StackPanel Width="160" Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,0" HorizontalAlignment="Left" Background="{ThemeResource DocumentBackgroundOpaque}">
@@ -60,7 +58,7 @@
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <local1:AddMenu Margin="0,0,0,0" x:Name="xAddMenu" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local1:AddMenu>
+            <local:AddMenu Margin="0,0,0,0" x:Name="xAddMenu" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Stretch"></local:AddMenu>
             <Border Grid.Row="1" Background="{ThemeResource DarkBackground}"></Border>
         </Grid>
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
@@ -114,7 +112,8 @@
             </my:GridSplitter.Element>
         </my:GridSplitter>
         <Grid Grid.Column="2" Background="WhiteSmoke" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <views1:WebViewWrapper x:Name="WebBoxWrapper"></views1:WebViewWrapper>
+            <local:WebViewWrapper x:Name="WebBoxWrapper" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:WebViewWrapper>
         </Grid>
     </Grid>
 </Page>
