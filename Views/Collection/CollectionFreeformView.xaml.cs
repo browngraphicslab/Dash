@@ -28,6 +28,8 @@ using static Dash.NoteDocuments;
 using Dash.Controllers.Operators;
 using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.System;
+using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -951,41 +953,6 @@ namespace Dash
 
         #endregion
 
-        /// <summary>
-        /// OnLoad handler. Interfaces with DocumentView to call corresponding functions.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
-        {
-            var documentView = sender as DocumentView;
-            Debug.Assert(documentView != null);
-            if (documentView is null) return;
-            OnDocumentViewLoaded?.Invoke(this, documentView);
-            documentView.OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add(documentView);
-
-
-            TryLoadPermanentTextbox(documentView);
-        }
-
-        private void TryLoadPermanentTextbox(DocumentView documentView)
-        {
-            if (loadingPermanentTextbox)
-            {
-                var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
-                if (richEditBox != null)
-                {
-                    richEditBox.Focus(FocusState.Programmatic);
-                    previewTextbox.Visibility = Visibility.Collapsed;
-                    var text = previewTextbox.Text;
-                    previewTextbox.Text = string.Empty;
-                    richEditBox.Document.SetText(TextSetOptions.None, text);
-                    richEditBox.Document.Selection.SetRange(text.Length - 1, text.Length - 1);
-                    loadingPermanentTextbox = false;
-                }
-            }
-        }
 
         /// <summary>
         /// 
@@ -1116,6 +1083,7 @@ namespace Dash
         private void RenderPreviewTextbox(TappedRoutedEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
+            previewTextBuffer = "";
             Canvas.SetLeft(previewTextbox, @where.X);
             Canvas.SetTop(previewTextbox, @where.Y);
             previewTextbox.Visibility = Visibility.Collapsed;
@@ -1321,22 +1289,21 @@ namespace Dash
                 Visibility = Visibility.Collapsed
             };
             AddHandler(KeyDownEvent, new KeyEventHandler(PreviewTextbox_KeyDown), true);
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-            loadingPermanentTextbox = false;
             InkHostCanvas.Children.Add(previewTextbox);
         }
-
-        private void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            previewTextbox.Visibility = Visibility.Collapsed;
-            Debug.WriteLine("preview Lost Focus");
-        }
-
+        
+        string previewTextBuffer = "";
         private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (previewTextbox.Visibility == Visibility.Collapsed) return;
+            if (e.Key == VirtualKey.Shift || e.Key == VirtualKey.Control || e.Key == VirtualKey.CapitalLock)
+                return;
+            var text = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ||
+                        Window.Current.CoreWindow.GetKeyState(VirtualKey.CapitalLock).HasFlag(CoreVirtualKeyStates.Locked)) ? e.Key.ToString() : e.Key.ToString().ToLower();
+            Debug.WriteLine("Key: " + text);
+            previewTextBuffer += text;
+            if (previewTextbox.Visibility == Visibility.Collapsed)
+                return;
             e.Handled = true;
-            var text = e.Key.ToString();
             if (!loadingPermanentTextbox && text.Length > 0)
             {
                 loadingPermanentTextbox = true;
@@ -1346,7 +1313,44 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// OnLoad handler. Interfaces with DocumentView to call corresponding functions.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        {
+            var documentView = sender as DocumentView;
+            Debug.Assert(documentView != null);
+            if (documentView is null) return;
+            OnDocumentViewLoaded?.Invoke(this, documentView);
+            documentView.OuterGrid.Tapped += DocumentView_Tapped;
+            _documentViews.Add(documentView);
 
+            if (loadingPermanentTextbox)
+            {
+                var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
+                if (richEditBox != null)
+                {
+                    richEditBox.GotFocus -= RichEditBox_GotFocus;
+                    richEditBox.GotFocus += RichEditBox_GotFocus;
+                    richEditBox.Focus(FocusState.Programmatic);
+                }
+            }
+        }
+        private void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            previewTextbox.Visibility = Visibility.Collapsed;
+            loadingPermanentTextbox = false;
+            Debug.WriteLine("Got Focus");
+            previewTextbox.Visibility = Visibility.Collapsed;
+            var richEditBox = sender as RichEditBox;
+            var text = previewTextBuffer;
+            (sender as RichEditBox).GotFocus -= RichEditBox_GotFocus;
+            previewTextbox.Text = string.Empty;
+            richEditBox.Document.SetText(TextSetOptions.None, text);
+            richEditBox.Document.Selection.SetRange(text.Length, text.Length);
+        }
 
         #endregion
     }
