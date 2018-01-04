@@ -1090,6 +1090,8 @@ namespace Dash
             previewTextbox.Visibility = Visibility.Visible;
             previewTextbox.Text = string.Empty;
             previewTextbox.Focus(FocusState.Programmatic);
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
             Debug.WriteLine("preview got focus");
         }
 
@@ -1290,11 +1292,20 @@ namespace Dash
             };
             AddHandler(KeyDownEvent, new KeyEventHandler(PreviewTextbox_KeyDown), true);
             InkHostCanvas.Children.Add(previewTextbox);
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
         }
-        
+
+        private void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+        }
+
         string previewTextBuffer = "";
         private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             if (e.Key == VirtualKey.Shift || e.Key == VirtualKey.Control || e.Key == VirtualKey.CapitalLock)
                 return;
             var text = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ||
