@@ -966,7 +966,7 @@ namespace Dash
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // handle the event right away before any possible async delays
-            e.Handled = true;
+            if (e != null) e.Handled = true;
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
