@@ -64,7 +64,7 @@ namespace Dash
             }
             else
             {
-                WebContext.GoBack();
+                //WebContext.GoBack();
             }
         }
 
