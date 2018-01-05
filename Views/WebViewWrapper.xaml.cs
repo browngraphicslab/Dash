@@ -40,12 +40,27 @@ namespace Dash
             WebContext.Navigate(uriResult);
         }
 
-        private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        private async void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
             if (args.IsSuccess)
             {
                 WebContextUri = args.Uri;
                 UrlBox.Text = WebContextUri.AbsoluteUri;
+                await WebContext.InvokeScriptAsync("eval", new[]
+                {
+                @"(function()
+                {
+                    var hyperlinks = document.getElementsByTagName('a');
+                    for(var i = 0; i < hyperlinks.length; i++)
+                    {
+                        if(hyperlinks[i].getAttribute('target') != null ||
+                            hyperlinks[i].getAttribute('target') != '_blank')
+                        {
+                            hyperlinks[i].setAttribute('target', '_self');
+                        }
+                    }
+                })()"
+            });
             }
             else
             {
@@ -74,6 +89,15 @@ namespace Dash
         private void WebRefreshButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             WebContext.Refresh();
+        }
+
+        private void xWebContext_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+        }
+
+        private void xWebContext_FrameNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+
         }
     }
 }

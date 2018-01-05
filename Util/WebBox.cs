@@ -159,7 +159,6 @@ namespace Dash
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move'); } document.onmousemove=x;" });
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up'); } document.onmouseup=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { " window.external.notify('bing');" });
             //await _WebView.InvokeScriptAsync("eval", new[]
             //{"function tableToJson(table) { var data = []; var headers = []; for (var i = 0; i < table.rows[0].cells.length; i++) {headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(' ', ''); } for (var i = 1; i < table.rows.length; i++) { var tableRow = table.rows[i]; var rowData = { }; " +
             //"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
@@ -169,7 +168,31 @@ namespace Dash
 
             _WebView.NavigationStarting -= Web_NavigationStarting;
             _WebView.NavigationStarting += Web_NavigationStarting;
+            _WebView.NavigationCompleted -= _WebView_NavigationCompleted;
+            _WebView.NavigationCompleted += _WebView_NavigationCompleted;
+            _WebView_NavigationCompleted(_WebView, null);
         }
+
+        private async static void _WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            var _WebView = sender as WebView;
+            await _WebView.InvokeScriptAsync("eval", new[]
+               {
+                @"(function()
+                {
+                    var hyperlinks = document.getElementsByTagName('a');
+                    for(var i = 0; i < hyperlinks.length; i++)
+                    {
+                        if(hyperlinks[i].getAttribute('target') != null ||
+                            hyperlinks[i].getAttribute('target') != '_blank')
+                        {
+                            hyperlinks[i].setAttribute('target', '_self');
+                        }
+                    }
+                })()"
+            });
+        }
+
         // document.getElementsByTagName('table')
         //tableToJson = function(table)
         //{
@@ -245,7 +268,7 @@ namespace Dash
             if (args.Uri != null)
             {
                 args.Cancel = true;
-                Windows.System.Launcher.LaunchUriAsync(args.Uri);
+                MainPage.Instance.WebContext.Navigate(args.Uri);
             }
         }
 
