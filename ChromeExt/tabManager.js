@@ -5,15 +5,21 @@ function tabManager(sendRequestFunction) {
 
     var updateTab = function(tabId) {
         var update = function (tab) {
-            var requestBody = {
-                "$type": "Dash.UpdateTabBrowserRequest, Dash",
-                "tabId": tab.id,
-                "current": tab.active,
-                "url": tab.url,
-                "title": tab.title,
-                "index": tab.index,
+            if (tab != null) {
+                var requestBody = {
+                    "$type": "Dash.UpdateTabBrowserRequest, Dash",
+                    "tabId": tab.id,
+                    "current": tab.active,
+                    "url": tab.url,
+                    "title": tab.title,
+                    "index": tab.index,
+                }
+                sendRequestFunction(requestBody)
             }
-            sendRequestFunction(requestBody)
+            else
+            {
+                console.log("error: tab was null.  ID: "+tabId)
+            }
         }
         chrome.tabs.get(tabId, update)
     }
@@ -60,15 +66,23 @@ function tabManager(sendRequestFunction) {
     chrome.tabs.onUpdated.addListener(tabUpdatedCallback);
     chrome.tabs.onActiveChanged.addListener(activeTabChangedCallback);
 
+    this.setScrollPosition = function(tabId, positionY)
+    {
+        var script = "window.scrollTo(0, " + positionY + ");"
+        chrome.tabs.executeScript(tabId, { code: script });
+    }
+
+    var test = this.setScrollPosition
 
     this.addNewTab = function (url)
     {   
         var tabHandler = function (tab) {
-            console.log("in tab handler");
-            console.log(tab);
+            //console.log("in tab handler");
+            //console.log(tab);
+            test(tab.id, 150);
         }
 
-        console.log("Creating new tab with url: " + url)
+        //console.log("Creating new tab with url: " + url)
         chrome.tabs.create({url: url}, tabHandler);
     }
 

@@ -31,6 +31,7 @@ namespace Dash
 
         private static DataWriter _dataMessageWriter;
         public static event EventHandler<BrowserView> CurrentTabChanged;
+        public static event EventHandler<BrowserView> NewTabCreated;
         private static readonly Dictionary<int, BrowserView> _browserViews = new Dictionary<int, BrowserView>();
 
         private static int _currentBrowserId = 0;
@@ -116,12 +117,15 @@ namespace Dash
             }
             else
             {
-                var array = read.CreateObjectList<BrowserRequest>();
-                foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
+                if (read.Contains("{"))
                 {
-                    var browser = new BrowserView(request.tabId);
+                    var array = read.CreateObjectList<BrowserRequest>();
+                    foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
+                    {
+                        var browser = new BrowserView(request.tabId);
+                    }
+                    array.ToList().ForEach(t => t.Handle(_browserViews[t.tabId]));
                 }
-                array.ToList().ForEach(t => t.Handle(_browserViews[t.tabId]));
             }
         }
 
@@ -181,6 +185,7 @@ namespace Dash
         {
             Id = id;
             _browserViews.Add(id, this);
+            NewTabCreated?.Invoke(this,this);
         }
 
         public void FireUrlUpdated(string url)
