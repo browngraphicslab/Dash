@@ -38,9 +38,8 @@ namespace Dash
     public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
     {
 
-        #region ScalingVariables
+        #region ScalingVariables    
 
-        public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
         public const float MaxScale = 4;
@@ -802,7 +801,9 @@ namespace Dash
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            var compValue = composite.Value;
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = compValue };
         }
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -839,7 +840,15 @@ namespace Dash
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             //ParentCollection.SetTransformOnBackground(composite);
-            var matrix = new MatrixTransform { Matrix = composite.Value };
+
+            var compValue = composite.Value;
+
+            if (compValue.OffsetY > 0)
+            {
+                compValue.OffsetY = 0;
+            }
+
+            var matrix = new MatrixTransform { Matrix = compValue };
 
             itemsPanelCanvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
@@ -953,6 +962,26 @@ namespace Dash
 
         #endregion
 
+
+        /// <summary>
+        /// When the mouse hovers over the backgorund
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Background_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.IBeam, 1);
+        }
+
+        /// <summary>
+        /// when the mouse leaves the background
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+        }
 
         /// <summary>
         /// 
@@ -1312,11 +1341,19 @@ namespace Dash
             if (previewTextbox.Visibility == Visibility.Collapsed)
                 return;
             e.Handled = true;
-            if (!loadingPermanentTextbox && text.Length > 0)
+            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            if (text.Length > 0)
+                LoadNewActiveTextBox(text, where);
+        }
+
+        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
+        {
+            if (!loadingPermanentTextbox)
             {
+                if (resetBuffer)
+                    previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400,32)).Document;
+                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
                 Actions.DisplayDocument(this, postitNote, where);
             }
         }

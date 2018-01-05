@@ -98,9 +98,6 @@
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClipSettings.xaml.cs">
-      <DependentUpon>ClipSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
@@ -596,9 +593,6 @@
     <Compile Include="Views\GuideLineView.xaml.cs">
       <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
-      <DependentUpon>ImageSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Ink\InkCanvasControl.xaml.cs">
       <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
@@ -705,10 +699,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="ClipSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -998,10 +988,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GuideLineView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\ImageSettings.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

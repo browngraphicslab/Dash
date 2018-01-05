@@ -33,7 +33,6 @@
                          BorderThickness="1"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
-                         KeyDown="XRichEditBox_OnKeyDown"
                          Holding="XRichEditBox_OnHolding"
                          IsTextPredictionEnabled="True"
                          >

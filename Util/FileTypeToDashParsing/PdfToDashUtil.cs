@@ -24,6 +24,7 @@ namespace Dash
     {
         public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
         {
+            // TODO FIX THIS TO RESEMBLE TRENTS FIXES IN IMAGETODASHUTIL
             var localFolder = ApplicationData.Current.LocalFolder;
             var apath = Path.GetFileName(sFile.Path) == "" ? Guid.NewGuid() + ".pdf" : Path.GetFileName(sFile.Path);
             var localFile = await localFolder.CreateFileAsync(apath, CreationCollisionOption.ReplaceExisting);
