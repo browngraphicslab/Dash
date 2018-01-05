@@ -961,10 +961,12 @@ namespace Dash
 
         #region Activation
 
-        public Rect ClipRect { get { return new Rect(); } } //  xClipRect.Rect; } }
+        public Rect ClipRect => new Rect();
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            // handle the event right away before any possible async delays
+            if (e != null) e.Handled = true;
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
@@ -974,9 +976,6 @@ namespace Dash
                 {
                     ParentCollection.MaxZ += 1;
                     Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-
-                    if (e != null)
-                        e.Handled = true;
                     OnSelected();
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
