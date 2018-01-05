@@ -162,7 +162,7 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point()) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
@@ -184,8 +184,8 @@ namespace Dash
                 } else
                 {
                     docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(size.Width == 0 ? 400 : size.Width), true);
+                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(size.Height == 0 ? 400 : size.Height), true);
                     docLayout.SetField(KeyStore.TitleKey, new TextController(title), true);
                     Document = docLayout;
                 }

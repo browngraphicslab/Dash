@@ -36,8 +36,10 @@
                 <SymbolIcon Symbol="Refresh" Height="25" Width="35"></SymbolIcon>
             </Button.Content>
         </Button>
-        <WebView x:Name="xWebContext" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" NavigationCompleted="WebContext_NavigationCompleted" Source="https://www.google.com/"  
-                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                 />
+        <WebView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" x:Name="xWebContext" FrameNavigationStarting="xWebContext_FrameNavigationStarting" NavigationStarting="xWebContext_NavigationStarting"  NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.msn.com"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        </WebView>
     </Grid>
 </UserControl>

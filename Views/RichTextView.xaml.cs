@@ -254,7 +254,10 @@ namespace Dash
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
+            Scroll = this.GetFirstDescendantOfType<ScrollBar>();
+            released(null, null);
         }
+        ScrollBar Scroll = null;
         Tuple<Point, Point> HackToDragWithRightMouseButton = null;
 
         private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
@@ -374,6 +377,8 @@ namespace Dash
 
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
+            if (Scroll.Visibility == Visibility.Visible)
+                released(null, null);
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
             {
@@ -420,7 +425,6 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
-            Tag = null;
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 
@@ -1063,6 +1067,8 @@ namespace Dash
 
         private void SizeToFit()
         {
+            if (!this.IsInVisualTree())
+                return;
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             var str = "";
@@ -1070,27 +1076,55 @@ namespace Dash
             xRichEditBox.Document.Selection.SetRange(0, str.Length);
             var selectedText = xRichEditBox.Document.Selection;
             xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-            int count = 0;
-            float lastMax = 20;
-            float lastMin = 6;
-            while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 5 && selectedText != null && count++ < 10)
-            {
-                var charFormatting = selectedText.CharacterFormat;
-                var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
-                if (delta < 0)
-                    lastMax = curSize;
-                else lastMin = curSize;
-                try
-                {
-                    charFormatting.Size = curSize + delta / 2;
-                    selectedText.CharacterFormat = charFormatting;
-                }
-                catch (Exception)
-                {
+            var relative = this.GetFirstAncestorOfType<RelativePanel>();
+            if (relative != null)
+                relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
 
+            if (false)
+            {
+                int count = 0;
+                float lastMax = 20;
+                float lastMin = 6;
+                float lastGoodSize = 0;
+
+                while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
+                {
+                    var charFormatting = selectedText.CharacterFormat;
+                    var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
+                    float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
+                    if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
+                        lastGoodSize = curSize;
+                    if (delta < 0)
+                    {
+                        lastMax = curSize;
+                        delta = (float)Math.Ceiling(delta);
+                    }
+                    else
+                    {
+                        lastMin = curSize;
+                        if (delta < 1)
+                            break;
+                        else delta = (float)Math.Floor(delta);
+                    }
+                    try
+                    {
+                        charFormatting.Size = curSize + delta / 2;
+                        selectedText.CharacterFormat = charFormatting;
+                    }
+                    catch (Exception) { } 
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
+                {
+                    var charFormatting = selectedText.CharacterFormat;
+                    charFormatting.Size = lastGoodSize;
+                    selectedText.CharacterFormat = charFormatting;
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                }
+            }
+            if (Scroll.Visibility == Visibility.Visible )
+            {
+                Debug.WriteLine("Sc" + Scroll.ActualHeight);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
