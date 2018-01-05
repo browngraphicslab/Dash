@@ -27,10 +27,10 @@ namespace Dash
             if (storageFile.Path.EndsWith(".pdf"))
             {
                 var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(storageFile.Path), CreationCollisionOption.ReplaceExisting);
+                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(storageFile.Path)+Guid.NewGuid().ToString(), CreationCollisionOption.ReplaceExisting);
                 await storageFile.CopyAndReplaceAsync(localFile);
 
-                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, Path.GetFileNameWithoutExtension(localFile.Name));
+                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, Path.GetFileNameWithoutExtension(storageFile.Name));
                 var pdf = await PdfDocument.LoadFromFileAsync(localFile);
                 var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
                 for (uint i = 0; i < pdf.PageCount; i++)

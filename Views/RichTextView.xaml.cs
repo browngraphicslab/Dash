@@ -112,6 +112,7 @@ namespace Dash
             WC = new WordCount(xRichEditBox);
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
         }
         long TextChangedCallbackToken;
 
@@ -1067,6 +1068,8 @@ namespace Dash
 
         private void SizeToFit()
         {
+            if (!this.IsInVisualTree())
+                return;
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             var str = "";
@@ -1074,49 +1077,55 @@ namespace Dash
             xRichEditBox.Document.Selection.SetRange(0, str.Length);
             var selectedText = xRichEditBox.Document.Selection;
             xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-            int count = 0;
-            float lastMax = 20;
-            float lastMin = 6;
-            while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
+            var relative = this.GetFirstAncestorOfType<RelativePanel>();
+            if (relative != null)
+                relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
+
+            if (false)
             {
-                var charFormatting = selectedText.CharacterFormat;
-                var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
-                if (delta < 0) {
-                    lastMax = curSize;
-                    delta = (float)Math.Ceiling(delta);
-                }
-                else {
-                    lastMin = curSize;
-                    if (delta < 1)
-                        break;
-                    else delta = (float)Math.Floor(delta);
-                }
-                try
+                int count = 0;
+                float lastMax = 20;
+                float lastMin = 6;
+                float lastGoodSize = 0;
+
+                while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
                 {
-                    charFormatting.Size = curSize + delta / 2;
+                    var charFormatting = selectedText.CharacterFormat;
+                    var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
+                    float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
+                    if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
+                        lastGoodSize = curSize;
+                    if (delta < 0)
+                    {
+                        lastMax = curSize;
+                        delta = (float)Math.Ceiling(delta);
+                    }
+                    else
+                    {
+                        lastMin = curSize;
+                        if (delta < 1)
+                            break;
+                        else delta = (float)Math.Floor(delta);
+                    }
+                    try
+                    {
+                        charFormatting.Size = curSize + delta / 2;
+                        selectedText.CharacterFormat = charFormatting;
+                    }
+                    catch (Exception) { } 
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                }
+                if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
+                {
+                    var charFormatting = selectedText.CharacterFormat;
+                    charFormatting.Size = lastGoodSize;
                     selectedText.CharacterFormat = charFormatting;
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
-                catch (Exception)
-                {
-
-                }
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                //if (delta > 0)
-                //{
-                //    var newSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                //    float newDelta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - newSize) : (lastMax - newSize));
-                //    try
-                //    {
-                //        charFormatting.Size = newSize + (delta > 0 ? newDelta : newDelta / 2);
-                //        selectedText.CharacterFormat = charFormatting;
-                //    }
-                //    catch (Exception)
-                //    {
-
-                    //    }
-                    //    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                    //}
+            }
+            if (Scroll.Visibility == Visibility.Visible )
+            {
+                Debug.WriteLine("Sc" + Scroll.ActualHeight);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
@@ -1275,6 +1284,27 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
             var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
                 .HasFlag(CoreVirtualKeyStates.Down);
+            if (shiftState && !e.Key.Equals(VirtualKey.Shift))
+                if (e.Key.Equals(VirtualKey.Enter))
+                {
+
+                    string text;
+                    xRichEditBox.Document.GetText(TextGetOptions.None, out text);
+                    var length = text.Length;
+                    if (xRichEditBox.Document.Selection.StartPosition == length-1)
+                    {
+                        var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                        var collection2 = this.GetFirstAncestorOfType<Canvas>();
+                        if (collection != null)
+                        {
+                            xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                            xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                            var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 20));
+                            var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
+                            collection.LoadNewActiveTextBox("", where2, true);
+                        }
+                    }
+                }
             if (tabState)
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
