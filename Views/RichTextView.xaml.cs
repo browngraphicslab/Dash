@@ -1084,12 +1084,13 @@ namespace Dash
                 float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
                 if (delta < 0) {
                     lastMax = curSize;
-                    delta = Math.Min(-1f, delta);
+                    delta = (float)Math.Ceiling(delta);
                 }
                 else {
                     lastMin = curSize;
                     if (delta < 1)
                         break;
+                    else delta = (float)Math.Floor(delta);
                 }
                 try
                 {
