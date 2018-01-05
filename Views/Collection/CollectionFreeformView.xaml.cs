@@ -1316,7 +1316,7 @@ namespace Dash
             {
                 loadingPermanentTextbox = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text).Document;
+                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400,100)).Document;
                 Actions.DisplayDocument(this, postitNote, where);
             }
         }
