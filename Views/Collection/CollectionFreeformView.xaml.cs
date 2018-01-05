@@ -955,6 +955,26 @@ namespace Dash
 
 
         /// <summary>
+        /// When the mouse hovers over the backgorund
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Background_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.IBeam, 1);
+        }
+
+        /// <summary>
+        /// when the mouse leaves the background
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
