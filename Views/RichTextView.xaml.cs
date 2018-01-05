@@ -169,7 +169,7 @@ namespace Dash
         {
             var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
             var newstr = reg.Replace(Text.RtfFormatString, "}\r\n\0");
-            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr)
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr);
             var selected = GetSelected();
             if (selected != null)
             {
