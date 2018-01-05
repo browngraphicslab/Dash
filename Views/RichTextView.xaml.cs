@@ -1076,60 +1076,55 @@ namespace Dash
             xRichEditBox.Document.Selection.SetRange(0, str.Length);
             var selectedText = xRichEditBox.Document.Selection;
             xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-            int count = 0;
-            float lastMax = 20;
-            float lastMin = 6;
-            float lastGoodSize = 0;
+            var relative = this.GetFirstAncestorOfType<RelativePanel>();
+            if (relative != null)
+                relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
 
-            while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
+            if (false)
             {
-                var charFormatting = selectedText.CharacterFormat;
-                var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
-                if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
-                    lastGoodSize = curSize;
-                if (delta < 0) {
-                    lastMax = curSize;
-                    delta = (float)Math.Ceiling(delta);
-                }
-                else {
-                    lastMin = curSize;
-                    if (delta < 1)
-                        break;
-                    else delta = (float)Math.Floor(delta);
-                }
-                try
+                int count = 0;
+                float lastMax = 20;
+                float lastMin = 6;
+                float lastGoodSize = 0;
+
+                while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
                 {
-                    charFormatting.Size = curSize + delta / 2;
+                    var charFormatting = selectedText.CharacterFormat;
+                    var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
+                    float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
+                    if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
+                        lastGoodSize = curSize;
+                    if (delta < 0)
+                    {
+                        lastMax = curSize;
+                        delta = (float)Math.Ceiling(delta);
+                    }
+                    else
+                    {
+                        lastMin = curSize;
+                        if (delta < 1)
+                            break;
+                        else delta = (float)Math.Floor(delta);
+                    }
+                    try
+                    {
+                        charFormatting.Size = curSize + delta / 2;
+                        selectedText.CharacterFormat = charFormatting;
+                    }
+                    catch (Exception) { } 
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                }
+                if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
+                {
+                    var charFormatting = selectedText.CharacterFormat;
+                    charFormatting.Size = lastGoodSize;
                     selectedText.CharacterFormat = charFormatting;
+                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
-                catch (Exception)
-                {
-
-                }
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                //if (delta > 0)
-                //{
-                //    var newSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                //    float newDelta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - newSize) : (lastMax - newSize));
-                //    try
-                //    {
-                //        charFormatting.Size = newSize + (delta > 0 ? newDelta : newDelta / 2);
-                //        selectedText.CharacterFormat = charFormatting;
-                //    }
-                //    catch (Exception)
-                //    {
-
-                    //    }
-                    //    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                    //}
             }
-            if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
+            if (Scroll.Visibility == Visibility.Visible )
             {
-                var charFormatting = selectedText.CharacterFormat;
-                charFormatting.Size = lastGoodSize;
-                selectedText.CharacterFormat = charFormatting;
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                Debug.WriteLine("Sc" + Scroll.ActualHeight);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
