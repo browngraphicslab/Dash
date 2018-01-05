@@ -112,6 +112,7 @@ namespace Dash
             WC = new WordCount(xRichEditBox);
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
         }
         long TextChangedCallbackToken;
 
@@ -1283,6 +1284,27 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
             var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
                 .HasFlag(CoreVirtualKeyStates.Down);
+            if (shiftState && !e.Key.Equals(VirtualKey.Shift))
+                if (e.Key.Equals(VirtualKey.Enter))
+                {
+
+                    string text;
+                    xRichEditBox.Document.GetText(TextGetOptions.None, out text);
+                    var length = text.Length;
+                    if (xRichEditBox.Document.Selection.StartPosition == length-1)
+                    {
+                        var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                        var collection2 = this.GetFirstAncestorOfType<Canvas>();
+                        if (collection != null)
+                        {
+                            xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                            xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                            var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 20));
+                            var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
+                            collection.LoadNewActiveTextBox("", where2, true);
+                        }
+                    }
+                }
             if (tabState)
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
