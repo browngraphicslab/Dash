@@ -241,6 +241,14 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
+            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            {
+                var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
+                if (c != null)
+                {
+                    BrowserView.OpenTab(c.Data);
+                }
+            }
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 
@@ -608,18 +616,6 @@ namespace Dash
             foreach (var font in FontNames)
             {
                 fonts.Add(new FontFamily(font));
-            }
-        }
-
-        private void XRichEditBox_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
-            {
-                var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
-                if (c != null)
-                {
-                    BrowserView.OpenTab(c.Data);
-                }
             }
         }
 

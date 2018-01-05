@@ -32,7 +32,7 @@
                          BorderBrush="{StaticResource DocumentBackground}" 
                          BorderThickness="1"
                          IsColorFontEnabled="True" 
-                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}" KeyDown="XRichEditBox_OnKeyDown" PointerPressed="XRichEditBox_OnPointerPressed"/>
+                         SelectionHighlightColor="{StaticResource DarkWindowsBlue}" KeyDown="XRichEditBox_OnKeyDown" />
         <Canvas VerticalAlignment="Bottom">
             <Grid x:Name="xFormatControls" HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
