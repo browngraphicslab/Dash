@@ -1093,6 +1093,18 @@ namespace Dash
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
+
+            if(e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse)
+            {
+                var p = e.GetCurrentPoint((UIElement)sender);
+                if(p.Properties.IsRightButtonPressed)
+                {
+                    if(OuterGrid != null && OuterGrid.ContextFlyout != null)
+                    {
+                        FlyoutBase.ShowAttachedFlyout(OuterGrid);
+                    }
+                }
+            }
         }
 
         public void MoveToContainingCollection()
@@ -1123,6 +1135,21 @@ namespace Dash
                         break;
                     }
             }
+        }
+
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            CopyDocument();
+        }
+
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            CopyViewDocument();
+        }
+
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
         }
     }
 

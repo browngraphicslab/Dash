@@ -43,6 +43,15 @@
                 <ColumnDefinition Width="0"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Context flyout for right-click context menu -->
+            <Grid.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Delete" Click="MenuFlyoutItemDelete_Click"/>
+                    <MenuFlyoutItem Text="Copy" Click="MenuFlyoutItemCopy_Click"/>
+                    <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+
             <!-- Container for Icon view -->
             <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.RowDefinitions>
@@ -59,6 +68,8 @@
                 </StackPanel>
             </Grid>
 
+        
+            
             <!--canvas to hold the document view menu-->
             <Canvas x:Name="xMenuCanvas" Grid.Row="1" Grid.Column="1"></Canvas>
 

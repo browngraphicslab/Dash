@@ -25,10 +25,38 @@ namespace Dash
         private Storyboard OpacityAnimation;
         private Storyboard TranslationAnimation;
         private MenuButtonContainer content;
-        public MenuButtonContainer Contents {  get { return content; } }
+        private PointerPoint _lastPointerPoint;
+        private List<Button> _buttons = new List<Button>();
+        private Border _border;
+        private Border Border {
+            get => _border;
+            set { _border = value;
+                _border.PointerPressed += (s, e) => _lastPointerPoint = e.GetCurrentPoint(s as UIElement);
+                _border.DragStarting += (s,e) =>  StartDragAsync(_lastPointerPoint);
+            }
+        }
+
+        public new Brush Background
+        {
+            get => _border.Background;
+            set => _border.Background = value;
+        }
+
+        public MenuButtonContainer Contents { get { return content; } }
+        public TextBlock ButtonText { get { return _descriptionText; } }
 
         public bool RotateOnTap = false;
         public bool IsComposite;
+
+        public Border View { get { return _border; } }
+
+        #region singleDraggableButton
+        /// <summary>
+        /// Creates a single button with a given action
+        /// </summary>
+        /// <param name="icon"></param>
+        /// <param name="name"></param>
+        /// <param name="buttonAction"></param>
         public MenuButton(Symbol icon, string name, Action buttonAction)
         {
             this.InitializeComponent();
@@ -47,34 +75,36 @@ namespace Dash
             }
         }
 
-        private PointerPoint _lastPointerPoint;
-        private List<Button> _buttons = new List<Button>();
-        private Border _border;
-        private Border Border {
-            get => _border;
-            set { _border = value;
-                _border.PointerPressed += (s, e) => _lastPointerPoint = e.GetCurrentPoint(s as UIElement);
-                _border.DragStarting += (s,e) =>  StartDragAsync(_lastPointerPoint);
-            }
+
+        /// <summary>
+        /// Create a circular button with an icon with a string description
+        /// </summary>
+        /// <param name="icon"></param>
+        /// <param name="name"></param>
+        /// <param name="background"></param>
+        private void InstantiateButton(Symbol icon, string name)
+        {
+            // create button to contain the border with the symbol
+            content = new MenuButtonContainer(icon, name);
+            _descriptionText = content.Label;
+            Border = content.Border;
+            // makes buttons appear circular 
+            content.Border.Background = Resources["MenuBackground"] as SolidColorBrush;
+            ;
+
+            // add all content to stack panel
+            xButtonStackPanel.Children.Add(content);
+
+            content.Tapped += Button_Tapped;
+            content.DoubleTapped += Button_DoubleTapped;
         }
 
-        public new Brush Background
-        {
-            get => _border.Background;
-            set => _border.Background = value;
-        }
+        #endregion
 
-        public Border View { get { return _border; } }
-        public void HighlightAction(Action action)
-        {
-            var buttonBackground = Resources["MenuBackground"] as SolidColorBrush;
-            foreach (var b in _buttons) (b.Content as Border).Background = buttonBackground;
-            foreach (var menubutton in _buttons)
-            {
-                if (((Action)(menubutton.Tag)) == action)
-                    (menubutton.Content as Border).Background = new SolidColorBrush(Colors.Gray);
-            }
-        }
+
+
+        #region togglable buttons
+
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
@@ -83,7 +113,6 @@ namespace Dash
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
             
-
             this.InstantiateButtons(icons, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
             IsComposite = true;
@@ -119,7 +148,6 @@ namespace Dash
                 else if (i == icons.Count - 1)
                 {
                     _border.CornerRadius = new CornerRadius(0, 0, 20, 20);
-                    //border.Background = new SolidColorBrush(Colors.Gray);
                 }
 
                 // create button to contain the border with the symbol
@@ -139,6 +167,7 @@ namespace Dash
                 //Capture the right value for i
                 int j = i;
                 button.Tag = buttonActions[j];
+
                 //events 
                 button.Tapped += (s, e) =>
                 {
@@ -150,32 +179,27 @@ namespace Dash
                 i++;
             }
         }
-        
-        public TextBlock ButtonText { get { return _descriptionText; } }
-        /// <summary>
-        /// Create a circular button with an icon with a string description
-        /// </summary>
-        /// <param name="icon"></param>
-        /// <param name="name"></param>
-        /// <param name="background"></param>
-        private void InstantiateButton(Symbol icon, string name)
+
+        public void HighlightAction(Action action)
         {
-            // create button to contain the border with the symbol
-            content = new MenuButtonContainer(icon, name);
-            _descriptionText = content.Label;
-            Border = content.Border;
-            // makes buttons appear circular 
-            content.Border.Background = Resources["MenuBackground"] as SolidColorBrush;
-            //_descriptionText.Foreground = Resources["TitleColor"] as SolidColorBrush;
-            //content.Button.Foreground = Resources["TitleColor"] as SolidColorBrush;
-            ;
-
-            // add all content to stack panel
-            xButtonStackPanel.Children.Add(content);
-
-            content.Tapped       += Button_Tapped;
-            content.DoubleTapped += Button_DoubleTapped;
+            var buttonBackground = Resources["MenuBackground"] as SolidColorBrush;
+            foreach (var b in _buttons) (b.Content as Border).Background = buttonBackground;
+            foreach (var menubutton in _buttons)
+            {
+                if (((Action)(menubutton.Tag)) == action)
+                    (menubutton.Content as Border).Background = new SolidColorBrush(Colors.Gray);
+            }
         }
+
+
+        public void Dispose()
+        {
+            if (content == null) return;
+            content.Tapped -= Button_Tapped;
+            content.DoubleTapped -= Button_DoubleTapped;
+        }
+
+        #endregion
 
         private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
@@ -194,13 +218,7 @@ namespace Dash
             e.Handled = true;
         }
 
-        public void Dispose()
-        {
-            if (content == null) return;
-            content.Tapped -= Button_Tapped;
-            content.DoubleTapped -= Button_DoubleTapped;
-        }
-
+        #region Animation
         /// <summary>
         /// Rotate the button
         /// </summary>
@@ -425,4 +443,6 @@ namespace Dash
             return opacityStoryboard;
         }
     }
+
+    #endregion
 }
