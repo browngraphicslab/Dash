@@ -1067,6 +1067,8 @@ namespace Dash
 
         private void SizeToFit()
         {
+            if (!this.IsInVisualTree())
+                return;
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
             var str = "";
@@ -1077,11 +1079,15 @@ namespace Dash
             int count = 0;
             float lastMax = 20;
             float lastMin = 6;
+            float lastGoodSize = 0;
+
             while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
             {
                 var charFormatting = selectedText.CharacterFormat;
                 var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
                 float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
+                if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
+                    lastGoodSize = curSize;
                 if (delta < 0) {
                     lastMax = curSize;
                     delta = (float)Math.Ceiling(delta);
@@ -1117,6 +1123,13 @@ namespace Dash
                     //    }
                     //    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                     //}
+            }
+            if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
+            {
+                var charFormatting = selectedText.CharacterFormat;
+                charFormatting.Size = lastGoodSize;
+                selectedText.CharacterFormat = charFormatting;
+                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
