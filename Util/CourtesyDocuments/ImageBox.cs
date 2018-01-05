@@ -31,7 +31,6 @@ namespace Dash
             Document.SetFields(fields, true);
         }
 
-
         public override FrameworkElement makeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
