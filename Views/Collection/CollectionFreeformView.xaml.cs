@@ -1341,11 +1341,19 @@ namespace Dash
             if (previewTextbox.Visibility == Visibility.Collapsed)
                 return;
             e.Handled = true;
-            if (!loadingPermanentTextbox && text.Length > 0)
+            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            if (text.Length > 0)
+                LoadNewActiveTextBox(text, where);
+        }
+
+        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
+        {
+            if (!loadingPermanentTextbox)
             {
+                if (resetBuffer)
+                    previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400,32)).Document;
+                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
                 Actions.DisplayDocument(this, postitNote, where);
             }
         }
