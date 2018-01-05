@@ -24,17 +24,20 @@ namespace Dash
     {
         public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
         {
-            // TODO FIX THIS TO RESEMBLE TRENTS FIXES IN IMAGETODASHUTIL
+            // store the file locally
             var localFolder = ApplicationData.Current.LocalFolder;
-            var apath = Path.GetFileName(sFile.Path) == "" ? Guid.NewGuid() + ".pdf" : Path.GetFileName(sFile.Path);
-            var localFile = await localFolder.CreateFileAsync(apath, CreationCollisionOption.ReplaceExisting);
+            var guid = Guid.NewGuid() + ".pdf";
+            var localFile = await localFolder.CreateFileAsync(guid, CreationCollisionOption.ReplaceExisting);
             await sFile.CopyAndReplaceAsync(localFile);
 
+            // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path))
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+
+            // return a new pdf box
             return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
         }
 
