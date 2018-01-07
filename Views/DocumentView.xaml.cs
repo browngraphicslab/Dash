@@ -78,12 +78,18 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
+            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
+
             //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
             // this.ManipulationDelta += DocumentView_ManipulationDelta;
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
+
+
+
         }
+
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -98,7 +104,287 @@ namespace Dash
             var docView = sender as DocumentView;
             CheckForDropOnLink(docView);
 
+            Snap(false);
+
         }
+
+        private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Snap(true);
+        }
+
+        #region Snapping
+
+        /// <summary>
+        /// Enum used for snapping.
+        /// TODO: Move this to the top of the class definition.
+        /// </summary>
+        private enum Side
+        {
+            Top = 1,
+            Bottom = ~Top,
+            Left = 2,
+            Right = ~Left,
+        };
+
+        /// <summary>
+        /// TODO: Move this to the top of the class definition.
+        /// </summary>
+        private const double ALIGNING_RECTANGLE_SENSITIVITY = 15.0;
+
+        /// <summary>
+        /// TODO: Move this to the top of the class definition.
+        /// </summary>
+        private const double ALIGNMENT_THRESHOLD = .2;
+
+        /// <summary>
+        /// Top level function for snapping
+        /// </summary>
+        private void Snap(bool preview)
+        {
+            //No snapping if main collection manipulated (i.e., panned)
+            if (IsMainCollection)
+            {
+                return;
+            }
+            /*
+            if (Equals(MainPage.Instance.xMainDocView))
+            {
+                return;
+            }
+            if (Parent is CollectionFreeformView)
+            {
+                
+            }
+            */
+
+            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+
+            //Find the closest other DocumentView and snap to it.
+            var closestDocumentView = GetClosestDocumentView();
+            if (preview)
+            {
+                PreviewSnap(closestDocumentView);
+            }
+            else
+            {
+                SnapToDocumentView(closestDocumentView);
+            }
+        }
+
+        private void PreviewSnap(Tuple<DocumentView, Side, double> closestDocumentView)
+        {
+            if (closestDocumentView == null)
+            {
+                //Debug.WriteLine("Hiding rectangle!");
+                //Debug.WriteLine("Width: " + ActualWidth.ToString());
+                return;
+            }
+
+            var documentView = closestDocumentView.Item1;
+            var side = closestDocumentView.Item2;
+
+            var closestDocumentViewScreenBoundingBox = documentView.GetBoundingBoxScreenSpace();
+            var currentScreenBoundingBox = GetBoundingBoxScreenSpace();
+            var newBoundingBox =
+                CalculateAligningRectangleForSide(~side, closestDocumentViewScreenBoundingBox, currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
+
+            //Debug.WriteLine("Showing rectangle!");
+            //Debug.WriteLine("Width: " + ActualWidth.ToString());
+
+            MainPage.Instance.TemporaryRectangle.Width = newBoundingBox.Width;
+            MainPage.Instance.TemporaryRectangle.Height = newBoundingBox.Height;
+
+            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
+            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
+
+        }
+
+        /// <summary>
+        /// Gets the closest DocumentView from all sides and returns the "closest" one
+        /// </summary>
+        /// <param name="topLeftScreenPoint"></param>
+        /// <param name="bottomRightScreenPoint"></param>
+        /// <returns></returns>
+        private Tuple<DocumentView, Side, double> GetClosestDocumentView()
+        {
+            //List of all DocumentViews hit, along with a double representing how close they are
+            var allDocumentViewsHit = HitTestFromSides();
+
+            //Return closest DocumentView (using the double that represents the confidence)
+            return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
+        }
+
+        /// <summary>
+        /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
+        /// </summary>
+        /// <param name="closestDocumentView"></param>
+        private void SnapToDocumentView(Tuple<DocumentView, Side, double> closestDocumentView)
+        {
+            if (closestDocumentView == null)
+            {
+                return;
+            }
+
+            var documentView = closestDocumentView.Item1;
+            var side = closestDocumentView.Item2;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+
+            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
+                documentView.ViewModel.GroupTransform.Translate.Y);
+            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
+                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+
+            var newBoundingBox =
+                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, ViewModel.Width, ViewModel.Height);
+
+            var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
+            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); 
+
+            ViewModel.Width = newBoundingBox.Width;
+            ViewModel.Height = newBoundingBox.Height;
+        }
+
+        
+        /// <summary>
+        /// Returns a list of DocumentViews hit by the side, as well as a double representing how close they are
+        /// </summary>
+        /// <param name="side"></param>
+        /// <param name="topLeftScreenPoint"></param>
+        /// <param name="bottomRightScreenPoint"></param>
+        /// <returns></returns>
+        private List<Tuple<DocumentView, Side, double>> HitTestFromSides()
+        {
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
+
+            var currentBoundingBox = GetBoundingBoxScreenSpace();
+            var topLeftScreenPoint = new Point(currentBoundingBox.X, currentBoundingBox.Y);
+            var bottomRightScreenPoint = new Point(currentBoundingBox.X + currentBoundingBox.Width, currentBoundingBox.Y + currentBoundingBox.Height);
+
+            Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
+            foreach (var side in sides)
+            {
+                //Rect that will be hittested for
+                var rect = CalculateAligningRectangleForSide(side, topLeftScreenPoint, bottomRightScreenPoint, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
+                var hitDocumentViews = VisualTreeHelper.FindElementsInHostCoordinates(rect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray();
+
+                foreach (var obj in hitDocumentViews)
+                {
+                    var documentView = obj as DocumentView;
+                    if ((!documentView.Equals(MainPage.Instance.xMainDocView)) && (!documentView.Equals(this)))
+                    {
+                        var confidence = CalculateSnappingConfidence(side, rect, documentView);
+                        if (confidence >= ALIGNMENT_THRESHOLD)
+                        {
+                            documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(documentView, side, confidence));
+                        }
+                    }
+                }
+            }
+
+            return documentViewsAboveThreshold;
+        }
+
+        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
+        {
+            Rect otherDocumentViewBoundingBox = otherDocumentView.GetBoundingBoxScreenSpace();
+
+            var midX = hitTestRect.X + hitTestRect.Width / 2;
+            var midY = hitTestRect.Y + hitTestRect.Height / 2;
+
+            double distanceToMid = -1;
+
+            //Get normalized x or y distance from the complementary edge of the other DocumentView and the midpoint of the hitTestRect
+            switch (side)
+            {
+                case Side.Top:
+                    distanceToMid = Math.Abs(midY - (otherDocumentViewBoundingBox.Y + otherDocumentViewBoundingBox.Height));
+                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Height);
+                    return distanceToMid * GetSharedRectWidthProportion(hitTestRect, otherDocumentViewBoundingBox);
+                case Side.Bottom:
+                    distanceToMid = Math.Abs(otherDocumentViewBoundingBox.Y - midY);
+                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Height);
+                    return distanceToMid * GetSharedRectWidthProportion(hitTestRect, otherDocumentViewBoundingBox);
+                case Side.Left:
+                    distanceToMid = Math.Abs(midX - (otherDocumentViewBoundingBox.X + otherDocumentViewBoundingBox.Width));
+                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Width);
+                    return distanceToMid * GetSharedRectHeightProportion(hitTestRect, otherDocumentViewBoundingBox);
+                case Side.Right:
+                    distanceToMid = Math.Abs(otherDocumentViewBoundingBox.X - midX);
+                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Width);
+                    return distanceToMid * GetSharedRectHeightProportion(hitTestRect, otherDocumentViewBoundingBox);
+            }
+            return distanceToMid;
+        }
+
+        private double GetSharedRectWidthProportion(Rect source, Rect target)
+        {
+            var targetMin = target.X;
+            var targetMax = target.X + target.Width;
+
+            var sourceStart = Math.Max(targetMin, source.X);
+            var sourceEnd = Math.Min(targetMax, source.X + source.Width);
+            return (sourceEnd - sourceStart) / source.Width;
+        }
+
+        private double GetSharedRectHeightProportion(Rect source, Rect target)
+        {
+            var targetMin = target.Y;
+            var targetMax = target.Y + target.Height;
+
+            var sourceStart = Math.Max(targetMin, source.Y);
+            var sourceEnd = Math.Min(targetMax, source.Y + source.Height);
+
+            return (sourceEnd - sourceStart) / source.Height;
+        }
+
+        public Rect GetBoundingBoxScreenSpace()
+        {
+            Point topLeftObjectPoint = new Point(0, 0);
+            Point bottomRightObjectPoint = new Point(ViewModel.Width, ViewModel.Height);
+
+            var topLeftPoint = Util.PointTransformFromVisual(topLeftObjectPoint, this);
+            var bottomRightPoint = Util.PointTransformFromVisual(bottomRightObjectPoint, this);
+
+            return new Rect(topLeftPoint, bottomRightPoint);
+        }
+        private Rect CalculateAligningRectangleForSide(Side side, Point topLeftPoint, Point bottomRightPoint, double w, double h)
+        {
+            Point newTopLeft, newBottomRight;
+
+            switch (side)
+            {
+                case Side.Top:
+                    newTopLeft = new Point(topLeftPoint.X, topLeftPoint.Y - h);
+                    newBottomRight = new Point(bottomRightPoint.X, topLeftPoint.Y);
+                    break;
+                case Side.Bottom:
+                    newTopLeft = new Point(topLeftPoint.X, bottomRightPoint.Y);
+                    newBottomRight = new Point(bottomRightPoint.X, bottomRightPoint.Y + h);
+                    break;
+                case Side.Left:
+                    newTopLeft = new Point(topLeftPoint.X - w, topLeftPoint.Y);
+                    newBottomRight = new Point(topLeftPoint.X, bottomRightPoint.Y);
+                    break;
+                case Side.Right:
+                    newTopLeft = new Point(bottomRightPoint.X, topLeftPoint.Y);
+                    newBottomRight = new Point(bottomRightPoint.X + w, bottomRightPoint.Y);
+                    break;
+            }
+            return new Rect(newTopLeft, newBottomRight);
+        }
+
+        private Rect CalculateAligningRectangleForSide(Side side, Rect boundingBox, double w, double h)
+        {
+            Point topLeftPoint = new Point(boundingBox.X, boundingBox.Y);
+            Point bottomRightPoint = new Point(boundingBox.X + boundingBox.Width, boundingBox.Y + boundingBox.Height);
+            return CalculateAligningRectangleForSide(side, topLeftPoint, bottomRightPoint, w, h);
+        }
+
+
+        #endregion
+
 
         private void CheckForDropOnLink(DocumentView docView)
         {
