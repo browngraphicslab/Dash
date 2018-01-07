@@ -24,11 +24,8 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
-<<<<<<< HEAD
 using Windows.UI.Xaml.Media.Imaging;
-=======
 using Dash.Views.Document_Menu;
->>>>>>> origin/TreeMenu
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -92,7 +89,7 @@ namespace Dash
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion

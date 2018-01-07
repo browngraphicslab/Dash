@@ -232,9 +232,6 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\AddMenu.xaml.cs">
-      <DependentUpon>AddMenu.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>
@@ -706,10 +703,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\AddMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -12,24 +12,18 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-<<<<<<< HEAD
-    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF" Background="{ThemeResource CollectionViewBackground}">
-=======
-    <Grid x:Name="xOuterGrid" BorderThickness="8" Margin="20,0" BorderBrush="#07FFFFFF">
->>>>>>> origin/TreeMenu
+
+    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF">
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-<<<<<<< HEAD
-            <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            <xaml:CanvasControl Grid.Column="1" Visibility="Collapsed" x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
-=======
-            <xaml:CanvasControl Grid.Column="1" Visibility="Collapsed"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <!-- CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"  -->
->>>>>>> origin/TreeMenu
+
 
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
