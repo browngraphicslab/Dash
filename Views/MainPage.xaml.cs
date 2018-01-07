@@ -57,9 +57,12 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
+<<<<<<< HEAD
         public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public WebView WebContext;
         public Uri WebContextUri => WebBoxWrapper.WebContextUri;
+=======
+>>>>>>> origin/TreeMenu
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -93,7 +96,6 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-
                     if (MainDocument.GetActiveLayout() == null)
                     {
                         var layout =
@@ -181,8 +183,17 @@ namespace Dash
                 
             };
 
+<<<<<<< HEAD
             
             WebContext = WebBoxWrapper.WebContext;
+=======
+            // add TreeMenu
+            TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
+            TreeMenu.Width = 300;
+            TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
+            MyGrid.Children.Add(TreeMenu);
+
+>>>>>>> origin/TreeMenu
         }
 
         public CollectionView GetMainCollectionView()

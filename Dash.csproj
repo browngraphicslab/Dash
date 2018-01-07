@@ -238,6 +238,9 @@
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
+      <DependentUpon>TreeNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
@@ -711,6 +714,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\TreeMenuNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\TreeNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
