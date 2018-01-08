@@ -39,6 +39,7 @@ using Windows.UI.Core;
 using System.Diagnostics;
 using Windows.System;
 using Windows.ApplicationModel.DataTransfer;
+using System.Text.RegularExpressions;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -102,6 +103,7 @@ namespace Dash
         public RichTextView()
         {
             this.InitializeComponent();
+            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
             Loaded   += OnLoaded;
             Unloaded += UnLoaded;
 
@@ -165,7 +167,9 @@ namespace Dash
 
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
+            var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
+            var newstr = reg.Replace(Text.RtfFormatString, "}\r\n\0");
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr);
             var selected = GetSelected();
             if (selected != null)
             {
@@ -217,20 +221,11 @@ namespace Dash
             }
             return null;
         }
-
-        private async Task<string> LoadText()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/rtf.txt"));
-            return await FileIO.ReadTextAsync(file);
-        }
+        
 
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
-            
-            if (GetText() != null)
-                xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
-        
             
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
             // Add handlers and and bindings to set up rich text formatting functionalities 
@@ -241,12 +236,6 @@ namespace Dash
             AddFlyoutHandlers();
             SetFontSizeBinding();
 
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () =>
-            {
-                if (GetText() != null)
-                    xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, GetText().RtfFormatString);
-            });
-
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
@@ -254,10 +243,16 @@ namespace Dash
             this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
-            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
-            released(null, null);
+            Scroll.LayoutUpdated += Scroll_LayoutUpdated;
         }
+
+        private void Scroll_LayoutUpdated(object sender, object e)
+        {
+            if (Scroll.Visibility == Visibility.Visible)
+                released(null, null);
+        }
+
         ScrollBar Scroll = null;
         Tuple<Point, Point> HackToDragWithRightMouseButton = null;
 
@@ -358,12 +353,7 @@ namespace Dash
                     }
                     else
                     {
-                        Windows.System.Launcher.LaunchUriAsync(new Uri(target));
-                        //var WebDoc = DBTest.CreateWebPage(target);
-                        //var pt = point;
-                        //pt.X -= 150;
-                        //pt.Y -= 50;
-                        //MainPage.Instance.DisplayDocument(WebDoc, pt);
+                        MainPage.Instance.WebContext.Navigate(new Uri(target));
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -373,13 +363,21 @@ namespace Dash
 
         private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
-            WC.CountWords();
+             WC.CountWords();
         }
 
+        private string GetRtfText()
+        {
+            string allRtfText;
+            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+            var newtext = allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            return newtext;
+        }
+
+        private bool CanSizeToFit = false;
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if (Scroll.Visibility == Visibility.Visible)
-                released(null, null);
+            CanSizeToFit = true;
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
             {
@@ -1068,14 +1066,13 @@ namespace Dash
 
         private void SizeToFit()
         {
-            if (!this.IsInVisualTree())
+          if (!this.IsInVisualTree() || !CanSizeToFit)
                 return;
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-            var str = "";
-            this.xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out str);
-            xRichEditBox.Document.Selection.SetRange(0, str.Length);
-            var selectedText = xRichEditBox.Document.Selection;
+            //var str = Text.RtfFormatString;
+            //xRichEditBox.Document.Selection.SetRange(0, str.Length);
+            //var selectedText = xRichEditBox.Document.Selection;
             xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
             var relative = this.GetFirstAncestorOfType<RelativePanel>();
             if (relative != null)
@@ -1087,6 +1084,7 @@ namespace Dash
                 float lastMax = 20;
                 float lastMin = 6;
                 float lastGoodSize = 0;
+                    var selectedText = xRichEditBox.Document.Selection;
 
                 while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
                 {
@@ -1168,7 +1166,7 @@ namespace Dash
             //if (!ele.GetAncestors().Contains(this) && (xFontComboBox.ItemsPanelRoot == null || !xFontComboBox.ItemsPanelRoot.Children.Contains(ele)))
             //{
             //    xFormatControls.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            //    CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
+            //    CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDisptcherPriority.Low, async () => SizeToFit());
             //}
         }
 
@@ -1176,10 +1174,9 @@ namespace Dash
         {
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
-            string allRtfText;
-            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+            string allRtfText = GetRtfText();
             UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
@@ -1235,10 +1232,9 @@ namespace Dash
 
             if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
             {
-                string allRtfText;
-                xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+                string allRtfText = GetRtfText();
                 UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText.Replace("\\pard\\tx720\\par", ""));  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+                Text = new RichTextModel.RTD(allText, allRtfText); 
                 TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             }
             xRichEditBox.Document.Selection.SetRange(s1, s2);

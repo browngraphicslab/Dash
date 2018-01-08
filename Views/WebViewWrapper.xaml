@@ -36,7 +36,7 @@
                 <SymbolIcon Symbol="Refresh" Height="25" Width="35"></SymbolIcon>
             </Button.Content>
         </Button>
-        <WebView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" x:Name="xWebContext" FrameNavigationStarting="xWebContext_FrameNavigationStarting" NavigationStarting="xWebContext_NavigationStarting"  NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.msn.com"
+        <WebView Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="1" x:Name="xWebContext" FrameNavigationStarting="xWebContext_FrameNavigationStarting" NavigationStarting="xWebContext_NavigationStarting"  NavigationCompleted="WebContext_NavigationCompleted" Source="http://www.google.com"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
