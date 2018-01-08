@@ -1084,9 +1084,9 @@ namespace Dash
 
         public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> fieldModelController in _fields)
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
             {
-                yield return fieldModelController;
+                yield return keyFieldPair;
             }
 
             if (!ignorePrototype)
@@ -1094,6 +1094,23 @@ namespace Dash
                 var prototype = GetPrototype();
                 if (prototype != null)
                     foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }

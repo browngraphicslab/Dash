@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
-using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
 
 namespace Dash
@@ -17,6 +10,7 @@ namespace Dash
     public class CollectionViewModel : BaseCollectionViewModel
     {
         private ListController<DocumentController> _collectionFieldModelController;
+        public ListController<DocumentController> CollectionController { get { return _collectionFieldModelController; } }
 
         public InkController InkController;
 
@@ -51,6 +45,7 @@ namespace Dash
                             if (_collectionFieldModelController == null) return;
                             var documents = _collectionFieldModelController.GetElements();
                             DocumentViewModels.Clear();
+
                             AddViewModels(documents, context);
                             //TODO tfs: I don't think we actually want to do this...
                             //bool newDoc = DocumentViewModels.Count != documents.Count;
@@ -176,6 +171,8 @@ namespace Dash
             {
                 return;
             }
+
+
 
             // just update the collection, the colllection will update our view automatically
             _collectionFieldModelController.Add(doc);
