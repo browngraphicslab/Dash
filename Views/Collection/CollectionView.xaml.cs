@@ -25,6 +25,7 @@ using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views.Document_Menu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -88,7 +89,7 @@ namespace Dash
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -116,7 +117,12 @@ namespace Dash
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
             
             if (_collectionMenu == null)
+            {
                 MakeMenu();
+
+                UpdateContextMenu();
+            }
+                
             // set the top-level viewtype to be freeform by default
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
@@ -164,6 +170,73 @@ namespace Dash
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
         }
 
+
+
+        #endregion
+
+
+        #region Context menu click handlers
+
+        private void UpdateContextMenu()
+        {
+            var newDocument = new MenuFlyoutItem() { Text = "Create new document" };
+            newDocument.Click += MenuFlyoutItemNewDocument_Click;
+            ParentDocument.MenuFlyout.Items.Add(newDocument);
+
+            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
+            ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
+
+            var freeform = new MenuFlyoutItem() { Text = "Freeform" };
+            freeform.Click += MenuFlyoutItemFreeform_Click;
+            viewCollectionAs.Items.Add(freeform);
+
+            var grid = new MenuFlyoutItem() { Text = "Grid" };
+            grid.Click += MenuFlyoutItemGrid_Click;
+            viewCollectionAs.Items.Add(grid);
+
+            var browse = new MenuFlyoutItem() { Text = "Browse" };
+            browse.Click += MenuFlyoutItemBrowse_Click;
+            viewCollectionAs.Items.Add(browse);
+
+            var db = new MenuFlyoutItem() { Text = "DB" };
+            db.Click += MenuFlyoutItemDB_Click;
+            viewCollectionAs.Items.Add(db);
+
+            var schema = new MenuFlyoutItem() { Text = "Schema" };
+            schema.Click += MenuFlyoutItemSchema_Click;
+            viewCollectionAs.Items.Add(schema);
+        }
+
+        private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
+        {
+            Util.BlankDoc();
+        }
+
+        private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
+        {
+            SetFreeformView();
+        }
+
+        private void MenuFlyoutItemGrid_Click(object sender, RoutedEventArgs e)
+        {
+            SetGridView();
+        }
+
+        private void MenuFlyoutItemBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            SetBrowseView();
+        }
+
+        private void MenuFlyoutItemDB_Click(object sender, RoutedEventArgs e)
+        {
+            SetDBView();
+        }
+
+        private void MenuFlyoutItemSchema_Click(object sender, RoutedEventArgs e)
+        {
+            SetSchemaView();
+        }
+        
         #endregion
 
         #region Operator connection output
@@ -494,8 +567,6 @@ namespace Dash
 
         #endregion
 
-
-
         private void SetInitialTransformOnBackground()
         {
             var composite = new TransformGroup();
@@ -534,7 +605,6 @@ namespace Dash
                 SetInitialTransformOnBackground();
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
 
         public void SetTransformOnBackground(TransformGroup composite)
         {
@@ -583,14 +653,24 @@ namespace Dash
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             var datacontext = docView?.DataContext as DocumentViewModel;
-
             if (datacontext == null) return;
+
             var visibilityBinding = new Binding
             {
                 Source = datacontext,
                 Path = new PropertyPath(nameof(datacontext.IsSelected)) 
             };
+
+            datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
+
+
+
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
+
+        private void OnCollectionUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -30,6 +30,7 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Flurl.Util;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -71,8 +72,7 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg2.jpg");
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -103,7 +103,9 @@ namespace Dash
             if (isDark)
                 xDarkenBackground.Opacity = .1;
             else
+            {
                 xDarkenBackground.Opacity = 0;
+            }
         }
 
 
@@ -150,7 +152,9 @@ namespace Dash
 
             LoadLines();
             fitFreeFormChildrenToTheirLayouts();
+            //Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
+
         void fitFreeFormChildrenToTheirLayouts()
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
@@ -455,39 +459,40 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var converter in LineToConverter.Values)
-            {
-                if (converter.Element1 == null || converter.Element2 == null)
-                {
-                    return;
-                }
-                DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                if (docView == view1)
-                {
-                    if (becomeSmall)
-                    {
-                        if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
-                        converter.Element1 = docView.xIcon;
-                    }
-                    else
-                    {
-                        converter.Element1 = converter.Temp1;
-                    }
-                }
-                else if (docView == view2)
-                {
-                    if (becomeSmall)
-                    {
-                        if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
-                        converter.Element2 = docView.xIcon;
-                    }
-                    else
-                    {
-                        converter.Element2 = converter.Temp2;
-                    }
-                }
-            }
+            return;
+            //foreach (var converter in LineToConverter.Values)
+            //{
+            //    if (converter.Element1 == null || converter.Element2 == null)
+            //    {
+            //        return;
+            //    }
+            //    DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+            //    DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+            //    if (docView == view1)
+            //    {
+            //        if (becomeSmall)
+            //        {
+            //            if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
+            //            converter.Element1 = docView.xIcon;
+            //        }
+            //        else
+            //        {
+            //            converter.Element1 = converter.Temp1;
+            //        }
+            //    }
+            //    else if (docView == view2)
+            //    {
+            //        if (becomeSmall)
+            //        {
+            //            if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
+            //            converter.Element2 = docView.xIcon;
+            //        }
+            //        else
+            //        {
+            //            converter.Element2 = converter.Temp2;
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>
@@ -852,7 +857,7 @@ namespace Dash
 
             itemsPanelCanvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(compValue);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
@@ -882,18 +887,19 @@ namespace Dash
             }
             return currentScale;
         }
-        private void SetTransformOnBackground(TransformGroup composite)
+
+        private void SetTransformOnBackground(Matrix transformMatrix)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, _numberOfBackgroundRows);
 
             if (_resourcesLoaded)
             {
                 _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)composite.Value.M12,
-                    (float)composite.Value.M21,
+                    (float)transformMatrix.M12,
+                    (float)transformMatrix.M21,
                     (float)aliasSafeScale,
-                    (float)composite.Value.OffsetX,
-                    (float)composite.Value.OffsetY);
+                    (float)transformMatrix.OffsetX,
+                    (float)transformMatrix.OffsetY);
                 xBackgroundCanvas.Invalidate();
             }
         }
@@ -910,7 +916,7 @@ namespace Dash
             };
 
             composite.Children.Add(scale);
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(composite.Value);
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
