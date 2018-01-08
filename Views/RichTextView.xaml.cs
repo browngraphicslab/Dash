@@ -1655,8 +1655,8 @@ namespace Dash
             //xFormatTip.VerticalOffset = -point.Y;
             //xFormatTip.PlacementTarget = xRichEditBox;
             xFormatTip.Placement = PlacementMode.Left;
-            xFormatTip.IsOpen = true;
-            await Task.Delay(3000);
+            xFormatTip.IsOpen = false; //TO use the tool tip again, set this to true
+            //await Task.Delay(3000);
             if (!isFlyoutOpen)
                 xFormatTip.IsOpen = false;
         }
