@@ -70,6 +70,8 @@ namespace Dash
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
+            //OuterGrid.MinWidth = 100;
+            //OuterGrid.MinHeight = 25;
 
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
@@ -696,20 +698,21 @@ namespace Dash
         /// </summary>
         private void updateIcon()
         {
-            if (ViewModel == null) return;
-            // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Collection)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Api)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
-            }
+            return;
+            //if (ViewModel == null) return;
+            //// when you want a new icon, you have to add a check for it here!
+            //if (ViewModel.IconType == IconTypeEnum.Document)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Collection)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Api)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+            //}
         }
 
         void initDocumentOnDataContext()
@@ -727,14 +730,14 @@ namespace Dash
             }
 
             // if there is a readable document type, use that as label
-            var sourceBinding = new Binding
-            {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+            //var sourceBinding = new Binding
+            //{
+            //    Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+            //    Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+            //    Mode = BindingMode.TwoWay,
+            //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            //};
+            //xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
 
         }
 
@@ -781,41 +784,42 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            return;
             if (ViewModel != null)
             {
                 // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
-            int pad = 1;
-            if (Height < MinHeight + 5)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Collapsed;
-            }
-            else
-                if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                if (xIcon.Visibility == Visibility.Collapsed)
-                    xIcon.Visibility = Visibility.Visible;
-                xDragImage.Opacity = 0;
-                if (_docMenu != null) ViewModel.CloseMenu();
-                UpdateBinding(true);
-            }
-            else
-            {
-                xFieldContainer.Visibility = Visibility.Visible;
-                xGradientOverlay.Visibility = Visibility.Visible;
-                xShadowTarget.Visibility = Visibility.Visible;
-                xIcon.Visibility = Visibility.Collapsed;
-                xDragImage.Opacity = .25;
-                UpdateBinding(false);
-            }
+            //int pad = 1;
+            //if (Height < MinHeight + 5)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //}
+            //else
+            //    if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    if (xIcon.Visibility == Visibility.Collapsed)
+            //        xIcon.Visibility = Visibility.Visible;
+            //    xDragImage.Opacity = 0;
+            //    if (_docMenu != null) ViewModel.CloseMenu();
+            //    UpdateBinding(true);
+            //}
+            //else
+            //{
+            //    xFieldContainer.Visibility = Visibility.Visible;
+            //    xGradientOverlay.Visibility = Visibility.Visible;
+            //    xShadowTarget.Visibility = Visibility.Visible;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //    xDragImage.Opacity = .25;
+            //    UpdateBinding(false);
+            //}
         }
 
         /// <summary>
@@ -987,7 +991,7 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
 
-            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            if (!IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
                 {

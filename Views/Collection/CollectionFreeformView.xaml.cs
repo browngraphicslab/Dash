@@ -459,39 +459,40 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var converter in LineToConverter.Values)
-            {
-                if (converter.Element1 == null || converter.Element2 == null)
-                {
-                    return;
-                }
-                DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                if (docView == view1)
-                {
-                    if (becomeSmall)
-                    {
-                        if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
-                        converter.Element1 = docView.xIcon;
-                    }
-                    else
-                    {
-                        converter.Element1 = converter.Temp1;
-                    }
-                }
-                else if (docView == view2)
-                {
-                    if (becomeSmall)
-                    {
-                        if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
-                        converter.Element2 = docView.xIcon;
-                    }
-                    else
-                    {
-                        converter.Element2 = converter.Temp2;
-                    }
-                }
-            }
+            return;
+            //foreach (var converter in LineToConverter.Values)
+            //{
+            //    if (converter.Element1 == null || converter.Element2 == null)
+            //    {
+            //        return;
+            //    }
+            //    DocumentView view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+            //    DocumentView view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+            //    if (docView == view1)
+            //    {
+            //        if (becomeSmall)
+            //        {
+            //            if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
+            //            converter.Element1 = docView.xIcon;
+            //        }
+            //        else
+            //        {
+            //            converter.Element1 = converter.Temp1;
+            //        }
+            //    }
+            //    else if (docView == view2)
+            //    {
+            //        if (becomeSmall)
+            //        {
+            //            if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
+            //            converter.Element2 = docView.xIcon;
+            //        }
+            //        else
+            //        {
+            //            converter.Element2 = converter.Temp2;
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>

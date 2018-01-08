@@ -44,7 +44,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Container for Icon view -->
-            <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!--<Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -57,7 +57,7 @@
                           TextAlignment="Center"
                           Background="Transparent"  BorderThickness="0"/>
                 </StackPanel>
-            </Grid>
+            </Grid>-->
 
             <!--canvas to hold the document view menu-->
             <Canvas x:Name="xMenuCanvas" Grid.Row="1" Grid.Column="1"></Canvas>
