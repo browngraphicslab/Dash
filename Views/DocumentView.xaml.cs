@@ -169,26 +169,15 @@ namespace Dash
 
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
-            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-            /*
-            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
-                documentView.ViewModel.GroupTransform.Translate.Y);
-            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
-                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
-            */
 
             var closestDocumentViewScreenBoundingBox = documentView.GetBoundingBoxScreenSpace();
             var currentScreenBoundingBox = GetBoundingBoxScreenSpace();
             var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, new Point(closestDocumentViewScreenBoundingBox.X, closestDocumentViewScreenBoundingBox.Y), new Point(closestDocumentViewScreenBoundingBox.X + closestDocumentViewScreenBoundingBox.Width, closestDocumentViewScreenBoundingBox.Y + closestDocumentViewScreenBoundingBox.Height), currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
-
-            //var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-            //ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); 
+                CalculateAligningRectangleForSide(~side, closestDocumentViewScreenBoundingBox, currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
 
             MainPage.Instance.TemporaryRectangle.Width = newBoundingBox.Width;
             MainPage.Instance.TemporaryRectangle.Height = newBoundingBox.Height;
 
-            //MainPage.Instance.TemporaryRectangle.RenderTransform = new TransformGroup();
             Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
             Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
 
@@ -367,6 +356,13 @@ namespace Dash
                     break;
             }
             return new Rect(newTopLeft, newBottomRight);
+        }
+
+        private Rect CalculateAligningRectangleForSide(Side side, Rect boundingBox, double w, double h)
+        {
+            Point topLeftPoint = new Point(boundingBox.X, boundingBox.Y);
+            Point bottomRightPoint = new Point(boundingBox.X + boundingBox.Width, boundingBox.Y + boundingBox.Height);
+            return CalculateAligningRectangleForSide(side, topLeftPoint, bottomRightPoint, w, h);
         }
 
 
