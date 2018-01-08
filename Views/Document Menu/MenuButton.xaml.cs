@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -27,17 +29,34 @@ namespace Dash
 
         public bool RotateOnTap = false;
         public bool IsComposite;
-        public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
+        public MenuButton(Symbol icon, string name, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
-            this.InstantiateButton(icon, name, Color.FromArgb(255,6,132,132));
+            this.InstantiateButton(icon, name);
             this.CreateAndRunInstantiationAnimation(false);
             IsComposite = false;
+            PointerPressed += MenuButton_PointerPressed;
         }
-        
+
+        private void MenuButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e != null && (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || e.Pointer.PointerDeviceType == PointerDeviceType.Touch))
+            {
+                StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+            }
+        }
+
+        private PointerPoint _lastPointerPoint;
         private List<Button> _buttons = new List<Button>();
         private Border _border;
+        private Border Border {
+            get => _border;
+            set { _border = value;
+                _border.PointerPressed += (s, e) => _lastPointerPoint = e.GetCurrentPoint(s as UIElement);
+                _border.DragStarting += (s,e) =>  StartDragAsync(_lastPointerPoint);
+            }
+        }
 
         public new Brush Background
         {
@@ -48,7 +67,8 @@ namespace Dash
         public Border View { get { return _border; } }
         public void HighlightAction(Action action)
         {
-            foreach (var b in _buttons) (b.Content as Border).Background = ButtonsBackground;
+            var buttonBackground = Resources["MenuBackground"] as SolidColorBrush;
+            foreach (var b in _buttons) (b.Content as Border).Background = buttonBackground;
             foreach (var menubutton in _buttons)
             {
                 if (((Action)(menubutton.Tag)) == action)
@@ -58,23 +78,22 @@ namespace Dash
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
-        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions)
+        public MenuButton(List<Symbol> icons, List<Action> buttonActions)
         {
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
             
 
-            this.InstantiateButtons(icons, background, buttonActions);
+            this.InstantiateButtons(icons, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
             IsComposite = true;
         }
-        SolidColorBrush ButtonsBackground;
         /// <summary>
         /// Create a set of related toggle-able buttons with edges rounded at the top and buttom 
         /// </summary>
-        private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
+        private void InstantiateButtons(List<Symbol> icons, List<Action> buttonActions)
         {
-            ButtonsBackground = new SolidColorBrush(background);
+            var buttonBackground = Resources["MenuBackground"] as SolidColorBrush;
             int i = 0;
             foreach (Symbol icon in icons)
             {
@@ -82,15 +101,16 @@ namespace Dash
                 var symbol = new SymbolIcon()
                 {
                     Symbol = icon,
-                    Foreground = new SolidColorBrush(Colors.Black) // TODO move this to static resources
+                    //Foreground = Resources["TitleColor"] as SolidColorBrush // TODO move this to static resources
+                    Foreground = new SolidColorBrush(Colors.Black)
                 };
                 // create rounded(circular) border to hold the symbol
-                _border = new Border()
+                Border = new Border()
                 {
                     Height = 40,
                     Width = 40,
-                    Background = ButtonsBackground,
-                    BorderBrush = ButtonsBackground,
+                    Background = buttonBackground,
+                    BorderBrush = buttonBackground,
                     Child = symbol
                 };
                 // if it's the first button, round the top 
@@ -108,7 +128,8 @@ namespace Dash
                     Background = new SolidColorBrush(Colors.Transparent),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Padding = new Thickness(-2.5),
-                    Content = _border
+                    Content = _border,
+                    Foreground = new SolidColorBrush(Colors.Black),
                 };
 
                 // add all content to stack panel
@@ -137,14 +158,17 @@ namespace Dash
         /// <param name="icon"></param>
         /// <param name="name"></param>
         /// <param name="background"></param>
-        private void InstantiateButton(Symbol icon, string name, Color background)
+        private void InstantiateButton(Symbol icon, string name)
         {
-
             // create button to contain the border with the symbol
             content = new MenuButtonContainer(icon, name);
             _descriptionText = content.Label;
-            _border = content.Border;
-            content.Border.Background = new SolidColorBrush(background);
+            Border = content.Border;
+            // makes buttons appear circular 
+            content.Border.Background = Resources["MenuBackground"] as SolidColorBrush;
+            //_descriptionText.Foreground = Resources["TitleColor"] as SolidColorBrush;
+            //content.Button.Foreground = Resources["TitleColor"] as SolidColorBrush;
+            ;
 
             // add all content to stack panel
             xButtonStackPanel.Children.Add(content);

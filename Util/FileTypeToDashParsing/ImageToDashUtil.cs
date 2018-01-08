@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Foundation;
 using Windows.Storage;
+using DashShared;
 
 namespace Dash
 {
@@ -14,12 +11,22 @@ namespace Dash
 
         public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
         {
-            var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            var apath = Path.GetFileName(sFile.Path) == "" ? Guid.NewGuid().ToString() + ".jpg" : Path.GetFileName(sFile.Path);
-            var localFile = await localFolder.CreateFileAsync(apath, CreationCollisionOption.ReplaceExisting);
+            var localFolder = ApplicationData.Current.LocalFolder;  
+            //somehow this constant use of .jpg actually works with different file types
+            var guid = Guid.NewGuid() + ".jpg";
+            var localFile = await localFolder.CreateFileAsync(guid, CreationCollisionOption.ReplaceExisting);
             await sFile.CopyAndReplaceAsync(localFile);
-            
-            return new AnnotatedImage(new Uri(localFile.Path), null, "", Path.GetFileName(sFile.Path) == "" ? "" : Path.GetFileNameWithoutExtension(localFile.Path), 300, double.NaN).Document;
+
+            // create a backing document for the image
+            var fields = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path))
+            };
+            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+
+            // return an image box, by setting the height to NaN the image height automatically sizes
+            // based on the width according to the aspect ratio
+            return new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
         }
     }
 }

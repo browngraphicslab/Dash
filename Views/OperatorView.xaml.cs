@@ -44,6 +44,9 @@ namespace Dash
         /// </summary>
         private object _lastDataContext { get; set; } = null;
 
+
+        public DocumentView DocumentView { get { return documentView; } }
+
         /// <summary>
         /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
         /// </summary>
@@ -53,14 +56,17 @@ namespace Dash
             set => xOpContentPresenter.Content = value;
         }
 
-
+        
 
         public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
             this.InitializeComponent();
             _keysToFrameworkElements = keysToFrameworkElements;
             this.Loaded += OperatorView_Loaded;
+            
         }
+
+     
 
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -151,6 +157,7 @@ namespace Dash
                 _currOutputRef = ioRef;
             };
         }
+
 
 
         /// <summary>
@@ -301,7 +308,7 @@ namespace Dash
         private void ContractView(object sender, RoutedEventArgs e)
         {
             xOpContentPresenter.Content = null;
-            xOpContentPresenter.Background = (SolidColorBrush) Application.Current.Resources["WindowsBlue"];
+            xOpContentPresenter.Background = (SolidColorBrush)Resources["WindowsBlue"];
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
@@ -427,9 +434,47 @@ namespace Dash
                         }
                     }
                 }
+            }
+            if (KeyValuePane.DragModel != null)
+            {
+                var km = KeyValuePane.DragModel;
+                // and the header has a field key
+                if (KeyValuePane.DragModel.FieldKey != null)
+                {
+                    // get the document containing the operator
+                    var refToOp = DataContext as FieldReference;
+                    var operatorDoc = refToOp?.GetDocumentController(null);
 
+                    // get the key from the sending ellipse
+                    var frameworkElement = sender as FrameworkElement;
+                    if (frameworkElement != null)
+                    {
+                        var key = ((DictionaryEntry)frameworkElement.DataContext).Key as KeyController;
+
+                        if (_operator.Inputs[key].Type == TypeInfo.Text)
+                        {
+                            // User selected an item from the suggestion list, take an action on it here.
+                            if (operatorDoc != null)
+                            {
+                                operatorDoc.SetField(key, km.Document.GetDereferencedField(km.FieldKey.Key, null), true);
+                                return;
+                            }
+
+                        }
+                    }
+                }
             }
             return;
+        }
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+
+        }
+
+        private void Ellipse_Drop(object sender, DragEventArgs e)
+        {
+
         }
     }
 }

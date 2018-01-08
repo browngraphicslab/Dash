@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
+using Dash.Controllers.Operators;
 using DashShared.Models;
 
 namespace Dash
@@ -106,8 +107,30 @@ namespace Dash
                 }
                 return DocumentType.Type;
             }
+            set
+            {
+                var textFieldModelController = GetField(KeyStore.TitleKey) as TextController;
+                if (textFieldModelController != null)
+                    textFieldModelController.Data = value;
+            }
         }
 
+        public bool IsConnected { get; set; }
+        public bool HasMatchingKey(string keyName)
+        {
+            if (string.IsNullOrWhiteSpace(keyName))
+                return false;
+            foreach (KeyController key in _fields.Keys)
+            {
+                if (key.Name.StartsWith("_"))
+                    continue;
+                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed
@@ -339,11 +362,17 @@ namespace Dash
             if (opname == "Add")
                 return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorController());
             if (opname == "Subtract")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorController());
+            }
             if (opname == "Divide")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorController());
+            }
             if (opname == "Multiply")
+            {
                 return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorController());
+            }
 
             return null;
         }
@@ -471,6 +500,8 @@ namespace Dash
                     else if (curField is ListController<DocumentController>)
                         (curField as ListController<DocumentController>).TypedData =
                             new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    else if (curField is RichTextController)
+                        (curField as RichTextController).Data = new RichTextModel.RTD(textInput);
                     else return false;
                 }
                 else
@@ -600,7 +631,7 @@ namespace Dash
 
                 return true;
             }
-            return false; 
+            return false;
         }
 
 
@@ -678,6 +709,27 @@ namespace Dash
                 GetPrototype().PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
             }
             return fieldChanged;
+        }
+
+        /// <summary>
+        /// Removes the field mapped to by <paramref name="key"/> from the document
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool RemoveField(KeyController key)
+        {
+            var proto = GetPrototypeWithFieldKey(key);
+
+            if (proto._fields.ContainsKey(key))
+            {
+                return false;
+            }
+
+            //TODO Remove fieldUpdated listener
+            //var field = proto._fields[key];
+            //field.FieldModelUpdated -= 
+
+            return proto._fields.Remove(key);
         }
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
@@ -987,7 +1039,7 @@ namespace Dash
             // to be used in the actual operator's execute method
             var inputs = new Dictionary<KeyController, FieldControllerBase>(opField.Inputs.Count);
             var outputs = new Dictionary<KeyController, FieldControllerBase>(opField.Outputs.Count);
-            
+
             // iterate over the operator inputs adding them to our preparing dictionaries if they 
             // exist, and returning if there is a required field that we are missing
             foreach (var opFieldInput in opField.Inputs)
@@ -996,17 +1048,13 @@ namespace Dash
                 var field = GetField(opFieldInput.Key);
                 // dereference the inputs so that the field is now the actual field from the output document
                 field = field?.DereferenceToRoot(context);
-                
+
                 if (field == null)
                 {
                     // if the reference was null and the reference was recquired just return the context
                     // since the operator cannot execute
                     if (opFieldInput.Value.IsRequired)
                     {
-                        //foreach (var opfieldOutput in opField.Outputs)
-                        //{
-                        //    context.AddData(new DocumentFieldReference(GetId(), opfieldOutput.Key), FieldControllerFactory.CreateDefaultFieldController(opfieldOutput.Value));
-                        //}
                         return context;
                     }
                 }
@@ -1036,9 +1084,9 @@ namespace Dash
 
         public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> fieldModelController in _fields)
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
             {
-                yield return fieldModelController;
+                yield return keyFieldPair;
             }
 
             if (!ignorePrototype)
@@ -1046,6 +1094,23 @@ namespace Dash
                 var prototype = GetPrototype();
                 if (prototype != null)
                     foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
@@ -1131,7 +1196,7 @@ namespace Dash
             }
             if (DocumentType.Equals(WebBox.DocumentType))
             {
-                return WebBox.MakeView(this, context,keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return WebBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
@@ -1156,6 +1221,10 @@ namespace Dash
             if (DocumentType.Equals(ListViewLayout.DocumentType))
             {
                 return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
+            }
+            if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
+            {
+                return ExecuteHtmlOperatorBox.MakeView(this, context, isInterfaceBuilder); //
             }
             if (DocumentType.Equals(RichTextBox.DocumentType))
             {

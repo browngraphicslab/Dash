@@ -35,6 +35,7 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.UI;
 using Dash.Views.Document_Menu;
 
 
@@ -56,11 +57,13 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
-        public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
+        public WebView WebContext;
+        public Uri WebContextUri => WebBoxWrapper.WebContextUri;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
-            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            //formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
             InitializeComponent();
@@ -89,7 +92,6 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-
                     if (MainDocument.GetActiveLayout() == null)
                     {
                         var layout =
@@ -144,7 +146,7 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab)
+            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
             {
                 var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
                 var x = pointerPosition.X - Window.Current.Bounds.X;
@@ -153,24 +155,9 @@ namespace Dash
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
-                var docViews = (topCollection as CollectionFreeformView).GetImmediateDescendantsOfType<DocumentView>();
 
-                // TODO write a method called (AddItemToTabMenu) which takes in a view model, limit your publicly available variables
-                // TODO when you have publicly accessible variables that are changed from anywhere you create spaghetti
-                var tabItems = new List<ITabItemViewModel>(TabMenu.Instance.AllTabItems);
-                // TODO why are we adding the document views when we press tab, are they goin to be added over and over again?
-                // no because we make an entirely new list of them everytime apparently??
-
-                /*
-                foreach (DocumentView dv in docViews)
-                {
-                    tabItems.Add(new GoToTabItemViewModel("Get: " + dv.ViewModel.DisplayName, dv.Choose));
-                }
-                */
-
-                TabMenu.Configure(topCollection as CollectionFreeformView, pos);
-                TabMenu.ShowAt(xCanvas);
-                TabMenu.Instance.SetTextBoxFocus();
+                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu
@@ -189,9 +176,7 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
-            TabMenu.Configure(topCollection as CollectionFreeformView, pos); 
-            TabMenu.ShowAt(xCanvas, true);
-            TabMenu.Instance.SetTextBoxFocus();
+            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
             e.Handled = true;
         }
 
@@ -209,7 +194,15 @@ namespace Dash
                 Content = TabMenu.Instance,
                 
             };
+            
+            WebContext = WebBoxWrapper.WebContext;
 
+            // add TreeMenu
+            TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
+            TreeMenu.Width = 300;
+            TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
+            MyGrid.Children.Add(TreeMenu);
+            
         }
 
         public CollectionView GetMainCollectionView()
@@ -219,12 +212,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.AddsToThisCollection = collection as CollectionFreeformView;
-            if (xCanvas.Children.Contains(TabMenu.Instance)) return;
-            xCanvas.Children.Add(TabMenu.Instance);
-            Point absPos = e.GetPosition(Instance);
-            Canvas.SetLeft(TabMenu.Instance, absPos.X);
-            Canvas.SetTop(TabMenu.Instance, absPos.Y);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas); 
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -272,10 +260,18 @@ namespace Dash
             xMainDocView.Height = e.NewSize.Height;
         }
 
-        public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
+        public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
-            //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
             var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
+            // make sure elementToDisplay is never cut from screen 
+            if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
+            {
+                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50; 
+            }
+            if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
+            {
+                dropPoint.Y = xCanvas.ActualHeight - elementToDisplay.Height - 10;
+            }
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
@@ -417,7 +413,7 @@ namespace Dash
 
         private void NotesTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNote;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
 
@@ -547,6 +543,57 @@ namespace Dash
             DisplayDocument(del1);
         }
 
-       
+
+        private void ChangeTheme(object sender, TappedRoutedEventArgs e)
+        {
+            this.ThemeChange();
+        }
+
+        public void ThemeChange()
+        {
+            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+        }
+
+        //public Uri WebContextUri;
+        //public Stack<Uri> BackUris = new Stack<Uri>();
+        //public Stack<Uri> ForwardUris = new Stack<Uri>();
+        //private bool _navigationFromButton;
+
+        //private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        //{
+        //    WebContextUri = args.Uri;
+        //    if (!_navigationFromButton)
+        //    {
+        //        ForwardUris.Clear();
+        //    }
+        //    _navigationFromButton = false;
+        //}
+
+        //private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (BackUris.Count > 0)
+        //    {
+        //        var prevUri = BackUris.Pop();
+        //        ForwardUris.Push(WebContextUri);
+        //        _navigationFromButton = true;
+        //        WebContext.Navigate(prevUri);
+        //    }
+        //}
+
+        //private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (ForwardUris.Count > 0)
+        //    {
+        //        var prevUri = ForwardUris.Pop();
+        //        _navigationFromButton = true;
+        //        WebContext.Navigate(prevUri);
+        //    }
+        //}
+
+        //private void UrlBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        //{
+        //    var uri = new Uri(UrlBox.Text);
+        //    WebContext.Navigate(uri);
+        //}
     }
 }

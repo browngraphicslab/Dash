@@ -15,6 +15,9 @@ namespace Dash
     {
         private List<T> _typedData = new List<T>();
 
+        /// <summary>
+        /// Wrapper to retrieve the list items stored in the ListController.
+        /// </summary>
         public List<T> TypedData
         {
             get { return _typedData; }
@@ -50,7 +53,7 @@ namespace Dash
             //if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
             //    OnFieldModelUpdated(args.FieldArgs);
         }
-
+        
         public override object GetValue(Context context)
         {
             return TypedData.ToList();
@@ -102,12 +105,15 @@ namespace Dash
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
-        private void AddHelper(T element)
+        private bool AddHelper(T element)
         {
+            if (TypedData.Contains(element))
+                return false;
             element.FieldModelUpdated += ContainedFieldUpdated;
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
             TypedData.Add(element);
             ListFieldModel.Data.Add(element.GetId());
+            return true;
         }
 
         private bool RemoveHelper(T element)
@@ -120,12 +126,14 @@ namespace Dash
 
         public void Add(T element)
         {
-            AddHelper(element);
-            UpdateOnServer();
+            if (AddHelper(element))
+            {
+                UpdateOnServer();
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
-                ListFieldUpdatedEventArgs.ListChangedAction.Add,
-                new List<T> { element }));
+                OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
+                    ListFieldUpdatedEventArgs.ListChangedAction.Add,
+                    new List<T> { element }));
+            }
         }
 
         public void AddRange(IList<T> elements)
@@ -288,5 +296,20 @@ namespace Dash
                 ChangedDocuments = changedDocuments;
             }
         }
+
+        // todo: replace with better value override
+        public override string ToString()
+        {
+            return "Items";
+        }
+        // override ToString() to get displayable string representation of field
+        public override string GetTypeAsString()
+        {
+            if (ListModel.SubTypeInfo == TypeInfo.Document)
+                return "List:Doc"; // uses truncated 'doc' instead of 'document'
+            else
+                return "List:" + ListModel.SubTypeInfo.ToString();
+        }
     }
+
 }

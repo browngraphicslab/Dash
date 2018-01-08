@@ -4,12 +4,16 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Dash;
 using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.UI.Xaml.Data;
-
+using System.Numerics;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Dash
 {    /// <summary>
@@ -87,24 +91,35 @@ namespace Dash
             var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
             var web = new WebView
             {
-                IsHitTestVisible = false,
+                IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
-                web.NavigateToString(html.Substring(html.IndexOf("<html"), html.Length-html.IndexOf("<html")));
+                if (html.StartsWith("http"))
+                {
+                    // web.AllowedScriptNotifyUris.Add(new Uri(html)); // have to whitelist URI's to run scripts in package manifest
+                    web.Navigate(new Uri(html));
+                }
+                else
+                {
+                    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+                    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+                    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
+                }
             else web.Source = new Uri(textfieldModelController.Data);
-
+            web.LoadCompleted += Web_LoadCompleted;
             grid.Children.Add(web);
-            var overgrid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-                Name = "overgrid"
-            };
-            grid.Children.Add(overgrid);
+            //var overgrid = new Grid
+            //{
+            //    HorizontalAlignment = HorizontalAlignment.Stretch,
+            //    VerticalAlignment = VerticalAlignment.Stretch,
+            //    Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+            //    Name = "overgrid"
+            //};
+            //grid.Children.Add(overgrid);
+            web.Tag = new Tuple<Point,Point>(new Point(), new Point()); // hack for allowing web page to be dragged with right mouse button
 
             if (html == null)
                 SetupBindings(web, docController, context);
@@ -118,6 +133,143 @@ namespace Dash
                 return new SelectableContainer(grid, docController);
             }
             return grid;
+        }
+
+        //public static async void getHtml(Uri url, WebView web)
+        //{
+        //    var MobileUserAgent = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3";
+        //    var handler = new HttpClientHandler { AllowAutoRedirect = true };
+        //    var client = new HttpClient(handler);
+        //   // client.DefaultRequestHeaders.Add("user-agent", MobileUserAgent);
+        //    var response = await client.GetAsync(url);
+        //    response.EnsureSuccessStatusCode();
+        //    var html = await response.Content.ReadAsStringAsync();
+
+        //    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
+        //    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
+        //    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
+        //}
+        private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            var _WebView = sender as WebView;
+
+            _WebView.ScriptNotify -= _WebView_ScriptNotify;
+            _WebView.ScriptNotify += _WebView_ScriptNotify;
+            
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move'); } document.onmousemove=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up'); } document.onmouseup=x;" });
+            //await _WebView.InvokeScriptAsync("eval", new[]
+            //{"function tableToJson(table) { var data = []; var headers = []; for (var i = 0; i < table.rows[0].cells.length; i++) {headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(' ', ''); } for (var i = 1; i < table.rows.length; i++) { var tableRow = table.rows[i]; var rowData = { }; " +
+            //"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
+
+            //});
+
+
+            _WebView.NavigationStarting -= Web_NavigationStarting;
+            _WebView.NavigationStarting += Web_NavigationStarting;
+            _WebView.NavigationCompleted -= _WebView_NavigationCompleted;
+            _WebView.NavigationCompleted += _WebView_NavigationCompleted;
+            _WebView_NavigationCompleted(_WebView, null);
+        }
+
+        private async static void _WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+        {
+            var _WebView = sender as WebView;
+            await _WebView.InvokeScriptAsync("eval", new[]
+               {
+                @"(function()
+                {
+                    var hyperlinks = document.getElementsByTagName('a');
+                    for(var i = 0; i < hyperlinks.length; i++)
+                    {
+                        if(hyperlinks[i].getAttribute('target') != null ||
+                            hyperlinks[i].getAttribute('target') != '_blank')
+                        {
+                            hyperlinks[i].setAttribute('target', '_self');
+                        }
+                    }
+                })()"
+            });
+        }
+
+        // document.getElementsByTagName('table')
+        //tableToJson = function(table)
+        //{
+        //    var data = [];
+
+        //    // first row needs to be headers
+        //    var headers = [];
+        //    for (var i = 0; i < table.rows[0].cells.length; i++)
+        //    {
+        //        headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(/ / gi, '');
+        //    }
+
+        //    // go through cells
+        //    for (var i = 1; i < table.rows.length; i++)
+        //    {
+
+        //        var tableRow = table.rows[i];
+        //        var rowData = { };
+
+        //        for (var j = 0; j < tableRow.cells.length; j++)
+        //        {
+
+        //            rowData[headers[j]] = tableRow.cells[j].textContent;
+
+        //        }
+
+        //        data.push(rowData);
+        //    }
+
+        //    return data;
+        //}
+        private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
+        {
+            var web = sender as WebView;
+            var down_and_offset = (Tuple<Point,Point>)web.Tag;
+            var down = down_and_offset.Item1;
+            var offset = down_and_offset.Item2;
+            var parent = web.GetFirstAncestorOfType<DocumentView>();
+            if (parent == null)
+                return;
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+            if (e.Value == "2") // right mouse button == 2
+            {
+                var docView = web.GetFirstAncestorOfType<DocumentView>();
+                docView?.ToFront();
+                var rt = parent.RenderTransform.TransformPoint(new Point());
+                web.Tag = new Tuple<Point,Point>( pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
+            }
+            else if (e.Value == "move" && offset != new Point())
+            {
+                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X-offset.X, Y = pointerPosition.Y-offset.Y };
+            }
+            else if (e.Value == "up")
+            {
+                web.Tag = new Tuple<Point, Point>(new Point(), new Point());
+                if (Math.Sqrt((pointerPosition.X - down.X)*(pointerPosition.X-down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                    parent.OnTapped(null, null);
+                else
+                {
+                    parent.MoveToContainingCollection();
+                }
+
+
+                // web.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString()); " });
+
+                //web.InvokeScriptAsync("eval", new[] { "window.scrollTo(0, 572); " });
+                // web.InvokeScriptAsync("eval", new[] { "window.open('http://www.msn.com', window.name, '');" });
+            } 
+        }
+
+        private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+        {
+            if (args.Uri != null)
+            {
+                args.Cancel = true;
+                MainPage.Instance.WebContext.Navigate(args.Uri);
+            }
         }
 
         protected override DocumentController GetLayoutPrototype()

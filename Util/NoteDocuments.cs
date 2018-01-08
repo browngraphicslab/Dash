@@ -100,13 +100,15 @@ namespace Dash
                     Document = docLayout;
                 }
             }
-            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300) : base(DocumentType)
+            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, string title = "-collection-", double width = 500, double height = 300) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
                     _prototypeLayout = CreatePrototypeLayout();
 
-                DataDocument = dataDocument;
+                DataDocument = dataDocument ?? GetDocumentPrototype().MakeDelegate();
+                DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
+                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 createLayout(where, viewtype, width, height);
             }
 
@@ -160,13 +162,13 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?", Point where = new Point()) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
                 dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-                dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD("Something to fill this space?")), true);
+                dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
 
                 if (_prototypeLayout == null)
@@ -182,8 +184,8 @@ namespace Dash
                 } else
                 {
                     docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(size.Width == 0 ? 400 : size.Width), true);
+                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(size.Height == 0 ? 400 : size.Height), true);
                     docLayout.SetField(KeyStore.TitleKey, new TextController(title), true);
                     Document = docLayout;
                 }

@@ -6,6 +6,8 @@ using Windows.Foundation;
 using Windows.Foundation.Metadata;
 using Dash.Controllers;
 using DashShared.Models;
+using System;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -160,6 +162,26 @@ namespace Dash
             activeLayout?.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
             return doc;
         }
+        public static DocumentController GetKeyValueAlias(this DocumentController doc, Point? where = null)
+        {
+            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc)) ?? doc;
+            var activeLayout =  new KeyValueDocumentBox(null).Document;
+            activeLayout.SetField(KeyStore.DocumentContextKey, docContext, true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(200), false);
+            if (where != null)
+            {
+                activeLayout.SetField(KeyStore.PositionFieldKey, new PointController((Point)where), true);
+            }
+            var oldPosition = doc.GetPositionField();
+            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
+            {
+                activeLayout.SetField(KeyStore.PositionFieldKey,
+                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                        true);
+            }
+
+            return activeLayout;
+        }
         public static DocumentController GetViewCopy(this DocumentController doc, Point? where = null)
         {
             var activeLayout = doc.GetActiveLayout();
@@ -201,6 +223,64 @@ namespace Dash
             return newDoc;
         }
 
+        public class SetContextClass
+        {
+            public DocumentController DataDocument;
+            int yPos;
+            public SetContextClass()
+            {
+                MainPage.Instance.WebContext.LoadCompleted += WebContext_LoadCompleted;
+            }
+
+            private void WebContext_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+            {
+                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.scrollTo(0," + yPos + ");" });
+            }
+
+            public void UpdateNeighboringContext()
+            {
+                var neighboring = DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+                if (neighboring != null && neighboring.TypedData.Count == 2)
+                {
+                    var uri = neighboring.TypedData.First().Data;
+                    var where = neighboring.TypedData.Last().Data;
+                    if (int.TryParse(where, out yPos))
+                    {
+                        MainPage.Instance.WebContext.Navigate(new Uri(uri));
+                    }
+                }
+            }
+        }
+        public class GetContextClass
+        {
+            public DocumentController DataDocument;
+            public void CaptureNeighboringContext()
+            {
+                MainPage.Instance.WebContext.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString());" });
+            }
+            public GetContextClass()
+            {
+                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                MainPage.Instance.WebContext.ScriptNotify += scriptNotify;
+            }
+            private void scriptNotify(object sender, NotifyEventArgs e)
+            {
+                MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                DataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
+                    new TextController(MainPage.Instance.WebContextUri.AbsoluteUri),
+                    new TextController(e.Value)}), true);
+            }
+        }
+        public static void RestoreNeighboringContext(this DocumentController doc)
+        {
+            new SetContextClass() { DataDocument = doc.GetDataDocument(null) }.UpdateNeighboringContext();
+        }
+
+        public static void CaptureNeighboringContext(this DocumentController doc)
+        {
+
+            new GetContextClass() { DataDocument = doc.GetDataDocument(null) }.CaptureNeighboringContext();
+        }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {
@@ -255,7 +335,7 @@ namespace Dash
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                dataDoc.SetField(KeyStore.TitleKey, new TextController("Untitled"), false);
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title?"), false);
                 titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
             }
             return titleKey;
@@ -268,7 +348,7 @@ namespace Dash
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                dataDoc.SetField(KeyStore.TitleKey, new TextController("Untitled"), false);
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title?"), false);
                 titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
             }
             Debug.Assert(titleKey != null);

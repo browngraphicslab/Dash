@@ -38,6 +38,7 @@ namespace Dash
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
         public static KeyController ParsedFieldKey = new KeyController(DashConstants.KeyStore.ParsedFieldsKey);
         public static KeyController WebContextKey = new KeyController(DashConstants.KeyStore.WebContextKey);
+        public static KeyController NeighboringDocumentsKey = new KeyController(DashConstants.KeyStore.NeighboringDocumentsKey);
 
         /// <summary>
         /// Key for collection data

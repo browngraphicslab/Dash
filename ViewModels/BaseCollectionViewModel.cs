@@ -282,6 +282,22 @@ namespace Dash
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
+
+            if (KeyValuePane.DragModel != null)
+            {
+                if (KeyValuePane.DragModel.FieldKey.Key.Equals(KeyStore.HtmlTextKey))
+                {
+                    var opController = ExecuteHtmlJavaScriptController.CreateController(new DocumentReferenceController(KeyValuePane.DragModel.Document.GetId(), KeyValuePane.DragModel.FieldKey.Key));
+
+                    // using this as a setter for the transform massive hack - LM
+                    var _ = new DocumentViewModel(opController)
+                    {
+                        GroupTransform = new TransformGroupData(where, new Point(), new Point(1, 1))
+                    };
+                    AddDocument(opController, null);
+                }
+            }
+            KeyValuePane.DragModel = null;
             if (e.DataView != null &&
                   (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
             {
@@ -392,9 +408,9 @@ namespace Dash
                     var related = new List<DocumentController>();
                     foreach (var img in imgs)
                     {
-                        var srcMatch = new Regex("src=\"[^>\"]*").Match(img.ToString()).Value;
-                        var src = srcMatch.Substring(5, srcMatch.Length - 5);
-                        var i = new AnnotatedImage(new Uri(src), null, null, "", 200, 250, where.X, where.Y);
+                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                        var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
                     var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;
@@ -503,7 +519,7 @@ namespace Dash
                         p.SetActiveLayout(new DefaultLayout().Document, true, true);
                     var newDoc = e.DataView.Properties.ContainsKey("View") ? p.GetViewCopy(where) :
                                                                      e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetDataInstance(where) : p.GetCopy(where);
+                                                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
                     if (double.IsNaN(newDoc.GetWidthField().Data))
                         newDoc.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                     if (double.IsNaN(newDoc.GetHeightField().Data))
@@ -518,7 +534,7 @@ namespace Dash
                 AddDocuments(payloadLayoutDelegates.ToList(), null);
                 if (collectionViewModel == this && e.AcceptedOperation == DataPackageOperation.Move)
                 {
-                    e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
+                   e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
                 }
             }
 

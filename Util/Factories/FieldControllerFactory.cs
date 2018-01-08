@@ -214,6 +214,9 @@ namespace Dash
                 case OperatorType.Regex:
                     controller = new RegexOperatorController(model);
                     break;
+                case OperatorType.ExecuteHtmlJavaScript:
+                    controller = new ExecuteHtmlJavaScriptController(model);
+                    break;
                 case OperatorType.Melt:
                     controller = new MeltOperatorController(model);
                     break;
@@ -222,6 +225,9 @@ namespace Dash
                     break;
                 case OperatorType.Extract_Keywords:
                     controller = new ExtractKeywordsOperatorController(model);
+                    break;
+                case OperatorType.ImageRecognition:
+                    controller = new ImageRecognitionOperatorFieldModelController(model);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

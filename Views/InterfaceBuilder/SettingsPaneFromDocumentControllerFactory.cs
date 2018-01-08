@@ -15,10 +15,7 @@ namespace Dash
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
             var type = layoutDocument.DocumentType;
-            if (type.Equals(ImageBox.DocumentType))
-            {
-                return CreateImageSettingsLayout(layoutDocument);
-            }
+
             if (type.Equals(TextingBox.DocumentType))
             {
                 return CreateTextSettingsLayout(layoutDocument);
@@ -79,12 +76,6 @@ namespace Dash
         {
             var context = new Context(); // bcz: ??? Is this right?
             return new CollectionSettings(layoutDocument, context);
-        }
-
-        private static UIElement CreateImageSettingsLayout(DocumentController layoutDocument)
-        {
-            var context = new Context(); // bcz: ??? Is this right?
-            return new ImageSettings(layoutDocument, context);
         }
 
         private static UIElement CreateListViewSettingsLayout(DocumentController layoutDocument)

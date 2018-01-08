@@ -9,6 +9,7 @@ using Windows.Storage;
 using Windows.UI.Xaml;
 using Dash.Controllers;
 using DashShared;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -223,7 +224,7 @@ namespace Dash
                 }
 
                 // add the output collection to the workspace at the proper position
-                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.Util.GenerateNewId(), "File Input Collection"));
+                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), "File Input Collection"));
                 outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
                 outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X, where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
                 collectionViewModel.AddDocument(outputDoc, null);
@@ -250,7 +251,7 @@ namespace Dash
                     return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
                 case FileType.Web:
                     var link = await e.DataView.GetWebLinkAsync();
-                    return DBTest.CreateWebPage(link.AbsoluteUri, where);
+                    return new HtmlNote(link.AbsoluteUri, "", where).Document;
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
                 case FileType.Text:

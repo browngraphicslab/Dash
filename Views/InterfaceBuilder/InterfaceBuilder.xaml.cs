@@ -32,7 +32,6 @@ namespace Dash
         private DocumentController _editingDocument;
         private DocumentView _editingDocView;
 
-
         public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
         {
             this.InitializeComponent();
@@ -40,7 +39,7 @@ namespace Dash
             Width = width;
             Height = height;
 
-            SetUpInterfaceBuilder(docController, new Context(docController));
+            SetUpInterfaceBuilder(docController);
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -58,14 +57,14 @@ namespace Dash
         {
             var textBinding = new Binding
             {
-                Source = /*CurrentLayout*/ currentLayout,
+                Source = currentLayout,
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay
             };
             //xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
 
-        private void SetUpInterfaceBuilder(DocumentController docController, Context context)
+        private void SetUpInterfaceBuilder(DocumentController docController)
         {
             _editingDocument = docController;
             xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
@@ -75,7 +74,7 @@ namespace Dash
             freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
-
+        
         private void DocumentPaneOnDocumentViewLoaded(CollectionFreeformView collectionFreeformView, DocumentView documentView)
         {
             SetUpDocumentView(documentView);
@@ -283,7 +282,7 @@ namespace Dash
         {
             DocumentController cont = e.ClickedItem as DocumentController;
 
-            SetUpInterfaceBuilder(cont, new Context(cont));
+            SetUpInterfaceBuilder(cont);
         }
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {

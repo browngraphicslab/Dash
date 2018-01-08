@@ -10,6 +10,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Visibility = DashShared.Visibility;
+using static Windows.ApplicationModel.Core.CoreApplication;
+using Windows.Foundation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -39,9 +41,11 @@ namespace Dash
                 ? _documentControllerDataContext
                     .GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null)
                 : _documentControllerDataContext;
-
+        
         public KeyValuePane()
         {
+            MainView.CoreWindow.PointerPressed -= CoreWindow_PointerPressed;
+            MainView.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
             InitializeComponent();
 
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
@@ -49,7 +53,14 @@ namespace Dash
 
             //ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
-            xTypeComboBox.SelectedItem = TypeInfo.None;
+        }
+
+
+        public void DisableInteraction()
+        {
+            xKeyValueListView.CanDragItems = false;
+            xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
+            SetHeaderVisibility(DashShared.Visibility.Collapsed); 
         }
 
         public void SetHeaderVisibility(Visibility vis)
@@ -364,15 +375,20 @@ namespace Dash
             var p = Util.PointTransformFromVisual(posInKVPane, containerGrid);
 
             _tb = new TextBox();
-
+            
+            _tb.MaxHeight = _tb.MaxWidth = 500;
+            var srcText = "";
             //set the editing textbox's initial value appropriately 
             if (tappedSource is TextBlock)
-                _tb.Text = (tappedSource as TextBlock).Text;
+                srcText = (tappedSource as TextBlock).Text;
             else if (tappedSource is Image)
-                _tb.Text = (tappedSource as Image).BaseUri.AbsoluteUri;
+                srcText = (tappedSource as Image).BaseUri.AbsoluteUri;
             else if (tappedSource is Grid)
                 return;
             else throw new NotImplementedException();
+            _tb.AcceptsReturn = !srcText.Contains("\r");
+            _lastTbText = _tb.Text = srcText;
+            _tb.TextChanged += _tb_TextChanged;
 
             //add textbox graphically and set up events 
             Canvas.SetLeft(_tb, p.X);
@@ -380,6 +396,20 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Add(_tb);
             SetTextBoxEvents();
             FocusOn(_tb);
+        }
+        string _lastTbText = "";
+        private void _tb_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_tb.AcceptsReturn && _tb.Text.StartsWith(_lastTbText) && _tb.Text.EndsWith("\r") &&
+                Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+            {
+                //DBTest.ResetCycleDetection();
+                var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(
+                    _selectedKV.Key, new Context(_documentControllerDataContext));
+                _documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
+                RemoveEditingTextBox();
+            } else
+                _lastTbText = _tb.Text;
         }
 
         /// <summary>
@@ -407,13 +437,13 @@ namespace Dash
 
             _tb.KeyDown += (s, e) =>
             {
-                if (e.Key == VirtualKey.Enter)
+                if (e.Key == VirtualKey.Enter && !_tb.AcceptsReturn)
                 {
                     //DBTest.ResetCycleDetection();
                     var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(
                         _selectedKV.Key, new Context(_documentControllerDataContext));
                     _documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
-                    RemoveEditingTextBox();
+                    RemoveEditingTextBox(); 
                 }
             };
         }
@@ -430,26 +460,6 @@ namespace Dash
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
-        }
-
-
-        /// <summary>
-        ///     Corrects the column widths of headers upon load
-        /// </summary>
-        private void xContentGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //for (int i = 0; i < 3; i++)
-            //    xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
-        }
-
-        /// <summary>
-        ///     Corrects the column widths of new grid list items
-        /// </summary>
-        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
-        {
-            // not sure what this was fixing, but it breaks the doc test example
-            //for (int i = 0; i < 3; i++)
-            //    (sender as Grid).ColumnDefinitions[i].Width = new GridLength(xHeaderGrid.ColumnDefinitions[i].ActualWidth);
         }
 
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
@@ -485,6 +495,41 @@ namespace Dash
             //    new BoundController(new TextController(""), RealDataContext), false,
             //    TypeColumnWidth);
             //ListItemSource.Add(newField);
+        }
+
+        public void SetUpForDocumentBox(DocumentController dc)
+        {
+            xKeyValueListView.CanDragItems = false;
+            xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
+            SetHeaderVisibility(DashShared.Visibility.Collapsed);
+            SetDataContextToDocumentController(dc);
+        }
+
+        public class HeaderDragData
+        {
+            public DocumentController Document;
+            public KeyFieldContainer FieldKey;
+            public CollectionView.CollectionViewType ViewType;
+        }
+        static public HeaderDragData DragModel = null;
+        static Windows.UI.Input.PointerPoint IgnoreE;
+        private void KeyDragPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var header = new HeaderDragData()
+            {
+                Document = _documentControllerDataContext,
+                FieldKey = (sender as FrameworkElement).DataContext as KeyFieldContainer
+            };
+            IgnoreE = e.GetCurrentPoint(this);
+            DragModel = header;
+            var c = (sender as UIElement).GetFirstAncestorOfType<ContentPresenter>();
+            c.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+            e.Handled = true;
+        }
+        static void CoreWindow_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        {
+            if (IgnoreE?.FrameId != args.CurrentPoint.FrameId)
+                DragModel =  null;
         }
     }
 }

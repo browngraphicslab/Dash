@@ -24,6 +24,8 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views.Document_Menu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -85,6 +87,7 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
+        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
@@ -152,7 +155,8 @@ namespace Dash
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
-                _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+                _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
                 (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
@@ -391,24 +395,23 @@ namespace Dash
         
         private void MakeMenu()
         {
-            var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             var collectionButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.TouchPointer, "Select", menuColor, MakeSelectionModeMultiple)
+                new MenuButton(Symbol.TouchPointer, "Select", MakeSelectionModeMultiple)
                 {
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, menuColor, 
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, 
                     new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
-                new MenuButton(Symbol.Camera, "ScrCap", menuColor, ScreenCap)
+                new MenuButton(Symbol.Camera, "ScrCap", ScreenCap)
 
 
             };
 
             // Create preview button with special properties so the user can drag off of it
-            var previewButton = new MenuButton(Symbol.Preview, "Preview", menuColor, null);
+            var previewButton = new MenuButton(Symbol.Preview, "Preview", null);
             var previewButtonView = previewButton.View;
             previewButtonView.CanDrag = true;
             previewButton.ManipulationMode = ManipulationModes.All;
@@ -424,14 +427,13 @@ namespace Dash
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", menuColor, MakeSelectionModeNone)
+                new MenuButton(Symbol.Back, "Back", MakeSelectionModeNone)
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.Edit, "Interface", menuColor, null),
-                new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
-                new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
-
+                new MenuButton(Symbol.Edit, "Interface", null),
+                new MenuButton(Symbol.SelectAll, "All", SelectAllItems),
+                new MenuButton(Symbol.Delete, "Delete", DeleteSelection),
             };
 
 
@@ -492,8 +494,6 @@ namespace Dash
 
         #endregion
 
-
-
         private void SetInitialTransformOnBackground()
         {
             var composite = new TransformGroup();
@@ -532,7 +532,6 @@ namespace Dash
                 SetInitialTransformOnBackground();
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
-
 
         public void SetTransformOnBackground(TransformGroup composite)
         {
@@ -581,14 +580,24 @@ namespace Dash
         {
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
             var datacontext = docView?.DataContext as DocumentViewModel;
-
             if (datacontext == null) return;
+
             var visibilityBinding = new Binding
             {
                 Source = datacontext,
                 Path = new PropertyPath(nameof(datacontext.IsSelected)) 
             };
+
+            datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
+
+
+
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+        }
+
+        private void OnCollectionUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -52,7 +52,9 @@ namespace DashShared
         Multiply,
         Regex,
         Melt,
+        ExecuteHtmlJavaScript,
         Sentence_Analyzer,
-        Extract_Keywords
+        Extract_Keywords,
+        ImageRecognition
     }
 }

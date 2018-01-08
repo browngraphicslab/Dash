@@ -26,9 +26,13 @@ namespace Dash
 
         public DocumentController ParseJsonString(string json, string path)
         {
-            var jtoken = JToken.Parse(json);
-            var newSchema = new DocumentSchema(path);
-            return ParseRoot(jtoken, newSchema);
+            if (!string.IsNullOrEmpty(json))
+            {
+                var jtoken = JToken.Parse(json);
+                var newSchema = new DocumentSchema(path);
+                return ParseRoot(jtoken, newSchema);
+            }
+            return null;
         }
 
         /// <summary>
@@ -227,7 +231,7 @@ namespace Dash
         {
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
+                new DocumentType(UtilShared.GetDeterministicGuid(BasePath), BasePath));
             Prototype.SetField(KeyStore.AbstractInterfaceKey, new TextController(Prototype.DocumentType.Type + "API"), true);
             SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<DocumentSchema>();
@@ -238,7 +242,8 @@ namespace Dash
         public KeyController GetKey(JToken jToken)
         {
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
-            return new KeyController(DashShared.Util.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path));
+            // bcz: if jToken.Path is "", then it seems to cause problems later on because the key doesn't have a name (I think it gets filtered out of the KeyValue pane list)
+            return new KeyController(DashShared.UtilShared.GetDeterministicGuid(uniqueName), GetCleanNameFromJtokenPath(jToken.Path == "" ? "JPATH" : jToken.Path));
         }
 
         private string GetCleanNameFromJtokenPath(string jTokenPath)

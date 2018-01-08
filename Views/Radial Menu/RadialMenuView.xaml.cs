@@ -50,6 +50,7 @@ namespace Dash
         public Symbol? OperatorSymbol = (Symbol) 0xE8EF;
         public Symbol? CollectionSymbol = (Symbol) 0xE8B7;
         public Symbol? DocumentSymbol = (Symbol) 0xE160;
+        public Symbol? ThemeSymbol = Symbol.Edit;
         public Symbol? FilePickerSymbol = Symbol.Add;
         public Symbol? SearchSymbol = Symbol.Find;
         public Symbol? NoteSymbol = Symbol.Page;
@@ -194,14 +195,13 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
-            
             xRadialMenu.Diameter = 215;
             xRadialMenu.StartAngle = 0;
             xRadialMenu.CenterButtonIcon = "🛠️";
-            xRadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
+            xRadialMenu.CenterButtonSymbol = (Symbol)0xE115;
             xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Gray);
             xRadialMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
-            xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
+            xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush)App.Instance.Resources["WindowsBlue"];
             xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);
             xRadialMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             xRadialMenu.UseIndicationArcs = true;
@@ -210,10 +210,10 @@ namespace Dash
             xRadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
             xRadialMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
-            xRadialMenu.InnerReleasedColor = ((SolidColorBrush) App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.InnerReleasedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.OuterHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            xRadialMenu.OuterDisabledColor = ((SolidColorBrush) App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.OuterDisabledColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             xRadialMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.OuterThickness = 10;
             xRadialMenu.CenterButtonSize = 45;
@@ -274,18 +274,21 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
             Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNote;
+            Action<ICollectionView, DragEventArgs> changeTheme = Actions.ChangeTheme;
             var importModel =
                 new RadialActionModel("", "") {CollectionDropAction = onImportDropped, IsDraggable = true};
             var operatorModel = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionModel = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
+            var themeModel = new RadialActionModel("Theme", Symbol.Edit) {CollectionDropAction = changeTheme, IsDraggable = false};
             var searchModel = new RadialActionModel("Search", Symbol.Find) { CollectionDropAction = onSearchAdd, IsDraggable = true };
             var notesModel = new RadialActionModel("Notes", Symbol.Page) { CollectionDropAction = addNotes, IsDraggable = true };
             SetActionModel(importModel, ImportButton);
             SetActionModel(operatorModel, Operator);
             SetActionModel(collectionModel, Collection);
             SetActionModel(documentModel, Document);
+            SetActionModel(themeModel, Theme);
             SetActionModel(searchModel, SearchButton);
             SetActionModel(notesModel, NotesButton);
         }

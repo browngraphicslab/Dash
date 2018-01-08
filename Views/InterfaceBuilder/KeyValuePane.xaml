@@ -9,30 +9,32 @@
     d:DesignHeight="500"
     d:DesignWidth="300">
 
-    <Grid x:Name="xOuterGrid" Background="{StaticResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
+
+    <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0" BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!--column headers-->
             <RowDefinition Height="7*"/> <!--column values-->
             <RowDefinition Height="*"/> <!--random space-->
             <RowDefinition Height="Auto"/> <!--bottom button-->
         </Grid.RowDefinitions>
-        
-        <!--column headers-->
-        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AccentGreen}">
+
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{ThemeResource AccentGreen}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="*" MaxWidth="100"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
+                <ColumnDefinition Width="25"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text=" "></TextBlock>
             <TextBlock Grid.Column="1" HorizontalAlignment="Left">Keys</TextBlock>
             <TextBlock Grid.Column="2"  HorizontalAlignment="Left">Values</TextBlock>
             <TextBlock Grid.Column="3"  HorizontalAlignment="Right">Type</TextBlock>
+            <TextBlock Grid.Column="4"  HorizontalAlignment="Right">O</TextBlock>
         </Grid>
         
         <!--column values-->
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" x:FieldModifier="public" HorizontalAlignment="Stretch" 
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting" 
                   IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick" Tapped="xKeyValueListView_Tapped"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0">
@@ -48,22 +50,25 @@
             <!--template for list rows-->
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyFieldContainer">
-                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped" SizeChanged="xContentGrid_SizeChanged" Loaded="xContentGrid_Loaded">
+                    <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}"/>
                             <ColumnDefinition Width="*" MaxWidth="100"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
+                            <ColumnDefinition Width="25"/>
                         </Grid.ColumnDefinitions>
                         <CheckBox Tag="{Binding}" IsChecked="{x:Bind Path=IsPrimary}" Width="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"></CheckBox>
-                        <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Enabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left"  />
                         </ScrollViewer>
-
-                        <Border Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="2" VerticalAlignment="Center" HorizontalScrollMode="Enabled" MaxHeight="60" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <Border Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
+                        </ScrollViewer>
                         <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                         </ScrollViewer>
+                        <TextBlock Text="O" Grid.Column="4" VerticalAlignment="Center" PointerPressed="KeyDragPointerPressed" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -76,7 +81,7 @@
                 <Grid Background="SteelBlue">
                     <TextBlock HorizontalAlignment="Center" Foreground="White">CREATE FIELD</TextBlock>
                 </Grid>
-                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Stretch" Margin="5,10,5,0" Height="30" SelectionChanged="xTypeComboBox_SelectionChanged"></ComboBox>
+                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Stretch" Margin="5,10,5,0" Height="30" SelectionChanged="xTypeComboBox_SelectionChanged" SelectedItem ="None"></ComboBox>
                 <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>

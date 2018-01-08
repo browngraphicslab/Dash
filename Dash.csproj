@@ -93,7 +93,6 @@
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\gridbg2.jpg" />
-    <None Include="pokemon_species.csv" />
     <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
   </ItemGroup>
@@ -102,9 +101,6 @@
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
-    <Compile Include="ClipSettings.xaml.cs">
-      <DependentUpon>ClipSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
@@ -113,11 +109,13 @@
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
     <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ImageRecognitionOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
@@ -146,6 +144,8 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -228,20 +228,20 @@
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\StrikethroughTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
+    <Compile Include="Controllers\UserCreatedLink.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
-    <Compile Include="ViewModels\GoToTabItemViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\AddMenu.xaml.cs">
-      <DependentUpon>AddMenu.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
+      <DependentUpon>TreeNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
@@ -593,9 +593,6 @@
     <Compile Include="Views\GuideLineView.xaml.cs">
       <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
-      <DependentUpon>ImageSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Ink\InkCanvasControl.xaml.cs">
       <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
@@ -642,6 +639,9 @@
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WebViewWrapper.xaml.cs">
+      <DependentUpon>WebViewWrapper.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
@@ -683,6 +683,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
+    <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -698,10 +699,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="ClipSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -714,11 +711,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\AddMenu.xaml">
+    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
+    <Page Include="Views\Document Menu\TreeNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -990,10 +987,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InterfaceBuilder\ImageSettings.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\Ink\InkCanvasControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1053,6 +1046,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\WebViewWrapper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DashShared\DashShared.csproj">
@@ -1091,6 +1088,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.ProjectOxford.Vision">
+      <Version>1.0.370</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>

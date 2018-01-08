@@ -57,6 +57,13 @@ namespace Dash
             return new DocumentFieldReference(DocumentId, FieldKey);
         }
 
+
+        // todo: more meaningful tostring here
+        public override string ToString()
+        {
+            return "Reference";
+        }
+
         public override string GetDocumentId(Context context)
         {
             return DocumentId;
