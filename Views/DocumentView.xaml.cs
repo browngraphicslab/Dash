@@ -1081,7 +1081,7 @@ namespace Dash
             if (_treeMenuItem != null)
                 _treeMenuItem.DocType = xTitle.Text; // have to call because the documentcontrollers in these items aren't updated 
         }
-
+        //take out
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
             var prototypes = ViewModel.DocumentController.GetAllPrototypes();
@@ -1093,18 +1093,6 @@ namespace Dash
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
-
-            if(e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Mouse)
-            {
-                var p = e.GetCurrentPoint((UIElement)sender);
-                if(p.Properties.IsRightButtonPressed)
-                {
-                    if(OuterGrid != null && OuterGrid.ContextFlyout != null)
-                    {
-                        FlyoutBase.ShowAttachedFlyout(OuterGrid);
-                    }
-                }
-            }
         }
 
         public void MoveToContainingCollection()
@@ -1151,6 +1139,25 @@ namespace Dash
         {
             DeleteDocument();
         }
-    }
 
+        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLayout();
+        }
+
+        private void MenuFlyoutItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            OpenCloseKeyValuePane();
+        }
+
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
+        {
+            ShowContext();
+        }
+
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        {
+            ScreenCap();
+        }
+    }
 }

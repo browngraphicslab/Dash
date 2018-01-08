@@ -43,14 +43,7 @@
                 <ColumnDefinition Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Context flyout for right-click context menu -->
-            <Grid.ContextFlyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem Text="Delete" Click="MenuFlyoutItemDelete_Click"/>
-                    <MenuFlyoutItem Text="Copy" Click="MenuFlyoutItemCopy_Click"/>
-                    <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
-                </MenuFlyout>
-            </Grid.ContextFlyout>
+            
 
             <!-- Container for Icon view -->
             <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -98,7 +91,30 @@
             </Border>
 
             <!--grid to hold the inner content of the document-->
-            <Grid Grid.Row="1" Grid.Column="0">
+            <Grid Name="xTargetContentGrid" Grid.Row="1" Grid.Column="0">
+                <!-- Context flyout for right-click context menu -->
+                <Grid.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="Delete" Click="MenuFlyoutItemDelete_Click"/>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutItem Text="Duplicate" Click="MenuFlyoutItemCopy_Click"/>
+                        <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
+                        <MenuFlyoutItem Text="Add" Click="MenuFlyoutItemAdd_Click"/>
+                        <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
+                        <MenuFlyoutSeparator/>
+                        <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                        <MenuFlyoutSubItem Text="Collection layout">
+                            <MenuFlyoutItem Text="Freeform"/>
+                            <MenuFlyoutItem Text="Grid"/>
+                            <MenuFlyoutItem Text="Grid"/>
+                            <MenuFlyoutItem Text="Grid"/>
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout>
+                </Grid.ContextFlyout>
+                
+                
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <FlyoutBase.AttachedFlyout >
