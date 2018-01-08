@@ -108,7 +108,7 @@ namespace Dash
 
         private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Snap(true);
+            //Snap(true);
         }
 
         #region Snapping
@@ -145,8 +145,17 @@ namespace Dash
             {
                 return;
             }
+            /*
+            if (Equals(MainPage.Instance.xMainDocView))
+            {
+                return;
+            }
+            if (Parent is CollectionFreeformView)
+            {
+                
+            }
+            */
 
-            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
             //Find the closest other DocumentView and snap to it.
             var closestDocumentView = GetClosestDocumentView();
@@ -164,6 +173,9 @@ namespace Dash
         {
             if (closestDocumentView == null)
             {
+                //Debug.WriteLine("Hiding rectangle!");
+                //Debug.WriteLine("Width: " + ActualWidth.ToString());
+                MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
                 return;
             }
 
@@ -175,11 +187,14 @@ namespace Dash
             var newBoundingBox =
                 CalculateAligningRectangleForSide(~side, closestDocumentViewScreenBoundingBox, currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
 
-            MainPage.Instance.TemporaryRectangle.Width = newBoundingBox.Width;
-            MainPage.Instance.TemporaryRectangle.Height = newBoundingBox.Height;
+            //Debug.WriteLine("Showing rectangle!");
+            //Debug.WriteLine("Width: " + ActualWidth.ToString());
 
-            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
-            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
+            MainPage.Instance.TemporaryRectangle.Width = 50;// newBoundingBox.Width;
+            MainPage.Instance.TemporaryRectangle.Height = 50;// newBoundingBox.Height;
+
+            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, 0);
+            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, 0);
 
         }
 
