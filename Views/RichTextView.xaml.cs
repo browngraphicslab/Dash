@@ -268,7 +268,8 @@ namespace Dash
         private bool _rightPressed = false;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
+                                .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (_rightPressed)
             {
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
@@ -284,7 +285,10 @@ namespace Dash
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && HackToDragWithRightMouseButton != null)
+            bool _rightPress = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ||
+                               e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && Window.Current.CoreWindow.GetKeyState(VirtualKey.Control)
+                                   .HasFlag(CoreVirtualKeyStates.Down);
+            if (_rightPress && HackToDragWithRightMouseButton != null)
             {
                 var down_and_offset = HackToDragWithRightMouseButton;
                 var down   = down_and_offset.Item1;
