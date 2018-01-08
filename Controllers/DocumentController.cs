@@ -50,7 +50,7 @@ namespace Dash
             get
             {
                 return _fields.ContainsKey(KeyStore.TitleKey) &&
-                                        (_fields[KeyStore.TitleKey] as TextController).Data != "Title?";
+                                        (_fields[KeyStore.TitleKey] as TextController).Data != "Title";
             }
         }
 
