@@ -292,7 +292,10 @@ namespace Dash
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
+                var dvm = parent.ViewModel;
+                dvm.GroupTransform =
+                    new TransformGroupData(new Point(pointerPosition.X - offset.X, pointerPosition.Y - offset.Y), dvm.GroupTransform.ScaleCenter, dvm.GroupTransform.ScaleAmount);
+                //parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
             }
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)

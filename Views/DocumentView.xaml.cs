@@ -633,6 +633,21 @@ namespace Dash
             return new Size();
         }
 
+        public void ProporsionalResize(ManipulationDeltaRoutedEventArgs e)
+        {
+            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+            Debug.WriteLine(pos);
+            double dx = (pos.X - origin.X) / ViewModel.Width;
+            double dy = (pos.Y - origin.Y) / ViewModel.Height;
+            Debug.WriteLine(pos);
+            Debug.WriteLine(new Point(dx, dy));
+            double scale = Math.Max(Math.Max(dx, dy), 0.1);
+            Debug.WriteLine(scale);
+            var gt = ViewModel.GroupTransform;
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
+        }
+
         /// <summary>
         /// Called when the user holds the dragger button, or finishes holding it; 
         /// if the button is held down, initiates the proportional resizing mode.
@@ -659,8 +674,24 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                ProportionalScaling = true;
+            }
+            else
+            {
+                ProportionalScaling = false;
+            }
+
+            if (ProportionalScaling)
+            {
+                ProporsionalResize(e);
+            }
+            else
+            {
+                Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+                Resize(p.X, p.Y);
+            }
             e.Handled = true;
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
