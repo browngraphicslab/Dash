@@ -152,42 +152,12 @@ namespace Dash
             SnapTo(closestDocumentView);
         }
 
-        private void SnapTo(Tuple<DocumentView, Side, double> closestDocumentView)
-        {
-            if (closestDocumentView == null)
-            {
-                return;
-            }
-
-            var documentView = closestDocumentView.Item1;
-            var side = closestDocumentView.Item2;
-
-            var currentTranslate = ViewModel.GroupTransform.Translate;
-            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-
-            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
-                documentView.ViewModel.GroupTransform.Translate.Y);
-            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
-                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
-
-
-
-            var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, ViewModel.Width, ViewModel.Height);
-
-            var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
-
-            ViewModel.Width = newBoundingBox.Width;
-            ViewModel.Height = newBoundingBox.Height;
-
-
-        }
-
-
+        /// <summary>
+        /// Gets the closest DocumentView from all sides and returns the "closest" one
+        /// </summary>
+        /// <param name="topLeftScreenPoint"></param>
+        /// <param name="bottomRightScreenPoint"></param>
+        /// <returns></returns>
         private Tuple<DocumentView, Side, double> GetClosestDocumentView(Point topLeftScreenPoint, Point bottomRightScreenPoint)
         {
             //List of all DocumentViews hit, along with a double representing how close they are
@@ -198,34 +168,64 @@ namespace Dash
             allDocumentViewsHit.AddRange(HitTestFromSide(Side.Left, topLeftScreenPoint, bottomRightScreenPoint));
             allDocumentViewsHit.AddRange(HitTestFromSide(Side.Bottom, topLeftScreenPoint, bottomRightScreenPoint));
             allDocumentViewsHit.AddRange(HitTestFromSide(Side.Right, topLeftScreenPoint, bottomRightScreenPoint));
-
-
+            
+            //Return closest DocumentView (using the double that represents closeness)
             return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3));
         }
+
+        /// <summary>
+        /// Snaps to the DocumentView passed in, inheriting its dimensions.
+        /// </summary>
+        /// <param name="closestDocumentView"></param>
+        private void SnapTo(Tuple<DocumentView, Side, double> closestDocumentView)
+        {
+            if (closestDocumentView == null)
+            {
+                return;
+            }
+
+            var documentView = closestDocumentView.Item1;
+            var side = closestDocumentView.Item2;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+
+            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
+                documentView.ViewModel.GroupTransform.Translate.Y);
+            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
+                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+
+            var newBoundingBox =
+                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, ViewModel.Width, ViewModel.Height);
+
+            var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
+            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); //TODO: What does this do again?
+
+            ViewModel.Width = newBoundingBox.Width;
+            ViewModel.Height = newBoundingBox.Height;
+        }
+
+        
 
         private List<Tuple<DocumentView, Side, double>> HitTestFromSide(Side side, Point topLeftScreenPoint, Point bottomRightScreenPoint)
         {
             var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
             var rect = CalculateAligningRectangleForSide(side, topLeftScreenPoint, bottomRightScreenPoint, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
-            var documentViewsHitBySide = VisualTreeHelper.FindElementsInHostCoordinates(rect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray(); ;
+            var hitDocumentViews = VisualTreeHelper.FindElementsInHostCoordinates(rect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray(); 
 
             var alignableDocumentViews = new List<Tuple<DocumentView, Side, double>>();
 
-            if (documentViewsHitBySide.Any())
+            if (hitDocumentViews.Any())
             {
-                for (int i = 0; i < documentViewsHitBySide.Count(); i++)
+                foreach (var obj in hitDocumentViews)
                 {
-                    var documentView = documentViewsHitBySide[i] as DocumentView;
+                    var documentView = obj as DocumentView;
                     if ((!documentView.Equals(MainPage.Instance.xMainDocView)) && (!documentView.Equals(this)))
                     {
                         var confidence = CalculateAlignmentConfidence(side, rect, documentView);
-                        if (confidence < ALIGNMENT_THRESHOLD)
+                        if (confidence >= ALIGNMENT_THRESHOLD)
                         {
-                            continue;
+                            alignableDocumentViews.Add(new Tuple<DocumentView, Side, double>(documentView, side, confidence));
                         }
-                        var item = new Tuple<DocumentView, Side, double>(documentView, side, confidence);
-                        alignableDocumentViews.Add(item);
                     }
 
                 }
@@ -263,7 +263,7 @@ namespace Dash
 
             }
 
-            return -1.0f;
+            return distanceToMid;
         }
 
         private double GetSharedRectWidthProportion(Rect source, Rect target)
@@ -300,7 +300,6 @@ namespace Dash
         private Rect CalculateAligningRectangleForSide(Side side, Point topLeftPoint, Point bottomRightPoint, double w, double h)
         {
             Point newTopLeft, newBottomRight;
-
 
             switch (side)
             {
