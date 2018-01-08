@@ -57,7 +57,6 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
-        public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public WebView WebContext;
         public Uri WebContextUri => WebBoxWrapper.WebContextUri;
         public MainPage()
@@ -93,7 +92,6 @@ namespace Dash
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-
                     if (MainDocument.GetActiveLayout() == null)
                     {
                         var layout =
@@ -180,9 +178,15 @@ namespace Dash
                 Content = TabMenu.Instance,
                 
             };
-
             
             WebContext = WebBoxWrapper.WebContext;
+
+            // add TreeMenu
+            TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
+            TreeMenu.Width = 300;
+            TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
+            MyGrid.Children.Add(TreeMenu);
+            
         }
 
         public CollectionView GetMainCollectionView()

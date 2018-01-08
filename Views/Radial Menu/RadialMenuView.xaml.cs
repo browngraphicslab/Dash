@@ -195,29 +195,26 @@ namespace Dash
         /// </summary>
         private void SetDefaultMenuStyle()
         {
-            
             xRadialMenu.Diameter = 215;
             xRadialMenu.StartAngle = 0;
             xRadialMenu.CenterButtonIcon = "🛠️";
-            xRadialMenu.CenterButtonSymbol = (Symbol) 0xE115;
+            xRadialMenu.CenterButtonSymbol = (Symbol)0xE115;
             xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Gray);
             xRadialMenu.CenterButtonBorder = new SolidColorBrush(Colors.Transparent);
-            xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush) Resources["WindowsBlue"];
-            xRadialMenu.CenterButtonForeground = (SolidColorBrush)Resources["RadialCenterForeground"];
-            xRadialMenu.IndicationArcColor = ((SolidColorBrush)Resources["WindowsBlue"]).Color;
+            xRadialMenu.CenterButtonBackgroundFill = (SolidColorBrush)App.Instance.Resources["WindowsBlue"];
+            xRadialMenu.CenterButtonForeground = new SolidColorBrush(Colors.Black);
+            xRadialMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             xRadialMenu.UseIndicationArcs = true;
             xRadialMenu.IndicationArcStrokeThickness = 3;
             xRadialMenu.IndicationArcDistanceFromEdge = 20;
-            xRadialMenu.InnerNormalColor = ((SolidColorBrush)Resources["RadialMenuBackground"]).Color;
-            xRadialMenu.InnerHoverColor = ((SolidColorBrush)Resources["DocumentBackgroundSelected"]).Color;
-            xRadialMenu.InnerTappedColor = ((SolidColorBrush)Resources["DocumentBackgroundSelected"]).Color;
-            xRadialMenu.InnerReleasedColor = ((SolidColorBrush)Resources["DocumentBackgroundSelected"]).Color;
-            xRadialMenu.OuterHoverColor = ((SolidColorBrush)Resources["DocumentBackgroundSelected"]).Color;
-            //xRadialMenu.OuterNormalColor = ((SolidColorBrush)Resources["WindowsBlue"]).Color;
-            //xRadialMenu.OuterDisabledColor = ((SolidColorBrush)Resources["WindowsBlue"]).Color;
-            xRadialMenu.OuterNormalColor = ((SolidColorBrush) App.Instance.Resources["ButtonForeground"]).Color;
-            xRadialMenu.OuterDisabledColor = ((SolidColorBrush)App.Instance.Resources["ButtonForeground"]).Color;
-            xRadialMenu.OuterTappedColor = ((SolidColorBrush)Resources["DocumentBackgroundSelected"]).Color;
+            xRadialMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["RadialMenuBackground"]).Color;
+            xRadialMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.InnerReleasedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.OuterHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
+            xRadialMenu.OuterNormalColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.OuterDisabledColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
+            xRadialMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             xRadialMenu.OuterThickness = 10;
             xRadialMenu.CenterButtonSize = 45;
         }
