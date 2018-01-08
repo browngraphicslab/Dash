@@ -183,6 +183,10 @@ namespace Dash
             newDocument.Click += MenuFlyoutItemNewDocument_Click;
             ParentDocument.MenuFlyout.Items.Add(newDocument);
 
+            var newCollection = new MenuFlyoutItem() { Text = "Create new collection" };
+            newCollection.Click += MenuFlyoutItemNewCollection_Click;
+            ParentDocument.MenuFlyout.Items.Add(newCollection);
+
             var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
             ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
 
@@ -209,7 +213,34 @@ namespace Dash
 
         private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
         {
-            Util.BlankDoc();
+            addElement(Util.BlankDoc());
+        }
+
+        private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
+        {
+            addElement(Util.BlankCollection());
+        }
+
+        private void addElement(DocumentController opController)
+        {
+            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+
+            var x = pointerPosition.X - Window.Current.Bounds.X;
+            var y = pointerPosition.Y - Window.Current.Bounds.Y;
+            var p = new Point(x, y);
+
+            // using this as a setter for the transform massive hack - LM
+            var _ = new DocumentViewModel(opController)
+            {
+                GroupTransform = new TransformGroupData(p, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                //freeForm.ViewModel.AddDocument(opController, null);
+                var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+                mp.ViewModel.AddDocument(opController, null);
+            }
         }
 
         private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
