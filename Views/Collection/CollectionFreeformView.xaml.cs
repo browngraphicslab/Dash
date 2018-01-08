@@ -855,7 +855,7 @@ namespace Dash
 
             itemsPanelCanvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(compValue);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
@@ -885,18 +885,19 @@ namespace Dash
             }
             return currentScale;
         }
-        private void SetTransformOnBackground(TransformGroup composite)
+
+        private void SetTransformOnBackground(Matrix transformMatrix)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, _numberOfBackgroundRows);
 
             if (_resourcesLoaded)
             {
                 _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)composite.Value.M12,
-                    (float)composite.Value.M21,
+                    (float)transformMatrix.M12,
+                    (float)transformMatrix.M21,
                     (float)aliasSafeScale,
-                    (float)composite.Value.OffsetX,
-                    (float)composite.Value.OffsetY);
+                    (float)transformMatrix.OffsetX,
+                    (float)transformMatrix.OffsetY);
                 xBackgroundCanvas.Invalidate();
             }
         }
@@ -913,7 +914,7 @@ namespace Dash
             };
 
             composite.Children.Add(scale);
-            SetTransformOnBackground(composite);
+            SetTransformOnBackground(composite.Value);
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
