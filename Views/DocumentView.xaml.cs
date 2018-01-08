@@ -310,8 +310,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        private AddMenuItem _treeMenuItem;
-
+        
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -331,33 +330,13 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-
-                //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
-                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
-                {
-                    // if we don't have a parent to add to then we can't add this to anything
-                    if (ParentCollection != null)
-                    {
-                        // if the tree contains the parent collection
-                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                        {
-                            _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
-                        }
-                    }
-                }
+                
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
                     ViewModel.Width = 50;
                     ViewModel.Height = 50;
                 }
-                //if (Parent == null)
-                //    ViewModel.Width = ActualWidth;
-                //else ViewModel.Width = double.NaN;
-                //if (Parent == null)
-                //    ViewModel.Height = ActualHeight;
-                //else ViewModel.Height = double.NaN;
             }
             new ManipulationControls(xKeyValuePane, false, false);
         }
@@ -384,11 +363,15 @@ namespace Dash
                 //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, ViewModel.DocumentController, KeyStore.TitleKey);
-                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                    _treeMenuItem);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
+               
             }
         }
+
+        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
+    
+        #endregion
+        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
 
         /// <summary>
         /// Applies custom override styles to the operator view. 
@@ -396,37 +379,21 @@ namespace Dash
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
+            
+            var width = 20;
+            
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-
-            // add item to menu
-            if (ParentCollection != null)
-                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem); // removes docview of collection from menu
-
-            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
-            {
-
-                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
-                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
-                tree.HeaderLabel = "Collection";
-
-                // if nested, add to parent collection, otherwise add to main collection
-                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                {
-
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
-                }
-                else
-                {
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
-                }
-            }
-
-
+            xTitle.Text = "Collection (" + CollectionCount + ")";
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+            CollectionCount++;
         }
-#endregion
-
-        //}
+        
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
@@ -696,7 +663,7 @@ namespace Dash
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-                fitFreeFormChildrenToTheirLayouts();
+               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
             }
         }
 
@@ -872,9 +839,7 @@ namespace Dash
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
-
-                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(_treeMenuItem);
-
+                
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
             }
@@ -1077,9 +1042,7 @@ namespace Dash
             if (titleField == null)
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-            if (_treeMenuItem != null)
-                _treeMenuItem.DocType = xTitle.Text; // have to call because the documentcontrollers in these items aren't updated 
-        }
+       }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {

@@ -69,8 +69,6 @@ namespace Dash
                 if (action != null)
                 {
                     DocumentController docCont = action.Invoke();
-                    if (docCont != null)
-                        Actions.AddDocFromFunction(MainPage.Instance.AddMenu, docCont);
                 }
             }
 

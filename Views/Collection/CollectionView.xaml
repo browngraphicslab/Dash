@@ -12,15 +12,18 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
-    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF" Background="{ThemeResource CollectionViewBackground}">
+
+    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF">
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <xaml:CanvasControl Grid.Column="1"  x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            <xaml:CanvasControl Grid.Column="1" Visibility="Collapsed" x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
+
 
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
@@ -32,9 +35,7 @@
                         HorizontalAlignment="Stretch"
                         Margin="0"
                         VerticalAlignment="Stretch"
-                        ManipulationMode="All"
-                >
-
+                        ManipulationMode="All">
                     <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded" 
                                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
@@ -49,7 +50,7 @@
                     <Ellipse x:Name="ConnectionEllipseOutput"
                                 x:FieldModifier="public"
                                 Style="{StaticResource xOutputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-2,0"/>
+                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-20,0"/>
                 </Grid>
                 <!--input ellipse-->
                 <Grid HorizontalAlignment="Left" 
@@ -61,7 +62,7 @@
                     <Ellipse x:Name="ConnectionEllipseInput"
                                 x:FieldModifier="public"
                                 Style="{StaticResource xInputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-2,0,0,0"/>
+                                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-20,0,0,0"/>
                 </Grid>
                 <!--selected ellipse-->
                 <!--<Grid HorizontalAlignment="Right" 

@@ -28,6 +28,11 @@ namespace Dash
         {
         }
 
+        /// <summary>
+        /// Wrapper for the event called when a field model's data is updated
+        /// </summary>
+        /// <param name="args"></param>
+        /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
             UpdateOnServer();
@@ -69,7 +74,15 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
-
+        /// <summary>
+        /// Returns the type of this field as a string. Can override this for more complex
+        /// string displays.
+        /// </summary>
+        /// <returns></returns>
+        public virtual String GetTypeAsString()
+        {
+            return TypeInfo.ToString();
+        }
         public abstract FieldControllerBase GetDefaultController();
 
         /// <summary>
