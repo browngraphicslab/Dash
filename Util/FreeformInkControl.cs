@@ -1,8 +1,10 @@
-﻿using Dash.Views;
+﻿using System;
+using Dash.Views;
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
@@ -71,6 +73,8 @@ namespace Dash
             InkController.InkUpdated += InkControllerOnInkUpdated;
             GlobalInkSettings.InkSettingsUpdated += GlobalInkSettingsOnInkSettingsUpdated;
         }
+
+        
 
         private void MakeFlyout()
         {
@@ -199,7 +203,7 @@ namespace Dash
         /// (including center) inside _lasso's convex hull. If
         /// </summary>
         /// <param name="selectionPoints"></param>
-        private void SelectDocs(PointCollection selectionPoints)
+        private void LassoSelectDocs(PointCollection selectionPoints)
         {
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
@@ -271,7 +275,7 @@ namespace Dash
         private void UnprocessedInput_PointerPressed(
             InkUnprocessedInput sender, PointerEventArgs args)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 0);
+
             if (args.CurrentPoint.Properties.IsBarrelButtonPressed || args.CurrentPoint.Properties.IsRightButtonPressed)
                 _inkSelectionMode = InkSelectionMode.Document;
             else
@@ -281,13 +285,14 @@ namespace Dash
             {
                 Stroke = new SolidColorBrush(Colors.Gray),
                 StrokeThickness = 1.5 / FreeformView.Zoom,
-                StrokeDashArray = new DoubleCollection {5, 2},
+                StrokeDashArray = new DoubleCollection { 5, 2 },
                 CompositeMode = ElementCompositeMode.SourceOver
             };
 
             _lasso.Points.Add(args.CurrentPoint.RawPosition);
 
             SelectionCanvas.Children.Add(_lasso);
+
         }
 
         private void UnprocessedInput_PointerMoved(
@@ -295,6 +300,7 @@ namespace Dash
         {
             // Add a point to the lasso Polyline object.
             _lasso.Points.Add(args.CurrentPoint.RawPosition);
+           
         }
 
         private void UnprocessedInput_PointerReleased(
@@ -317,8 +323,9 @@ namespace Dash
             }
             else if (_inkSelectionMode == InkSelectionMode.Document)
             {
-                SelectDocs(_lasso.Points);
+                LassoSelectDocs(_lasso.Points);
             }
+            
         }
 
         /// <summary>
