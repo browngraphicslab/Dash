@@ -315,6 +315,8 @@ namespace Dash
                 var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
+                var dvm = parent.ViewModel;
+                parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
             }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)

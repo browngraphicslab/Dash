@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.ProjectOxford.Vision.Contract;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Devices.Input;
@@ -71,7 +73,7 @@ namespace Dash
         /// <param name="element">The element to add manipulation to</param>
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel)
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, FrameworkElement borderRegion=null)
         {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
@@ -86,15 +88,25 @@ namespace Dash
             {
                 element.PointerWheelChanged += PointerWheelMoveAndScale;
             }
+            if (borderRegion != null)
+            {
+                borderRegion.ManipulationMode = ManipulationModes.All;
+                borderRegion.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((obj, args) =>
+                {
+
+                }), true);
+                borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
+                borderRegion.ManipulationStarted += ElementOnManipulationStarted;
+                borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
+            }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
-
-        private async void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        private async void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             _isManipulating = false;
-            if (!manipulationCompletedRoutedEventArgs.Handled)
+            if (manipulationCompletedRoutedEventArgs != null && !manipulationCompletedRoutedEventArgs.Handled)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
                 var parent = _element.GetFirstAncestorOfType<DocumentView>();
@@ -105,6 +117,51 @@ namespace Dash
                             parent.MoveToContainingCollection();
                     }
                 ));
+            }
+        }
+
+        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            BorderOnManipulationCompleted(sender, manipulationCompletedRoutedEventArgs);
+
+            var grouped = new List<DocumentViewModel>();
+            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            if (parent != null)
+            {
+                AddConnected(grouped, docRoot.ViewModel, parent);
+                var recolor = false;
+                foreach (var g in grouped)
+                    if (!Grouped.Contains(g))
+                        recolor = true;
+                foreach (var g in Grouped)
+                    if (!grouped.Contains(g))
+                        recolor = true;
+                if (recolor)
+                {
+                    Random r = new Random();
+                    var BackColor = Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
+
+                    foreach (var g in grouped)
+                        g.BorderGroupColor = new SolidColorBrush(BackColor);
+                }
+            }
+
+        }
+
+        List<DocumentViewModel> Grouped = new List<DocumentViewModel>();
+
+        private static void AddConnected(List<DocumentViewModel> grouped, DocumentViewModel docRoot, CollectionFreeformView parent)
+        {
+            foreach (var doc in parent.ViewModel.DocumentViewModels)
+            {
+                var docBounds = doc.GroupingBounds;
+                docBounds.Intersect(docRoot.GroupingBounds);
+                if (docBounds != Rect.Empty && !grouped.Contains(doc))
+                {
+                    grouped.Add(doc);
+                    AddConnected(grouped, doc, parent);
+                }
             }
         }
 
@@ -129,6 +186,15 @@ namespace Dash
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
+            e.Handled = true;
+
+            Grouped.Clear();
+            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            if (parent != null)
+            {
+                AddConnected(Grouped, docRoot.ViewModel, parent);
+            }
         }
 
         public void AddAllAndHandle()
@@ -199,6 +265,20 @@ namespace Dash
             e.Handled = _handle;
         }
 
+
+        /// <summary>
+        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
+        /// </summary>
+        private void BorderManipulateDeltaMove(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            {
+                return;
+            }
+
+            TranslateAndScale(e, Grouped);
+        }
 
 
         /// <summary>
@@ -384,7 +464,7 @@ namespace Dash
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e)
+        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, IEnumerable<DocumentViewModel> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -398,8 +478,17 @@ namespace Dash
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
-            OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                e.Position, new Point(scaleFactor, scaleFactor)));
+            {
+                if (grouped != null && grouped.Count() > 0)
+                {
+                    foreach (var g in grouped)
+                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                                     e.Position, new Point(scaleFactor, scaleFactor)));
+                }
+                else
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
+                        e.Position, new Point(scaleFactor, scaleFactor)));
+            }
         }
 
         public void Dispose()

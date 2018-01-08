@@ -65,7 +65,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, BorderRegion);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -594,20 +594,7 @@ namespace Dash
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             if (ViewModel != null)
-            {
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-
-                var deltaTranslate = delta.Translate;
-                var deltaScaleAmount = delta.ScaleAmount;
-
-                var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-                var scaleCenter = new Point(0, 0);
-                var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-
-                ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-            }
+                ViewModel.TransformDelta(delta);
         }
 
         /// <summary>

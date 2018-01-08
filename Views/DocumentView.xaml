@@ -23,6 +23,8 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
     <Grid>
+        <Canvas Margin="{Binding GroupMargin}" Background="{Binding BorderGroupColor}" x:Name="BorderRegion" />
+        <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*"/>
@@ -142,6 +144,7 @@
                     </Canvas.RenderTransform>
                 </Canvas>
             </Grid>
+        </Grid>
         </Grid>
     </Grid>
 </local:SelectionElement>
