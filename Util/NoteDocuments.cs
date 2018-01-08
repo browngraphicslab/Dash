@@ -162,7 +162,7 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
@@ -222,7 +222,7 @@ namespace Dash
                 _prototypeLayout = CreatePrototypeLayout();
 
                 Document = GetDocumentPrototype().MakeDelegate();
-                Document.SetField(KeyStore.TitleKey, new TextController("Title?"), true);
+                Document.SetField(KeyStore.TitleKey, new TextController("Title"), true);
                 Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
