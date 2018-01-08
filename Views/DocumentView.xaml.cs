@@ -76,6 +76,8 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
+            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
+
             //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
             // this.ManipulationDelta += DocumentView_ManipulationDelta;
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
@@ -85,6 +87,7 @@ namespace Dash
 
 
         }
+
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -99,8 +102,13 @@ namespace Dash
             var docView = sender as DocumentView;
             CheckForDropOnLink(docView);
 
-            Snap();
+            Snap(false);
 
+        }
+
+        private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Snap(true);
         }
 
         #region Snapping
@@ -130,7 +138,7 @@ namespace Dash
         /// <summary>
         /// Top level function for snapping
         /// </summary>
-        private void Snap()
+        private void Snap(bool preview)
         {
             //No snapping if main collection manipulated (i.e., panned)
             if (IsMainCollection)
@@ -138,9 +146,52 @@ namespace Dash
                 return;
             }
 
+            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+
             //Find the closest other DocumentView and snap to it.
             var closestDocumentView = GetClosestDocumentView();
-            SnapToDocumentView(closestDocumentView);
+            if (preview)
+            {
+                PreviewSnap(closestDocumentView);
+            }
+            else
+            {
+                SnapToDocumentView(closestDocumentView);
+            }
+        }
+
+        private void PreviewSnap(Tuple<DocumentView, Side, double> closestDocumentView)
+        {
+            if (closestDocumentView == null)
+            {
+                return;
+            }
+
+            var documentView = closestDocumentView.Item1;
+            var side = closestDocumentView.Item2;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+            /*
+            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
+                documentView.ViewModel.GroupTransform.Translate.Y);
+            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
+                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+            */
+
+            var closestDocumentViewScreenBoundingBox = documentView.GetBoundingBoxScreenSpace();
+            var currentScreenBoundingBox = GetBoundingBoxScreenSpace();
+            var newBoundingBox =
+                CalculateAligningRectangleForSide(~side, new Point(closestDocumentViewScreenBoundingBox.X, closestDocumentViewScreenBoundingBox.Y), new Point(closestDocumentViewScreenBoundingBox.X + closestDocumentViewScreenBoundingBox.Width, closestDocumentViewScreenBoundingBox.Y + closestDocumentViewScreenBoundingBox.Height), currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
+
+            //var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
+            //ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); 
+
+            MainPage.Instance.TemporaryRectangle.Width = newBoundingBox.Width;
+            MainPage.Instance.TemporaryRectangle.Height = newBoundingBox.Height;
+
+            //MainPage.Instance.TemporaryRectangle.RenderTransform = new TransformGroup();
+            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
+            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
+
         }
 
         /// <summary>
@@ -182,7 +233,7 @@ namespace Dash
                 CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, ViewModel.Width, ViewModel.Height);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); //TODO: What does this do again?
+            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); 
 
             ViewModel.Width = newBoundingBox.Width;
             ViewModel.Height = newBoundingBox.Height;
@@ -223,11 +274,8 @@ namespace Dash
                             documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(documentView, side, confidence));
                         }
                     }
-
                 }
-
             }
-
 
             return documentViewsAboveThreshold;
         }
