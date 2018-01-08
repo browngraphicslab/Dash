@@ -30,6 +30,7 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Flurl.Util;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -150,7 +151,9 @@ namespace Dash
 
             LoadLines();
             fitFreeFormChildrenToTheirLayouts();
+            //Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
+
         void fitFreeFormChildrenToTheirLayouts()
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);

@@ -1688,6 +1688,34 @@ namespace Dash
             }
         }
 
+        /*
+        /// <summary>
+        /// fired when a key is pressed down on the application
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void CoreWindowOnKeyDown(CoreWindow coreWindow, KeyEventArgs args)
+        {
+            var ctrlState = coreWindow.GetKeyState(VirtualKey.Control);
+
+            var focused = FocusManager.GetFocusedElement();
+            var objectIsfocused = focused != null;
+            var focusedObjectIsEditable = objectIsfocused && (focused is UserControl) && (focused as UserControl).IsEnabled;
+
+            if (args.VirtualKey == VirtualKey.V && (ctrlState & CoreVirtualKeyStates.Down) != 0 && !focusedObjectIsEditable)
+            {
+                var where = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+
+                var data = Clipboard.GetContent();
+                var str = await data.GetTextAsync();
+
+                DocumentController postitNote = new RichTextNote(PostitNote.DocumentType, "", str).Document;
+                Actions.DisplayDocument(this, postitNote, where);
+
+                //DocumentController controller = 
+                //ViewModel.AddDocument(controller, null );
+            }
+        }*/
     }
 
     /// <summary>
