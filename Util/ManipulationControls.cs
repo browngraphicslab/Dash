@@ -125,12 +125,6 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             docView?.ToFront();
 
-            //if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-            //    (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
-            //{
-            //    e.Complete();
-            //    return;
-            //}
             _isManipulating = true;
             _processManipulation = true;
 
@@ -212,6 +206,12 @@ namespace Dash
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
+                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            {
+                return;
+            }
+
             TranslateAndScale(e);
 
             DetectShake(sender, e);
