@@ -511,6 +511,9 @@ namespace Dash
 
 
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+
+            // taking out the collection menu now that we have the context menu
+            _collectionMenu.Visibility = Visibility.Collapsed;
         }
 
         private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)

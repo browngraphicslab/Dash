@@ -86,7 +86,7 @@ namespace Dash
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
 
-            MenuFlyout = xMenuFlyout; 
+            MenuFlyout = xMenuFlyout;
         }
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -345,6 +345,9 @@ namespace Dash
                 }
             }
             new ManipulationControls(xKeyValuePane, false, false);
+
+            //ToFront();
+
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -544,6 +547,9 @@ namespace Dash
 
 
             _docMenu = new OverlayMenu(null, documentButtons);
+
+            // collapsing the buttons for now since we have a context menu
+            _docMenu.Visibility = Visibility.Collapsed;
 
             Binding visibilityBinding = new Binding
             {
@@ -856,11 +862,20 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
+            
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
             _moveTimer.Stop();
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
