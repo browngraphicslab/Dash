@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -86,13 +85,12 @@ namespace Dash
             var pdfView = new PdfView();
             var pdf = pdfView.Pdf;
 
+            // make the pdf respond to resizing, interactions etc...
             SetupBindings(pdf, docController, context);
+            SetupPdfBinding(pdf, docController, context);
 
             // set up interactions with operations
             var reference = GetPdfReference(docController);
-            BindOperationInteractions(pdf, reference.GetFieldReference().Resolve(context), reference.FieldKey);
-
-
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = pdf;
 
             if (isInterfaceBuilderLayout)
@@ -108,13 +106,6 @@ namespace Dash
         private static ReferenceController GetPdfReference(DocumentController docController)
         {
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
-
-        private static void SetupBindings(SfPdfViewerControl pdf, DocumentController docController,
-            Context context)
-        {
-            CourtesyDocument.SetupBindings(pdf, docController, context);
-            SetupPdfBinding(pdf, docController, context);
         }
 
         protected static void SetupPdfBinding(SfPdfViewerControl pdf, DocumentController controller,
@@ -154,34 +145,6 @@ namespace Dash
                 Converter = UriToStreamConverter.Instance
             };
             pdf.AddFieldBinding(SfPdfViewerControl.ItemsSourceProperty, binding);
-        }
-    }
-
-
-
-    public class UriToStreamConverter : SafeDataToXamlConverter<Uri, Stream>
-    {
-        private UriToStreamConverter(){}
-
-        public static UriToStreamConverter Instance;
-
-        static UriToStreamConverter()
-        {
-            Instance = new UriToStreamConverter();
-        }
-
-        public override Stream ConvertDataToXaml(Uri data, object parameter = null)
-        {
-            var stream = File.Open(data.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            return stream;
-        }
-
-        /// <summary>
-        /// No two way binding since it is impossible to convert a steam to a uri
-        /// </summary>
-        public override Uri ConvertXamlToData(Stream xaml, object parameter = null)
-        {
-            throw new NotImplementedException();
         }
     }
 }
