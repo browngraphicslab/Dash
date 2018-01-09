@@ -241,7 +241,6 @@ namespace Dash
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
@@ -273,6 +272,7 @@ namespace Dash
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (_rightPressed)
             {
+                this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
                 this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
@@ -303,6 +303,7 @@ namespace Dash
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            this.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased));
             this.RemoveHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved));
 
             var parent = this.GetFirstAncestorOfType<DocumentView>();
