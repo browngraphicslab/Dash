@@ -79,7 +79,7 @@
                     <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
-                    <MenuFlyoutItem Text="Add" Click="MenuFlyoutItemAdd_Click"/>
+                    <MenuFlyoutItem Text="Open document fields" Click="MenuFlyoutItemAdd_Click"/>
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
