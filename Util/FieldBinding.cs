@@ -56,7 +56,7 @@ namespace Dash
                     {
                         element.SetValue(property, xamlData);
                     }
-                    Debug.WriteLine($"Error evaluating binding: Error with converter, Document ID = {Document.Id}, Key = {Key.Name}");
+                    Debug.WriteLine($"Error evaluating binding: Error with converter, Document ID = {Document.Id}, Key = {Key.Name}, Converter = {converter?.GetType().Name ?? "null"}");
                 }
                 else if (FallbackValue != null)
                 {

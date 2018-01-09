@@ -344,15 +344,13 @@ namespace Dash
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
-        private bool isOperator = false;
-        private bool addItem = false;
+
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            isOperator = true;
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
@@ -370,32 +368,17 @@ namespace Dash
             }
         }
 
-        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
-    
-        #endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
-
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
-            
-            var width = 20;
-            
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            
-            addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection (" + CollectionCount + ")";
-            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
-            CollectionCount++;
         }
-        
+
+#endregion
+
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
@@ -469,7 +452,6 @@ namespace Dash
         }
         #endregion
 
-        DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
         private void SetUpMenu()
         {
@@ -683,7 +665,8 @@ namespace Dash
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
+                //uncomment to make children in collection stretch
+                fitFreeFormChildrenToTheirLayouts(); 
             }
         }
 

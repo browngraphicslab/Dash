@@ -87,8 +87,7 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        //private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         private float _backgroundOpacity = .95f;
         #endregion
@@ -109,12 +108,10 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            //ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ParentDocument.StyleCollection(this);
-
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
-            
+            ParentDocument.StyleCollection(this);
+
             if (_collectionMenu == null)
                 MakeMenu();
             // set the top-level viewtype to be freeform by default
@@ -155,9 +152,6 @@ namespace Dash
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
-                //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-                _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
-                (CurrentView as CollectionFreeformView).setBackgroundDarkness(true);
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
 
@@ -514,7 +508,7 @@ namespace Dash
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
-                    _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
                 _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
                     Opacity = _backgroundOpacity
@@ -588,16 +582,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(datacontext.IsSelected)) 
             };
 
-            //datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
-
-
-
             xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
-        }
-
-        private void OnCollectionUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            throw new NotImplementedException();
         }
     }
 }

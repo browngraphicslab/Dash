@@ -182,11 +182,11 @@ namespace Dash
                 
             };
 
-            // add TreeMenu
-            TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
-            TreeMenu.Width = 300;
-            TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
-            MyGrid.Children.Add(TreeMenu);
+            //// add TreeMenu
+            //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
+            //TreeMenu.Width = 300;
+            //TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
+            //MyGrid.Children.Add(TreeMenu);
             
         }
 

@@ -109,13 +109,6 @@ namespace Dash
             SetupBindings(tb, docController, context);
 
             if (keysToFrameworkElementsIn != null && referenceToText != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
-
-            // add bindings to work with operators
-            if (referenceToText != null) // only bind operation interactions if text is a reference
-            {
-                var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-                BindOperationInteractions(tb, referenceToText.GetFieldReference().Resolve(context), reference.FieldKey);
-            }
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
 

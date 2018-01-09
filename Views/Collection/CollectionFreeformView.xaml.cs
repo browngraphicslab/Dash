@@ -96,21 +96,7 @@ namespace Dash
 
         }
 
-        public void setBackgroundDarkness(bool isDark)
-        {
-            //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-            _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
-            if (isDark)
-                xDarkenBackground.Opacity = .1;
-            else
-            {
-                xDarkenBackground.Opacity = 0;
-            }
-        }
-
-
-
-    public IOReference GetCurrentReference()
+        public IOReference GetCurrentReference()
         {
             return _currReference;
         }
