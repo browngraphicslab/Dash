@@ -384,21 +384,9 @@ namespace Dash
 
         #endregion
 
-        /// <summary>
-        /// Shows the right-hand docked document options menu. Slides it in with animation.
-        /// </summary>
-        public void ShowDocumentMenu()
-        {
-            slideOut.Begin();
-        }
 
-        /// <summary>
-        /// Hides the right-hand docked document options menu. Slides it out with animation.
-        /// </summary>
-        public void HideDocumentMenu()
-        {
-            slideIn.Begin();
-        }
+
+
 
         private void Border_Tapped(object sender, TappedRoutedEventArgs e)
         {

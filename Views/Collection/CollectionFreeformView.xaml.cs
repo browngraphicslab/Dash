@@ -72,9 +72,9 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private const float BackgroundOpacity = .95f;
+        private const float BackgroundOpacity = 1.0f;
 
         #endregion
 

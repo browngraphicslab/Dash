@@ -38,10 +38,8 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls;
 
-        private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
-
-        private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+
         // the document view that is being dragged
         public static DocumentView DragDocumentView;
 
@@ -62,7 +60,7 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-            Util.InitializeDropShadow(xShadowHost, xShadowTarget);
+            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -80,8 +78,7 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
-            //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
-            // this.ManipulationDelta += DocumentView_ManipulationDelta;
+            AddHandler(ManipulationStartedEvent, new ManipulationStartedEventHandler(DocumentView_ManipulationStarted), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
@@ -91,6 +88,7 @@ namespace Dash
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+
         }
 
         private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -102,6 +100,13 @@ namespace Dash
             var docView = sender as DocumentView;
             CheckForDropOnLink(docView);
 
+            if (IsSelected == false)
+                ToggleSelectionBorder(false);
+        }
+
+        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            ToggleSelectionBorder(true);
         }
 
         private void CheckForDropOnLink(DocumentView docView)
@@ -354,9 +359,9 @@ namespace Dash
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
             xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
@@ -378,6 +383,7 @@ namespace Dash
         public void StyleCollection(CollectionView view)
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
+            xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
 
 #endregion
@@ -390,124 +396,13 @@ namespace Dash
         
 
         MenuButton copyButton;
-        private void SetUpMenu()
-        {
-            var red = new Color();
-            red.A = 204;
-            red.R = 190;
-            red.B = 25;
-            red.G = 25;
 
-            copyButton = new MenuButton(Symbol.Copy, "Copy", CopyDocument);
-            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
-            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
-            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
-            var addButton = new MenuButton(Symbol.Add, "Add", null);
-            var showContextButton = new MenuButton(Symbol.Add, "Context", ShowContext);
-
-            var documentButtons = new List<MenuButton>
-            {
-                //moveButton,
-                new MenuButton(Symbol.Delete, "Delete",DeleteDocument),
-                copyButton,
-               // delegateButton,
-               // copyDataButton
-               // instanceDataButton,
-                copyViewButton,
-                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
-                //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
-                addButton,
-                showContextButton
-            };
-            moveButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Move;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            moveButton.DropCompleted += ButtonView_DropCompleted;
-            copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
-            copyButton.DragStarting += (s, e) =>
-            {
-                _moveTimer.Stop();
-                e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            copyButton.DropCompleted += ButtonView_DropCompleted;
-            copyDataButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            instanceDataButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            addButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            copyViewButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                e.Data.Properties.Add("View", true);
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-
-
-            _docMenu = new OverlayMenu(null, documentButtons);
-
-            // collapsing the buttons for now since we have a context menu
-            _docMenu.Visibility = Visibility.Collapsed;
-
-            Binding visibilityBinding = new Binding
-            {
-                Source = ViewModel,
-                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
-                Mode = BindingMode.OneWay
-            };
-            xMenuCanvas.SetBinding(VisibilityProperty, visibilityBinding);
-
-            if (!useFixedMenu)
-                xMenuCanvas.Children.Add(_docMenu);
-            _moveTimer.Tick += Timer_Tick;
-        }
-
-        private void ButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            if (args.DropResult == DataPackageOperation.Move)
-            {
-                var coll = this.GetFirstAncestorOfType<CollectionView>();
-                Debug.Assert(coll != null);
-                coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            }
-            else
-            { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                var layout = ViewModel.DocumentController.GetActiveLayout() ?? ViewModel.DocumentController;
-                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
-            }
-        }
 
         DispatcherTimer _moveTimer = new DispatcherTimer()
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
 
-        private void CopyButton_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-           // _moveTimer.Start();
-        }
-
-        private void Timer_Tick(object sender, object e)
-        {
-            copyButton.Contents.Symbol = Symbol.MoveToFolder;
-            copyButton.ButtonText.Text = "Move";
-        }
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -515,8 +410,7 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
-            if (ViewModel != null)
-                ViewModel.TransformDelta(delta);
+            ViewModel?.TransformDelta(delta);
         }
 
         /// <summary>
@@ -730,9 +624,6 @@ namespace Dash
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
-                
-                if (useFixedMenu)
-                    MainPage.Instance.HideDocumentMenu();
             }
         }
 
@@ -790,7 +681,6 @@ namespace Dash
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            ViewModel.CloseMenu();
         }
 
         private void OpenLayout()
@@ -856,51 +746,22 @@ namespace Dash
             // if we are being deselected
             if (!isSelected)
             {
-                colorStoryboardOut.Begin();
-                colorStoryboardOut.Completed += delegate
-                {
-                    xShadowTarget.Fill = Resources["DocumentBackground"] as SolidColorBrush;
-                };
-                if (useFixedMenu)
-                    MainPage.Instance.HideDocumentMenu();
+                ToggleSelectionBorder(false);
             }
             else
             {
-                // update the main toolbar in the overlay canvas
-                if (_docMenu == null)
-                {
-                    SetUpMenu();
-                }
-                if (_docMenu != null && MainPage.Instance != null)
-                {
-                    colorStoryboard.Begin();
-                    if (useFixedMenu)
-                    {
-                        MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.MainDocView != this)
-                            MainPage.Instance.ShowDocumentMenu();
-                    }
-                }
+                ToggleSelectionBorder(true);
             }
+        }
+
+        private void ToggleSelectionBorder(bool isBorderOn)
+        {
+            xTargetContentGrid.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
-
-            if (!IsMainCollection && isLowestSelected)
-            {
-                if (_docMenu == null)
-                {
-                    SetUpMenu();
-                }
-                ViewModel?.OpenMenu();
-                _docMenu.AddAndPlayOpenAnimation();
-            }
-            else
-            {
-                ViewModel?.CloseMenu();
-            }
             ViewModel?.SetHasTitle(isLowestSelected);
         }
 

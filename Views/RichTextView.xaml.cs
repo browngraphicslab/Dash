@@ -132,7 +132,6 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
         }
 
         /// <summary>
@@ -557,9 +556,6 @@ namespace Dash
         /// </summary>
         private void AddWordCountHandlers()
         {
-            xWordCountBorder.PointerEntered += delegate { xWordCountBorder.Opacity = 1; };
-            xWordCountBorder.PointerExited += delegate { xWordCountBorder.Opacity = 0.3; };
-            xWordCount.DataContext = WC;
             WC.CountWords();
         }
 
@@ -568,13 +564,7 @@ namespace Dash
         /// </summary>
         private void AddFontSizeHandlers()
         {
-            xFontSizePanel.PointerEntered += delegate { xFontSizePanel.Opacity = 1; };
-            xFontSizePanel.PointerExited += delegate { xFontSizePanel.Opacity = 0.3; };
-            xFontSizeLabel.Tapped += delegate
-            {
-                xFontSizeTextBox.Focus(FocusState.Programmatic); 
-                xFontSizeTextBox.SelectAll();
-            };
+
         }
 
         /// <summary>
