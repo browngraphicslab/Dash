@@ -4,18 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
+using DashShared;
+using Microsoft.Toolkit.Uwp;
 
 namespace Dash
 {
     public class PptToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
-            var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-            StorageFile file = await localFolder.CreateFileAsync("filename.pptx", CreationCollisionOption.ReplaceExisting);
-            await sFile.CopyAndReplaceAsync(file);
-            await Windows.System.Launcher.LaunchFileAsync(file);
+            // store the file locally
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var uniqueFilePath = UtilShared.GenerateNewId() + ".pptx";
+            var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
+            {
+                await fileData.File.CopyAndReplaceAsync(localFile);
+            }
+            // otherwise stream it from the internet
+            else
+            {
+                await fileData.FileUri.GetHttpStreamToStorageFileAsync(localFile);
+            }
+
+            await Windows.System.Launcher.LaunchFileAsync(localFile);
 
             return null;
         }

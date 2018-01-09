@@ -58,7 +58,7 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
         public BrowserView WebContext => BrowserView.Current;
-        //public Uri WebContextUri => WebBoxWrapper.WebContextUri;
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -117,21 +117,8 @@ namespace Dash
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            //BrowserView.OpenTab("https://stackoverflow.com/questions/4192847/set-scroll-position");
-            BrowserView.NewTabCreated +=
-                (sender, view) => UITask.Run(() =>
-                {
-                    (MainDocument.GetField(KeyStore.CollectionKey) as ListController<DocumentController>)
-                        .Add(new RichTextNote(DocumentType.DefaultType, view.Url).Document);
-                });
 
             BrowserView.OpenTab("http://www.cs.brown.edu");
-            //BrowserView.CurrentTabChanged +=
-            //    (sender, view) => UITask.Run(() =>
-            //    {
-            //        (MainDocument.GetField(KeyStore.CollectionKey) as ListController<DocumentController>)
-            //            .Add(new RichTextNote(DocumentType.DefaultType).Document);
-            //    });
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)

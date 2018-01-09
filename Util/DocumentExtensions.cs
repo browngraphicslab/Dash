@@ -351,7 +351,7 @@ namespace Dash
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title?"), false);
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title"), false);
                 titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
             }
             return titleKey;
@@ -364,7 +364,7 @@ namespace Dash
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
-                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title?"), false);
+                dataDoc.SetField(KeyStore.TitleKey, new TextController("Title"), false);
                 titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController;
             }
             Debug.Assert(titleKey != null);

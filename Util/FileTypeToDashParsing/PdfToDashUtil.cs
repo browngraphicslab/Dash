@@ -15,108 +15,43 @@ using Windows.UI;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
+using Microsoft.Toolkit.Uwp;
 using static Dash.NoteDocuments;
 
 namespace Dash
 {
     public class PdfToDashUtil : IFileParser
     {
-        public async Task<DocumentController> ParseFileAsync(IStorageFile storageFile, string uniquePath=null)
+
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
-            //var where = sender is Covar storageFile = items[0] as StorageFile;
-            if (storageFile.Path.EndsWith(".pdf"))
+            // store the file locally
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var uniqueFilePath = Guid.NewGuid() + ".pdf";
+            var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+
+
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
             {
-                var localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                var localFile = await localFolder.CreateFileAsync(Path.GetFileName(storageFile.Path)+Guid.NewGuid().ToString(), CreationCollisionOption.ReplaceExisting);
-                await storageFile.CopyAndReplaceAsync(localFile);
-
-                var pdfDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, Path.GetFileNameWithoutExtension(storageFile.Name));
-                var pdf = await PdfDocument.LoadFromFileAsync(localFile);
-                var children = pdfDoc.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
-                for (uint i = 0; i < pdf.PageCount; i++)
-                    using (var page = pdf.GetPage(i))
-                    {
-                        //var src = new BitmapImage();
-                        var stream = new InMemoryRandomAccessStream();
-                        await page.RenderToStreamAsync(stream);
-                        //await src.SetSourceAsync(stream);
-                        //var pageImage = new Image() { Source = src };
-
-                        // start of hack to display PDF as a single page image (instead of using a new Pdf document model type)
-                        //var renderTargetBitmap = await RenderImportImageToBitmapToOvercomeUWPSandbox(pageImage);
-                        var pageImg = new AnnotatedImage(new Uri(localFile.Path+":"+i), null, "", //await ToBase64(renderTargetBitmap),
-                            "", 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, 50, 50).Document;
-
-                        var pageDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, Path.GetFileNameWithoutExtension(localFile.Name) + ": Page " + (i+1), 900, 900 * page.Dimensions.MediaBox.Height / page.Dimensions.MediaBox.Width, new List<DocumentController>(new DocumentController[] { pageImg })).Document;
-                        children?.Add(pageDoc);
-                        GetText(pageDoc, pageImg, stream);
-                    }
-                return pdfDoc.Document;
+                await fileData.File.CopyAndReplaceAsync(localFile);
             }
-            return null;
+            // otherwise stream it from the internet
+            else
+            {
+                await fileData.FileUri.GetHttpStreamToStorageFileAsync(localFile);
+            }
+
+            // create a backing document for the pdf
+            var fields = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path))
+            };
+            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+
+            // return a new pdf box
+            return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
         }
-
-        public async void GetText(DocumentController pageDoc, DocumentController pageImg, InMemoryRandomAccessStream stream)
-        {
-            var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages();
-            var decoder = await BitmapDecoder.CreateAsync(stream);
-            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
-            // Get recognition result 
-            var result = await ocrEngine.RecognizeAsync(softwareBitmap);
-            var pageImgDoc = pageImg.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? pageImg;
-            pageImgDoc.SetField(KeyStore.DocumentTextKey, new TextController(result.Text), true);
-            pageDoc.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageImgDoc.GetId(), KeyStore.DocumentTextKey), true);
-        }
-        public static async Task<string> ToBase64(RenderTargetBitmap bitmap)
-        {
-            var image = (await bitmap.GetPixelsAsync()).ToArray();
-            var width = (uint)bitmap.PixelWidth;
-            var height = (uint)bitmap.PixelHeight;
-
-            double dpiX = 96;
-            double dpiY = 96;
-
-            var encoded = new InMemoryRandomAccessStream();
-            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, encoded);
-
-            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, width, height, dpiX, dpiY, image);
-            await encoder.FlushAsync();
-            encoded.Seek(0);
-
-            var bytes = new byte[encoded.Size];
-            await encoded.AsStream().ReadAsync(bytes, 0, bytes.Length);
-
-            var base64String = Convert.ToBase64String(bytes);
-            return base64String;
-        }
-
-        public static async Task<RenderTargetBitmap> RenderImportImageToBitmapToOvercomeUWPSandbox(Image imagery)
-        {
-            Grid HackGridToRenderImage, HackGridToHideRenderImageWhenRendering;
-
-            HackGridToRenderImage = new Grid();
-            HackGridToHideRenderImageWhenRendering = new Grid();
-            var w = (imagery.Source as BitmapImage).PixelWidth;
-            var h = (imagery.Source as BitmapImage).PixelHeight;
-            if (w == 0)
-                w = 100;
-            if (h == 0)
-                h = 100;
-            imagery.Width = HackGridToRenderImage.Width = HackGridToHideRenderImageWhenRendering.Width = w;
-            imagery.Height = HackGridToRenderImage.Height = HackGridToHideRenderImageWhenRendering.Height = h;
-            //HackGridToHideRenderImageWhenRendering.Background = new SolidColorBrush(Colors.Blue);
-            HackGridToHideRenderImageWhenRendering.Children.Add(HackGridToRenderImage);
-            HackGridToRenderImage.Background = new SolidColorBrush(Colors.Blue);
-            HackGridToRenderImage.Children.Add(imagery);
-            HackGridToHideRenderImageWhenRendering.Opacity = 0.0;
-
-            var renderTargetBitmap = new RenderTargetBitmap();
-            (MainPage.Instance.xMainDocView.Content as Grid).Children.Add(HackGridToHideRenderImageWhenRendering);
-            await renderTargetBitmap.RenderAsync(HackGridToRenderImage);
-            (MainPage.Instance.xMainDocView.Content as Grid).Children.Remove(HackGridToHideRenderImageWhenRendering);
-
-            return renderTargetBitmap;
-        }
-
     }
 }

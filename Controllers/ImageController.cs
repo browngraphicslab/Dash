@@ -92,9 +92,10 @@ namespace Dash
 
         public override bool SetValue(object value)
         {
-            if (value is BitmapImage)
+            Debug.Assert(value is Uri);
+            if (value is Uri u)
             {
-                Data = value as BitmapImage;
+                Data = u;
                 return true;
             }
             return false;
@@ -113,42 +114,50 @@ namespace Dash
         }
 
         ImageSource _cacheSource;
-        /// <summary>
-        ///     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
-        ///     the <see cref="ImageModel.Data" />
-        /// </summary>
-        public ImageSource Data
-        {
-            get {
-                if (_cacheSource == null) {
-                    if (ImageFieldModel.Data != null)
-                    {
-                        var pathUri = ImageFieldModel.Data;
-                        if (pathUri.AbsoluteUri.Contains(".pdf:"))
-                        {
-                            _cacheSource = new BitmapImage();
-                            loadPdfPage(pathUri, _cacheSource as BitmapImage);
-                        }
-                        else
-                            _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(pathUri);
-                    }
-                    if (ImageFieldModel.ByteData != null)
-                    {
-                        if (ImageFieldModel.ByteData.Length > 0)
-                            _cacheSource = FromBase64(ImageFieldModel.ByteData);
-                    }
-                }
-                return _cacheSource;
-            }   //TODO We shouldn't create a new BitmapImage every time Data is accessed
-            set {
-                _cacheSource = null;
 
-                if (value is BitmapImage)
-                {
-                    ImageFieldModel.Data = UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage);
-                    OnFieldModelUpdated(null);
-                }
-            }
+
+        ///// <summary>
+        /////     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
+        /////     the <see cref="ImageModel.Data" />
+        ///// </summary>
+        //public ImageSource Data
+        //{
+        //    get {
+        //        if (_cacheSource == null) {
+        //            if (ImageFieldModel.Data != null)
+        //            {
+        //                var pathUri = ImageFieldModel.Data;
+        //                if (pathUri.AbsoluteUri.Contains(".pdf:"))
+        //                {
+        //                    _cacheSource = new BitmapImage();
+        //                    loadPdfPage(pathUri, _cacheSource as BitmapImage);
+        //                }
+        //                else
+        //                    _cacheSource = UriToBitmapImageConverter.Instance.ConvertDataToXaml(pathUri);
+        //            }
+        //            if (ImageFieldModel.ByteData != null)
+        //            {
+        //                if (ImageFieldModel.ByteData.Length > 0)
+        //                    _cacheSource = FromBase64(ImageFieldModel.ByteData);
+        //            }
+        //        }
+        //        return _cacheSource;
+        //    }   //TODO We shouldn't create a new BitmapImage every time Data is accessed
+        //    set {
+        //        _cacheSource = null;
+
+        //        if (value is BitmapImage)
+        //        {
+        //            ImageFieldModel.Data = UriToBitmapImageConverter.Instance.ConvertXamlToData(value as BitmapImage);
+        //            OnFieldModelUpdated(null);
+        //        }
+        //    }
+        //}
+
+        public Uri Data
+        {
+            get => ImageSource;
+            set => ImageSource = value;
         }
 
         async void loadPdfPage(Uri uri, BitmapImage bitmapImage)

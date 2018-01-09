@@ -588,7 +588,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(datacontext.IsSelected)) 
             };
 
-            datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
+            //datacontext.DocumentController.AddFieldUpdatedListener(KeyStore.DataKey, OnCollectionUpdated);
 
 
 

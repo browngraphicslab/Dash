@@ -162,7 +162,7 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title?", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
+            public RichTextNote(DocumentType type, string title = "Title", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
@@ -222,7 +222,7 @@ namespace Dash
                 _prototypeLayout = CreatePrototypeLayout();
 
                 Document = GetDocumentPrototype().MakeDelegate();
-                Document.SetField(KeyStore.TitleKey, new TextController("Title?"), true);
+                Document.SetField(KeyStore.TitleKey, new TextController("Title"), true);
                 Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
@@ -320,7 +320,7 @@ namespace Dash
 
 
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
-            public PostitNote(string text = null, string title = null, DocumentType type = null) : base(type ?? DocumentType)
+            public PostitNote(string text = null, string title = "Title", DocumentType type = null) : base(type ?? DocumentType)
             {
                 _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
 
@@ -330,6 +330,7 @@ namespace Dash
                 _prototypeLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
+                dataDocument.SetTitleField(title);
                 dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text ?? "Write something amazing!"), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);

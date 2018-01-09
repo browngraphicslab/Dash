@@ -65,11 +65,13 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3 }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
+            //OuterGrid.MinWidth = 100;
+            //OuterGrid.MinHeight = 25;
 
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
@@ -592,20 +594,7 @@ namespace Dash
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             if (ViewModel != null)
-            {
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-
-                var deltaTranslate = delta.Translate;
-                var deltaScaleAmount = delta.ScaleAmount;
-
-                var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-                var scaleCenter = new Point(0, 0);
-                var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-
-                ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-            }
+                ViewModel.TransformDelta(delta);
         }
 
         /// <summary>
@@ -629,6 +618,21 @@ namespace Dash
                 return new Size(dvm.Width, dvm.Height);
             }
             return new Size();
+        }
+
+        public void ProporsionalResize(ManipulationDeltaRoutedEventArgs e)
+        {
+            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+            Debug.WriteLine(pos);
+            double dx = (pos.X - origin.X) / ViewModel.Width;
+            double dy = (pos.Y - origin.Y) / ViewModel.Height;
+            Debug.WriteLine(pos);
+            Debug.WriteLine(new Point(dx, dy));
+            double scale = Math.Max(Math.Max(dx, dy), 0.1);
+            Debug.WriteLine(scale);
+            var gt = ViewModel.GroupTransform;
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
         }
 
         /// <summary>
@@ -657,8 +661,24 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                ProportionalScaling = true;
+            }
+            else
+            {
+                ProportionalScaling = false;
+            }
+
+            if (ProportionalScaling)
+            {
+                ProporsionalResize(e);
+            }
+            else
+            {
+                Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+                Resize(p.X, p.Y);
+            }
             e.Handled = true;
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
@@ -696,20 +716,21 @@ namespace Dash
         /// </summary>
         private void updateIcon()
         {
-            if (ViewModel == null) return;
-            // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Collection)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Api)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
-            }
+            return;
+            //if (ViewModel == null) return;
+            //// when you want a new icon, you have to add a check for it here!
+            //if (ViewModel.IconType == IconTypeEnum.Document)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Collection)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Api)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+            //}
         }
 
         void initDocumentOnDataContext()
@@ -727,14 +748,14 @@ namespace Dash
             }
 
             // if there is a readable document type, use that as label
-            var sourceBinding = new Binding
-            {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+            //var sourceBinding = new Binding
+            //{
+            //    Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+            //    Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+            //    Mode = BindingMode.TwoWay,
+            //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            //};
+            //xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
 
         }
 
@@ -781,41 +802,42 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            return;
             if (ViewModel != null)
             {
                 // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
-            int pad = 1;
-            if (Height < MinHeight + 5)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Collapsed;
-            }
-            else
-                if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                if (xIcon.Visibility == Visibility.Collapsed)
-                    xIcon.Visibility = Visibility.Visible;
-                xDragImage.Opacity = 0;
-                if (_docMenu != null) ViewModel.CloseMenu();
-                UpdateBinding(true);
-            }
-            else
-            {
-                xFieldContainer.Visibility = Visibility.Visible;
-                xGradientOverlay.Visibility = Visibility.Visible;
-                xShadowTarget.Visibility = Visibility.Visible;
-                xIcon.Visibility = Visibility.Collapsed;
-                xDragImage.Opacity = .25;
-                UpdateBinding(false);
-            }
+            //int pad = 1;
+            //if (Height < MinHeight + 5)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //}
+            //else
+            //    if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    if (xIcon.Visibility == Visibility.Collapsed)
+            //        xIcon.Visibility = Visibility.Visible;
+            //    xDragImage.Opacity = 0;
+            //    if (_docMenu != null) ViewModel.CloseMenu();
+            //    UpdateBinding(true);
+            //}
+            //else
+            //{
+            //    xFieldContainer.Visibility = Visibility.Visible;
+            //    xGradientOverlay.Visibility = Visibility.Visible;
+            //    xShadowTarget.Visibility = Visibility.Visible;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //    xDragImage.Opacity = .25;
+            //    UpdateBinding(false);
+            //}
         }
 
         /// <summary>
@@ -987,7 +1009,7 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
 
-            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            if (!IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
                 {
