@@ -175,18 +175,32 @@ namespace Dash
         #endregion
 
 
-        #region Context menu click handlers
 
+        #region CollectionView context menu 
+
+        /// <summary>
+        /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
+        /// view the collection as different formats).
+        /// </summary>
         private void UpdateContextMenu()
         {
-            var newDocument = new MenuFlyoutItem() { Text = "Create new document" };
+            // add a horizontal separator in context menu
+            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            // add the item to create a new document
+            var newDocument = new MenuFlyoutItem() { Text = "Add new document", Icon = new FontIcon() { Glyph = "\uf016;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
             newDocument.Click += MenuFlyoutItemNewDocument_Click;
             ParentDocument.MenuFlyout.Items.Add(newDocument);
 
-            var newCollection = new MenuFlyoutItem() { Text = "Create new collection" };
+            // add the item to create a new collection
+            var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
             newCollection.Click += MenuFlyoutItemNewCollection_Click;
             ParentDocument.MenuFlyout.Items.Add(newCollection);
 
+            // add another horizontal separator
+            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
             ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
 
@@ -211,16 +225,10 @@ namespace Dash
             viewCollectionAs.Items.Add(schema);
         }
 
-        private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
-        {
-            addElement(Util.BlankDoc());
-        }
-
-        private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
-        {
-            addElement(Util.BlankCollection());
-        }
-
+        /// <summary>
+        /// Helper function to add a document controller to the main freeform layout
+        /// </summary>
+        /// <param name="opController"></param>
         private void addElement(DocumentController opController)
         {
             var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
@@ -241,6 +249,18 @@ namespace Dash
                 var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
                 mp.ViewModel.AddDocument(opController, null);
             }
+        }
+
+        #region ClickHandlers for collection context menu items
+
+        private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
+        {
+            addElement(Util.BlankDoc());
+        }
+
+        private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
+        {
+            addElement(Util.BlankCollection());
         }
 
         private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
@@ -267,8 +287,13 @@ namespace Dash
         {
             SetSchemaView();
         }
-        
+
         #endregion
+
+        #endregion
+
+
+
 
         #region Operator connection output
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -279,6 +304,9 @@ namespace Dash
 
 
         #endregion
+
+
+
 
         #region Connection input and output 
         private void ConnectionEllipseOutput_OnPointerPressed(object sender, PointerRoutedEventArgs e)

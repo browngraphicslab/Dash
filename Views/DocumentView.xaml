@@ -44,9 +44,10 @@
             </Grid.ColumnDefinitions>
 
 
-            <!-- Context flyout for right-click context menu -->
+            <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">
+                    <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
                     <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="Black" Click="MenuFlyoutItemDelete_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Foreground="Black" Click="MenuFlyoutItemCopy_Click"/>
@@ -57,7 +58,6 @@
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
-
                 </MenuFlyout>
             </Grid.ContextFlyout>
             
