@@ -21,10 +21,6 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <xaml:CanvasControl Grid.Column="1" x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
-
-
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
 
@@ -64,19 +60,7 @@
                                 Style="{StaticResource xInputLinkHandle}"
                                 VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-20,0,0,0"/>
                 </Grid>
-                <!--selected ellipse-->
-                <!--<Grid HorizontalAlignment="Right" 
-                      PointerPressed="ConnectionEllipseOutput_OnPointerPressed"
-                      PointerReleased="ConnectionEllipseOutput_OnPointerReleased"
-                      ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
-                      VerticalAlignment="Top"
-                      Background="Transparent"
-                      ManipulationMode="None">
-                    <Ellipse x:Name="ConnectionEllipseSelection"
-                             x:FieldModifier="public"
-                             Style="{StaticResource xSelectionLinkHandle}"
-                             VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,-2,-2,0"/>
-                </Grid>-->
+
 
             </Grid>
         </Grid>

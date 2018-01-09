@@ -57,8 +57,8 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
-        public WebView WebContext;
-        public Uri WebContextUri => WebBoxWrapper.CurrentUri;
+        public BrowserView WebContext => BrowserView.Current;
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -116,6 +116,9 @@ namespace Dash
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
+
+
+            BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -178,8 +181,6 @@ namespace Dash
                 Content = TabMenu.Instance,
                 
             };
-            
-            WebContext = WebBoxWrapper.WebContext;
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
@@ -383,67 +384,6 @@ namespace Dash
 
         #endregion
 
-        private void DocumentTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
-        {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddDocuments;
-            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
-        }
-
-        private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
-        {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollectionTEST;
-            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
-        }
-
-        private void NotesTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
-        {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNote;
-            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
-        }
-
-        private void TestEnvOnButtonTapped(object sender, TappedRoutedEventArgs e)
-        {
-            int numDocuments = 1000;
-            int numFields = 50;
-
-            var docs = new List<DocumentController>();
-            for (int i = 0; i < numDocuments; ++i)
-            {
-                if (i % 20 == 0)
-                {
-                    Debug.WriteLine($"Generated {i} documents");
-                }
-                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
-            }
-
-            var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.CollectionKey] = new ListController<DocumentController>(docs)
-            }, DocumentType.DefaultType);
-
-            var colBox = new CollectionBox(new DocumentReferenceController(doc.GetId(), KeyStore.CollectionKey), viewType: CollectionView.CollectionViewType.Grid).Document;
-            doc.SetActiveLayout(colBox, true, false);
-            DisplayDocument(doc);
-        }
-
-        private void UIElementTest(object sender, TappedRoutedEventArgs e)
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            Grid g = new Grid
-            {
-                Name = "XTestGrid",
-                ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
-                Height = 900
-            };
-            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
-            Grid.SetColumn(documentView, 1);
-            g.Children.Add(documentView);
-            sw.Stop();
-            Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
-            xCanvas.Children.Add(g);
-        }
-
         /// <summary>
         /// Shows the right-hand docked document options menu. Slides it in with animation.
         /// </summary>
@@ -464,120 +404,12 @@ namespace Dash
         {
             e.Handled = true;
         }
-        private void DelegateTestOnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var protoNumbers = new Numbers("1").Document;
-            protoNumbers.SetField(Numbers.Number4FieldKey, new NumberController(1), true);
-            var protoLayout = protoNumbers.GetActiveLayout();
-            protoLayout.SetField(KeyStore.PositionFieldKey, new PointController(0, 0), true);
-
-            DisplayDocument(protoNumbers);
-
-            Random r = new Random();
-            for (int i = 0; i < 10; ++i)
-            {
-                var delNumbers = protoNumbers.MakeDelegate();
-                //if (i != 4)
-                delNumbers.SetField(Numbers.Number4FieldKey,
-                    new NumberController(i + 2), true);
-                delNumbers.SetField(Numbers.Number5FieldKey,
-                    new NumberController(0), true);
-                var delLayout = protoLayout.MakeDelegate();
-                delLayout.SetField(KeyStore.PositionFieldKey, new PointController(400 + 200 * (i / 5), i % 5 * 200), true);
-                delNumbers.SetActiveLayout(delLayout, true, false);
-
-                DisplayDocument(delNumbers);
-            }
-        }
-
-        private void DocPointerReferenceOnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var textKey = new KeyController("B81560E5-DEDA-43B5-822A-22255E0F6DF0", "Text");
-            var innerDict = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [textKey] = new TextController("Prototype text")
-            };
-            DocumentController innerProto = new DocumentController(innerDict, DocumentType.DefaultType);
-            var dict = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = innerProto
-            };
-            var proto = new DocumentController(dict, DocumentType.DefaultType);
-
-            var freeform = new FreeFormDocument(new List<DocumentController>
-                {
-                    new TextingBox(new PointerReferenceController(new DocumentReferenceController(proto.GetId(), KeyStore.DataKey), textKey)).Document
-                },
-                new Point(0, 0), new Size(400, 400)).Document;
-            proto.SetActiveLayout(freeform, true, false);
-
-            var del1 = proto.MakeDelegate();
-            var delLayout = del1.GetActiveLayout().MakeDelegate();
-            delLayout.SetField(KeyStore.PositionFieldKey, new PointController(0, 0), true);
-            del1.SetActiveLayout(delLayout, true, false);
-
-            var innerDelDict = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [textKey] = new TextController("Delegate 1 text")
-            };
-            var innerDel1 = new DocumentController(innerDelDict, DocumentType.DefaultType);
-            del1.SetField(KeyStore.DataKey, innerDel1, true);
-
-            DisplayDocument(proto);
-            DisplayDocument(del1);
-        }
-
-
-        private void ChangeTheme(object sender, TappedRoutedEventArgs e)
-        {
-            this.ThemeChange();
-        }
-
+        
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         }
 
-        //public Uri WebContextUri;
-        //public Stack<Uri> BackUris = new Stack<Uri>();
-        //public Stack<Uri> ForwardUris = new Stack<Uri>();
-        //private bool _navigationFromButton;
-
-        //private void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
-        //{
-        //    WebContextUri = args.Uri;
-        //    if (!_navigationFromButton)
-        //    {
-        //        ForwardUris.Clear();
-        //    }
-        //    _navigationFromButton = false;
-        //}
-
-        //private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (BackUris.Count > 0)
-        //    {
-        //        var prevUri = BackUris.Pop();
-        //        ForwardUris.Push(WebContextUri);
-        //        _navigationFromButton = true;
-        //        WebContext.Navigate(prevUri);
-        //    }
-        //}
-
-        //private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (ForwardUris.Count > 0)
-        //    {
-        //        var prevUri = ForwardUris.Pop();
-        //        _navigationFromButton = true;
-        //        WebContext.Navigate(prevUri);
-        //    }
-        //}
-
-        //private void UrlBox_KeyUp(object sender, KeyRoutedEventArgs e)
-        //{
-        //    var uri = new Uri(UrlBox.Text);
-        //    WebContext.Navigate(uri);
-        //}
+        
     }
 }

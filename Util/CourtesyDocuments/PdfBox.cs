@@ -23,7 +23,7 @@ namespace Dash
         /// <summary>
         /// Default pdf uri is used by the prototype to supply a pdf uri if the user has not supplied one
         /// </summary>
-        private static Uri DefaultPdfUri => new Uri("ms-appx://Dash/Assets/example_pdf.pdf");
+        private static Uri DefaultPdfUri => null;
 
         /// <summary>
         /// The prototype id is used to make sure that only one prototype is every created

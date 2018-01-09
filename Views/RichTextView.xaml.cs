@@ -57,6 +57,8 @@ namespace Dash
             set{ SetValue(TextProperty, value); }
         }
 
+        public DocumentController DataDocument { get; set; }
+
         public RichTextController  TargetRTFController = null;
         public ReferenceController TargetFieldReference = null;
         public Context                       TargetDocContext = null;
@@ -239,7 +241,6 @@ namespace Dash
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
@@ -265,13 +266,21 @@ namespace Dash
 
         public string target = null;
         private bool _rightPressed = false;
+        PointerEventHandler moveHdlr = null, releasedHdlr = null;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (_rightPressed)
             {
-                this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
+                if (moveHdlr == null)
+                    moveHdlr = new PointerEventHandler(RichTextView_PointerMoved);
+                if (releasedHdlr == null)
+                    releasedHdlr = new PointerEventHandler(RichTextView_PointerReleased);
+                this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
+                this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
+                this.RemoveHandler(PointerMovedEvent, moveHdlr);
+                this.AddHandler(PointerMovedEvent, moveHdlr, true);
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
                 var down_and_offset = HackToDragWithRightMouseButton;
@@ -301,7 +310,8 @@ namespace Dash
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            this.RemoveHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved));
+            this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
+            this.RemoveHandler(PointerMovedEvent, moveHdlr);
 
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
@@ -361,7 +371,7 @@ namespace Dash
                     }
                     else
                     {
-                        MainPage.Instance.WebContext.Navigate(new Uri(target));
+                        MainPage.Instance.WebContext.SetUrl(target);
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -432,6 +442,14 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
+            if ( e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            {
+                var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
+                if (c != null)
+                {
+                    BrowserView.OpenTab(c.Data);
+                }
+            }
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
 

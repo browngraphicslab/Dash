@@ -1,21 +1,55 @@
 console.log("background launched.")
 
-useSocket = false;
+$(window).bind('hashchange', function () {
+    console.log(window.url)
+});
+
+
+useSocket = true;
 var socket;
+
+var socketOpen = false;
+var messagesToSend = []
+var sending = false;
+
+var pollSend = function() {
+    if (socketOpen === true && messagesToSend.length > 0 && !sending) {
+        sending = true;
+        var array = JSON.stringify(messagesToSend)
+        messagesToSend.length = 0;
+        socket.send(array)
+        sending = false
+    }
+}
+
+setInterval(pollSend, 50);
+
+var sendFunction = function (messageObject) {
+    //console.log(socket)
+    //messagesToSend.push(messageObject)
+    messagesToSend.push(JSON.stringify(messageObject))
+}
+
+var manager = new tabManager(sendFunction);
+var handler = new requestHandler(manager);
+
 if (useSocket) {
     if ("WebSocket" in window) {
-        socket = new WebSocket("ws://localhost:8001");
+        socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
     } else {
         console.log("WebSocket is NOT supported by your Browser!");
     }
 
     socket.onopen = function(){
         console.log("Connection Opened");
+        socket.send("browser:123")
+        socketOpen = true;
     }
 
 
     socket.onmessage = function(msg){
         console.log(msg);
+        handler.handle(msg.data);
     }
 }
 
@@ -32,6 +66,8 @@ function guid() {
       s4() + s4() + s4() + s4() + s4() + s4();
 }
 
+
+/*
 ///will call the callback when it returns. 
 ///This will return a bool for success
 ///Pass in the document object
@@ -215,4 +251,4 @@ function initTab(tab) {
             }
         });
     });                            
-}
+}*/

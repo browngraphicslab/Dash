@@ -177,7 +177,7 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                    new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
                         true);
             }
 
@@ -223,7 +223,7 @@ namespace Dash
 
             return newDoc;
         }
-
+        /*
         public class SetContextClass
         {
             public DocumentController DataDocument;
@@ -267,20 +267,40 @@ namespace Dash
             private void scriptNotify(object sender, NotifyEventArgs e)
             {
                 MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                
                 DataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
                     new TextController(MainPage.Instance.WebContextUri.AbsoluteUri),
                     new TextController(e.Value)}), true);
             }
-        }
+        }*/
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
-            new SetContextClass() { DataDocument = doc.GetDataDocument(null) }.UpdateNeighboringContext();
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count == 2)
+            {
+                int yPos;
+                var uri = neighboring.TypedData.First().Data;
+                var where = neighboring.TypedData.Last().Data;
+                if (int.TryParse(where, out yPos))
+                {
+                    MainPage.Instance.WebContext.SetUrl(uri);
+                    MainPage.Instance.WebContext.SetScroll(yPos);
+                }
+            }
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
+            if (MainPage.Instance.WebContext == null)
+            {
+                return;
+            }
 
-            new GetContextClass() { DataDocument = doc.GetDataDocument(null) }.CaptureNeighboringContext();
+            var dataDocument = doc.GetDataDocument(null);
+            dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new[] {
+                new TextController(MainPage.Instance.WebContext.Url),
+                new TextController(MainPage.Instance.WebContext.Scroll.ToString())}), true);
         }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)

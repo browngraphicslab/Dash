@@ -188,7 +188,7 @@ namespace Dash.Views.Document_Menu
                 }
 
                 // update display name to correspond to docucment's title
-                xDisplayName.Text = "" + docController.GetTitleFieldOrSetDefault();
+                xDisplayName.Text = "" + (docController?.GetTitleFieldOrSetDefault()?.Data ?? "");
                 var titleField = docController.GetTitleFieldOrSetDefault();
                 titleField.FieldModelUpdated += TitleField_FieldModelUpdated;
             }
