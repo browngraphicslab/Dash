@@ -85,7 +85,7 @@ namespace Dash
             if (_backContext.Any())
             {
                 var contentPath = _backContext.Pop();
-                _forwardContext.Push(contentPath);
+                if (CurrentUri != null) _forwardContext.Push(CurrentUri);
                 _pushToBackOnNav = false;
                 SetCurrentContent(contentPath);
             }
@@ -130,8 +130,6 @@ namespace Dash
             if (args.IsSuccess)
             {
                 UpdateCurrentUri(args.Uri);
-                PushUriToBack(args.Uri);
-                UpdateForwardAndBackButtons();
 
                 await WebContext.InvokeScriptAsync("eval", new[]
                 {
@@ -185,14 +183,6 @@ namespace Dash
             }
         }
 
-        private void UpdateForwardAndBackButtons()
-        {
-            xBackButton.IsEnabled = _backContext.Any();
-            xForwardButton.IsEnabled = _forwardContext.Any();
-            xRefreshButton.IsEnabled = WebContext.Visibility == Visibility.Visible;
-
-        }
-
         private void HidePdfDisplayWeb()
         {
             if (xPdfContent != null)
@@ -213,11 +203,24 @@ namespace Dash
             if (xWebContent != null) xWebContent.Visibility = Visibility.Collapsed;
         }
 
-        private void PushUriToBack(Uri uri)
+        private void UpdateCurrentUri(Uri uri)
+        {
+            // Try to push the current uri to the back history
+            TryPushUriToBack(CurrentUri);
+
+            // set the new current uri and update the url box to reflect that
+            CurrentUri = uri;
+            xUrlBox.Text = CurrentUri.AbsoluteUri;
+
+            // make sure nav buttons are properly enabled and disabled
+            UpdateNavButtons();
+        }
+
+        private void TryPushUriToBack(Uri uriForBack)
         {
             if (_pushToBackOnNav)
             {
-                _backContext.Push(uri);
+                _backContext.Push(uriForBack);
             }
             else
             {
@@ -225,10 +228,11 @@ namespace Dash
             }
         }
 
-        private void UpdateCurrentUri(Uri uri)
+        private void UpdateNavButtons()
         {
-            CurrentUri = uri;
-            xUrlBox.Text = CurrentUri.AbsoluteUri;
+            xBackButton.IsEnabled = _backContext.Any();
+            xForwardButton.IsEnabled = _forwardContext.Any();
+            xRefreshButton.IsEnabled = WebContext.Visibility == Visibility.Visible;
         }
     }
 }
