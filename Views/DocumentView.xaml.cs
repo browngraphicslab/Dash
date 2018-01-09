@@ -67,7 +67,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3 }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -351,15 +351,13 @@ namespace Dash
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
-        private bool isOperator = false;
-        private bool addItem = false;
+
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            isOperator = true;
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             xShadowTarget.Margin = new Thickness(width, 0, width, 0);
@@ -377,32 +375,17 @@ namespace Dash
             }
         }
 
-        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
-    
-        #endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
-
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
-            
-            var width = 20;
-            
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            
-            addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection (" + CollectionCount + ")";
-            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
-            CollectionCount++;
         }
-        
+
+#endregion
+
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
@@ -476,7 +459,6 @@ namespace Dash
         }
         #endregion
 
-        DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
         private void SetUpMenu()
         {
@@ -604,20 +586,7 @@ namespace Dash
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             if (ViewModel != null)
-            {
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-
-                var deltaTranslate = delta.Translate;
-                var deltaScaleAmount = delta.ScaleAmount;
-
-                var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-                var scaleCenter = new Point(0, 0);
-                var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-
-                ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-            }
+                ViewModel.TransformDelta(delta);
         }
 
         /// <summary>
@@ -641,6 +610,21 @@ namespace Dash
                 return new Size(dvm.Width, dvm.Height);
             }
             return new Size();
+        }
+
+        public void ProporsionalResize(ManipulationDeltaRoutedEventArgs e)
+        {
+            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+            Debug.WriteLine(pos);
+            double dx = (pos.X - origin.X) / ViewModel.Width;
+            double dy = (pos.Y - origin.Y) / ViewModel.Height;
+            Debug.WriteLine(pos);
+            Debug.WriteLine(new Point(dx, dy));
+            double scale = Math.Max(Math.Max(dx, dy), 0.1);
+            Debug.WriteLine(scale);
+            var gt = ViewModel.GroupTransform;
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
         }
 
         /// <summary>
@@ -669,13 +653,30 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                ProportionalScaling = true;
+            }
+            else
+            {
+                ProportionalScaling = false;
+            }
+
+            if (ProportionalScaling)
+            {
+                ProporsionalResize(e);
+            }
+            else
+            {
+                Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+                Resize(p.X, p.Y);
+            }
             e.Handled = true;
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
+                //uncomment to make children in collection stretch
+                fitFreeFormChildrenToTheirLayouts(); 
             }
         }
 

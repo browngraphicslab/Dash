@@ -239,7 +239,6 @@ namespace Dash
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
             this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
             this.AddHandler(PointerReleasedEvent, new PointerEventHandler(RichTextView_PointerReleased), true);
             this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
@@ -268,9 +267,11 @@ namespace Dash
         private bool _rightPressed = false;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
+                                .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (_rightPressed)
             {
+                this.AddHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved), true);
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
                 var down_and_offset = HackToDragWithRightMouseButton;
@@ -284,7 +285,7 @@ namespace Dash
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && HackToDragWithRightMouseButton != null)
+            if (HackToDragWithRightMouseButton != null)
             {
                 var down_and_offset = HackToDragWithRightMouseButton;
                 var down   = down_and_offset.Item1;
@@ -292,11 +293,16 @@ namespace Dash
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
+                var dvm = parent.ViewModel;
+                dvm.GroupTransform =
+                    new TransformGroupData(new Point(pointerPosition.X - offset.X, pointerPosition.Y - offset.Y), dvm.GroupTransform.ScaleCenter, dvm.GroupTransform.ScaleAmount);
+                //parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
             }
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            this.RemoveHandler(PointerMovedEvent, new PointerEventHandler(RichTextView_PointerMoved));
+
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
@@ -308,6 +314,8 @@ namespace Dash
                 var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
+                var dvm = parent.ViewModel;
+                parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
             }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)

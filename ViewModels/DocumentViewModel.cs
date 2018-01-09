@@ -23,6 +23,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
+        private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
@@ -148,6 +149,47 @@ namespace Dash
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
+        }
+        public double GroupMargin
+        {
+            get { return _groupMargin; }
+            set { if (SetProperty(ref _groupMargin, value)) ; }
+        }
+
+        private Color _borderGroupColor = Colors.Yellow;
+        public Color BorderGroupColor {
+            get
+            {
+                return _borderGroupColor;
+            }
+            set
+            {
+                if (SetProperty(ref _borderGroupColor, value)) ; 
+            }
+        }
+
+        public Rect GroupingBounds
+        {
+            get
+            {
+                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, Width + 2* GroupMargin, Height + 2* GroupMargin));
+            }
+        }
+
+        public void TransformDelta(TransformGroupData delta)
+        {
+            var currentTranslate = GroupTransform.Translate;
+            var currentScaleAmount = GroupTransform.ScaleAmount;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
+            var scaleCenter = new Point(0, 0);
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+
+            GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
         }
 
         public Brush BackgroundBrush

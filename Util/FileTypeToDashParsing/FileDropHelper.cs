@@ -27,6 +27,29 @@ namespace Dash
         Text
     }
 
+    /// <summary>
+    /// Contains all the necessary information to parse files regardless of if they are stored locally or on the web
+    /// </summary>
+    public struct FileData
+    {
+
+        /// <summary>
+        /// the storage file used when the file is stored locally
+        /// </summary>
+        public IStorageFile File;
+
+        /// <summary>
+        /// The uri for the file, can be null if the file is stored locally but does not have a path (i.e. when it exists only in a drag event)
+        /// Because of this check for if a file is local using File.filetype != ".url"
+        /// </summary>
+        public Uri FileUri;
+
+        /// <summary>
+        /// The built in filetype that we have parsed from the file
+        /// </summary>
+        public FileType Filetype;
+    }
+
 
     public static class FileDropHelper
     {
@@ -72,7 +95,7 @@ namespace Dash
                         t = TypeInfo.Image;
                         //Todo: needs to be fixed bc the images wont display if you use the system uri (i.e. storageFile.Path)
                         var localFolder = ApplicationData.Current.LocalFolder;
-                        var file = await localFolder.CreateFileAsync(storageFile.DisplayName+storageFile.FileType,
+                        var file = await localFolder.CreateFileAsync(storageFile.DisplayName + storageFile.FileType,
                             CreationCollisionOption.ReplaceExisting);
                         await storageFile.CopyAndReplaceAsync(file);
                         data = new Uri(file.Path);
@@ -160,15 +183,15 @@ namespace Dash
             return layoutDoc;
         }
 
-        public static async Task< DocumentController> GetDroppedFile(DragEventArgs e)
+        public static async Task<DocumentController> GetDroppedFile(DragEventArgs e)
         {
             var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
 
             // TODO Luke should refactor this if else since the code is more or less copy pasted
             if (files.Count == 1)
             {
-                var fileType = GetSupportedFileType(files.First());
-                return await ParseFileAsync(fileType, files.First(), new Point(), e).AsAsyncOperation();
+                var fileType = await GetFileData(files.First(), e);
+                return await ParseFileAsync(fileType, new Point(), e).AsAsyncOperation();
             }
             return null;
         }
@@ -187,36 +210,36 @@ namespace Dash
 
             // the point where the items will be dropped
             var where = sender is CollectionFreeformView
-                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
+                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView) sender, e.GetPosition(MainPage.Instance))
                 : new Point();
 
             // get all the files from the drag event
             var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
 
-            // TODO Luke should refactor this if else since the code is more or less copy pasted
+            // if there is only one file then we add it to the collection as a single document
             if (files.Count == 1)
             {
                 // for each file, get it's type, parse it, and add it to the collection in the proper position
-                foreach (var file in files)
+                var fileType = await GetFileData(files.First(), e);
+                var documentController = await ParseFileAsync(fileType, where, e);
+                if (documentController != null)
                 {
-                    var fileType = GetSupportedFileType(file);
-                    var documentController = await ParseFileAsync(fileType, file, where, e);
-                    if (documentController != null)
-                    {
-                        documentController.GetPositionField().Data = where;
-                        collectionViewModel.AddDocument(documentController, null);
-                    }
+                    documentController.GetPositionField().Data = where;
+                    collectionViewModel.AddDocument(documentController, null);
                 }
             }
+
+            // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
+                // create a containing collection to hold all the files
                 var outputCollection = new ListController<DocumentController>();
 
                 // for each file, get it's type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
-                    var fileType = GetSupportedFileType(file);
-                    var documentController = await ParseFileAsync(fileType, file, where, e);
+                    var fileType = await GetFileData(file, e);
+                    var documentController = await ParseFileAsync(fileType, where, e);
                     if (documentController != null)
                     {
                         outputCollection.Add(documentController);
@@ -224,9 +247,12 @@ namespace Dash
                 }
 
                 // add the output collection to the workspace at the proper position
-                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), "File Input Collection"));
+                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
+                    new DocumentType(DashShared.UtilShared.GenerateNewId(), "File Input Collection"));
                 outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
-                outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X, where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
+                outputDoc.SetActiveLayout(
+                    new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X,
+                        where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
                 collectionViewModel.AddDocument(outputDoc, null);
 
             }
@@ -237,60 +263,92 @@ namespace Dash
         }
 
         // TODO comment this method - LM
-        private static async Task<DocumentController> ParseFileAsync(FileType fileType, IStorageFile file, Point where, DragEventArgs e)
+        private static async Task<DocumentController> ParseFileAsync(FileData fileData, Point where,
+            DragEventArgs e)
         {
-            switch (fileType)
+            switch (fileData.Filetype)
             {
                 case FileType.Ppt:
-                    return await new PptToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
+                    return await new PptToDashUtil().ParseFileAsync(fileData);
                 case FileType.Json:
-                    return await new JsonToDashUtil().ParseFileAsync(file);
+                    return await new JsonToDashUtil().ParseFileAsync(fileData);
                 case FileType.Csv:
-                    return await new CsvToDashUtil().ParseFileAsync(file);
+                    return await new CsvToDashUtil().ParseFileAsync(fileData);
                 case FileType.Image:
-                    return await new ImageToDashUtil().ParseFileAsync(file, "TODO GET UNIQUE PATH");
+                    return await new ImageToDashUtil().ParseFileAsync(fileData);
                 case FileType.Web:
                     var link = await e.DataView.GetWebLinkAsync();
-                    return new HtmlNote(link.AbsoluteUri, "", where).Document;
+                    return new HtmlNote(link.AbsoluteUri, where: where).Document;
                 case FileType.Pdf:
-                    return await new PdfToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                    return await new PdfToDashUtil().ParseFileAsync(fileData);
                 case FileType.Text:
-                    return await new TextToDashUtil().ParseFileAsync(file, "TODO GET A UNIQUE PATH");
+                    return await new TextToDashUtil().ParseFileAsync(fileData);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null);
+                    throw new ArgumentOutOfRangeException(nameof(fileData.Filetype), fileData.Filetype, null);
             }
         }
 
+        
         /// <summary>
-        ///     Given a storageItem returns the filetype enum for that file
-        ///     or throws an error to imply that we do not support that kind of file
+        /// Gets all the file data for a storage item that is coming from a drag event args
         /// </summary>
         /// <param name="storageItem"></param>
+        /// <param name="e"></param>
         /// <returns></returns>
-        private static FileType GetSupportedFileType(IStorageFile storageItem)
+        private static async Task<FileData> GetFileData(IStorageFile storageItem,
+            DragEventArgs e)
         {
-            var storagePath = storageItem.Path.ToLower();
-            if (storagePath.EndsWith(".pdf"))
-                return FileType.Pdf;
-            if (storagePath.EndsWith(".json"))
-                return FileType.Json;
-            if (storagePath.EndsWith(".csv"))
-                return FileType.Csv;
-            if (storagePath.EndsWith(".pptx"))
-                return FileType.Ppt;
-            if (storagePath.EndsWith(".pptx"))
-                return FileType.Ppt;
+            // if the file is a url then check the link filetype
             if (storageItem.FileType.EndsWith(".url"))
-                return FileType.Web;
-            if (storagePath.EndsWith(".jpg") || storageItem.FileType.EndsWith(".jpg") ||
-                storagePath.EndsWith(".jpeg") || storageItem.FileType.EndsWith(".jpeg") ||
-                storagePath.EndsWith(".png") || storageItem.FileType.EndsWith(".png") ||
-                storagePath.EndsWith(".gif") || storageItem.FileType.EndsWith(".gif") ||
-                storageItem.FileType == ".jpg")
+            {
+                var link = await e.DataView.GetWebLinkAsync();
+                // if the link does not have a filetype assume its a web link
+                return new FileData()
+                {
+                    File = storageItem,
+                    Filetype = GetFileType(link.AbsoluteUri) ?? FileType.Web,
+                    FileUri = link
+                };
+            }
+
+            // otherwise the file is a local file so check the storage file path and file type
+            var fileType = GetFileType(storageItem.Path) ??
+                           GetFileType(storageItem.FileType) ??
+                           throw new ArgumentException(
+                               $"We do not support the file type for the passed in file: {storageItem.Path}");
+
+            return new FileData()
+            {
+                File = storageItem,
+                Filetype = fileType,
+                FileUri = string.IsNullOrWhiteSpace(storageItem.Path) ? null : new Uri(storageItem.Path)
+            };
+        }
+
+
+        private static FileType? GetFileType(string filepath)
+        {
+            filepath = filepath.ToLower();
+            if (filepath.EndsWith(".pdf"))
+                return FileType.Pdf;
+            if (filepath.EndsWith(".json"))
+                return FileType.Json;
+            if (filepath.EndsWith(".csv"))
+                return FileType.Csv;
+            if (filepath.EndsWith(".pptx"))
+                return FileType.Ppt;
+            if (filepath.EndsWith(".pptx"))
+                return FileType.Ppt;
+            if (filepath.EndsWith(".jpg") ||
+                filepath.EndsWith(".jpeg") || 
+                filepath.EndsWith(".png") || 
+                filepath.EndsWith(".gif"))
                 return FileType.Image;
-            if (storagePath.EndsWith(".txt"))
+            if (filepath.EndsWith(".txt"))
                 return FileType.Text;
-            throw new ArgumentException($"We do not support the file type for the passed in file: {storageItem.Path}");
+
+            return null;
+
         }
 
 
