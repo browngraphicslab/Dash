@@ -118,7 +118,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
-            BrowserView.OpenTab("http://www.cs.brown.edu");
+            BrowserView.OpenTab("chrome://extensions/");
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
