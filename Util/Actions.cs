@@ -171,11 +171,11 @@ namespace Dash
 
 
             //Display collections
-            DisplayDocument(collection, col2, where);
-            DisplayDocument(collection, collectionDocument, where);
+            DisplayDocument(collection.ViewModel, col2, where);
+            DisplayDocument(collection.ViewModel, collectionDocument, where);
         }
 
-        public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
+        public static void DisplayDocument(BaseCollectionViewModel collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
@@ -187,7 +187,7 @@ namespace Dash
                 //var w = docController.GetWidthField().Data;
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
-            collectionView.ViewModel.AddDocument(docController, null); 
+            collectionView.AddDocument(docController, null); 
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -212,12 +212,12 @@ namespace Dash
                 new ListController<DocumentController>(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections
-            DisplayDocument(collectionView, col2, where);
+            DisplayDocument(collectionView.ViewModel, col2, where);
 
-            DisplayDocument(collectionView, new InkDoc().Document, where);
-            DisplayDocument(collectionView, new Numbers().Document, where);
+            DisplayDocument(collectionView.ViewModel, new InkDoc().Document, where);
+            DisplayDocument(collectionView.ViewModel, new Numbers().Document, where);
 
-            DisplayDocument(collectionView, new XampleText().Document, where);
+            DisplayDocument(collectionView.ViewModel, new XampleText().Document, where);
 
             /*
             var ndb = new DBTest();
@@ -276,7 +276,7 @@ namespace Dash
         public static void AddNote(ICollectionView collectionView, Point mainPageCoord)
         {
             DocumentController postitNote = new RichTextNote(PostitNote.DocumentType).Document;
-            DisplayDocument(collectionView, postitNote, mainPageCoord);
+            DisplayDocument(collectionView.ViewModel, postitNote, mainPageCoord);
         }
 
         public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)

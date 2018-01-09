@@ -1324,18 +1324,28 @@ namespace Dash
         }
 
         string previewTextBuffer = "";
-        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
+                .HasFlag(CoreVirtualKeyStates.Down);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (text is null) return;
-            previewTextBuffer += text;
             if (previewTextbox.Visibility == Visibility.Collapsed)
                 return;
             e.Handled = true;
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-            if (text.Length > 0)
-                LoadNewActiveTextBox(text, where);
+            if (text == "v" && ctrlState)
+            {
+                ViewModel.Paste(Clipboard.GetContent(), where);
+                previewTextbox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                previewTextBuffer += text;
+                if (text.Length > 0)
+                    LoadNewActiveTextBox(text, where);
+            }
         }
 
         public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
@@ -1346,7 +1356,7 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
-                Actions.DisplayDocument(this, postitNote, where);
+                Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
 

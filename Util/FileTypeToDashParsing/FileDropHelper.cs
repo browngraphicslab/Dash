@@ -190,8 +190,8 @@ namespace Dash
             // TODO Luke should refactor this if else since the code is more or less copy pasted
             if (files.Count == 1)
             {
-                var fileType = await GetFileData(files.First(), e);
-                return await ParseFileAsync(fileType, new Point(), e).AsAsyncOperation();
+                var fileType = await GetFileData(files.First(), e.DataView);
+                return await ParseFileAsync(fileType, new Point(), e.DataView).AsAsyncOperation();
             }
             return null;
         }
@@ -203,25 +203,27 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static async Task HandleDropOnCollectionAsync(object sender, DragEventArgs e,
+        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e,
             ICollectionViewModel collectionViewModel)
         {
-
-
             // the point where the items will be dropped
             var where = sender is CollectionFreeformView
-                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView) sender, e.GetPosition(MainPage.Instance))
+                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
                 : new Point();
+            HandleDrop(e.DataView, where, collectionViewModel);
+        }
 
+        public static async void HandleDrop(DataPackageView dataView, Point where, ICollectionViewModel collectionViewModel)
+        {
             // get all the files from the drag event
-            var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
+            var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
 
             // if there is only one file then we add it to the collection as a single document
             if (files.Count == 1)
             {
                 // for each file, get it's type, parse it, and add it to the collection in the proper position
-                var fileType = await GetFileData(files.First(), e);
-                var documentController = await ParseFileAsync(fileType, where, e);
+                var fileType = await GetFileData(files.First(), dataView);
+                var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
                 {
                     documentController.GetPositionField().Data = where;
@@ -238,8 +240,8 @@ namespace Dash
                 // for each file, get it's type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
-                    var fileType = await GetFileData(file, e);
-                    var documentController = await ParseFileAsync(fileType, where, e);
+                    var fileType = await GetFileData(file, dataView);
+                    var documentController = await ParseFileAsync(fileType, where, dataView);
                     if (documentController != null)
                     {
                         outputCollection.Add(documentController);
@@ -264,7 +266,7 @@ namespace Dash
 
         // TODO comment this method - LM
         private static async Task<DocumentController> ParseFileAsync(FileData fileData, Point where,
-            DragEventArgs e)
+            DataPackageView dataView)
         {
             switch (fileData.Filetype)
             {
@@ -277,7 +279,7 @@ namespace Dash
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(fileData);
                 case FileType.Web:
-                    var link = await e.DataView.GetWebLinkAsync();
+                    var link = await dataView.GetWebLinkAsync();
                     return new HtmlNote(link.AbsoluteUri, where: where).Document;
                 case FileType.Pdf:
                     return await new PdfToDashUtil().ParseFileAsync(fileData);
@@ -295,13 +297,12 @@ namespace Dash
         /// <param name="storageItem"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private static async Task<FileData> GetFileData(IStorageFile storageItem,
-            DragEventArgs e)
+        private static async Task<FileData> GetFileData(IStorageFile storageItem,  DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
             if (storageItem.FileType.EndsWith(".url"))
             {
-                var link = await e.DataView.GetWebLinkAsync();
+                var link = await dataView.GetWebLinkAsync();
                 // if the link does not have a filetype assume its a web link
                 return new FileData()
                 {
