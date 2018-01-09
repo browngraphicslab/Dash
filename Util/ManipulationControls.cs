@@ -400,7 +400,6 @@ namespace Dash
 
                 // get the scale amount
                 float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
-                //scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
 
                 //Clamp the scale factor 
                 ElementScale *= scaleAmount;

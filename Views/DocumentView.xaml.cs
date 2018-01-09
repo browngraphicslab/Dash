@@ -51,6 +51,8 @@ namespace Dash
 
         private Storyboard _storyboard;
 
+        public MenuFlyout MenuFlyout;
+
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -83,6 +85,8 @@ namespace Dash
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
+
+            MenuFlyout = xMenuFlyout;
         }
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -277,9 +281,6 @@ namespace Dash
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-
-            //handles drop from keyvaluepane 
-            OnKeyValueDrop(e);
         }
 
         public void ToFront()
@@ -340,7 +341,9 @@ namespace Dash
                     ViewModel.Height = 50;
                 }
             }
-            new ManipulationControls(xKeyValuePane, false, false);
+
+            ToFront();
+
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -379,78 +382,12 @@ namespace Dash
 
 #endregion
 
-        #region KEYVALUEPANE
-        private static int KeyValPaneWidth = 200;
-        private void OpenCloseKeyValuePane()
-        {
-            if (xKeyValPane.Visibility == Visibility.Collapsed)
-            {
-                xKeyValPane.Width = KeyValPaneWidth;
-                xKeyValPane.Visibility = Visibility.Visible;
-                ViewModel.Width += KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
-            }
-            else
-            {
-                xKeyValPane.Visibility = Visibility.Collapsed;
-                xKeyValPane.Width = 0;
-                ViewModel.Width -= KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
-            }
-        }
-
 
         private void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-        private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private void OnKeyValueDrop(DragEventArgs e)
-        {
-            // if the drop wasn't from the key value pane, then return
-            // if the view is in the interface builder return
-            if (e.Data?.Properties[KeyValuePane.DragPropertyKey] == null || (ViewModel?.IsInInterfaceBuilder ?? true)) return;
-
-            // get data variables from the DragArgs
-            var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
-
-            var dataDocController = kvp.Value;
-            if (!dataDocController.Equals(ViewModel.DocumentController)) return; // return if it's not sent from the appropriate keyvaluepane 
-
-            var dataKey = kvp.Key;
-            var context = new Context(dataDocController);
-            var dataField = dataDocController.GetDereferencedField(dataKey, context);
-
-            // get a layout document for the data - use the most abstract prototype as the field reference document
-            //  (otherwise, the layout would point directly to the data instance which would make it impossible to
-            //   create Data copies since the layout would point directly to the (source) data instance and not the common prototype).
-            var dataPrototypeDoc = kvp.Value;
-            while (dataPrototypeDoc.GetPrototype() != null)
-                dataPrototypeDoc = dataPrototypeDoc.GetPrototype();
-            var layoutDocument = InterfaceBuilder.GetLayoutDocumentForData(dataField, dataPrototypeDoc, dataKey, null);
-            if (layoutDocument == null)
-                return;
-
-            // apply position if we are dropping on a freeform
-            var posInLayoutContainer = e.GetPosition(xFieldContainer);
-            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberController).Data / 2;
-            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberController).Data / 2;
-            var positionController = new PointController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
-            layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
-
-            // add the document to the composite
-            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
-            data?.Add(layoutDocument);
-        }
-        #endregion
+        
 
         MenuButton copyButton;
         private void SetUpMenu()
@@ -466,7 +403,7 @@ namespace Dash
             var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
             var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
             var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
-            var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
+            var addButton = new MenuButton(Symbol.Add, "Add", null);
             var showContextButton = new MenuButton(Symbol.Add, "Context", ShowContext);
 
             var documentButtons = new List<MenuButton>
@@ -522,6 +459,9 @@ namespace Dash
 
 
             _docMenu = new OverlayMenu(null, documentButtons);
+
+            // collapsing the buttons for now since we have a context menu
+            _docMenu.Visibility = Visibility.Collapsed;
 
             Binding visibilityBinding = new Binding
             {
@@ -776,65 +716,11 @@ namespace Dash
                 };
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
 
             //initDocumentOnDataContext();
         }
-
-        private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            return;
-            if (ViewModel != null)
-            {
-                // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
-            // update collapse info
-            // collapse to icon view on resize
-            //int pad = 1;
-            //if (Height < MinHeight + 5)
-            //{
-            //    xFieldContainer.Visibility = Visibility.Collapsed;
-            //    xGradientOverlay.Visibility = Visibility.Collapsed;
-            //    xShadowTarget.Visibility = Visibility.Collapsed;
-            //    xIcon.Visibility = Visibility.Collapsed;
-            //}
-            //else
-            //    if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
-            //{
-            //    xFieldContainer.Visibility = Visibility.Collapsed;
-            //    xGradientOverlay.Visibility = Visibility.Collapsed;
-            //    xShadowTarget.Visibility = Visibility.Collapsed;
-            //    if (xIcon.Visibility == Visibility.Collapsed)
-            //        xIcon.Visibility = Visibility.Visible;
-            //    xDragImage.Opacity = 0;
-            //    if (_docMenu != null) ViewModel.CloseMenu();
-            //    UpdateBinding(true);
-            //}
-            //else
-            //{
-            //    xFieldContainer.Visibility = Visibility.Visible;
-            //    xGradientOverlay.Visibility = Visibility.Visible;
-            //    xShadowTarget.Visibility = Visibility.Visible;
-            //    xIcon.Visibility = Visibility.Collapsed;
-            //    xDragImage.Opacity = .25;
-            //    UpdateBinding(false);
-            //}
-        }
-
-        /// <summary>
-        /// Updates the bindings on the lines when documentview is minimized/vice versa 
-        /// </summary>
-        /// <param name="becomeSmall"></param>
-        private void UpdateBinding(bool becomeSmall)
-        {
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-            if (view == null) return; // we can't always assume we're on a collection		
-
-            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
-        }
-
 
         #region Menu
 
@@ -853,11 +739,20 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
+            
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
             _moveTimer.Stop();
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
@@ -871,6 +766,7 @@ namespace Dash
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
         }
+
         private void InstanceDataDocument()
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
@@ -1047,6 +943,7 @@ namespace Dash
             if (titleField == null)
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+
        }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
@@ -1091,6 +988,46 @@ namespace Dash
                     }
             }
         }
-    }
 
+        #region Context menu click handlers
+
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            CopyDocument();
+        }
+
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            CopyViewDocument();
+        }
+
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
+        }
+
+        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLayout();
+        }
+
+        private void MenuFlyoutItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            KeyValueViewDocument();
+        }
+
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
+        {
+            ShowContext();
+        }
+
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        {
+            ScreenCap();
+            
+        }
+
+
+        #endregion
+    }
 }
