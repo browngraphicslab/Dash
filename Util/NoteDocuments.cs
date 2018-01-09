@@ -320,7 +320,7 @@ namespace Dash
 
 
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
-            public PostitNote(string text = null, string title = null, DocumentType type = null) : base(type ?? DocumentType)
+            public PostitNote(string text = null, string title = "Title", DocumentType type = null) : base(type ?? DocumentType)
             {
                 _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
 
@@ -330,6 +330,7 @@ namespace Dash
                 _prototypeLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
+                dataDocument.SetTitleField(title);
                 dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text ?? "Write something amazing!"), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);

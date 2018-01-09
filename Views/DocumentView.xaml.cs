@@ -65,7 +65,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, BorderRegion);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3 }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;

@@ -36,7 +36,6 @@ namespace Dash
         {
             return MakeView(docController, context);
         }
-
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
             bool isInterfaceBuilderLayout = false)
@@ -96,7 +95,8 @@ namespace Dash
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                Converter = UriToBitmapImageConverter.Instance
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
         }

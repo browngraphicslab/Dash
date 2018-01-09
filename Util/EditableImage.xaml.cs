@@ -22,8 +22,8 @@ namespace Dash
 
     public partial class EditableImage
     {
-        public Image Image => xImage;
 
+        public Image Image => xImage;
        
         public EditableImage()
         {

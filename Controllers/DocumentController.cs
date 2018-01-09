@@ -474,22 +474,22 @@ namespace Dash
             {
                 if (curField != null && !(curField is ReferenceController))
                 {
-                    if (curField is NumberController)
+                    if (curField is NumberController nc)
                     {
                         double num;
                         if (double.TryParse(textInput, out num))
-                            (curField as NumberController).Data = num;
+                            nc.Data = num;
                         else return false;
                     }
-                    else if (curField is TextController)
-                        (curField as TextController).Data = textInput;
-                    else if (curField is ImageController)
+                    else if (curField is TextController tc)
+                        tc.Data = textInput;
+                    else if (curField is ImageController ic)
                          try
                         {
-                            ((curField as ImageController).Data as BitmapImage).UriSource = new Uri(textInput);
+                            ic.Data = new Uri(textInput);
                         } catch (Exception)
                         {
-                            ((curField as ImageController).Data as BitmapImage).UriSource = null;
+                            ic.Data = null;
                         }
                     else if (curField is DocumentController)
                     {
@@ -497,11 +497,11 @@ namespace Dash
                         throw new NotImplementedException();
                         curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     }
-                    else if (curField is ListController<DocumentController>)
-                        (curField as ListController<DocumentController>).TypedData =
+                    else if (curField is ListController<DocumentController> lc)
+                        lc.TypedData =
                             new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
-                    else if (curField is RichTextController)
-                        (curField as RichTextController).Data = new RichTextModel.RTD(textInput);
+                    else if (curField is RichTextController rtc)
+                        rtc.Data = new RichTextModel.RTD(textInput);
                     else return false;
                 }
                 else
@@ -1181,6 +1181,10 @@ namespace Dash
             if (DocumentType.Equals(ImageBox.DocumentType))
             {
                 return ImageBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
+            }
+            if (DocumentType.Equals(PdfBox.DocumentType))
+            {
+                return PdfBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
             if (DocumentType.Equals(DocumentBox.DocumentType))
             {

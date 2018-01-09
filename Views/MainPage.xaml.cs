@@ -58,7 +58,7 @@ namespace Dash
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
         public WebView WebContext;
-        public Uri WebContextUri => WebBoxWrapper.WebContextUri;
+        public Uri WebContextUri => WebBoxWrapper.CurrentUri;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
