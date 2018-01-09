@@ -177,7 +177,7 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                    new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
                         true);
             }
 
@@ -292,8 +292,13 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
+            if (MainPage.Instance.WebContext == null)
+            {
+                return;
+            }
+
             var dataDocument = doc.GetDataDocument(null);
-            dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
+            dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new[] {
                 new TextController(MainPage.Instance.WebContext.Url),
                 new TextController(MainPage.Instance.WebContext.Scroll.ToString())}), true);
         }
