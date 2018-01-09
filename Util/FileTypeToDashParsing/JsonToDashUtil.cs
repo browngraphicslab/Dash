@@ -11,6 +11,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using CsvHelper;
 using DashShared;
+using Microsoft.Toolkit.Uwp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,10 +19,35 @@ namespace Dash
 {
     public class JsonToDashUtil : IFileParser
     {
-        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath = null)
+
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
-            var text = await FileIO.ReadTextAsync(item);
-            return ParseJsonString(text, item.Path);
+            string jsonText;
+
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
+            {
+                jsonText = await FileIO.ReadTextAsync(fileData.File);
+            }
+            // otherwise stream it from the internet
+            else
+            {
+                // Get access to a HTTP ressource
+                using (var stream = await fileData.FileUri.GetHttpStreamAsync())
+                {
+                    // Read the contents as ASCII text
+                    jsonText = await stream.ReadTextAsync();
+                }
+            }
+
+            // generate a unique json path if possible 
+            var jsonPath = fileData.FileUri?.AbsolutePath ?? fileData.File.Path;
+            if (string.IsNullOrWhiteSpace(jsonPath))
+            {
+                jsonPath = UtilShared.GenerateNewId();
+            }
+
+            return ParseJsonString(jsonText, jsonPath);
         }
 
         public DocumentController ParseJsonString(string json, string path)

@@ -10,8 +10,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Grid.Row="0" MinWidth="5" MinHeight="5" Padding="0,0,0,0">
-        <PdfViewer:SfPdfViewerControl x:Name="xPdfView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+    <Grid x:Name="xOuterGrid" Grid.Row="0" MinWidth="5" MinHeight="5" Padding="0,0,0,0" SizeChanged="XOuterGrid_OnSizeChanged">
+        <!--clipping used since the pdf overflows the bounds by default-->
+        <Grid.Clip>
+            <RectangleGeometry x:Name="xClippingRect" />
+        </Grid.Clip>
+        <!--the pdf view from sync fusion-->
+        <PdfViewer:SfPdfViewerControl x:Name="xPdfView" 
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                                      ViewMode="FitWidth"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      />
 
     </Grid>
 </Grid>

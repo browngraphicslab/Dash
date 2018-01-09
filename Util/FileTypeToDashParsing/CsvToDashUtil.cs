@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using Dash.Controllers.Operators;
 using DashShared;
 using Flurl.Util;
+using Microsoft.Toolkit.Uwp;
 using Newtonsoft.Json.Linq;
 using static Dash.NoteDocuments;
 
@@ -22,10 +23,23 @@ namespace Dash
 {
     public class CsvToDashUtil : IFileParser
     {
-        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath = null)
+
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
+            Stream stream;
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
+            {
+                stream = await fileData.File.OpenStreamForReadAsync();
+            }
+            // otherwise stream it from the internet
+            else
+            {
+                // Get access to a HTTP ressource
+                stream = (await fileData.FileUri.GetHttpStreamAsync()).AsStream();
+            }
+
             // set up streams for the csvReader
-            var stream = await item.OpenStreamForReadAsync();
             var streamReader = new StreamReader(stream);
 
             // read the headers of the csv
@@ -37,7 +51,7 @@ namespace Dash
 
             // set up a prototype document that models each of the rows
 
-            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), uniquePath ?? DashShared.UtilShared.GenerateNewId()));
+            var protoDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(DashShared.UtilShared.GenerateNewId(), DashShared.UtilShared.GenerateNewId()));
             var protoFieldDict = new Dictionary<KeyController, FieldControllerBase>()
 
             { // dictionary of fields to set on the prototype document
@@ -71,11 +85,11 @@ namespace Dash
                 }
                 rowDocs.Add(delgate);
             } while (csv.Read());
-      
+
             var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(UtilShared.GenerateNewId(), "CSV Collection"));
             outputDoc.SetField(KeyStore.DataKey, new ListController<DocumentController>(rowDocs), true);
             outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
-             
+
             return outputDoc;
         }
 

@@ -16,19 +16,32 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using Microsoft.Toolkit.Uwp;
 using static Dash.NoteDocuments;
 
 namespace Dash
 {
     public class PdfToDashUtil : IFileParser
     {
-        public async Task<DocumentController> ParseFileAsync(IStorageFile sFile, string uniquePath)
+
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
             // store the file locally
             var localFolder = ApplicationData.Current.LocalFolder;
-            var guid = Guid.NewGuid() + ".pdf";
-            var localFile = await localFolder.CreateFileAsync(guid, CreationCollisionOption.ReplaceExisting);
-            await sFile.CopyAndReplaceAsync(localFile);
+            var uniqueFilePath = Guid.NewGuid() + ".pdf";
+            var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+
+
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
+            {
+                await fileData.File.CopyAndReplaceAsync(localFile);
+            }
+            // otherwise stream it from the internet
+            else
+            {
+                await fileData.FileUri.GetHttpStreamToStorageFileAsync(localFile);
+            }
 
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -40,6 +53,5 @@ namespace Dash
             // return a new pdf box
             return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
         }
-
     }
 }

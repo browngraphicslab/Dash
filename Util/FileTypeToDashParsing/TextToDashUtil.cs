@@ -3,18 +3,33 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Storage;
 using DashShared;
+using Microsoft.Toolkit.Uwp;
 
 namespace Dash
 {
     public class TextToDashUtil : IFileParser
     {
-        public static readonly KeyController FileTextKey = new KeyController("5E461F63-5361-4296-9986-E530151205B2", "File Text");
-        public static readonly DocumentType TextFileDocumentType = new DocumentType("2A77CA39-B058-49EC-B132-3775D705E977", "Text File");
 
-        public async Task<DocumentController> ParseFileAsync(IStorageFile item, string uniquePath = null)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData)
         {
-            var text = await FileIO.ReadTextAsync(item);
-            var doc = new NoteDocuments.PostitNote(text, item.Name).Document;
+            string text;
+
+            // if the uri filepath is a local file then copy it locally
+            if (!fileData.File.FileType.EndsWith(".url"))
+            {
+                text = await FileIO.ReadTextAsync(fileData.File);
+            }
+            // otherwise stream it from the internet
+            else
+            {
+                // Get access to a HTTP ressource
+                using (var stream = await fileData.FileUri.GetHttpStreamAsync())
+                {
+                    // Read the contents as ASCII text
+                    text = await stream.ReadTextAsync();
+                }
+            }
+            var doc = new NoteDocuments.PostitNote(text).Document;
             return doc;
         }
     }

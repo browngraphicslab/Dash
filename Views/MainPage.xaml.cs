@@ -59,7 +59,7 @@ namespace Dash
         public static InkController InkController = new InkController();
         public AddMenu AddMenu { get { return xAddMenu; } set { xAddMenu = value; } }
         public WebView WebContext;
-        public Uri WebContextUri => WebBoxWrapper.WebContextUri;
+        public Uri WebContextUri => WebBoxWrapper.CurrentUri;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;

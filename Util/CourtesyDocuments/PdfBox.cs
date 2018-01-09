@@ -37,11 +37,11 @@ namespace Dash
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToPdf);
 
-            // update the horizontal and vertical alignment fields to be separate from teh default
-            if (fields[KeyStore.HorizontalAlignmentKey] is TextController horzTextController)
-                horzTextController.Data = HorizontalAlignment.Left.ToString();
-            if (fields[KeyStore.VerticalAlignmentKey] is TextController vertTextController)
-                vertTextController.Data = VerticalAlignment.Top.ToString();
+            //// update the horizontal and vertical alignment fields to be separate from teh default
+            //if (fields[KeyStore.HorizontalAlignmentKey] is TextController horzTextController)
+            //    horzTextController.Data = HorizontalAlignment.Left.ToString();
+            //if (fields[KeyStore.VerticalAlignmentKey] is TextController vertTextController)
+            //    vertTextController.Data = VerticalAlignment.Top.ToString();
 
             // get a delegate of the prototype layout (which already has fields set on it)
             Document = GetLayoutPrototype().MakeDelegate();
@@ -83,7 +83,7 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             // create the pdf view
-            var pdfView = new PdfView(docController, context);
+            var pdfView = new PdfView();
             var pdf = pdfView.Pdf;
 
             SetupBindings(pdf, docController, context);
@@ -172,7 +172,7 @@ namespace Dash
 
         public override Stream ConvertDataToXaml(Uri data, object parameter = null)
         {
-            var stream = File.Open(data.LocalPath, FileMode.Open);
+            var stream = File.Open(data.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             return stream;
         }
 
