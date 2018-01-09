@@ -68,6 +68,25 @@
                 <ColumnDefinition Width="0"/>
             </Grid.ColumnDefinitions>
 
+
+            <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+            <Grid.ContextFlyout>
+                <MenuFlyout x:Name = "xMenuFlyout">
+                    <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+                    <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="Black" Click="MenuFlyoutItemDelete_Click"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Foreground="Black" Click="MenuFlyoutItemCopy_Click"/>
+                    <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
+                    <MenuFlyoutItem Text="Add" Click="MenuFlyoutItemAdd_Click"/>
+                    <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+            
+
             <!-- Container for Icon view -->
             <!--<Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.RowDefinitions>
@@ -84,6 +103,8 @@
                 </StackPanel>
             </Grid>-->
 
+        
+            
             <!--canvas to hold the document view menu-->
             <Canvas x:Name="xMenuCanvas" Grid.Row="1" Grid.Column="1"></Canvas>
 
@@ -107,12 +128,15 @@
             <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
                     <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
-                    <TextBox Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
+                    <TextBox PlaceholderText="Title" Text="" Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
                 </StackPanel>
             </Border>
 
             <!--grid to hold the inner content of the document-->
-            <Grid Grid.Row="1" Grid.Column="0">
+            <Grid Name="xTargetContentGrid" Grid.Row="1" Grid.Column="0">
+               
+                
+                
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <FlyoutBase.AttachedFlyout >

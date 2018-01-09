@@ -51,6 +51,8 @@ namespace Dash
 
         private Storyboard _storyboard;
 
+        public MenuFlyout MenuFlyout;
+
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -83,6 +85,8 @@ namespace Dash
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
+
+            MenuFlyout = xMenuFlyout;
         }
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -341,6 +345,9 @@ namespace Dash
                 }
             }
             new ManipulationControls(xKeyValuePane, false, false);
+
+            //ToFront();
+
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -522,6 +529,9 @@ namespace Dash
 
 
             _docMenu = new OverlayMenu(null, documentButtons);
+
+            // collapsing the buttons for now since we have a context menu
+            _docMenu.Visibility = Visibility.Collapsed;
 
             Binding visibilityBinding = new Binding
             {
@@ -853,11 +863,20 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
+            
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
             _moveTimer.Stop();
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
@@ -1047,6 +1066,7 @@ namespace Dash
             if (titleField == null)
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+
        }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
@@ -1091,6 +1111,46 @@ namespace Dash
                     }
             }
         }
-    }
 
+        #region Context menu click handlers
+
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            CopyDocument();
+        }
+
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            CopyViewDocument();
+        }
+
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
+        }
+
+        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLayout();
+        }
+
+        private void MenuFlyoutItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            OpenCloseKeyValuePane();
+        }
+
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
+        {
+            ShowContext();
+        }
+
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        {
+            ScreenCap();
+            
+        }
+
+
+        #endregion
+    }
 }

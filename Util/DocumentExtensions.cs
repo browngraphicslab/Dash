@@ -76,6 +76,7 @@ namespace Dash
             {
                 positionField.Data = new Point((where == null ? positionField.Data.X +15:((Point)where).X), (where == null ? positionField.Data.Y + 15 : ((Point)where).Y));
             }
+            
             return copy;
         }
         /// <summary>
