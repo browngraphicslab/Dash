@@ -397,7 +397,6 @@ namespace Dash
 
         MenuButton copyButton;
 
-
         DispatcherTimer _moveTimer = new DispatcherTimer()
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
@@ -620,10 +619,20 @@ namespace Dash
 
         public void DeleteDocument()
         {
+            DeleteDocument(false);
+        }
+        public void DeleteDocument(bool addTextBox)
+        {
             if (ParentCollection != null)
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
+
+                if (addTextBox)
+                {
+                    (ParentCollection.CurrentView as CollectionFreeformView)?.
+                        RenderPreviewTextbox(ViewModel.GroupTransform.Translate);
+                }
             }
         }
 

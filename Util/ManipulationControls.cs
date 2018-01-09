@@ -6,6 +6,7 @@ using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -99,7 +100,7 @@ namespace Dash
                     }), true);
                     borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
                     borderRegion.ManipulationStarted += ElementOnManipulationStarted;
-                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
+                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
                 }
             }
             element.ManipulationMode = ManipulationModes.All;
@@ -113,33 +114,15 @@ namespace Dash
             e.TranslationBehavior.DesiredDeceleration = 0.02;
         }
 
-        private async void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
-        {
-            _isManipulating = false;
-            if (manipulationCompletedRoutedEventArgs != null && !manipulationCompletedRoutedEventArgs.Handled)
-            {
-                manipulationCompletedRoutedEventArgs.Handled = true;
-                var parent = _element.GetFirstAncestorOfType<DocumentView>();
-                await parent.Dispatcher.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () =>
-                    {
-                        if (parent != null)
-                            parent.MoveToContainingCollection();
-                    }
-                ));
-            }
-        }
-
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
-            BorderOnManipulationCompleted(sender, manipulationCompletedRoutedEventArgs);
-
+            _isManipulating = false;
             var grouped = new List<DocumentViewModel>();
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (parent != null)
+            if (parent != null && !_element.Equals(parent))
             {
-                AddConnected(grouped, docRoot.ViewModel, parent);
+                AddConnected(grouped, docRoot, parent);
                 var recolor = false;
                 foreach (var g in grouped)
                     if (!Grouped.Contains(g))
@@ -150,39 +133,45 @@ namespace Dash
                 if (recolor)
                 {
                     Random r = new Random();
-                    var BackColor = Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
+                    var BackColor = grouped.Count == 1 ? Colors.Transparent: Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
 
                     foreach (var g in grouped)
                         g.BorderGroupColor = Windows.UI.Colors.Transparent;
                 }
             }
-
+            if (manipulationCompletedRoutedEventArgs != null)
+            {
+                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+                    () => docRoot.MoveToContainingCollection() ));
+                manipulationCompletedRoutedEventArgs.Handled = true;
+            }
         }
 
         List<DocumentViewModel> Grouped = new List<DocumentViewModel>();
 
-        private static void AddConnected(List<DocumentViewModel> grouped, DocumentViewModel docRoot, CollectionFreeformView parent)
+        private static void AddConnected(List<DocumentViewModel> grouped, DocumentView docRoot, CollectionFreeformView parent)
         {
-            foreach (var doc in parent.ViewModel.DocumentViewModels)
+            var docRootBounds = docRoot.ViewModel.GroupingBounds(docRoot.ActualWidth, docRoot.ActualHeight);
+            foreach (var doc in parent.DocumentViews())
             {
-                var docBounds = doc.GroupingBounds;
-                docBounds.Intersect(docRoot.GroupingBounds);
-                if (docBounds != Rect.Empty && !grouped.Contains(doc))
+                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
+                docBounds.Intersect(docRootBounds);
+                if (docBounds != Rect.Empty && !grouped.Contains(doc.ViewModel))
                 {
-                    grouped.Add(doc);
+                    grouped.Add(doc.ViewModel);
                     AddConnected(grouped, doc, parent);
                 }
             }
         }
 
-        private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (_isManipulating)
             {
                 e.Complete();
                 return;
             }
-            if (e.PointerDeviceType == BlockedInputType && FilterInput)
+            if (e != null && e.PointerDeviceType == BlockedInputType && FilterInput)
             {
                 e.Complete();
                 _processManipulation = false;
@@ -196,14 +185,15 @@ namespace Dash
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
-            e.Handled = true;
+            if (e!= null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
+                e.Handled = true;
 
             Grouped.Clear();
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             if (parent != null)
             {
-                AddConnected(Grouped, docRoot.ViewModel, parent);
+                AddConnected(Grouped, docRoot, parent);
             }
         }
 

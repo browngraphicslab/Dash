@@ -74,7 +74,6 @@
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>
 
-
         <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
                         VerticalAlignment="Top" Margin="5" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

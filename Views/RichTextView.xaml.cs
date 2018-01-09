@@ -289,6 +289,7 @@ namespace Dash
                 var rt = parent.RenderTransform.TransformPoint(new Point());
                 HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
                 this.CapturePointer(e.Pointer);
+                parent.ManipulationControls.ElementOnManipulationStarted(null, null);
             }
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -398,6 +399,17 @@ namespace Dash
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
             {
+                if (e.Key == VirtualKey.Back)
+                {
+                    string docText;
+                    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out docText);
+                    if (docText == "")
+                    {
+
+                        var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+                        parentDoc.DeleteDocument(true);
+                    }
+                }
                 return;
             }
             string allText;
