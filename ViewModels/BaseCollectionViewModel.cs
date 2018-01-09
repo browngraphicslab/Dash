@@ -363,8 +363,8 @@ namespace Dash
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
-                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(subDocs), true);
-                else cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                    cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
+                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.HeaderColumnReference, true);
                 cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
 
                 AddDocument(cnote.Document, null);
@@ -569,7 +569,7 @@ namespace Dash
                         newDoc.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
                     if (e.DataView.Properties.ContainsKey("SelectedText"))
                     {
-                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<ListController<DocumentController>>(CollectionNote.CollectedDocsKey, null)?.Data;
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.Data;
 
                     }
                     return newDoc;

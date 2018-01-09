@@ -10,7 +10,8 @@
     d:DesignWidth="400"
     DataContextChanged="TreeViewNode_OnDataContextChanged">
 
-    <Grid>
+    <StackPanel>
         <TextBlock x:Name="XTextBlock" Foreground="White"></TextBlock>
-    </Grid>
+        <local:CollectionTreeView x:Name="CollectionTreeView" Visibility="Collapsed"></local:CollectionTreeView>
+    </StackPanel>
 </UserControl>

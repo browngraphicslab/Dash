@@ -117,7 +117,7 @@ namespace Dash
                 if (id == Id)
                 {
                     var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
-                    var children = Cnote.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
+                    var children = Cnote.DataDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
                             foreach (var d in (f.Value as ListController<DocumentController>).TypedData)

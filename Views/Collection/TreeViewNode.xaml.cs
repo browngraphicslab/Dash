@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -19,6 +20,8 @@ namespace Dash.Views.Collection
 {
     public sealed partial class TreeViewNode : UserControl
     {
+        public ObservableCollection<DocumentViewModel> Children;
+
         public TreeViewNode()
         {
             this.InitializeComponent();
@@ -45,6 +48,13 @@ namespace Dash.Views.Collection
                     FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot,
                     XamlAssignmentDereferenceLevel =  XamlDerefernceLevel.DereferenceToRoot,
                 });
+
+                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
+                if (collection != null)
+                {
+                    CollectionTreeView.Visibility = Visibility.Visible;
+                    CollectionTreeView.DataContext = new CollectionViewModel(dvm.DocumentController, collection);
+                }
             }
         }
     }
