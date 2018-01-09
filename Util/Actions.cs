@@ -133,47 +133,7 @@ namespace Dash
             
         }
         
-        public static void AddCollectionTEST(ICollectionView collection, DragEventArgs e)
-        {
-            //Get transformed position of drop event
-            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-
-            //Make first collection
-            List<DocumentController> numbers = new List<DocumentController>();
-            for (int i = 0; i < 6; ++i)
-            {
-                numbers.Add(new Numbers().Document);
-            }
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.CollectionKey] = new ListController<DocumentController>(numbers)
-            };
-
-            var collectionDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionDocument);
-            var layoutDocument = new CollectionBox(new DocumentReferenceController(collectionDocument.GetId(),
-                    KeyStore.CollectionKey), 0, 0, 400, 400).Document;
-            collectionDocument.SetActiveLayout(layoutDocument, true, true); 
-
-
-            // Make second collection
-            var numbers2 = new Numbers().Document;
-            var twoImages2 = new TwoImages(false).Document;
-            var fields2 = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.CollectionKey] =
-                new ListController<DocumentController>(new[] {numbers2, twoImages2})
-            };
-            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
-            var layoutDoc2 =
-                new CollectionBox(new DocumentReferenceController(col2.GetId(),
-                        KeyStore.CollectionKey), 0, 0, 400, 400).Document;
-            col2.SetActiveLayout(layoutDoc2, true, true); 
-
-
-            //Display collections
-            DisplayDocument(collection, col2, where);
-            DisplayDocument(collection, collectionDocument, where);
-        }
+        
 
         public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
@@ -190,43 +150,7 @@ namespace Dash
             collectionView.ViewModel.AddDocument(docController, null); 
         }
 
-        public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-
-            //Make second collection
-            var numbers2 = new Numbers().Document;
-            var fields2 = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.CollectionKey] =
-                new ListController<DocumentController>(new[]
-                    {numbers2})
-            };
-            var col2 = new DocumentController(fields2, DashConstants.TypeStore.CollectionDocument);
-            var layoutDoc2 =
-                new CollectionBox(new DocumentReferenceController(col2.GetId(),
-                        KeyStore.CollectionKey)).Document;
-            var layoutController2 = layoutDoc2;
-            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(KeyStore.LayoutListKey,
-                new ListController<DocumentController>(new List<DocumentController> { layoutDoc2 }), true);
-
-            //Display collections
-            DisplayDocument(collectionView, col2, where);
-
-            DisplayDocument(collectionView, new InkDoc().Document, where);
-            DisplayDocument(collectionView, new Numbers().Document, where);
-
-            DisplayDocument(collectionView, new XampleText().Document, where);
-
-            /*
-            var ndb = new DBTest();
-            for (int i = 0; i < ndb.Documents.Count; i++)
-            {
-                DisplayDocument(collectionView, ndb.Documents[i], where);
-                MainPage.Instance.UpdateLayout();
-            }*/
-        }
+        
 
 
         /// <summary>
