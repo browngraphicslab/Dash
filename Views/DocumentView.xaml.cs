@@ -147,29 +147,187 @@ namespace Dash
             {
                 return;
             }
-            /*
-            if (Equals(MainPage.Instance.xMainDocView))
-            {
-                return;
-            }
-            if (Parent is CollectionFreeformView)
-            {
-                
-            }
-            */
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+        
+            //Find the documents to snap to and the sides you want to snap to
 
-            //Find the closest other DocumentView and snap to it.
-            var closestDocumentView = GetClosestDocumentView();
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            var currentBoundingBox = GetBoundingBoxScreenSpace();
+
+            var left = NeighborHelper(mainView, Side.Left, currentBoundingBox, Double.NegativeInfinity, boundingBox => boundingBox.Right, (r, threshold) => r > threshold);
+            var right = NeighborHelper(mainView, Side.Right, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Left, (l, threshold) => l < threshold);
+            var top = NeighborHelper(mainView, Side.Top, currentBoundingBox, Double.NegativeInfinity, boundingBox => boundingBox.Bottom, (b, threshold) => b > threshold);
+            var bottom = NeighborHelper(mainView, Side.Bottom, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Top, (t, threshold) => t < threshold);
+
             if (preview)
             {
-                PreviewSnap(closestDocumentView);
+                PreviewSnap(left, right, top, bottom);
             }
             else
             {
-                SnapToDocumentView(closestDocumentView);
+                SnapToDocumentView(left, right, top, bottom);
             }
+            
+
+        }
+
+        private void SnapToDocumentView(List<Tuple<DocumentView, Side, double>> left, List<Tuple<DocumentView, Side, double>> right, List<Tuple<DocumentView, Side, double>> top, List<Tuple<DocumentView, Side, double>> bottom)
+        {
+            var neighbors = left.Concat(right).Concat(top).Concat(bottom);
+            foreach(var neighbor in neighbors) SnapToDocumentView(neighbor);
+        }
+
+        private void PreviewSnap(List<Tuple<DocumentView, Side, double>> left, List<Tuple<DocumentView, Side, double>> right, List<Tuple<DocumentView, Side, double>> top, List<Tuple<DocumentView, Side, double>> bottom)
+        {
+            if (!(left.Any() || right.Any() || top.Any() || bottom.Any())) return; 
+
+            double startX, endX, startY, endY;
+            startX = 0;
+            endX = 0;
+            startY = 0;
+            endY = 0;
+           
+            var TB = top.Concat(bottom).ToList();
+            var LR = left.Concat(right).ToList();
+
+            //START_X
+            if (left.Any())
+            {
+                var b = left[0].Item1.GetBoundingBoxScreenSpace();
+                startX = b.Width + b.X;
+            }else if (TB.Any())
+            {
+                startX = TB.Min(i => i.Item1.GetBoundingBoxScreenSpace().X);
+            }
+            else
+            {
+                var b = right[0].Item1.GetBoundingBoxScreenSpace();
+                startX = b.X - ActualWidth;
+            }
+
+            //END_X
+            if (right.Any())
+            {
+                var b = right[0].Item1.GetBoundingBoxScreenSpace();
+                endX = b.X;
+            }else if (TB.Any())
+            {
+                endX = TB.Max(i => i.Item1.GetBoundingBoxScreenSpace().X + i.Item1.GetBoundingBoxScreenSpace().Width);
+            }
+            else
+            {
+                var b = left[0].Item1.GetBoundingBoxScreenSpace();
+                endX = b.Width + b.X + ActualWidth;
+            }
+
+            //START_Y
+            if (top.Any())
+            {
+                var b = top[0].Item1.GetBoundingBoxScreenSpace();
+                startY = b.Bottom;
+
+            }
+            else if (LR.Any())
+            {
+                startY = LR.Min(i => i.Item1.GetBoundingBoxScreenSpace().Y);
+            }
+            else
+            {
+                var b = bottom[0].Item1.GetBoundingBoxScreenSpace();
+                startY = b.Y - ActualHeight;
+            }
+            //END_Y
+
+            if (bottom.Any())
+            {
+                var b = bottom[0].Item1.GetBoundingBoxScreenSpace();
+                endY = b.Y;
+
+            }
+            else if (LR.Any())
+            {
+                endY = LR.Max(i => i.Item1.GetBoundingBoxScreenSpace().Y + i.Item1.GetBoundingBoxScreenSpace().Height);
+
+            }
+            else
+            {
+                var b = top[0].Item1.GetBoundingBoxScreenSpace();
+                endY = b.Bottom + ActualHeight;
+
+            }
+
+
+
+            MainPage.Instance.TemporaryRectangle.Width = endX - startX;
+            MainPage.Instance.TemporaryRectangle.Height = endY - startY;
+
+            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, startX);
+            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, startY);
+            
+        }
+
+        private List<Tuple<DocumentView, Side, double>> NeighborHelper(CollectionFreeformView mainView, Side side, Rect boundingBox, double threshold, Func<Rect, double> propGetter, Func<double, double, bool> thresholdFunc)
+        {
+
+            var neighbors = new List<Tuple<DocumentView, Side, double>>();
+
+            var hitTestRect = CalculateAligningRectangleForSide(Side.Left, boundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
+            var hitDocumentViews = VisualTreeHelper.FindElementsInHostCoordinates(hitTestRect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray();
+
+            foreach (var obj in hitDocumentViews)
+            {
+                var documentView = obj as DocumentView;
+                if ((!documentView.Equals(MainPage.Instance.xMainDocView)) && (!documentView.Equals(this)))
+                {
+                    var documentViewBoundingBox = documentView.GetBoundingBoxScreenSpace();
+                    var confidence = CalculateSnappingConfidence(side, hitTestRect, documentView);
+                    if (confidence >= ALIGNMENT_THRESHOLD)
+                    {
+                        var prop = propGetter(documentViewBoundingBox);
+                        if (thresholdFunc(prop, threshold))
+                        {
+                            neighbors = new List<Tuple<DocumentView, Side, double>>();
+                            threshold = prop;
+                        }
+                        neighbors.Add(new Tuple<DocumentView, Side, double>(documentView, side, confidence));
+                    }
+                }
+
+            }
+            return neighbors;
+
+        }
+
+        private List<Tuple<DocumentView, Side, double>> GetNewNeighboringDocumentViews()
+        {
+            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
+
+            var currentBoundingBox = GetBoundingBoxScreenSpace();
+
+            var left = NeighborHelper(mainView, Side.Left, currentBoundingBox, Double.NegativeInfinity, boundingBox=> boundingBox.Right, (r, threshold) => r > threshold);
+            var right = NeighborHelper(mainView, Side.Right, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Left, (l, threshold) => l < threshold);
+            var top = NeighborHelper(mainView, Side.Top, currentBoundingBox, Double.NegativeInfinity, boundingBox => boundingBox.Bottom, (b, threshold) => b > threshold);
+            var bottom = NeighborHelper(mainView, Side.Bottom, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Top, (t, threshold) => t < threshold);
+
+
+            return left.Concat(right).Concat(top).Concat(bottom).ToList();
+        }
+
+        /// <summary>
+        /// Gets the closest DocumentView from all sides and returns the "closest" one
+        /// </summary>
+        /// <param name="topLeftScreenPoint"></param>
+        /// <param name="bottomRightScreenPoint"></param>
+        /// <returns></returns>
+        private Tuple<DocumentView, Side, double> GetClosestDocumentView()
+        {
+            //List of all DocumentViews hit, along with a double representing how close they are
+            var allDocumentViewsHit = HitTestFromSides();
+
+            //Return closest DocumentView (using the double that represents the confidence)
+            return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
         }
 
         private void PreviewSnap(Tuple<DocumentView, Side, double> closestDocumentView)
@@ -200,20 +358,6 @@ namespace Dash
 
         }
 
-        /// <summary>
-        /// Gets the closest DocumentView from all sides and returns the "closest" one
-        /// </summary>
-        /// <param name="topLeftScreenPoint"></param>
-        /// <param name="bottomRightScreenPoint"></param>
-        /// <returns></returns>
-        private Tuple<DocumentView, Side, double> GetClosestDocumentView()
-        {
-            //List of all DocumentViews hit, along with a double representing how close they are
-            var allDocumentViewsHit = HitTestFromSides();
-
-            //Return closest DocumentView (using the double that represents the confidence)
-            return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
-        }
 
         /// <summary>
         /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
