@@ -272,6 +272,49 @@ namespace Dash
             return showField;
         }
 
+        public async void Paste(DataPackageView dvp, Point where)
+        {
+            if (dvp.Contains(StandardDataFormats.StorageItems))
+            {
+                FileDropHelper.HandleDrop(dvp, where, this);
+            }
+            else if (dvp.Contains(StandardDataFormats.Bitmap))
+            {
+                PasteBitmap(dvp, where);
+            }
+            else if (dvp.Contains(StandardDataFormats.Text))
+            {
+                var text = await dvp.GetTextAsync();
+                if (text != "")
+                {
+                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
+                    Actions.DisplayDocument(this, postitNote, where);
+                }
+            }
+        }
+
+        private async void PasteBitmap(DataPackageView dvp, Point where)
+        {
+            var streamRef = await dvp.GetBitmapAsync();
+            WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
+            await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
+
+            Windows.Storage.StorageFolder storageFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+            StorageFile savefile = await storageFolder.CreateFileAsync("paste.jpg", Windows.Storage.CreationCollisionOption.ReplaceExisting);
+            IRandomAccessStream stream = await savefile.OpenAsync(FileAccessMode.ReadWrite);
+            BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
+            // Get pixels of the WriteableBitmap object 
+            Stream pixelStream = writeableBitmap.PixelBuffer.AsStream();
+            byte[] pixels = new byte[pixelStream.Length];
+            await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+            // Save the image file with jpg extension 
+            encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)writeableBitmap.PixelWidth, (uint)writeableBitmap.PixelHeight, 96.0, 96.0, pixels);
+            await encoder.FlushAsync();
+            var dp = new DataPackage();
+            dp.SetStorageItems(new IStorageItem[] { savefile });
+            FileDropHelper.HandleDrop(dp.GetView(), where, this);
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -366,7 +409,7 @@ namespace Dash
             {
                 try
                 {
-                    await FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                    FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
                 }
                 catch (Exception exception)
                 {

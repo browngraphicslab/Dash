@@ -132,10 +132,8 @@ namespace Dash
             }
             
         }
-        
-        
 
-        public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
+        public static void DisplayDocument(BaseCollectionViewModel collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
@@ -147,10 +145,8 @@ namespace Dash
                 //var w = docController.GetWidthField().Data;
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
-            collectionView.ViewModel.AddDocument(docController, null); 
+            collectionView.AddDocument(docController, null); 
         }
-
-        
 
 
         /// <summary>
@@ -200,7 +196,7 @@ namespace Dash
         public static void AddNote(ICollectionView collectionView, Point mainPageCoord)
         {
             DocumentController postitNote = new RichTextNote(PostitNote.DocumentType).Document;
-            DisplayDocument(collectionView, postitNote, mainPageCoord);
+            DisplayDocument(collectionView.ViewModel, postitNote, mainPageCoord);
         }
 
         public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)

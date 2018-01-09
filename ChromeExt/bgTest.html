@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>JavaScript in Body</h2>
+
+<p id="demo">A Paragraph.</p>
+
+<button type="button" onclick="myFunction()">Try it</button>
+
+<script>
+function myFunction() {
+console.log("here");
+        if ("WebSocket" in window) {
+        socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
+console.log("connected!");
+    } else {
+        console.log("WebSocket is NOT supported by your Browser!");
+    }
+
+    socket.onopen = function(){
+        console.log("Connection Opened");
+    }
+
+
+    socket.onmessage = function(msg){
+        console.log(msg);
+    }
+}
+</script>
+
+</body>
+</html> 

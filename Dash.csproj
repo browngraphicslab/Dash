@@ -92,8 +92,16 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <None Include="ChromeExt\.gitignore" />
+    <None Include="ChromeExt\manifest.json" />
+    <None Include="ChromeExt\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\NewTabBrowserRequest.cs" />
+    <Compile Include="Browser\SetUrlRequest.cs" />
+    <Compile Include="Browser\SetScrollRequest.cs" />
+    <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
@@ -228,6 +236,7 @@
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
@@ -631,9 +640,6 @@
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\WebViewWrapper.xaml.cs">
-      <DependentUpon>WebViewWrapper.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
@@ -664,6 +670,26 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
+    <Content Include="ChromeExt\arrow.svg" />
+    <Content Include="ChromeExt\bg.js" />
+    <Content Include="ChromeExt\bgTest.html" />
+    <Content Include="ChromeExt\close-icon.svg" />
+    <Content Include="ChromeExt\icon.png" />
+    <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jquery.js" />
+    <Content Include="ChromeExt\keylistener.js" />
+    <Content Include="ChromeExt\logo.png" />
+    <Content Include="ChromeExt\menu_inline_field.html" />
+    <Content Include="ChromeExt\menu_inline_save.html" />
+    <Content Include="ChromeExt\menu_main.html" />
+    <Content Include="ChromeExt\menu_main_document.html" />
+    <Content Include="ChromeExt\menu_tags.html" />
+    <Content Include="ChromeExt\popup.html" />
+    <Content Include="ChromeExt\popup.js" />
+    <Content Include="ChromeExt\requestHandler.js" />
+    <Content Include="ChromeExt\selections.js" />
+    <Content Include="ChromeExt\style.css" />
+    <Content Include="ChromeExt\tabManager.js" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -1026,10 +1052,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TabMenu.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\WebViewWrapper.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

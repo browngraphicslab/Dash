@@ -43,7 +43,6 @@ namespace Dash
                 //this.DebugSettings.IsTextPerformanceVisualizationEnabled = true;
             }
 #endif
-
             // register dependency injection container
             Container = RegisterServices();
 
@@ -77,6 +76,7 @@ namespace Dash
                     //TODO Navigate to a prelogged in page if we can!
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                 }
+
                 // Ensure the current window is active
                 Window.Current.Activate();
             }

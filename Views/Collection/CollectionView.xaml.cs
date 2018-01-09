@@ -81,7 +81,6 @@ namespace Dash
             ViewModel = vm;
             
             Unloaded += CollectionView_Unloaded;
-
         }
 
         public void TryBindToParentDocumentSize()
@@ -105,7 +104,12 @@ namespace Dash
             ParentDocument.StyleCollection(this);
 
             if (_collectionMenu == null)
+            {
                 MakeMenu();
+
+                UpdateContextMenu();
+            }
+                
             // set the top-level viewtype to be freeform by default
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
@@ -145,10 +149,133 @@ namespace Dash
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
 
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet; 
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
+        }
+
+
+
+        #endregion
+
+
+
+        #region CollectionView context menu 
+
+        /// <summary>
+        /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
+        /// view the collection as different formats).
+        /// </summary>
+        private void UpdateContextMenu()
+        {
+            // add a horizontal separator in context menu
+            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            // add the item to create a new document
+            var newDocument = new MenuFlyoutItem() { Text = "Add new document", Icon = new FontIcon() { Glyph = "\uf016;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
+            newDocument.Click += MenuFlyoutItemNewDocument_Click;
+            ParentDocument.MenuFlyout.Items.Add(newDocument);
+
+            // add the item to create a new collection
+            var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
+            newCollection.Click += MenuFlyoutItemNewCollection_Click;
+            ParentDocument.MenuFlyout.Items.Add(newCollection);
+
+            // add another horizontal separator
+            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
+            ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
+
+            var freeform = new MenuFlyoutItem() { Text = "Freeform" };
+            freeform.Click += MenuFlyoutItemFreeform_Click;
+            viewCollectionAs.Items.Add(freeform);
+
+            var grid = new MenuFlyoutItem() { Text = "Grid" };
+            grid.Click += MenuFlyoutItemGrid_Click;
+            viewCollectionAs.Items.Add(grid);
+
+            var browse = new MenuFlyoutItem() { Text = "Browse" };
+            browse.Click += MenuFlyoutItemBrowse_Click;
+            viewCollectionAs.Items.Add(browse);
+
+            var db = new MenuFlyoutItem() { Text = "DB" };
+            db.Click += MenuFlyoutItemDB_Click;
+            viewCollectionAs.Items.Add(db);
+
+            var schema = new MenuFlyoutItem() { Text = "Schema" };
+            schema.Click += MenuFlyoutItemSchema_Click;
+            viewCollectionAs.Items.Add(schema);
+        }
+
+        /// <summary>
+        /// Helper function to add a document controller to the main freeform layout
+        /// </summary>
+        /// <param name="opController"></param>
+        private void addElement(DocumentController opController)
+        {
+            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+
+            var x = pointerPosition.X - Window.Current.Bounds.X;
+            var y = pointerPosition.Y - Window.Current.Bounds.Y;
+            var p = new Point(x, y);
+
+            // using this as a setter for the transform massive hack - LM
+            var _ = new DocumentViewModel(opController)
+            {
+                GroupTransform = new TransformGroupData(p, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                //freeForm.ViewModel.AddDocument(opController, null);
+                var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+                mp.ViewModel.AddDocument(opController, null);
+            }
+        }
+
+        #region ClickHandlers for collection context menu items
+
+        private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
+        {
+            addElement(Util.BlankDoc());
+        }
+
+        private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
+        {
+            addElement(Util.BlankCollection());
+        }
+
+        private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
+        {
+            SetFreeformView();
+        }
+
+        private void MenuFlyoutItemGrid_Click(object sender, RoutedEventArgs e)
+        {
+            SetGridView();
+        }
+
+        private void MenuFlyoutItemBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            SetBrowseView();
+        }
+
+        private void MenuFlyoutItemDB_Click(object sender, RoutedEventArgs e)
+        {
+            SetDBView();
+        }
+
+        private void MenuFlyoutItemSchema_Click(object sender, RoutedEventArgs e)
+        {
+            SetSchemaView();
         }
 
         #endregion
+
+        #endregion
+
+
+
 
         #region Operator connection output
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -159,6 +286,9 @@ namespace Dash
 
 
         #endregion
+
+
+
 
         #region Connection input and output 
         private void ConnectionEllipseOutput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -422,6 +552,9 @@ namespace Dash
 
 
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+
+            // taking out the collection menu now that we have the context menu
+            _collectionMenu.Visibility = Visibility.Collapsed;
         }
 
         private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)

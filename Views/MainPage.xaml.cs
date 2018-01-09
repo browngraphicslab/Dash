@@ -57,8 +57,8 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
-        public WebView WebContext;
-        public Uri WebContextUri => WebBoxWrapper.CurrentUri;
+        public BrowserView WebContext => BrowserView.Current;
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -116,6 +116,9 @@ namespace Dash
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
+
+
+            BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -178,8 +181,6 @@ namespace Dash
                 Content = TabMenu.Instance,
                 
             };
-            
-            WebContext = WebBoxWrapper.WebContext;
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
