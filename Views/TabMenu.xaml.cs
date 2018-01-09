@@ -169,8 +169,9 @@ namespace Dash
 
         private List<ITabItemViewModel> _allDocItems;
         ///Adds documentViews to tabmenu so we can navigate to them 
+        
         public void AddGoToTabItems()
-        {
+        {/*
             _allDocItems = new List<ITabItemViewModel>();
             foreach (TreeMenuNode treeNode in AddMenu.Instance.ViewToMenuItem.Values)
             {
@@ -182,7 +183,7 @@ namespace Dash
                         _allDocItems.Add(new GoToTabItemViewModel(docMenuItem.DocType, docMenuItem.Action, docMenuItem.DataDoc));
                     }
                 }
-            }
+            }*/
         }
 
         /// <summary>

@@ -121,6 +121,10 @@ namespace Dash
             return false;
         }
 
+        public override string GetTypeAsString()
+        {
+            return "Ref";
+        }
 
         public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {

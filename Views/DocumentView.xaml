@@ -23,6 +23,8 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
     <Grid>
+        <Canvas Margin="{Binding GroupMargin}" Background="{Binding BorderGroupColor}" x:Name="BorderRegion" />
+        <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*"/>
@@ -44,7 +46,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Container for Icon view -->
-            <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!--<Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -57,7 +59,7 @@
                           TextAlignment="Center"
                           Background="Transparent"  BorderThickness="0"/>
                 </StackPanel>
-            </Grid>
+            </Grid>-->
 
             <!--canvas to hold the document view menu-->
             <Canvas x:Name="xMenuCanvas" Grid.Row="1" Grid.Column="1"></Canvas>
@@ -69,11 +71,11 @@
                     <!-- Animate background color -->
                     <Storyboard x:Name="colorStoryboard">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="{ThemeResource DocumentBackgroundColor}" To="{ThemeResource DocumentHighlightColor}" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentBackgroundColor}" To="{ThemeResource DocumentHighlightBackgroundColor}" Duration="0:0:0.075"/>
                     </Storyboard>
                     <Storyboard x:Name="colorStoryboardOut">
                         <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="{ThemeResource DocumentHighlightColor}" To="{ThemeResource DocumentBackgroundColor}" Duration="0:0:0.075"/>
+                                    From="{ThemeResource DocumentHighlightBackgroundColor}" To="{ThemeResource DocumentBackgroundColor}" Duration="0:0:0.075"/>
                     </Storyboard>
                 </Rectangle.Resources>
             </Rectangle>
@@ -142,6 +144,7 @@
                     </Canvas.RenderTransform>
                 </Canvas>
             </Grid>
+        </Grid>
         </Grid>
     </Grid>
 </local:SelectionElement>

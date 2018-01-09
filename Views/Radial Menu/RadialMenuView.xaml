@@ -13,7 +13,7 @@
     <UserControl.Resources>
         <SolidColorBrush x:Key="RadialMenuBackground" Color="{ThemeResource RadialMenuBackgroundColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="WindowsBlue" Color="{ThemeResource WindowsBlueColor}"></SolidColorBrush>
-        <SolidColorBrush x:Key="DocumentBackgroundSelected" Color="{ThemeResource DocumentBackgroundSelectedColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="{ThemeResource DocumentHighlightBackgroundColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="RadialCenterForeground" Color="{ThemeResource RadialCenterForegroundColor}"></SolidColorBrush>
     </UserControl.Resources>
 

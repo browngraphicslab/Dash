@@ -56,6 +56,7 @@ namespace Dash
                     {
                         element.SetValue(property, xamlData);
                     }
+                    Debug.WriteLine($"Error evaluating binding: Error with converter, Document ID = {Document.Id}, Key = {Key.Name}");
                 }
                 else if (FallbackValue != null)
                 {
@@ -63,6 +64,8 @@ namespace Dash
                 }
                 else
                 {
+                    Debug.WriteLine($"Error evaluating binding: Field was missing and there was no fallback value, Document ID = {Document.Id}, Key = {Key.Name}");
+
                     element.ClearValue(property);
                 }
             }

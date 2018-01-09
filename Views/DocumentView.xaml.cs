@@ -65,11 +65,13 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, BorderRegion);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
+            //OuterGrid.MinWidth = 100;
+            //OuterGrid.MinHeight = 25;
 
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
@@ -310,8 +312,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        private AddMenuItem _treeMenuItem;
-
+        
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -331,33 +332,13 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-
-                //TabMenu.Instance.SearchView.SearchList.AddToList(Choose, "Get : " + ViewModel.DocumentController.GetTitleFieldOrSetDefault()); // TODO: change this for tab menu
-                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) == null)
-                {
-                    // if we don't have a parent to add to then we can't add this to anything
-                    if (ParentCollection != null)
-                    {
-                        // if the tree contains the parent collection
-                        if (AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                        {
-                            _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, /*layoutDoc*/ViewModel.DocumentController, KeyStore.TitleKey); // TODO: change this line for tree menu
-                            AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem);
-                        }
-                    }
-                }
+                
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
                     ViewModel.Width = 50;
                     ViewModel.Height = 50;
                 }
-                //if (Parent == null)
-                //    ViewModel.Width = ActualWidth;
-                //else ViewModel.Width = double.NaN;
-                //if (Parent == null)
-                //    ViewModel.Height = ActualHeight;
-                //else ViewModel.Height = double.NaN;
             }
             new ManipulationControls(xKeyValuePane, false, false);
         }
@@ -384,11 +365,15 @@ namespace Dash
                 //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                _treeMenuItem = new DocumentAddMenuItem(ViewModel.DocumentController.Title, AddMenuTypes.Document, Choose, ViewModel.DocumentController, KeyStore.TitleKey);
-                AddMenu.Instance.AddToMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection],
-                    _treeMenuItem);
+                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
+               
             }
         }
+
+        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
+    
+        #endregion
+        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
 
         /// <summary>
         /// Applies custom override styles to the operator view. 
@@ -396,37 +381,21 @@ namespace Dash
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
+            
+            var width = 20;
+            
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            
             addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-
-            // add item to menu
-            if (ParentCollection != null)
-                AddMenu.Instance.RemoveFromMenu(AddMenu.Instance.ViewToMenuItem[ParentCollection], _treeMenuItem); // removes docview of collection from menu
-
-            if (!AddMenu.Instance.ViewToMenuItem.ContainsKey(view))
-            {
-
-                TreeMenuNode tree = new TreeMenuNode(MenuDisplayType.Hierarchy);
-                tree.HeaderIcon = Application.Current.Resources["CollectionIcon"] as string;
-                tree.HeaderLabel = "Collection";
-
-                // if nested, add to parent collection, otherwise add to main collection
-                if (!IsMainCollection && ParentCollection != null && AddMenu.Instance.ViewToMenuItem.ContainsKey(ParentCollection))
-                {
-
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, AddMenu.Instance.ViewToMenuItem[ParentCollection]);
-                }
-                else
-                {
-                    AddMenu.Instance.AddNodeFromCollection(view, tree, null);
-                }
-            }
-
-
+            xTitle.Text = "Collection (" + CollectionCount + ")";
+            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
+            CollectionCount++;
         }
-#endregion
-
-        //}
+        
         #region KEYVALUEPANE
         private static int KeyValPaneWidth = 200;
         private void OpenCloseKeyValuePane()
@@ -625,20 +594,7 @@ namespace Dash
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             if (ViewModel != null)
-            {
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-
-                var deltaTranslate = delta.Translate;
-                var deltaScaleAmount = delta.ScaleAmount;
-
-                var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-                //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-                var scaleCenter = new Point(0, 0);
-                var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-
-                ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-            }
+                ViewModel.TransformDelta(delta);
         }
 
         /// <summary>
@@ -662,6 +618,21 @@ namespace Dash
                 return new Size(dvm.Width, dvm.Height);
             }
             return new Size();
+        }
+
+        public void ProporsionalResize(ManipulationDeltaRoutedEventArgs e)
+        {
+            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+            Debug.WriteLine(pos);
+            double dx = (pos.X - origin.X) / ViewModel.Width;
+            double dy = (pos.Y - origin.Y) / ViewModel.Height;
+            Debug.WriteLine(pos);
+            Debug.WriteLine(new Point(dx, dy));
+            double scale = Math.Max(Math.Max(dx, dy), 0.1);
+            Debug.WriteLine(scale);
+            var gt = ViewModel.GroupTransform;
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
         }
 
         /// <summary>
@@ -690,13 +661,29 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                ProportionalScaling = true;
+            }
+            else
+            {
+                ProportionalScaling = false;
+            }
+
+            if (ProportionalScaling)
+            {
+                ProporsionalResize(e);
+            }
+            else
+            {
+                Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+                Resize(p.X, p.Y);
+            }
             e.Handled = true;
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-                fitFreeFormChildrenToTheirLayouts();
+               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
             }
         }
 
@@ -729,20 +716,21 @@ namespace Dash
         /// </summary>
         private void updateIcon()
         {
-            if (ViewModel == null) return;
-            // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Collection)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            }
-            else if (ViewModel.IconType == IconTypeEnum.Api)
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
-            }
+            return;
+            //if (ViewModel == null) return;
+            //// when you want a new icon, you have to add a check for it here!
+            //if (ViewModel.IconType == IconTypeEnum.Document)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Collection)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+            //}
+            //else if (ViewModel.IconType == IconTypeEnum.Api)
+            //{
+            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+            //}
         }
 
         void initDocumentOnDataContext()
@@ -760,14 +748,14 @@ namespace Dash
             }
 
             // if there is a readable document type, use that as label
-            var sourceBinding = new Binding
-            {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+            //var sourceBinding = new Binding
+            //{
+            //    Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+            //    Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+            //    Mode = BindingMode.TwoWay,
+            //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            //};
+            //xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
 
         }
 
@@ -814,41 +802,42 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            return;
             if (ViewModel != null)
             {
                 // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
-            int pad = 1;
-            if (Height < MinHeight + 5)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Collapsed;
-            }
-            else
-                if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
-            {
-                xFieldContainer.Visibility = Visibility.Collapsed;
-                xGradientOverlay.Visibility = Visibility.Collapsed;
-                xShadowTarget.Visibility = Visibility.Collapsed;
-                if (xIcon.Visibility == Visibility.Collapsed)
-                    xIcon.Visibility = Visibility.Visible;
-                xDragImage.Opacity = 0;
-                if (_docMenu != null) ViewModel.CloseMenu();
-                UpdateBinding(true);
-            }
-            else
-            {
-                xFieldContainer.Visibility = Visibility.Visible;
-                xGradientOverlay.Visibility = Visibility.Visible;
-                xShadowTarget.Visibility = Visibility.Visible;
-                xIcon.Visibility = Visibility.Collapsed;
-                xDragImage.Opacity = .25;
-                UpdateBinding(false);
-            }
+            //int pad = 1;
+            //if (Height < MinHeight + 5)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //}
+            //else
+            //    if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
+            //{
+            //    xFieldContainer.Visibility = Visibility.Collapsed;
+            //    xGradientOverlay.Visibility = Visibility.Collapsed;
+            //    xShadowTarget.Visibility = Visibility.Collapsed;
+            //    if (xIcon.Visibility == Visibility.Collapsed)
+            //        xIcon.Visibility = Visibility.Visible;
+            //    xDragImage.Opacity = 0;
+            //    if (_docMenu != null) ViewModel.CloseMenu();
+            //    UpdateBinding(true);
+            //}
+            //else
+            //{
+            //    xFieldContainer.Visibility = Visibility.Visible;
+            //    xGradientOverlay.Visibility = Visibility.Visible;
+            //    xShadowTarget.Visibility = Visibility.Visible;
+            //    xIcon.Visibility = Visibility.Collapsed;
+            //    xDragImage.Opacity = .25;
+            //    UpdateBinding(false);
+            //}
         }
 
         /// <summary>
@@ -872,9 +861,7 @@ namespace Dash
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
-
-                AddMenu.Instance.ViewToMenuItem[ParentCollection].Remove(_treeMenuItem);
-
+                
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
             }
@@ -1022,7 +1009,7 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
 
-            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            if (!IsMainCollection && isLowestSelected)
             {
                 if (_docMenu == null)
                 {
@@ -1077,9 +1064,7 @@ namespace Dash
             if (titleField == null)
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-            if (_treeMenuItem != null)
-                _treeMenuItem.DocType = xTitle.Text; // have to call because the documentcontrollers in these items aren't updated 
-        }
+       }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
