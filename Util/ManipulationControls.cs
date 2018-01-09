@@ -73,7 +73,7 @@ namespace Dash
         /// <param name="element">The element to add manipulation to</param>
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, FrameworkElement borderRegion=null)
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions=null)
         {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
@@ -88,16 +88,19 @@ namespace Dash
             {
                 element.PointerWheelChanged += PointerWheelMoveAndScale;
             }
-            if (borderRegion != null)
+            if (borderRegions != null)
             {
-                borderRegion.ManipulationMode = ManipulationModes.All;
-                borderRegion.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((obj, args) =>
+                foreach (var borderRegion in borderRegions)
                 {
+                    borderRegion.ManipulationMode = ManipulationModes.All;
+                    borderRegion.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((obj, args) =>
+                    {
 
-                }), true);
-                borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
-                borderRegion.ManipulationStarted += ElementOnManipulationStarted;
-                borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
+                    }), true);
+                    borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
+                    borderRegion.ManipulationStarted += ElementOnManipulationStarted;
+                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
+                }
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
@@ -150,7 +153,7 @@ namespace Dash
                     var BackColor = Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
 
                     foreach (var g in grouped)
-                        g.BorderGroupColor = new SolidColorBrush(BackColor);
+                        g.BorderGroupColor = BackColor;
                 }
             }
 
