@@ -409,7 +409,7 @@ namespace Dash
             var documentButtons = new List<MenuButton>
             {
                 //moveButton,
-                new MenuButton(Symbol.Delete, "Delete",DeleteDocument),
+                new MenuButton(Symbol.Delete, "Delete", DeleteDocument),
                 copyButton,
                // delegateButton,
                // copyDataButton
@@ -726,6 +726,10 @@ namespace Dash
 
         public void DeleteDocument()
         {
+            DeleteDocument(false);
+        }
+        public void DeleteDocument(bool addTextBox)
+        {
             if (ParentCollection != null)
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
@@ -733,6 +737,12 @@ namespace Dash
                 
                 if (useFixedMenu)
                     MainPage.Instance.HideDocumentMenu();
+
+                if (addTextBox && ParentCollection.CurrentView is CollectionFreeformView)
+                {
+                    (ParentCollection.CurrentView as CollectionFreeformView).
+                        RenderPreviewTextbox(ViewModel.GroupTransform.Translate);
+                }
             }
         }
 

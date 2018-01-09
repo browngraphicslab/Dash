@@ -23,7 +23,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
-        private double _groupMargin = 25;
+        private double _groupMargin = 40;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
@@ -156,7 +156,7 @@ namespace Dash
             set { if (SetProperty(ref _groupMargin, value)) ; }
         }
 
-        private Color _borderGroupColor = Colors.Yellow;
+        private Color _borderGroupColor = Colors.Transparent;
         public Color BorderGroupColor {
             get
             {
@@ -168,11 +168,10 @@ namespace Dash
             }
         }
 
-        public Rect GroupingBounds
+        public Rect GroupingBounds(double actualwidth, double actualheight)
         {
-            get
             {
-                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, Width + 2* GroupMargin, Height + 2* GroupMargin));
+                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, actualwidth + 2* GroupMargin, actualheight + GroupMargin));
             }
         }
 

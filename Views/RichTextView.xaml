@@ -75,7 +75,7 @@
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>
        
-        <Canvas VerticalAlignment="Bottom">
+        <Canvas VerticalAlignment="Bottom" Visibility="Collapsed">
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="25">
                 <!--FONT SIZE-->
                 <StackPanel x:Name="xFontSizePanel" Orientation="Horizontal" Opacity="0.3" Margin="0,0,15,0">
