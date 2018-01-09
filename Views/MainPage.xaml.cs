@@ -118,7 +118,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
-            BrowserView.OpenTab("chrome://extensions/");
+            BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
