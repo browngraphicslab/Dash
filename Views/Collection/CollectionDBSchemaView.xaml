@@ -59,12 +59,13 @@
         <!--records list-->
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
-                  SelectionMode="Single"
+                  SelectionMode="Multiple"
                   Background="#CCDDDDDD"
                   CanDragItems="False"
                   Height="100"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
-                  Loaded="XRecordsView_OnLoaded">
+                  Loaded="XRecordsView_OnLoaded"
+                  DragItemsStarting="XRecordsView_OnDragItemsStarting">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Orientation="Vertical"/>

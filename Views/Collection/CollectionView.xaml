@@ -24,10 +24,6 @@
             <xaml:CanvasControl Grid.Column="1" Visibility="Collapsed" x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
 
-
-            <!-- Options Menu-->
-            <Canvas x:Name="xMenuCanvas"/>
-
             <!-- Collectionview Content-->
             <Grid Grid.Column="1" >
                 <Grid x:Name="DocumentViewContainerGrid" 
@@ -46,23 +42,26 @@
                       ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
                       VerticalAlignment="Center"
                       Background="Transparent"
-                      ManipulationMode="None">
+                      ManipulationMode="None"
+                      Width="25" Height="50"
+                      Margin="0,0,-15,0">
                     <Ellipse x:Name="ConnectionEllipseOutput"
                                 x:FieldModifier="public"
                                 Style="{StaticResource xOutputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-20,0"/>
+                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
                 </Grid>
                 <!--input ellipse-->
                 <Grid HorizontalAlignment="Left" 
                         PointerPressed="ConnectionEllipseInput_OnPointerPressed"
                         PointerReleased="ConnectionEllipseInput_OnPointerReleased"
                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
-                        Width="50" Height="50" Background="Transparent"
-                        ManipulationMode="None">
+                        Width="25" Height="50" Background="Transparent"
+                        ManipulationMode="None"
+                      Margin="-15,0,0,0">
                     <Ellipse x:Name="ConnectionEllipseInput"
                                 x:FieldModifier="public"
                                 Style="{StaticResource xInputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="-20,0,0,0"/>
+                                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"/>
                 </Grid>
                 <!--selected ellipse-->
                 <!--<Grid HorizontalAlignment="Right" 
@@ -79,6 +78,9 @@
                 </Grid>-->
 
             </Grid>
+            
+            <!-- Options Menu-->
+            <Canvas x:Name="xMenuCanvas"/>
         </Grid>
     </Grid>
 

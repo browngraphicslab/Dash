@@ -444,14 +444,29 @@ namespace Dash
 
         private void XRecordsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
+            //if (vm != null)
+            //{
+            //    var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            //    // TODO parent doc is the data doc we might want to set this on the layout instead
+            //    // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
+            //    // TODO assumes a data doc
+            //    vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            //}
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
+            if(vm == null) vm = e.RemovedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm != null)
             {
-                var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                List<CollectionDBSchemaRecordViewModel> recordVMs =
+                    xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
+                List<DocumentController> selectedDocs = new List<DocumentController>();
+                if (recordVMs.Count > 0)
+                    selectedDocs = recordVMs
+                    .Select(viewmodel => GetLayoutFromDataDocAndSetDefaultLayout(viewmodel.Document)).ToList();
                 // TODO parent doc is the data doc we might want to set this on the layout instead
                 // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
                 // TODO assumes a data doc
-                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new ListController<DocumentController>(selectedDocs), true);
             }
         }
 
@@ -474,6 +489,11 @@ namespace Dash
             }
 
             return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
+        }
+
+        private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

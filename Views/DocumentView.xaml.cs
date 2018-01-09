@@ -91,7 +91,7 @@ namespace Dash
 
         private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            e.Handled = true;
+            //e.Handled = true;
         }
 
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
