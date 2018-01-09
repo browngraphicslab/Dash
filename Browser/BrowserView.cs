@@ -227,6 +227,11 @@ namespace Dash
             //request.Send();
 
             //tODO set scroll request
+
+            var request = new SetScrollRequest();
+            request.tabId = Id;
+            request.scroll = scroll;
+            request.Send();
         }
 
         private void SetIsCurrent(bool current)

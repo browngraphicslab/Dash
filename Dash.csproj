@@ -103,7 +103,7 @@
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\SetUrlRequest.cs" />
-    <Compile Include="Browser\UpdateScrollBrowserRequest.cs" />
+    <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />

@@ -10,7 +10,12 @@ function requestHandler(tabManager) {
     //to handle a set url request
     var handleSetUrl = function (request) {
         newUrl = request.url;
-        tabManager.setTabUrl(request.tabId, newUrl)
+        tabManager.setTabUrl(request.tabId, newUrl);
+    }
+
+    //handler for the scroll request from Dash
+    var handleSetScroll = function (request) {
+        setTimeout(function() { tabManager.setScrollPosition(request.tabId, request.scroll); }, 200);
     }
 
 
@@ -20,17 +25,21 @@ function requestHandler(tabManager) {
         //console.log(message)
         if (message.includes("{")) {
             var obj = JSON.parse(message);
-            var type = obj.$type.split(".").slice(-1)[0].split(",")[0]
+            var type = obj.$type.split(".").slice(-1)[0].split(",")[0];
 
             console.log(type)
 
             switch(type) {
                 case "NewTabBrowserRequest":
-                    handleNewTab(obj)
+                    handleNewTab(obj);
                     break;
 
                 case "SetUrlRequest":
-                    handleSetUrl(obj)
+                    handleSetUrl(obj);
+                    break;
+
+                case "SetScrollRequest":
+                    handleSetScroll(obj);
                     break;
             }
         }

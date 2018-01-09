@@ -18,8 +18,6 @@ function tabManager(sendRequestFunction) {
     var updateTab = function (tabId) {
         var update = function (tab) {
             var finalUpdate = function (result) {
-                console.log("Result:" + tabId.toString());
-                console.log(result)
                 if (tab != null) {
                     var requestBody = {
                         "$type": "Dash.UpdateTabBrowserRequest, Dash",
@@ -136,8 +134,9 @@ function tabManager(sendRequestFunction) {
     chrome.tabs.onUpdated.addListener(tabUpdatedCallback);
     chrome.tabs.onActiveChanged.addListener(activeTabChangedCallback);
 
-    this.setScrollPosition = function(tabId, positionY) {
-        var script = "window.scrollTo(0, " + positionY + ");";
+    this.setScrollPosition = function (tabId, positionY) {
+        console.log("position y asked to be set to: "+positionY)
+        var script = "window.scrollTo(0, " + positionY + ");document.documentElement.scrollTop = "+positionY+";";
         chrome.tabs.executeScript(tabId, { code: script });
     }
 

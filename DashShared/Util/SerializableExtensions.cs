@@ -37,8 +37,9 @@ namespace DashShared
             }
             catch (Exception e)
             {
+                Debug.WriteLine("Failed to parse list of objects from strings to ienumerable!   " + e.Message);
+
                 return new List<T>();
-                Debug.WriteLine("Failed to parse list of objects from strings to ienumerable!   "+e.Message);
             }
         }
 

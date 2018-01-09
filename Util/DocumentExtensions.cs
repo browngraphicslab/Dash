@@ -284,12 +284,14 @@ namespace Dash
                 if (int.TryParse(where, out yPos))
                 {
                     MainPage.Instance.WebContext.SetUrl(uri);
+                    MainPage.Instance.WebContext.SetScroll(yPos);
                 }
             }
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
+            return;
             var dataDocument = doc.GetDataDocument(null);
             dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
                 new TextController(MainPage.Instance.WebContext.Url),
