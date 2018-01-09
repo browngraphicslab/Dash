@@ -21,8 +21,10 @@ namespace Dash
 {
     public sealed partial class WebViewWrapper : UserControl
     {
-        public WebView WebContext => xWebContext;
-        public Uri WebContextUri { get; set; }
+        //public WebView WebContext => xWebContext;
+        //public Uri WebContextUri { get; set; }
+
+        public BrowserView WebContext => BrowserView.Current;
 
         public WebViewWrapper()
         {
@@ -31,21 +33,25 @@ namespace Dash
 
         public void TryNavigate(string uri)
         {
+                /*
             Uri uriResult;
             var result = Uri.TryCreate(uri, UriKind.Absolute, out uriResult);
             if (!result)
                 if (!(uri.Contains(".") && Uri.TryCreate("http://" + uri, UriKind.Absolute, out uriResult)))
                     uriResult = new Uri("https://google.com/search?q=" + uri);
             UrlBox.Text = uriResult.AbsoluteUri;
-            WebContext.Navigate(uriResult);
+            */
+            //WebContext.Navigate(uriResult);
+            WebContext.SetUrl(uri);
         }
 
         private async void WebContext_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
             if (args.IsSuccess)
             {
-                WebContextUri = args.Uri;
-                UrlBox.Text = WebContextUri.AbsoluteUri;
+               // WebContextUri = args.Uri;
+                //UrlBox.Text = WebContextUri.AbsoluteUri;
+                /*
                 await WebContext.InvokeScriptAsync("eval", new[]
                 {
                 @"(function()
@@ -60,7 +66,7 @@ namespace Dash
                         }
                     }
                 })()"
-            });
+            });*/
             }
             else
             {
@@ -70,12 +76,12 @@ namespace Dash
 
         private void WebBackButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if(WebContext.CanGoBack) WebContext.GoBack();
+            //if(WebContext.CanGoBack) WebContext.GoBack();
         }
 
         private void WebForwardButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if(WebContext.CanGoForward) WebContext.GoForward();
+            //if(WebContext.CanGoForward) WebContext.GoForward();
         }
 
         private void UrlBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -88,7 +94,7 @@ namespace Dash
 
         private void WebRefreshButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            WebContext.Refresh();
+            //WebContext.Refresh();
         }
 
         private void xWebContext_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)

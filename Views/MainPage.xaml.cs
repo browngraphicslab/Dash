@@ -57,8 +57,8 @@ namespace Dash
         public RadialMenuView RadialMenu => _radialMenu;
         public DocumentController MainDocument { get; private set; }
         public static InkController InkController = new InkController();
-        public WebView WebContext;
-        public Uri WebContextUri => WebBoxWrapper.WebContextUri;
+        public BrowserView WebContext => BrowserView.Current;
+        //public Uri WebContextUri => WebBoxWrapper.WebContextUri;
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -194,8 +194,6 @@ namespace Dash
                 Content = TabMenu.Instance,
                 
             };
-            
-            WebContext = WebBoxWrapper.WebContext;
 
             // add TreeMenu
             TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);

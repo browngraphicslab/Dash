@@ -13,10 +13,16 @@ namespace Dash
         public string url { get; set; }
         public string title { get; set; }
         public int index { get; set; }
+        public double scroll { get; set; }
         public override void Handle(BrowserView browser)
         {
             browser.FireUrlUpdated(url);
-            BrowserView.UpdateCurrentFromServer(tabId);
+            browser.FireScrollUpdated(scroll);
+
+            if (current)
+            {
+                BrowserView.UpdateCurrentFromServer(tabId);
+            }
         }
     }
 }

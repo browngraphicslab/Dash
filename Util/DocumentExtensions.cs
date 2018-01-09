@@ -222,7 +222,7 @@ namespace Dash
 
             return newDoc;
         }
-
+        /*
         public class SetContextClass
         {
             public DocumentController DataDocument;
@@ -266,20 +266,34 @@ namespace Dash
             private void scriptNotify(object sender, NotifyEventArgs e)
             {
                 MainPage.Instance.WebContext.ScriptNotify -= scriptNotify;
+                
                 DataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
                     new TextController(MainPage.Instance.WebContextUri.AbsoluteUri),
                     new TextController(e.Value)}), true);
             }
-        }
+        }*/
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
-            new SetContextClass() { DataDocument = doc.GetDataDocument(null) }.UpdateNeighboringContext();
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count == 2)
+            {
+                int yPos;
+                var uri = neighboring.TypedData.First().Data;
+                var where = neighboring.TypedData.Last().Data;
+                if (int.TryParse(where, out yPos))
+                {
+                    MainPage.Instance.WebContext.SetUrl(uri);
+                }
+            }
         }
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-
-            new GetContextClass() { DataDocument = doc.GetDataDocument(null) }.CaptureNeighboringContext();
+            var dataDocument = doc.GetDataDocument(null);
+            dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new TextController[] {
+                new TextController(MainPage.Instance.WebContext.Url),
+                new TextController(MainPage.Instance.WebContext.Scroll.ToString())}), true);
         }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)

@@ -95,11 +95,15 @@
     <Content Include="Assets\gridbg2.jpg" />
     <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <None Include="ChromeExt\.gitignore" />
+    <None Include="ChromeExt\manifest.json" />
+    <None Include="ChromeExt\README.md" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\SetUrlRequest.cs" />
+    <Compile Include="Browser\UpdateScrollBrowserRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -685,6 +689,26 @@
     <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\youtubeJson.txt" />
+    <Content Include="ChromeExt\arrow.svg" />
+    <Content Include="ChromeExt\bg.js" />
+    <Content Include="ChromeExt\bgTest.html" />
+    <Content Include="ChromeExt\close-icon.svg" />
+    <Content Include="ChromeExt\icon.png" />
+    <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jquery.js" />
+    <Content Include="ChromeExt\keylistener.js" />
+    <Content Include="ChromeExt\logo.png" />
+    <Content Include="ChromeExt\menu_inline_field.html" />
+    <Content Include="ChromeExt\menu_inline_save.html" />
+    <Content Include="ChromeExt\menu_main.html" />
+    <Content Include="ChromeExt\menu_main_document.html" />
+    <Content Include="ChromeExt\menu_tags.html" />
+    <Content Include="ChromeExt\popup.html" />
+    <Content Include="ChromeExt\popup.js" />
+    <Content Include="ChromeExt\requestHandler.js" />
+    <Content Include="ChromeExt\selections.js" />
+    <Content Include="ChromeExt\style.css" />
+    <Content Include="ChromeExt\tabManager.js" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

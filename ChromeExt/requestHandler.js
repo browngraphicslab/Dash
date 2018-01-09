@@ -22,6 +22,8 @@ function requestHandler(tabManager) {
             var obj = JSON.parse(message);
             var type = obj.$type.split(".").slice(-1)[0].split(",")[0]
 
+            console.log(type)
+
             switch(type) {
                 case "NewTabBrowserRequest":
                     handleNewTab(obj)

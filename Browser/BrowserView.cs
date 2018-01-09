@@ -210,6 +210,10 @@ namespace Dash
             //TODO   
         }
 
+        /// <summary>
+        /// should only be called from browser request
+        /// </summary>
+        /// <param name="scroll"></param>
         public void FireScrollUpdated(double scroll)
         {
             _scroll = scroll;

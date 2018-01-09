@@ -355,7 +355,7 @@ namespace Dash
                     }
                     else
                     {
-                        MainPage.Instance.WebContext.Navigate(new Uri(target));
+                        MainPage.Instance.WebContext.SetUrl(target);
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -426,7 +426,7 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
-            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            if ( e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
             {
                 var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
                 if (c != null)
