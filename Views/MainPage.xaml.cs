@@ -36,6 +36,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Dash.Views.Collection;
 using Dash.Views.Document_Menu;
 
 
@@ -181,12 +182,22 @@ namespace Dash
             
             WebContext = WebBoxWrapper.WebContext;
 
+            CollectionTreeView treeView =
+                new CollectionTreeView()
+                {
+                    DataContext = new CollectionViewModel(MainDocument,
+                        _mainCollectionView.ViewModel.CollectionController)
+                };
+            treeView.Width = 300;
+            treeView.HorizontalAlignment = HorizontalAlignment.Left;
+            MyGrid.Children.Add(treeView);
+
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
             //TreeMenu.Width = 300;
             //TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
             //MyGrid.Children.Add(TreeMenu);
-            
+
         }
 
         public CollectionView GetMainCollectionView()

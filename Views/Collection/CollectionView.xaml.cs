@@ -68,7 +68,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Page, Text, DB, Schema
+            Freeform, List, Grid, Page, Text, DB, Schema, TreeView
         }
 
         private CollectionViewType _viewType;

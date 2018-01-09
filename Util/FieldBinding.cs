@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define PRINT_BINDING_ERROR
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,7 +58,14 @@ namespace Dash
                     {
                         element.SetValue(property, xamlData);
                     }
-                    Debug.WriteLine($"Error evaluating binding: Error with converter, Document ID = {Document.Id}, Key = {Key.Name}, Converter = {converter?.GetType().Name ?? "null"}");
+#if PRINT_BINDING_ERROR
+                    Debug.WriteLine(
+                        $"Error evaluating binding: Error with converter\n" +
+                        $"  Document ID = {Document.Id}\n" + 
+                        $"  Key         = {Key.Name}\n" +
+                        $"  Field Data  = {fieldData}\n" +
+                        $"  Converter   = {converter?.GetType().Name ?? "null"}");
+#endif
                 }
                 else if (FallbackValue != null)
                 {
@@ -64,7 +73,9 @@ namespace Dash
                 }
                 else
                 {
+#if PRINT_BINDING_ERROR
                     Debug.WriteLine($"Error evaluating binding: Field was missing and there was no fallback value, Document ID = {Document.Id}, Key = {Key.Name}");
+#endif
 
                     element.ClearValue(property);
                 }
@@ -112,18 +123,27 @@ namespace Dash
             FieldControllerBase.FieldUpdatedHandler handler =
                 (sender, args, context) =>
                 {
-                    if (binding.Context.IsCompatibleWith(context.DocContextList))
-                    {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context: binding.Context);
+                if (binding.Context == null)
+                {
+                    binding.ConvertToXaml(element, property, context);
+
+                }
+                else
+                if (binding.Context.IsCompatibleWith(context.DocContextList))
+                {
+                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
                     }
                 };
+
             if (element.IsInVisualTree())
             {
+                binding.ConvertToXaml(element, property, binding.Context);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
+                binding.ConvertToXaml(element, property, binding.Context);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)
@@ -166,12 +186,14 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, false), binding.Context);
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)
