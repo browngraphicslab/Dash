@@ -251,9 +251,9 @@ namespace Dash
                 // add the output collection to the workspace at the proper position
                 var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
                     new DocumentType(DashShared.UtilShared.GenerateNewId(), "File Input Collection"));
-                outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
+                outputDoc.SetField(KeyStore.CollectionKey, outputCollection, true);
                 outputDoc.SetActiveLayout(
-                    new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X,
+                    new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.CollectionKey), where.X,
                         where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
                 collectionViewModel.AddDocument(outputDoc, null);
 

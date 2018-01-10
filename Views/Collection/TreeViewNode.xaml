@@ -8,7 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    DataContextChanged="TreeViewNode_OnDataContextChanged">
+    DataContextChanged="TreeViewNode_OnDataContextChanged"
+    Tapped="TreeViewNode_OnTapped">
 
     <StackPanel>
         <TextBlock x:Name="XTextBlock" Foreground="White"></TextBlock>

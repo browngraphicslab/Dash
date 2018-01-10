@@ -20,7 +20,8 @@ namespace Dash.Views.Collection
 {
     public sealed partial class TreeViewNode : UserControl
     {
-        public ObservableCollection<DocumentViewModel> Children;
+
+        private bool _isCollection = false;
 
         public TreeViewNode()
         {
@@ -52,9 +53,20 @@ namespace Dash.Views.Collection
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
-                    CollectionTreeView.Visibility = Visibility.Visible;
+                    _isCollection = true;
                     CollectionTreeView.DataContext = new CollectionViewModel(dvm.DocumentController, collection);
                 }
+            }
+        }
+
+        private void TreeViewNode_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_isCollection)
+            {
+                //Toggle visibility
+                CollectionTreeView.Visibility = CollectionTreeView.Visibility == Visibility.Collapsed
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
             }
         }
     }
