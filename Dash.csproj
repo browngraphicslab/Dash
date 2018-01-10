@@ -239,6 +239,9 @@
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\TreeViewCollectionNode.xaml.cs">
+      <DependentUpon>TreeViewCollectionNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\TreeViewNode.xaml.cs">
       <DependentUpon>TreeViewNode.xaml</DependentUpon>
     </Compile>
@@ -719,6 +722,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\TreeViewCollectionNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

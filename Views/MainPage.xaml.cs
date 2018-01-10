@@ -183,15 +183,15 @@ namespace Dash
                 
             };
 
-            CollectionTreeView treeView =
+            CollectionTreeView node =
                 new CollectionTreeView()
                 {
                     DataContext = new CollectionViewModel(MainDocument,
                         _mainCollectionView.ViewModel.CollectionController)
                 };
-            treeView.Width = 300;
-            treeView.HorizontalAlignment = HorizontalAlignment.Left;
-            MyGrid.Children.Add(treeView);
+            node.Width = 300;
+            node.HorizontalAlignment = HorizontalAlignment.Left;
+            MyGrid.Children.Add(node);
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);

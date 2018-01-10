@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -17,11 +18,20 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Views.Collection
 {
-    public sealed partial class CollectionTreeView : UserControl
+    public sealed partial class TreeViewCollectionNode : UserControl
     {
-        public CollectionTreeView()
+        public TreeViewCollectionNode()
         {
             this.InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue != null && !(args.NewValue is CollectionViewModel))
+            {
+                Debug.WriteLine("test");
+            }
         }
     }
 }
