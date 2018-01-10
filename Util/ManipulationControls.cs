@@ -144,8 +144,8 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             docView?.ToFront();
 
-            _grouping = docView?.DocumentGroup;
-
+            if (docView?.ParentCollection.CurrentView is  CollectionFreeformView freeFormView)
+                _grouping = docView.AddConnected(new List<DocumentView>(), freeFormView.DocumentViews);
 
             _isManipulating = true;
             _processManipulation = true;

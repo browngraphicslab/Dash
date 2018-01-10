@@ -29,7 +29,7 @@ namespace Dash
 
     public sealed partial class DocumentView : SelectionElement
     {
-        public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); // TODO document views should not be assumed to be in a collection this!
 
         public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
 
@@ -360,8 +360,6 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
             IsMainCollection = (this == MainPage.Instance.MainDocView);
@@ -432,9 +430,6 @@ namespace Dash
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
-
-        public List<DocumentView> DocumentGroup;
-
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -803,9 +798,9 @@ namespace Dash
 
         private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
         {
-            var allDocumentViews = (this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.DocumentViews.ToList();
+            var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
-            DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
+            var DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
 
             if (DocumentGroup.Count < 2) isGroupSelectionOn = false;
 
@@ -832,7 +827,7 @@ namespace Dash
         }
 
 
-        private List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
+        public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {
             var docRootBounds = ViewModel.GroupingBounds(ActualWidth, ActualHeight);
             foreach (var doc in documentViews)
