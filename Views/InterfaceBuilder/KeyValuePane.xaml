@@ -54,7 +54,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}"/>
                             <ColumnDefinition Width="*" MaxWidth="100"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*" MaxWidth="500"/>
                             <ColumnDefinition Width="{x:Bind TypeColumnWidth}"/>
                             <ColumnDefinition Width="25"/>
                         </Grid.ColumnDefinitions>
@@ -62,8 +62,8 @@
                         <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalScrollMode="Enabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left"  />
                         </ScrollViewer>
-                        <ScrollViewer Grid.Column="2" VerticalAlignment="Center" HorizontalScrollMode="Enabled" MaxHeight="60" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                            <Border Grid.Column="2"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="2" MaxWidth="500"  VerticalAlignment="Center" HorizontalScrollMode="Enabled" MaxHeight="60" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <Border Grid.Column="2" MaxWidth="500"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}"/>
                         </ScrollViewer>
                         <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
