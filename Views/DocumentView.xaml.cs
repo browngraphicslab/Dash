@@ -51,6 +51,9 @@ namespace Dash
 
         public MenuFlyout MenuFlyout;
 
+        private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -65,7 +68,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3 }));
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -78,38 +81,64 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
-            AddHandler(ManipulationStartedEvent, new ManipulationStartedEventHandler(DocumentView_ManipulationStarted), true);
+            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
+            AddHandler(PointerEnteredEvent, new PointerEventHandler(DocumentView_PointerEntered), true);
+            AddHandler(PointerExitedEvent, new PointerEventHandler(DocumentView_PointerExited), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
-            PointerPressed += DocumentView_PointerPressed;
-            PointerReleased += DocumentView_PointerReleased;
+
+            AddBorderRegionHandlers();
+
+
 
             MenuFlyout = xMenuFlyout;
         }
 
-        private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void AddBorderRegionHandlers()
         {
-
+            foreach(var region in new FrameworkElement[]{ BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 })
+            {
+                region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
+                region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
+            }
         }
 
-        private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            ToggleGroupSelectionBorderColor(false);
+        }
+
+        private void BorderRegion_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            ToggleGroupSelectionBorderColor(true);
         }
 
         // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is DocumentView docView)
-                CheckForDropOnLink(docView);
-
             if (IsSelected == false)
                 ToggleSelectionBorder(false);
         }
 
         // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
         }
+
+        public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (sender is DocumentView docView)
+                CheckForDropOnLink(docView);
+
+            ToggleGroupSelectionBorderColor(false);
+        }
+
+
+        public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
+        {
+            ToggleGroupSelectionBorderColor(true);
+        }
+
 
         private void CheckForDropOnLink(DocumentView docView)
         {
@@ -403,6 +432,8 @@ namespace Dash
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
+
+        public List<DocumentView> DocumentGroup;
 
 
         /// <summary>
@@ -767,8 +798,55 @@ namespace Dash
 
         private void ToggleSelectionBorder(bool isBorderOn)
         {
-            xTargetContentGrid.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+            xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
         }
+
+        private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
+        {
+            var allDocumentViews = (this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.DocumentViews.ToList();
+            if (allDocumentViews == null) return;
+            DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
+
+            if (DocumentGroup.Count < 2) isGroupSelectionOn = false;
+
+            foreach (var dv in allDocumentViews)
+            {
+                if (DocumentGroup.Contains(dv))
+                {
+                    if (dv != this)
+                    {
+                        dv.ToggleSelectionBorder(isGroupSelectionOn);
+                    }
+
+                    dv.xSelectionBorder.BorderBrush = isGroupSelectionOn
+                        ? GroupSelectionBorderColor
+                        : SingleSelectionBorderColor;
+                }
+                else
+                {
+                    dv.ToggleSelectionBorder(false);
+                }
+
+
+            }
+        }
+
+
+        private List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
+        {
+            var docRootBounds = ViewModel.GroupingBounds(ActualWidth, ActualHeight);
+            foreach (var doc in documentViews)
+            {
+                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
+                docBounds.Intersect(docRootBounds);
+                if (docBounds == Rect.Empty || grouped.Contains(doc)) continue;
+                grouped.Add(doc);
+                doc.AddConnected(grouped, documentViews);
+            }
+
+            return grouped;
+        }
+
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {

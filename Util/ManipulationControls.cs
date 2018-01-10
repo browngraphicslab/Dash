@@ -117,50 +117,13 @@ namespace Dash
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             _isManipulating = false;
-            var grouped = new List<DocumentViewModel>();
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (parent != null && !_element.Equals(parent))
-            {
-                AddConnected(grouped, docRoot, parent);
-                var recolor = false;
-                foreach (var g in grouped)
-                    if (!Grouped.Contains(g))
-                        recolor = true;
-                foreach (var g in Grouped)
-                    if (!grouped.Contains(g))
-                        recolor = true;
-                if (recolor)
-                {
-                    Random r = new Random();
-                    var BackColor = grouped.Count == 1 ? Colors.Transparent: Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
 
-                    foreach (var g in grouped)
-                        g.BorderGroupColor = BackColor;
-                }
-            }
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                     () => docRoot.MoveToContainingCollection() ));
                 manipulationCompletedRoutedEventArgs.Handled = true;
-            }
-        }
-
-        List<DocumentViewModel> Grouped = new List<DocumentViewModel>();
-
-        private static void AddConnected(List<DocumentViewModel> grouped, DocumentView docRoot, CollectionFreeformView parent)
-        {
-            var docRootBounds = docRoot.ViewModel.GroupingBounds(docRoot.ActualWidth, docRoot.ActualHeight);
-            foreach (var doc in parent.DocumentViews())
-            {
-                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
-                docBounds.Intersect(docRootBounds);
-                if (docBounds != Rect.Empty && !grouped.Contains(doc.ViewModel))
-                {
-                    grouped.Add(doc.ViewModel);
-                    AddConnected(grouped, doc, parent);
-                }
             }
         }
 
@@ -181,20 +144,15 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             docView?.ToFront();
 
+            _grouping = docView?.DocumentGroup;
+
+
             _isManipulating = true;
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
             if (e!= null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
-
-            Grouped.Clear();
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (parent != null)
-            {
-                AddConnected(Grouped, docRoot, parent);
-            }
         }
 
         public void AddAllAndHandle()
@@ -277,7 +235,8 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e, Grouped);
+            ;
+            TranslateAndScale(e, _grouping);
         }
 
 
@@ -307,6 +266,7 @@ namespace Dash
         // these constants adjust the sensitivity of the shake
         private static int _millisecondsToShake = 600;
         private static int _sensitivity = 4;
+        private List<DocumentView> _grouping;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -463,7 +423,7 @@ namespace Dash
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, IEnumerable<DocumentViewModel> grouped=null)
+        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentView> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -478,10 +438,10 @@ namespace Dash
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
-                if (grouped != null && grouped.Count() > 0)
+                if (grouped != null && grouped.Any())
                 {
                     foreach (var g in grouped)
-                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                        g.ViewModel.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
                                      e.Position, new Point(scaleFactor, scaleFactor)));
                 }
                 else
