@@ -72,9 +72,9 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private const float BackgroundOpacity = .95f;
+        private const float BackgroundOpacity = 1.0f;
 
         #endregion
 
@@ -92,6 +92,14 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+        }
+
+        public IEnumerable<DocumentView> DocumentViews()
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+                if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                    yield return doc;
         }
 
         public IOReference GetCurrentReference()
@@ -952,6 +960,8 @@ namespace Dash
         #endregion
 
 
+        #region PointerChrome
+
         /// <summary>
         /// When the mouse hovers over the backgorund
         /// </summary>
@@ -959,7 +969,7 @@ namespace Dash
         /// <param name="e"></param>
         private void Background_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.IBeam, 1);
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
         }
 
         /// <summary>
@@ -969,8 +979,10 @@ namespace Dash
         /// <param name="e"></param>
         private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
+
+        #endregion
 
         /// <summary>
         /// 
@@ -1082,7 +1094,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            RenderPreviewTextbox(e);
+            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1098,9 +1110,8 @@ namespace Dash
 
         }
 
-        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        public void RenderPreviewTextbox(Point where)
         {
-            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
             previewTextBuffer = "";
             Canvas.SetLeft(previewTextbox, @where.X);
             Canvas.SetTop(previewTextbox, @where.Y);
@@ -1225,6 +1236,8 @@ namespace Dash
             _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
+        // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
+        // TODO there are better hooks to use
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsSelectionEnabled) return;
@@ -1417,23 +1430,25 @@ namespace Dash
         /// <param name="e"></param>
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
-            var documentView = sender as DocumentView;
-            Debug.Assert(documentView != null);
-            if (documentView is null) return;
-            OnDocumentViewLoaded?.Invoke(this, documentView);
-            documentView.OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add(documentView);
-
-            if (loadingPermanentTextbox)
+            if (sender is DocumentView documentView)
             {
-                var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
-                if (richEditBox != null)
+                OnDocumentViewLoaded?.Invoke(this, documentView);
+                documentView.OuterGrid.Tapped += DocumentView_Tapped;
+                _documentViews.Add(documentView);
+
+                if (loadingPermanentTextbox)
                 {
-                    richEditBox.GotFocus -= RichEditBox_GotFocus;
-                    richEditBox.GotFocus += RichEditBox_GotFocus;
-                    richEditBox.Focus(FocusState.Programmatic);
+                    var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
+                    if (richEditBox != null)
+                    {
+                        richEditBox.GotFocus -= RichEditBox_GotFocus;
+                        richEditBox.GotFocus += RichEditBox_GotFocus;
+                        richEditBox.Focus(FocusState.Programmatic);
+                        documentView.OnSelected();
+                    }
                 }
             }
+
         }
         private void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {

@@ -132,7 +132,6 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
         }
 
         /// <summary>
@@ -290,6 +289,8 @@ namespace Dash
                 var rt = parent.RenderTransform.TransformPoint(new Point());
                 HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
                 this.CapturePointer(e.Pointer);
+                parent.ManipulationControls.ElementOnManipulationStarted(null, null);
+                parent.DocumentView_ManipulationStarted(null, null);
             }
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -326,6 +327,7 @@ namespace Dash
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
                 var dvm = parent.ViewModel;
                 parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
+                parent.DocumentView_ManipulationCompleted(null, null);
             }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)
@@ -399,6 +401,17 @@ namespace Dash
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
             {
+                if (e.Key == VirtualKey.Back)
+                {
+                    string docText;
+                    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out docText);
+                    if (docText == "")
+                    {
+
+                        var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+                        parentDoc.DeleteDocument(true);
+                    }
+                }
                 return;
             }
             string allText;
@@ -557,9 +570,6 @@ namespace Dash
         /// </summary>
         private void AddWordCountHandlers()
         {
-            xWordCountBorder.PointerEntered += delegate { xWordCountBorder.Opacity = 1; };
-            xWordCountBorder.PointerExited += delegate { xWordCountBorder.Opacity = 0.3; };
-            xWordCount.DataContext = WC;
             WC.CountWords();
         }
 
@@ -568,13 +578,7 @@ namespace Dash
         /// </summary>
         private void AddFontSizeHandlers()
         {
-            xFontSizePanel.PointerEntered += delegate { xFontSizePanel.Opacity = 1; };
-            xFontSizePanel.PointerExited += delegate { xFontSizePanel.Opacity = 0.3; };
-            xFontSizeLabel.Tapped += delegate
-            {
-                xFontSizeTextBox.Focus(FocusState.Programmatic); 
-                xFontSizeTextBox.SelectAll();
-            };
+
         }
 
         /// <summary>

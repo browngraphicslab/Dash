@@ -453,22 +453,6 @@ namespace Dash
             }
         }
 
-        private void CloseMenu()
-        {
-            xMenuCanvas.Children.Remove(_collectionMenu);
-            xMenuColumn.Width = new GridLength(0);
-            var lvb = ((UIElement)xContentControl.Content)?.GetFirstDescendantOfType<ListViewBase>();
-            var sitemsCount = lvb?.SelectedItems.Count;
-            if (lvb?.SelectedItems.Count > 0)
-                try
-                {
-                    lvb.SelectedItems.Clear();
-                }
-                catch (Exception)
-                {
-                }
-        }
-
         private void SelectAllItems()
         {
             var view = CurrentView as ICollectionView;
@@ -562,13 +546,6 @@ namespace Dash
             // TODO fill this in
         }
 
-        private void OpenMenu()
-        {
-            if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
-            xMenuCanvas.Children.Add(_collectionMenu);
-            _collectionMenu.AddAndPlayOpenAnimation();
-        }
-
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
@@ -597,15 +574,12 @@ namespace Dash
             // if we're the lowest selected then open the menu
             if (isLowestSelected)
             {
-                OpenMenu();
-                ParentDocument.ViewModel?.OpenMenu(); 
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && !isLowestSelected && ParentDocument?.IsMainCollection == false)
+            else if (_collectionMenu != null && ParentDocument?.IsMainCollection == false)
             {
-                CloseMenu();
-                ParentDocument.ViewModel?.CloseMenu();
+
             }
         }
 
