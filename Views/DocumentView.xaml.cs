@@ -86,6 +86,9 @@ namespace Dash
             MenuFlyout = xMenuFlyout;
         }
 
+        
+
+
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
 
@@ -900,6 +903,24 @@ namespace Dash
         }
 
 
+        #endregion
+
+        #region hide helpers for key value pane
+        /// <summary>
+        /// Hides the dragger button for the KeyValuePane
+        /// </summary>
+        internal void hideDraggerButton()
+        {
+            DraggerButton.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Hides the title display for the KeyValuePane
+        /// </summary>
+        internal void hideTitleDisplay()
+        {
+            xTitleBorder.Visibility = Visibility.Collapsed;
+        }
         #endregion
     }
 }

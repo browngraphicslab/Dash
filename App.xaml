@@ -52,9 +52,10 @@
         <Color x:Key="MainTextColor">#FF333333</Color>
         <Color x:Key="TitleTextColor">#FF454545</Color>
         <Color x:Key="ActivationColor">#f4aa42</Color>
-        
+        <Color x:Key="InverseColor">#FFFFFFFF</Color>
 
-            <!-- SOLID COLOR BRUSHES -->
+
+        <!-- SOLID COLOR BRUSHES -->
         <!-- general colors -->
         <SolidColorBrush x:Key="WindowsBlue" Color="{StaticResource WindowsBlueColor}"/>
         <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
@@ -75,6 +76,7 @@
         <!-- global colors-->
         <SolidColorBrush x:Key="MainText" Color="{StaticResource MainTextColor}"></SolidColorBrush>
         <SolidColorBrush x:Key="TitleText" Color="{StaticResource TitleTextColor}"></SolidColorBrush>
+        <SolidColorBrush x:Key="InverseTextColor" Color="{StaticResource InverseColor}"></SolidColorBrush>
 
         <!-- background colors -->
         <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
