@@ -441,8 +441,12 @@ namespace Dash
                 if (grouped != null && grouped.Any())
                 {
                     foreach (var g in grouped)
+                    {
                         g.ViewModel.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                                     e.Position, new Point(scaleFactor, scaleFactor)));
+                            e.Position, new Point(scaleFactor, scaleFactor)));
+                    }
+
+                        
                 }
                 else
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),

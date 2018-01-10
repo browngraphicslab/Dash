@@ -975,7 +975,7 @@ namespace Dash
 
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ViewModel.UpdateGroupingBounds(this.ActualWidth, this.ActualHeight);
+            ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
     }
 }
