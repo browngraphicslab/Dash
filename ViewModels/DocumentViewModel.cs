@@ -156,17 +156,10 @@ namespace Dash
             set => SetProperty(ref _groupMargin, value);
         }
 
-        private Color _borderGroupColor = Colors.Transparent;
-        public Color BorderGroupColor {
-            get => _borderGroupColor;
-            set => SetProperty(ref _borderGroupColor, value);
-        }
-
-
         public Rect GroupingBounds(double actualwidth, double actualheight)
         {
             {
-                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, actualwidth + 2* GroupMargin, actualheight + GroupMargin));
+                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, actualwidth + 2* GroupMargin, actualheight + 2 * GroupMargin));
             }
         }
 

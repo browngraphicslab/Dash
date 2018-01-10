@@ -51,6 +51,9 @@ namespace Dash
 
         public MenuFlyout MenuFlyout;
 
+        private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
+        private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -65,7 +68,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3 }));
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -78,36 +81,64 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
-            AddHandler(ManipulationStartedEvent, new ManipulationStartedEventHandler(DocumentView_ManipulationStarted), true);
+            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
+            AddHandler(PointerEnteredEvent, new PointerEventHandler(DocumentView_PointerEntered), true);
+            AddHandler(PointerExitedEvent, new PointerEventHandler(DocumentView_PointerExited), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
-            PointerPressed += DocumentView_PointerPressed;
-            PointerReleased += DocumentView_PointerReleased;
+
+            AddBorderRegionHandlers();
+
+
 
             MenuFlyout = xMenuFlyout;
         }
 
-        private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void AddBorderRegionHandlers()
         {
-
+            foreach(var region in new FrameworkElement[]{ BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 })
+            {
+                region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
+                region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
+            }
         }
 
-        private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            ToggleGroupSelectionBorderColor(false);
         }
 
-        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void BorderRegion_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            var docView = sender as DocumentView;
-            CheckForDropOnLink(docView);
+            ToggleGroupSelectionBorderColor(true);
+        }
 
+        // since this is public it can be called with any parameters, be safe, check everything
+        public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
             if (IsSelected == false)
                 ToggleSelectionBorder(false);
         }
 
-        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        // since this is public it can be called with any parameters, be safe, check everything
+        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
         }
+
+        public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (sender is DocumentView docView)
+                CheckForDropOnLink(docView);
+
+            ToggleGroupSelectionBorderColor(false);
+        }
+
+
+        public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
+        {
+            ToggleGroupSelectionBorderColor(true);
+        }
+
 
         private void CheckForDropOnLink(DocumentView docView)
         {
@@ -401,6 +432,8 @@ namespace Dash
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
+
+        public List<DocumentView> DocumentGroup;
 
 
         /// <summary>
@@ -765,8 +798,74 @@ namespace Dash
 
         private void ToggleSelectionBorder(bool isBorderOn)
         {
-            xTargetContentGrid.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+            xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
         }
+
+        private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
+        {
+            var allDocumentViews = (this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.DocumentViews.ToList();
+            if (allDocumentViews == null) return;
+            DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
+
+            if (DocumentGroup.Count < 2) isGroupSelectionOn = false;
+
+            foreach (var dv in allDocumentViews)
+            {
+                if (DocumentGroup.Contains(dv))
+                {
+                    if (dv != this)
+                    {
+                        dv.ToggleSelectionBorder(isGroupSelectionOn);
+                    }
+
+                    dv.xSelectionBorder.BorderBrush = isGroupSelectionOn
+                        ? GroupSelectionBorderColor
+                        : SingleSelectionBorderColor;
+                }
+                else
+                {
+                    dv.ToggleSelectionBorder(false);
+                }
+
+
+            }
+
+            StackGroup();
+        }
+
+        public void StackGroup()
+        {
+            if (DocumentGroup == null)
+            {
+                return;
+            }
+            var ordered = DocumentGroup.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
+            var length = ordered.Length;
+            for (int i = 1; i < length; i++)
+            {
+                ordered[i].GroupTransform = new TransformGroupData(
+                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
+                    , ordered[i].GroupTransform.ScaleCenter
+                    , ordered[i].GroupTransform.ScaleAmount);
+            }
+        }
+
+
+        private List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
+        {
+            var docRootBounds = ViewModel.GroupingBounds(ActualWidth, ActualHeight);
+            foreach (var doc in documentViews)
+            {
+                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
+                docBounds.Intersect(docRootBounds);
+                if (docBounds == Rect.Empty || grouped.Contains(doc)) continue;
+                grouped.Add(doc);
+                doc.AddConnected(grouped, documentViews);
+            }
+
+            return grouped;
+        }
+
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
@@ -831,32 +930,30 @@ namespace Dash
 
         public void MoveToContainingCollection()
         {
-            var rawPointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var rawWindowBounds = Windows.UI.Core.CoreWindow.GetForCurrentThread().Bounds;
-            var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(rawPointerPosition);
-            var self = this.ViewModel.DocumentController;
-            var opos = new Windows.Foundation.Point(rawPointerPosition.X - rawWindowBounds.Left, rawPointerPosition.Y - rawWindowBounds.Top);
-            var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection != null)
-            {
-                var eles = VisualTreeHelper.FindElementsInHostCoordinates(opos, MainPage.Instance);
-                foreach (var nestedCollection in eles.Select((el) => el as CollectionView))
-                    if (nestedCollection != null)
+           var collection = this.GetFirstAncestorOfType<CollectionView>();
+            if (collection == null)
+                return;
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<CollectionView>();
+            
+            foreach (var nestedCollection in topCollection)
+                if (nestedCollection != null)
+                {
+                    if (nestedCollection.GetAncestors().ToList().Contains(this))
+                        continue;
+                    if (!nestedCollection.Equals(collection) )
                     {
-                        var nestedCollectionDocument = nestedCollection.ViewModel.ContainerDocument;
-                        if (nestedCollectionDocument.Equals(self))
-                            continue;
-                        if (!nestedCollection.Equals(collection) )
-                        {
-                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), opos) :
-                                new Point();
-                           nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                           collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-                        }
-                        break;
+                        var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                            new Point();
+                        nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                        collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
                     }
-            }
+                    break;
+                }
         }
 
         #region Context menu click handlers
