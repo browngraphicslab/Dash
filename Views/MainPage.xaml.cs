@@ -112,7 +112,28 @@ namespace Dash
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
-                xMainDocView.DataContext = new DocumentViewModel(MainDocument);
+                var col = MainDocument.GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
+                if (col == null)
+                {
+                    col = new ListController<DocumentController>();
+                    MainDocument.SetField(KeyStore.CollectionKey, col, true);
+                }
+                DocumentController lastWorkspace;
+                if (col.Count == 0)
+                {
+                    var documentController = new CollectionNote(null, new Point(0, 0),
+                        CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
+                    col.Add(documentController);
+                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
+                    lastWorkspace = documentController;
+                }
+                else
+                {
+                    lastWorkspace = MainDocument.GetField(KeyStore.LastWorkspaceKey) as DocumentController;
+                }
+                lastWorkspace.SetWidth(double.NaN);
+                lastWorkspace.SetHeight(double.NaN);
+                xMainDocView.DataContext = new DocumentViewModel(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
@@ -120,6 +141,14 @@ namespace Dash
 
 
             BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
+        }
+
+        public void SetCurrentWorkspace(DocumentController workspace)
+        {
+            workspace.SetWidth(double.NaN);
+            workspace.SetHeight(double.NaN);
+            xMainDocView.DataContext = new DocumentViewModel(workspace);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -187,7 +216,7 @@ namespace Dash
                 new CollectionTreeView()
                 {
                     DataContext = new CollectionViewModel(MainDocument,
-                        _mainCollectionView.ViewModel.CollectionController)
+                        MainDocument.GetField(KeyStore.CollectionKey))
                 };
             node.Width = 300;
             node.HorizontalAlignment = HorizontalAlignment.Left;

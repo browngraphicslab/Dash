@@ -63,9 +63,8 @@ namespace Dash.Views.Collection
             }
         }
 
-        private void XHeader_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            Debug.WriteLine("Header Tapped");
             if (_isCollection)
             {
                 e.Handled = true;
@@ -81,6 +80,11 @@ namespace Dash.Views.Collection
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                 }
             }
+        }
+
+        private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
 }
