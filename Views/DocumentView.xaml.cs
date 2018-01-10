@@ -95,16 +95,18 @@ namespace Dash
         {
         }
 
-        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        // since this is public it can be called with any parameters, be safe, check everything
+        public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            var docView = sender as DocumentView;
-            CheckForDropOnLink(docView);
+            if (sender is DocumentView docView)
+                CheckForDropOnLink(docView);
 
             if (IsSelected == false)
                 ToggleSelectionBorder(false);
         }
 
-        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        // since this is public it can be called with any parameters, be safe, check everything
+        public void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
         }
