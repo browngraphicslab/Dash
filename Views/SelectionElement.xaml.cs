@@ -40,7 +40,7 @@ namespace Dash
         public bool IsLowestSelected
         {
             get => _isLowestSelected;
-            protected set
+            private set
             {
                 if (_isLowestSelected == value) return;
 
@@ -78,6 +78,9 @@ namespace Dash
         /// <param name="isLowestSelected"></param>
         protected abstract void OnLowestActivated(bool isLowestSelected);
 
+        /// <summary>
+        /// Call this method to set the selection to this selection element
+        /// </summary>
         public void OnSelected()
         {
             // if we don't already get the clicks tell our parent we want them
