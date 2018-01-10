@@ -825,9 +825,9 @@ namespace Dash
 
             }
 
-            StackGroup();
+            //StackGroup();
         }
-
+        /*
         public void StackGroup()
         {
             if (DocumentGroup == null)
@@ -844,7 +844,7 @@ namespace Dash
                     , ordered[i].GroupTransform.ScaleAmount);
             }
         }
-
+        */
 
         public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {

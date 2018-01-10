@@ -391,7 +391,7 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var parentViewModel = parent.ViewModel;
             parentViewModel.DocumentController.CaptureNeighboringContext();
-            parent.StackGroup();
+            //parent.StackGroup();
 
         }
 
