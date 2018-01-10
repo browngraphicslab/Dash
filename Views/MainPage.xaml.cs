@@ -35,8 +35,12 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.Graphics.Display;
 using Windows.UI;
 using Dash.Views.Document_Menu;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -66,6 +70,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
+
             InitializeComponent();
 
             // Set the instance to be itself, there should only ever be one MainView
@@ -414,7 +419,7 @@ namespace Dash
                 {
                     Debug.WriteLine($"Generated {i} documents");
                 }
-                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
+                docs.Add(new XampleFields(numFields, DashShared.TypeInfo.Text, i).Document);
             }
 
             var doc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
@@ -437,7 +442,7 @@ namespace Dash
                 ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(400) }, new ColumnDefinition { Width = new GridLength(400) } },
                 Height = 900
             };
-            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
+            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, DashShared.TypeInfo.Text).Document));
             Grid.SetColumn(documentView, 1);
             g.Children.Add(documentView);
             sw.Stop();

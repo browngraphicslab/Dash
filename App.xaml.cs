@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Foundation;
+using Windows.Graphics.Display;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -43,6 +48,7 @@ namespace Dash
                 //this.DebugSettings.IsTextPerformanceVisualizationEnabled = true;
             }
 #endif
+
             // register dependency injection container
             Container = RegisterServices();
 
