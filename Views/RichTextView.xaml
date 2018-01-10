@@ -20,8 +20,7 @@
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          Grid.Row="0"
-                         Foreground="{StaticResource MainText}" 
-                         Background="{StaticResource DocumentBackground}" Opacity=".9"
+                         Foreground="{StaticResource MainText}"
                          GotFocus="xRichEditBox_GotFocus"
                          LostFocus="XRichEditBox_OnLostFocus"
                          Drop="xRichEditBox_Drop"   
@@ -29,12 +28,12 @@
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 
                          SelectionChanged="xRichEditBox_SelectionChanged"  
-                         BorderBrush="{StaticResource DocumentBackground}" 
-                         BorderThickness="1"
+                         BorderThickness="0"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          Holding="XRichEditBox_OnHolding"
                          IsTextPredictionEnabled="True"
+                         Background="Transparent"
                          >
             <!--FORMAT PROPERTIES TOOLTIP-->
             <ToolTipService.ToolTip>
@@ -74,28 +73,8 @@
                 </MenuFlyout>
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>
-       
-        <Canvas VerticalAlignment="Bottom">
-            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="25">
-                <!--FONT SIZE-->
-                <StackPanel x:Name="xFontSizePanel" Orientation="Horizontal" Opacity="0.3" Margin="0,0,15,0">
-                    <TextBlock x:Name="xFontSizeLabel" Foreground="DimGray" Padding="2" Text="Font Size: "></TextBlock>
-                    <TextBox x:Name="xFontSizeTextBox" BorderThickness="0" BorderBrush="Transparent" Background="Transparent" Padding="2"></TextBox>
-                    <ToolTipService.ToolTip>
-                        <ToolTip Background="{StaticResource DarkBackground}" Padding="3" Content="Tap to edit" Foreground="White"/>
-                    </ToolTipService.ToolTip>
-                </StackPanel>
-                <!--WORD COUNT-->
-                <Border x:Name="xWordCountBorder" Opacity="0.3">
-                    <TextBlock x:Name="xWordCount" Foreground="DimGray" Padding="2" >
-                        <Run x:Name="xCount" Text="{x:Bind WC.Count, Mode=OneWay}"></Run>
-                        <Run> words</Run>
-                    </TextBlock>
-                </Border>
-            </StackPanel>
-        </Canvas>
 
-            <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
+        <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"
                         VerticalAlignment="Top" Margin="5" Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->

@@ -268,7 +268,7 @@ namespace Dash
             if (args.Uri != null)
             {
                 args.Cancel = true;
-                MainPage.Instance.WebContext.Navigate(args.Uri);
+                MainPage.Instance.WebContext.SetUrl(args.Uri.AbsoluteUri);
             }
         }
 

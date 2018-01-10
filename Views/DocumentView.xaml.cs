@@ -38,10 +38,8 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls;
 
-        private Boolean useFixedMenu = false; // if true, doc menu appears fixed on righthand side of screen, otherwise appears next to doc
-
-        private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+
         // the document view that is being dragged
         public static DocumentView DragDocumentView;
 
@@ -50,6 +48,8 @@ namespace Dash
         public static int dvCount = 0;
 
         private Storyboard _storyboard;
+
+        public MenuFlyout MenuFlyout;
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -60,7 +60,7 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-            Util.InitializeDropShadow(xShadowHost, xShadowTarget);
+            Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -82,17 +82,17 @@ namespace Dash
 
             //this.ManipulationCompleted += DocumentView_ManipulationCompleted;
             // this.ManipulationDelta += DocumentView_ManipulationDelta;
+            AddHandler(ManipulationStartedEvent, new ManipulationStartedEventHandler(DocumentView_ManipulationStarted), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
             PointerPressed += DocumentView_PointerPressed;
             PointerReleased += DocumentView_PointerReleased;
-
-
-
+            MenuFlyout = xMenuFlyout;
         }
 
 
         private void DocumentView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+
         }
 
         private void DocumentView_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -106,6 +106,8 @@ namespace Dash
 
             Snap(false);
 
+            if (IsSelected == false)
+                ToggleSelectionBorder(false);
         }
 
         private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -149,7 +151,16 @@ namespace Dash
             }
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
-        
+            var closest = GetClosestDocumentView();
+            if (preview)
+            {
+                PreviewSnap(closest);
+            }
+            else
+            {
+                SnapToDocumentView(closest);
+            }
+            /*
             //Find the documents to snap to and the sides you want to snap to
 
             var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
@@ -168,6 +179,7 @@ namespace Dash
             {
                 SnapToDocumentView(left, right, top, bottom);
             }
+            */
             
 
         }
@@ -176,6 +188,11 @@ namespace Dash
         {
             var neighbors = left.Concat(right).Concat(top).Concat(bottom);
             foreach(var neighbor in neighbors) SnapToDocumentView(neighbor);
+        }
+
+        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            ToggleSelectionBorder(true);
         }
 
         private void PreviewSnap(List<Tuple<DocumentView, Side, double>> left, List<Tuple<DocumentView, Side, double>> right, List<Tuple<DocumentView, Side, double>> top, List<Tuple<DocumentView, Side, double>> bottom)
@@ -297,22 +314,6 @@ namespace Dash
             }
             return neighbors;
 
-        }
-
-        private List<Tuple<DocumentView, Side, double>> GetNewNeighboringDocumentViews()
-        {
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
-
-            var currentBoundingBox = GetBoundingBoxScreenSpace();
-
-            var left = NeighborHelper(mainView, Side.Left, currentBoundingBox, Double.NegativeInfinity, boundingBox=> boundingBox.Right, (r, threshold) => r > threshold);
-            var right = NeighborHelper(mainView, Side.Right, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Left, (l, threshold) => l < threshold);
-            var top = NeighborHelper(mainView, Side.Top, currentBoundingBox, Double.NegativeInfinity, boundingBox => boundingBox.Bottom, (b, threshold) => b > threshold);
-            var bottom = NeighborHelper(mainView, Side.Bottom, currentBoundingBox, Double.PositiveInfinity, boundingBox => boundingBox.Top, (t, threshold) => t < threshold);
-
-
-            return left.Concat(right).Concat(top).Concat(bottom).ToList();
         }
 
         /// <summary>
@@ -707,9 +708,6 @@ namespace Dash
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
             FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-
-            //handles drop from keyvaluepane 
-            OnKeyValueDrop(e);
         }
 
         public void ToFront()
@@ -770,22 +768,22 @@ namespace Dash
                     ViewModel.Height = 50;
                 }
             }
-            new ManipulationControls(xKeyValuePane, false, false);
+
+            ToFront();
+
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
-        private bool isOperator = false;
-        private bool addItem = false;
+
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            isOperator = true;
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
+            //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
+            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
             xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
@@ -800,222 +798,32 @@ namespace Dash
             }
         }
 
-        static int CollectionCount = 0; // 100% a hack for labelling collection uniquely
-    
-        #endregion
-        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
-
         /// <summary>
         /// Applies custom override styles to the operator view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleCollection(CollectionView view)
         {
-            
-            var width = 20;
-            
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            
-            addItem = false;
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
-            xTitle.Text = "Collection (" + CollectionCount + ")";
-            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
-            CollectionCount++;
+            xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
-        
-        #region KEYVALUEPANE
-        private static int KeyValPaneWidth = 200;
-        private void OpenCloseKeyValuePane()
-        {
-            if (xKeyValPane.Visibility == Visibility.Collapsed)
-            {
-                xKeyValPane.Width = KeyValPaneWidth;
-                xKeyValPane.Visibility = Visibility.Visible;
-                ViewModel.Width += KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(-KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
-            }
-            else
-            {
-                xKeyValPane.Visibility = Visibility.Collapsed;
-                xKeyValPane.Width = 0;
-                ViewModel.Width -= KeyValPaneWidth;
-                ManipulatorOnManipulatorTranslatedOrScaled(new TransformGroupData(new Point(KeyValPaneWidth * ManipulationControls.ElementScale, 0), new Point(0, 0), new Point(1, 1)));
-            }
-        }
+
+#endregion
 
 
         private void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        private void xKeyValPane_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-        private void xKeyValPane_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
+        
 
-        private void OnKeyValueDrop(DragEventArgs e)
-        {
-            // if the drop wasn't from the key value pane, then return
-            // if the view is in the interface builder return
-            if (e.Data?.Properties[KeyValuePane.DragPropertyKey] == null || (ViewModel?.IsInInterfaceBuilder ?? true)) return;
-
-            // get data variables from the DragArgs
-            var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
-
-            var dataDocController = kvp.Value;
-            if (!dataDocController.Equals(ViewModel.DocumentController)) return; // return if it's not sent from the appropriate keyvaluepane 
-
-            var dataKey = kvp.Key;
-            var context = new Context(dataDocController);
-            var dataField = dataDocController.GetDereferencedField(dataKey, context);
-
-            // get a layout document for the data - use the most abstract prototype as the field reference document
-            //  (otherwise, the layout would point directly to the data instance which would make it impossible to
-            //   create Data copies since the layout would point directly to the (source) data instance and not the common prototype).
-            var dataPrototypeDoc = kvp.Value;
-            while (dataPrototypeDoc.GetPrototype() != null)
-                dataPrototypeDoc = dataPrototypeDoc.GetPrototype();
-            var layoutDocument = InterfaceBuilder.GetLayoutDocumentForData(dataField, dataPrototypeDoc, dataKey, null);
-            if (layoutDocument == null)
-                return;
-
-            // apply position if we are dropping on a freeform
-            var posInLayoutContainer = e.GetPosition(xFieldContainer);
-            var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberController).Data / 2;
-            var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberController).Data / 2;
-            var positionController = new PointController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
-            layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
-
-            // add the document to the composite
-            var data = ViewModel.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as ListController<DocumentController>;
-            data?.Add(layoutDocument);
-        }
-        #endregion
-
-        DateTime copyDown = DateTime.MinValue;
         MenuButton copyButton;
-        private void SetUpMenu()
-        {
-            var red = new Color();
-            red.A = 204;
-            red.R = 190;
-            red.B = 25;
-            red.G = 25;
-
-            copyButton = new MenuButton(Symbol.Copy, "Copy", CopyDocument);
-            var moveButton = new MenuButton(Symbol.MoveToFolder, "Move", null);
-            var copyDataButton = new MenuButton(Symbol.SetTile, "Copy Data", CopyDataDocument);
-            var instanceDataButton = new MenuButton(Symbol.SetTile, "Instance", InstanceDataDocument);
-            var copyViewButton = new MenuButton(Symbol.SetTile, "Alias", CopyViewDocument);
-            var addButton = new MenuButton(Symbol.Add, "Add", OpenCloseKeyValuePane);
-            var showContextButton = new MenuButton(Symbol.Add, "Context", ShowContext);
-
-            var documentButtons = new List<MenuButton>
-            {
-                //moveButton,
-                new MenuButton(Symbol.Delete, "Delete",DeleteDocument),
-                copyButton,
-               // delegateButton,
-               // copyDataButton
-               // instanceDataButton,
-                copyViewButton,
-                new MenuButton(Symbol.Pictures, "Layout",OpenLayout),
-                //new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                //new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
-                addButton,
-                showContextButton
-            };
-            moveButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Move;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            moveButton.DropCompleted += ButtonView_DropCompleted;
-            copyButton.AddHandler(PointerPressedEvent, new PointerEventHandler(CopyButton_PointerPressed), true);
-            copyButton.DragStarting += (s, e) =>
-            {
-                _moveTimer.Stop();
-                e.Data.RequestedOperation = copyButton.Contents.Symbol == Symbol.MoveToFolder ? DataPackageOperation.Move : DataPackageOperation.Copy;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            copyButton.DropCompleted += ButtonView_DropCompleted;
-            copyDataButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            instanceDataButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            addButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-            copyViewButton.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                e.Data.Properties.Add("View", true);
-                ViewModel.DocumentView_DragStarting(this, e, ParentCollection.ViewModel);
-            };
-
-
-            _docMenu = new OverlayMenu(null, documentButtons);
-
-            Binding visibilityBinding = new Binding
-            {
-                Source = ViewModel,
-                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
-                Mode = BindingMode.OneWay
-            };
-            xMenuCanvas.SetBinding(VisibilityProperty, visibilityBinding);
-
-            if (!useFixedMenu)
-                xMenuCanvas.Children.Add(_docMenu);
-            _moveTimer.Tick += Timer_Tick;
-        }
-
-        private void ButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            if (args.DropResult == DataPackageOperation.Move)
-            {
-                var coll = this.GetFirstAncestorOfType<CollectionView>();
-                Debug.Assert(coll != null);
-                coll.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            }
-            else
-            { // HACK ... It seems that setting the Position doesn't trigger the transform to update...
-                var currentTranslate = ViewModel.GroupTransform.Translate;
-                var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
-                var layout = ViewModel.DocumentController.GetActiveLayout() ?? ViewModel.DocumentController;
-                ViewModel.GroupTransform = new TransformGroupData(layout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data, new Point(), currentScaleAmount);
-            }
-        }
 
         DispatcherTimer _moveTimer = new DispatcherTimer()
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
 
-        private void CopyButton_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-           // _moveTimer.Start();
-        }
-
-        private void Timer_Tick(object sender, object e)
-        {
-            copyButton.Contents.Symbol = Symbol.MoveToFolder;
-            copyButton.ButtonText.Text = "Move";
-        }
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -1023,8 +831,7 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
-            if (ViewModel != null)
-                ViewModel.TransformDelta(delta);
+            ViewModel?.TransformDelta(delta);
         }
 
         /// <summary>
@@ -1113,7 +920,8 @@ namespace Dash
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
-               // fitFreeFormChildrenToTheirLayouts(); uncomment to make children in collection stretch
+                //uncomment to make children in collection stretch
+                fitFreeFormChildrenToTheirLayouts(); 
             }
         }
 
@@ -1223,88 +1031,50 @@ namespace Dash
                 };
                 xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
-                xKeyValuePane.SetDataContextToDocumentController(ViewModel.DocumentController);
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
 
             //initDocumentOnDataContext();
         }
 
-        private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            return;
-            if (ViewModel != null)
-            {
-                // xClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
-            // update collapse info
-            // collapse to icon view on resize
-            //int pad = 1;
-            //if (Height < MinHeight + 5)
-            //{
-            //    xFieldContainer.Visibility = Visibility.Collapsed;
-            //    xGradientOverlay.Visibility = Visibility.Collapsed;
-            //    xShadowTarget.Visibility = Visibility.Collapsed;
-            //    xIcon.Visibility = Visibility.Collapsed;
-            //}
-            //else
-            //    if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
-            //{
-            //    xFieldContainer.Visibility = Visibility.Collapsed;
-            //    xGradientOverlay.Visibility = Visibility.Collapsed;
-            //    xShadowTarget.Visibility = Visibility.Collapsed;
-            //    if (xIcon.Visibility == Visibility.Collapsed)
-            //        xIcon.Visibility = Visibility.Visible;
-            //    xDragImage.Opacity = 0;
-            //    if (_docMenu != null) ViewModel.CloseMenu();
-            //    UpdateBinding(true);
-            //}
-            //else
-            //{
-            //    xFieldContainer.Visibility = Visibility.Visible;
-            //    xGradientOverlay.Visibility = Visibility.Visible;
-            //    xShadowTarget.Visibility = Visibility.Visible;
-            //    xIcon.Visibility = Visibility.Collapsed;
-            //    xDragImage.Opacity = .25;
-            //    UpdateBinding(false);
-            //}
-        }
-
-        /// <summary>
-        /// Updates the bindings on the lines when documentview is minimized/vice versa 
-        /// </summary>
-        /// <param name="becomeSmall"></param>
-        private void UpdateBinding(bool becomeSmall)
-        {
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-            if (view == null) return; // we can't always assume we're on a collection		
-
-            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
-        }
-
-
         #region Menu
 
         public void DeleteDocument()
+        {
+            DeleteDocument(false);
+        }
+        public void DeleteDocument(bool addTextBox)
         {
             if (ParentCollection != null)
             {
                 (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
-                
-                if (useFixedMenu)
-                    MainPage.Instance.HideDocumentMenu();
+
+                if (addTextBox)
+                {
+                    (ParentCollection.CurrentView as CollectionFreeformView)?.
+                        RenderPreviewTextbox(ViewModel.GroupTransform.Translate);
+                }
             }
         }
 
         private void CopyDocument()
         {
             _moveTimer.Stop();
+            
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
             _moveTimer.Stop();
+
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
@@ -1318,6 +1088,7 @@ namespace Dash
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
         }
+
         private void InstanceDataDocument()
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
@@ -1341,7 +1112,6 @@ namespace Dash
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            ViewModel.CloseMenu();
         }
 
         private void OpenLayout()
@@ -1407,51 +1177,22 @@ namespace Dash
             // if we are being deselected
             if (!isSelected)
             {
-                colorStoryboardOut.Begin();
-                colorStoryboardOut.Completed += delegate
-                {
-                    xShadowTarget.Fill = Resources["DocumentBackground"] as SolidColorBrush;
-                };
-                if (useFixedMenu)
-                    MainPage.Instance.HideDocumentMenu();
+                ToggleSelectionBorder(false);
             }
             else
             {
-                // update the main toolbar in the overlay canvas
-                if (_docMenu == null)
-                {
-                    SetUpMenu();
-                }
-                if (_docMenu != null && MainPage.Instance != null)
-                {
-                    colorStoryboard.Begin();
-                    if (useFixedMenu)
-                    {
-                        MainPage.Instance.SetOptionsMenu(_docMenu);
-                        if (MainPage.Instance.MainDocView != this)
-                            MainPage.Instance.ShowDocumentMenu();
-                    }
-                }
+                ToggleSelectionBorder(true);
             }
+        }
+
+        private void ToggleSelectionBorder(bool isBorderOn)
+        {
+            xTargetContentGrid.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
-
-            if (!IsMainCollection && isLowestSelected)
-            {
-                if (_docMenu == null)
-                {
-                    SetUpMenu();
-                }
-                ViewModel?.OpenMenu();
-                _docMenu.AddAndPlayOpenAnimation();
-            }
-            else
-            {
-                ViewModel?.CloseMenu();
-            }
             ViewModel?.SetHasTitle(isLowestSelected);
         }
 
@@ -1494,6 +1235,7 @@ namespace Dash
             if (titleField == null)
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
+
        }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
@@ -1538,6 +1280,46 @@ namespace Dash
                     }
             }
         }
-    }
 
+        #region Context menu click handlers
+
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            CopyDocument();
+        }
+
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            CopyViewDocument();
+        }
+
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
+        }
+
+        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
+        {
+            OpenLayout();
+        }
+
+        private void MenuFlyoutItemAdd_Click(object sender, RoutedEventArgs e)
+        {
+            KeyValueViewDocument();
+        }
+
+        private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
+        {
+            ShowContext();
+        }
+
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
+        {
+            ScreenCap();
+            
+        }
+
+
+        #endregion
+    }
 }

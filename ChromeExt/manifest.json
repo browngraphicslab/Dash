@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
 
-  "name": "NuSys Importer",
-  "description": "Makes it easy to bring content to NuSys",
+  "name": "Dash",
+  "description": "Does Dash stuff",
   "version": "1.0",
 
   "browser_action": {
@@ -20,11 +20,12 @@
     }],
 
   "background": {
-    "scripts": ["jquery.js", "bg.js"]
+    "scripts": ["jquery.js", "tabManager.js", "requestHandler.js","bg.js"]
   },
   "permissions": [
     "tabs",
     "activeTab",
+    "storage",
     "https://ajax.googleapis.com/",
       "http://*/",
         "https://*/"

@@ -8,6 +8,10 @@ namespace Dash
 {
     public class TextController : FieldModelController<TextModel>
     {
+        public TextController() : this("")
+        {
+        }
+
         public TextController(string data) : base(new TextModel(data))
         {
         }

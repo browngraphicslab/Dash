@@ -72,9 +72,10 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private float _backgroundOpacity = .95f;
+        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
+        private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private const float BackgroundOpacity = 1.0f;
+
         #endregion
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
@@ -91,26 +92,17 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
-            //DragEnter += Collection_DragEnter;
-
-
         }
 
-        public void setBackgroundDarkness(bool isDark)
+        public IEnumerable<DocumentView> DocumentViews()
         {
-            //_backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-            _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
-            if (isDark)
-                xDarkenBackground.Opacity = .1;
-            else
-            {
-                xDarkenBackground.Opacity = 0;
-            }
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+                if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                    yield return doc;
         }
 
-
-
-    public IOReference GetCurrentReference()
+        public IOReference GetCurrentReference()
         {
             return _currReference;
         }
@@ -152,7 +144,6 @@ namespace Dash
 
             LoadLines();
             fitFreeFormChildrenToTheirLayouts();
-            //Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
 
         void fitFreeFormChildrenToTheirLayouts()
@@ -796,7 +787,8 @@ namespace Dash
         #endregion
 
         #region Manipulation
-        public Rect ClipRect { get { return xClippingRect.Rect; } }
+        public Rect ClipRect => xClippingRect.Rect;
+
         public void Move(TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
@@ -844,7 +836,6 @@ namespace Dash
             composite.Children.Add(translate);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            //ParentCollection.SetTransformOnBackground(composite);
 
             var compValue = composite.Value;
 
@@ -890,7 +881,7 @@ namespace Dash
 
         private void SetTransformOnBackground(Matrix transformMatrix)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, _numberOfBackgroundRows);
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, NumberOfBackgroundRows);
 
             if (_resourcesLoaded)
             {
@@ -927,7 +918,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
                 _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
-                    Opacity = _backgroundOpacity
+                    Opacity = BackgroundOpacity
                 };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
@@ -1099,7 +1090,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            RenderPreviewTextbox(e);
+            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1115,9 +1106,8 @@ namespace Dash
 
         }
 
-        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        public void RenderPreviewTextbox(Point where)
         {
-            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
             previewTextBuffer = "";
             Canvas.SetLeft(previewTextbox, @where.X);
             Canvas.SetTop(previewTextbox, @where.Y);
@@ -1338,18 +1328,28 @@ namespace Dash
         }
 
         string previewTextBuffer = "";
-        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
+                .HasFlag(CoreVirtualKeyStates.Down);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (text is null) return;
-            previewTextBuffer += text;
             if (previewTextbox.Visibility == Visibility.Collapsed)
                 return;
             e.Handled = true;
             var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-            if (text.Length > 0)
-                LoadNewActiveTextBox(text, where);
+            if (text == "v" && ctrlState)
+            {
+                ViewModel.Paste(Clipboard.GetContent(), where);
+                previewTextbox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                previewTextBuffer += text;
+                if (text.Length > 0)
+                    LoadNewActiveTextBox(text, where);
+            }
         }
 
         public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
@@ -1360,7 +1360,7 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
-                Actions.DisplayDocument(this, postitNote, where);
+                Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
 

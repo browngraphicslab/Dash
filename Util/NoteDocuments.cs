@@ -201,7 +201,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     {KeyStore.TitleKey, new TextController("Prototype Title")},
-                    {ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))}
+                    {ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png"))}
                 };
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -223,7 +223,7 @@ namespace Dash
 
                 Document = GetDocumentPrototype().MakeDelegate();
                 Document.SetField(KeyStore.TitleKey, new TextController("Title"), true);
-                Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
+                Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
