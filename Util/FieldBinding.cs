@@ -36,6 +36,11 @@ namespace Dash
 
         public IValueConverter Converter;
         public object ConverterParameter;
+
+        //Debug stuff
+        //Tag that can be set on a binding that will be printed if the binding fails
+        //so that you can know which exact binding is failing
+        public String Tag;
         
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
@@ -58,14 +63,18 @@ namespace Dash
                     {
                         element.SetValue(property, xamlData);
                     }
+                    else
+                    {
 #if PRINT_BINDING_ERROR
-                    Debug.WriteLine(
-                        $"Error evaluating binding: Error with converter\n" +
-                        $"  Document ID = {Document.Id}\n" + 
-                        $"  Key         = {Key.Name}\n" +
-                        $"  Field Data  = {fieldData}\n" +
-                        $"  Converter   = {converter?.GetType().Name ?? "null"}");
+                        Debug.WriteLine(
+                            $"Error evaluating binding: Error with converter\n" +
+                            $"  Document ID = {Document.Id}\n" +
+                            $"  Key         = {Key.Name}\n" +
+                            $"  Field Data  = {fieldData}\n" +
+                            $"  Converter   = {converter?.GetType().Name ?? "null"}\n" +
+                            $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
 #endif
+                    }
                 }
                 else if (FallbackValue != null)
                 {

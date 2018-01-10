@@ -8,11 +8,17 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    DataContextChanged="TreeViewNode_OnDataContextChanged"
-    Tapped="TreeViewNode_OnTapped">
+    DataContextChanged="TreeViewNode_OnDataContextChanged">
 
     <StackPanel>
-        <TextBlock x:Name="XTextBlock" Foreground="White"></TextBlock>
-        <local:CollectionTreeView x:Name="CollectionTreeView" Visibility="Collapsed"></local:CollectionTreeView>
+        <Grid x:Name="XHeader" Tapped="XHeader_OnTapped">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="30"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="XTextBlock" Foreground="White" Grid.Column="0"></TextBlock>
+            <TextBlock x:Name="XArrowBlock" Foreground="White" Grid.Column="1" FontFamily="{StaticResource FontAwesome}"  Style="{StaticResource xMenuItemExpandRight}"></TextBlock>
+        </Grid>
+        <local:CollectionTreeView x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}"></local:CollectionTreeView>
     </StackPanel>
 </UserControl>

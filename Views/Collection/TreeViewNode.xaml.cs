@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -35,12 +36,12 @@ namespace Dash.Views.Collection
             {
                 //TODO remove binding from old document
             }
-            if (args.NewValue != null)
+            if (args.NewValue != null && args.NewValue != oldViewModel)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
 
-                XTextBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>
+                var fieldBinding = new FieldBinding<TextController>
                 {
                     Document = dvm.DocumentController,
                     Key = KeyStore.TitleKey,
@@ -48,25 +49,37 @@ namespace Dash.Views.Collection
                     Mode = BindingMode.OneWay,
                     FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot,
                     XamlAssignmentDereferenceLevel =  XamlDerefernceLevel.DereferenceToRoot,
-                });
+                    Tag = "TreeViewNode text block binding"
+                };
 
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;
                     CollectionTreeView.DataContext = new CollectionViewModel(dvm.DocumentController, collection);
+                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                 }
+                XTextBlock.AddFieldBinding(TextBlock.TextProperty, fieldBinding);
             }
         }
 
-        private void TreeViewNode_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void XHeader_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            Debug.WriteLine("Header Tapped");
             if (_isCollection)
             {
+                e.Handled = true;
                 //Toggle visibility
-                CollectionTreeView.Visibility = CollectionTreeView.Visibility == Visibility.Collapsed
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
+                if (CollectionTreeView.Visibility == Visibility.Collapsed)
+                {
+                    CollectionTreeView.Visibility = Visibility.Visible;
+                    XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+                }
+                else
+                {
+                    CollectionTreeView.Visibility = Visibility.Collapsed;
+                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                }
             }
         }
     }

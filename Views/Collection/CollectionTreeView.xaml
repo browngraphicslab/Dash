@@ -11,7 +11,14 @@
 
     <Grid Background="DarkGray">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding DocumentViewModels}">
+                 ItemsSource="{Binding DocumentViewModels}"
+                 SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                    <Setter Property="Padding" Value="20,0,0,0"></Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
               <DataTemplate>
                   <local:TreeViewNode></local:TreeViewNode>

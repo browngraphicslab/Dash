@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,6 +23,15 @@ namespace Dash.Views.Collection
         public CollectionTreeView()
         {
             this.InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue != null && !(args.NewValue is CollectionViewModel))
+            {
+                Debug.WriteLine("test");
+            }
         }
     }
 }
