@@ -290,6 +290,7 @@ namespace Dash
                 HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
                 this.CapturePointer(e.Pointer);
                 parent.ManipulationControls.ElementOnManipulationStarted(null, null);
+                parent.DocumentView_ManipulationStarted(null, null);
             }
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -326,6 +327,7 @@ namespace Dash
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
                 var dvm = parent.ViewModel;
                 parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
+                parent.DocumentView_ManipulationCompleted(null, null);
             }
         }
         private void tapped(object sender, TappedRoutedEventArgs e)
