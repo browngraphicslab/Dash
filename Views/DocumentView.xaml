@@ -14,7 +14,8 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
-    PointerPressed="DocumentView_OnPointerPressed">
+    PointerPressed="DocumentView_OnPointerPressed"
+    SizeChanged="DocumentView_OnSizeChanged">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>

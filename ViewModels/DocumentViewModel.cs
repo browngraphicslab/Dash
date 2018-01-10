@@ -156,12 +156,15 @@ namespace Dash
             set => SetProperty(ref _groupMargin, value);
         }
 
-        public Rect GroupingBounds(double actualwidth, double actualheight)
+        private Rect _groupingBounds;
+
+        public void UpdateGroupingBounds(double actualwidth, double actualheight)
         {
-            {
-                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, actualwidth + 2* GroupMargin, actualheight + 2 * GroupMargin));
-            }
+            _groupingBounds = new TranslateTransform { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, actualwidth + 2 * GroupMargin, actualheight + 2 * GroupMargin));
+
         }
+
+        public Rect GroupingBounds => _groupingBounds;
 
         public void TransformDelta(TransformGroupData delta)
         {

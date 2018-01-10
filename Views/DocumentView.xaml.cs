@@ -829,10 +829,10 @@ namespace Dash
 
         public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {
-            var docRootBounds = ViewModel.GroupingBounds(ActualWidth, ActualHeight);
+            var docRootBounds = ViewModel.GroupingBounds;
             foreach (var doc in documentViews)
             {
-                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
+                var docBounds = doc.ViewModel.GroupingBounds;
                 docBounds.Intersect(docRootBounds);
                 if (docBounds == Rect.Empty || grouped.Contains(doc)) continue;
                 grouped.Add(doc);
@@ -972,5 +972,10 @@ namespace Dash
 
 
         #endregion
+
+        private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ViewModel.UpdateGroupingBounds(this.ActualWidth, this.ActualHeight);
+        }
     }
 }
