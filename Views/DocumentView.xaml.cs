@@ -911,32 +911,30 @@ namespace Dash
 
         public void MoveToContainingCollection()
         {
-            var rawPointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var rawWindowBounds = Windows.UI.Core.CoreWindow.GetForCurrentThread().Bounds;
-            var pointerPosition = MainPage.Instance.TransformToVisual(this.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(rawPointerPosition);
-            var self = this.ViewModel.DocumentController;
-            var opos = new Windows.Foundation.Point(rawPointerPosition.X - rawWindowBounds.Left, rawPointerPosition.Y - rawWindowBounds.Top);
-            var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection != null)
-            {
-                var eles = VisualTreeHelper.FindElementsInHostCoordinates(opos, MainPage.Instance);
-                foreach (var nestedCollection in eles.Select((el) => el as CollectionView))
-                    if (nestedCollection != null)
+           var collection = this.GetFirstAncestorOfType<CollectionView>();
+            if (collection == null)
+                return;
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<CollectionView>();
+            
+            foreach (var nestedCollection in topCollection)
+                if (nestedCollection != null)
+                {
+                    if (nestedCollection.GetAncestors().ToList().Contains(this))
+                        continue;
+                    if (!nestedCollection.Equals(collection) )
                     {
-                        var nestedCollectionDocument = nestedCollection.ViewModel.ContainerDocument;
-                        if (nestedCollectionDocument.Equals(self))
-                            continue;
-                        if (!nestedCollection.Equals(collection) )
-                        {
-                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), opos) :
-                                new Point();
-                           nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                           collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-                        }
-                        break;
+                        var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                            Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                            new Point();
+                        nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                        collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
                     }
-            }
+                    break;
+                }
         }
 
         #region Context menu click handlers
