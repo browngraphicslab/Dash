@@ -139,6 +139,7 @@ namespace Dash
         /// </summary>
         private const double ALIGNMENT_THRESHOLD = .2;
 
+        private const double BORDER_THICKNESS = 20;
         /// <summary>
         /// Top level function for snapping
         /// </summary>
@@ -180,14 +181,14 @@ namespace Dash
                 SnapToDocumentView(left, right, top, bottom);
             }
             */
-            
+
 
         }
 
         private void SnapToDocumentView(List<Tuple<DocumentView, Side, double>> left, List<Tuple<DocumentView, Side, double>> right, List<Tuple<DocumentView, Side, double>> top, List<Tuple<DocumentView, Side, double>> bottom)
         {
-            var neighbors = left.Concat(right).Concat(top).Concat(bottom);
-            foreach(var neighbor in neighbors) SnapToDocumentView(neighbor);
+
+
         }
 
         private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -197,14 +198,14 @@ namespace Dash
 
         private void PreviewSnap(List<Tuple<DocumentView, Side, double>> left, List<Tuple<DocumentView, Side, double>> right, List<Tuple<DocumentView, Side, double>> top, List<Tuple<DocumentView, Side, double>> bottom)
         {
-            if (!(left.Any() || right.Any() || top.Any() || bottom.Any())) return; 
+            if (!(left.Any() || right.Any() || top.Any() || bottom.Any())) return;
 
             double startX, endX, startY, endY;
             startX = 0;
             endX = 0;
             startY = 0;
             endY = 0;
-           
+
             var TB = top.Concat(bottom).ToList();
             var LR = left.Concat(right).ToList();
 
@@ -213,7 +214,8 @@ namespace Dash
             {
                 var b = left[0].Item1.GetBoundingBoxScreenSpace();
                 startX = b.Width + b.X;
-            }else if (TB.Any())
+            }
+            else if (TB.Any())
             {
                 startX = TB.Min(i => i.Item1.GetBoundingBoxScreenSpace().X);
             }
@@ -228,7 +230,8 @@ namespace Dash
             {
                 var b = right[0].Item1.GetBoundingBoxScreenSpace();
                 endX = b.X;
-            }else if (TB.Any())
+            }
+            else if (TB.Any())
             {
                 endX = TB.Max(i => i.Item1.GetBoundingBoxScreenSpace().X + i.Item1.GetBoundingBoxScreenSpace().Width);
             }
@@ -281,7 +284,7 @@ namespace Dash
 
             Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, startX);
             Canvas.SetTop(MainPage.Instance.TemporaryRectangle, startY);
-            
+
         }
 
         private List<Tuple<DocumentView, Side, double>> NeighborHelper(CollectionFreeformView mainView, Side side, Rect boundingBox, double threshold, Func<Rect, double> propGetter, Func<double, double, bool> thresholdFunc)
@@ -383,14 +386,33 @@ namespace Dash
             var newBoundingBox =
                 CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, ViewModel.Width, ViewModel.Height);
 
-            var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount); 
+            var translate = new Point(newBoundingBox.X,newBoundingBox.Y);
+
+            switch (side)
+            {
+                case Side.Bottom:
+                    translate.Y = newBoundingBox.Y - BORDER_THICKNESS;
+                    break;
+                case Side.Top:
+                    translate.Y = newBoundingBox.Y + BORDER_THICKNESS;
+                    break;
+                case Side.Left:
+                    translate.X = newBoundingBox.X + BORDER_THICKNESS;
+                    break;
+                case Side.Right:
+                    translate.X = newBoundingBox.X - BORDER_THICKNESS;
+                    break;
+            }
+
+
+            //var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
+            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
 
             ViewModel.Width = newBoundingBox.Width;
             ViewModel.Height = newBoundingBox.Height;
         }
 
-        
+
         /// <summary>
         /// Returns a list of DocumentViews hit by the side, as well as a double representing how close they are
         /// </summary>
@@ -404,14 +426,12 @@ namespace Dash
             var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
 
             var currentBoundingBox = GetBoundingBoxScreenSpace();
-            var topLeftScreenPoint = new Point(currentBoundingBox.X, currentBoundingBox.Y);
-            var bottomRightScreenPoint = new Point(currentBoundingBox.X + currentBoundingBox.Width, currentBoundingBox.Y + currentBoundingBox.Height);
 
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
             foreach (var side in sides)
             {
                 //Rect that will be hittested for
-                var rect = CalculateAligningRectangleForSide(side, topLeftScreenPoint, bottomRightScreenPoint, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
+                var rect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
                 var hitDocumentViews = VisualTreeHelper.FindElementsInHostCoordinates(rect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray();
 
                 foreach (var obj in hitDocumentViews)
@@ -486,8 +506,13 @@ namespace Dash
 
         public Rect GetBoundingBoxScreenSpace()
         {
+            /*
             Point topLeftObjectPoint = new Point(0, 0);
             Point bottomRightObjectPoint = new Point(ViewModel.Width, ViewModel.Height);
+            */
+
+            Point topLeftObjectPoint = new Point(-BORDER_THICKNESS, -BORDER_THICKNESS);
+            Point bottomRightObjectPoint = new Point(ViewModel.Width + BORDER_THICKNESS, ViewModel.Height + BORDER_THICKNESS);
 
             var topLeftPoint = Util.PointTransformFromVisual(topLeftObjectPoint, this);
             var bottomRightPoint = Util.PointTransformFromVisual(bottomRightObjectPoint, this);
@@ -577,13 +602,13 @@ namespace Dash
                                 // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                                 // the link is outside the document.
                                 if ((slope < 0 && !(intersectionTopX < screenCoords.X ||
-                                                   intersectionBottomX > screenCoords.X + docView.ActualWidth)
-                                    || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth)))
+                                                    intersectionBottomX > screenCoords.X + docView.ActualWidth)
+                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
+                                                       intersectionBottomX < screenCoords.X + docView.ActualWidth)))
                                 {
                                     // if the document is between the vertical bounds of the link endpoints
                                     if (screenCoords.Y > (Math.Min(curvePoint1.Y, curvePoint2.Y))
-                                                      && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
+                                        && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
                                     {
                                         // connect the dropped document to the documents linked by the path
                                         ChangeConnections(freeformView, docView, link);
@@ -645,7 +670,7 @@ namespace Dash
             var referencedKey = userLink.referencedKey;
             var referencedDoc = userLink.referencedDocument;
 
-            
+
 
             // Check if nodes inputs/outputs are of the same type
             var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
@@ -657,7 +682,7 @@ namespace Dash
             var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorController;
             var referencingDocInputType = referencingDocOpFMController?.Inputs[referencingKey];
 
-            if(droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
+            if (droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
             {
                 // delete the current connection between referenced doc and referencing doc
                 ffView.DeleteLine(link.Key, userLink); // check
@@ -695,8 +720,8 @@ namespace Dash
             else
             {
                 referencingDoc.SetField(referencingKey,
-                new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
-            }                                                                                       
+                    new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
+            }
 
             // add line visually
             ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
@@ -740,7 +765,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -760,7 +785,7 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-                
+
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
@@ -794,7 +819,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
                 var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-               
+
             }
         }
 
@@ -808,14 +833,14 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
 
-#endregion
+        #endregion
 
 
         private void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        
+
 
         MenuButton copyButton;
 
@@ -921,7 +946,7 @@ namespace Dash
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
                 //uncomment to make children in collection stretch
-                fitFreeFormChildrenToTheirLayouts(); 
+                fitFreeFormChildrenToTheirLayouts();
             }
         }
 
@@ -1061,7 +1086,7 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
-            
+
 
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
@@ -1236,7 +1261,7 @@ namespace Dash
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
 
-       }
+        }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1268,13 +1293,13 @@ namespace Dash
                         var nestedCollectionDocument = nestedCollection.ViewModel.ContainerDocument;
                         if (nestedCollectionDocument.Equals(self))
                             continue;
-                        if (!nestedCollection.Equals(collection) )
+                        if (!nestedCollection.Equals(collection))
                         {
                             var where = nestedCollection.CurrentView is CollectionFreeformView ?
                                 Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), opos) :
                                 new Point();
-                           nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                           collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
                         }
                         break;
                     }
@@ -1316,7 +1341,7 @@ namespace Dash
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
             ScreenCap();
-            
+
         }
 
 
