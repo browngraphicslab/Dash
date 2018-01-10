@@ -25,29 +25,35 @@
     </UserControl.Resources>
     <Grid>
         <!--The cloud bubble margins-->
-        <Grid CornerRadius="20" Opacity="0.25" Margin="-20 0 -20 -40" Height="{Binding GroupMargin}" VerticalAlignment="Bottom" x:Name="BorderRegion1" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0 1">
-                    <GradientStop Color="Transparent" Offset="1"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <Grid Height="{Binding GroupMargin}" Margin="-10 0 -10 -30"  VerticalAlignment="Bottom" Background="#01010101" x:Name="BorderRegion1" >
+            <Grid CornerRadius="10" Opacity="0.25" Height="20" >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0 1">
+                        <GradientStop Color="Transparent" Offset="1"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
-        <Grid CornerRadius="20" Opacity="0.25" Margin="-40 0 0 -20" Width="{Binding GroupMargin}"  x:Name="BorderRegion2" HorizontalAlignment="Left" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="Transparent" Offset="0"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="1"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <Grid Margin="-35 0 0 -10"  x:Name="BorderRegion2" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Left" >
+            <Grid CornerRadius="10" Opacity="0.25" Width="20" >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="Transparent" Offset="0"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
-        <Grid CornerRadius="20" Opacity="0.25" Margin="0 0 -40 -20" Width="{Binding GroupMargin}"  x:Name="BorderRegion3" HorizontalAlignment="Right" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1 0">
-                    <GradientStop Color="Transparent" Offset="1"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <Grid Margin="0 0 -35 -10" x:Name="BorderRegion3" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Right" >
+            <Grid CornerRadius="10" Opacity="0.25" Width="20"  >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1 0">
+                        <GradientStop Color="Transparent" Offset="1"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
         <!-- Main document view -->
 

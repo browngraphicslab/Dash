@@ -136,7 +136,7 @@ namespace Dash
                     var BackColor = grouped.Count == 1 ? Colors.Transparent: Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
 
                     foreach (var g in grouped)
-                        g.BorderGroupColor = Windows.UI.Colors.Transparent;
+                        g.BorderGroupColor = BackColor;
                 }
             }
             if (manipulationCompletedRoutedEventArgs != null)
