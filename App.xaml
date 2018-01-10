@@ -49,7 +49,7 @@
         <Color x:Key="AccentBlueColor">#FF338899</Color>
         <Color x:Key="DocumentBackgroundColor">#FFFFFFFF</Color>
         <Color x:Key="DocumentHighlightBackgroundColor">#FFCCCCCC</Color>
-        <Color x:Key="MainTextColor">#FF666666</Color>
+        <Color x:Key="MainTextColor">#FF333333</Color>
         <Color x:Key="TitleTextColor">#FF454545</Color>
         <Color x:Key="ActivationColor">#f4aa42</Color>
         

@@ -236,11 +236,13 @@ namespace Dash
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+               
             }
             else
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xTypeComboBox.SelectedIndex = 12;
             }
         }
 

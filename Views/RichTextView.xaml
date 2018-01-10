@@ -34,6 +34,7 @@
                          Holding="XRichEditBox_OnHolding"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
+                        
                          >
             <!--FORMAT PROPERTIES TOOLTIP-->
             <ToolTipService.ToolTip>
