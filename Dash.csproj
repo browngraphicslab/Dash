@@ -91,10 +91,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <Content Include="Assets\gridbg.jpg" />
-    <Content Include="Assets\gridbg2.jpg" />
-    <None Include="Assets\example_pdf.pdf" />
-    <None Include="Assets\richtexttest.rtf" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
@@ -312,7 +308,6 @@
     <Compile Include="Util\FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
     <Compile Include="Util\FontIcons\Attributes.cs" />
     <Compile Include="Util\FontIcons\FontAwesome.cs" />
     <Compile Include="Util\FontIcons\FontAwesomeIcon.cs" />
@@ -350,7 +345,6 @@
       <DependentUpon>EditableImage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\InkBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleInkDoc.cs" />
     <Compile Include="Util\EditableTextBlock.xaml.cs">
       <DependentUpon>EditableTextBlock.xaml</DependentUpon>
     </Compile>
@@ -475,13 +469,10 @@
     <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleNestedDocExample.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleNumbers.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
     <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleTwoImages.cs" />
     <Compile Include="Util\DropControls.cs" />
     <Compile Include="Views\SelectableContainer.xaml.cs">
       <DependentUpon>SelectableContainer.xaml</DependentUpon>
@@ -658,16 +649,11 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\a.txt" />
     <Content Include="Assets\api-icon.png" />
-    <Content Include="Assets\ArrayOfNestedDocumentJson.txt" />
-    <Content Include="Assets\cat.jpg" />
-    <Content Include="Assets\cat2.jpeg" />
     <Content Include="Assets\Centerlg.png" />
     <Content Include="Assets\circle.png" />
     <Content Include="Assets\col-icon.png" />
     <Content Include="Assets\copy.png" />
-    <Content Include="Assets\customerJson.txt" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\dashlogo.png" />
@@ -675,23 +661,15 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\docmenu.png" />
-    <Content Include="Assets\Dark_gridbg.jpg" />
-    <Content Include="Assets\Dark_gridbg2.jpg" />
+    <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
-    <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />
-    <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\operator_bg.png" />
-    <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\radial_color_wheel.png" />
-    <Content Include="Assets\RecipeReturn.txt" />
-    <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
-    <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\transparent_grid_tilable.png" />
-    <Content Include="Assets\youtubeJson.txt" />
     <Content Include="ChromeExt\arrow.svg" />
     <Content Include="ChromeExt\bg.js" />
     <Content Include="ChromeExt\bgTest.html" />
@@ -1120,6 +1098,9 @@
       <Version>1.0.370</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp">
+      <Version>1.2.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
       <Version>1.2.0</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">

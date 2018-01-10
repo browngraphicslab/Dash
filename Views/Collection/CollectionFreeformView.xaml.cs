@@ -72,9 +72,10 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
-        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private float _backgroundOpacity = .95f;
+        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
+        private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private const float BackgroundOpacity = 1.0f;
+
         #endregion
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
@@ -91,9 +92,14 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
-            //DragEnter += Collection_DragEnter;
+        }
 
-
+        public IEnumerable<DocumentView> DocumentViews()
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+                if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                    yield return doc;
         }
 
         public IOReference GetCurrentReference()
@@ -138,7 +144,6 @@ namespace Dash
 
             LoadLines();
             fitFreeFormChildrenToTheirLayouts();
-            //Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
         }
 
         void fitFreeFormChildrenToTheirLayouts()
@@ -782,7 +787,8 @@ namespace Dash
         #endregion
 
         #region Manipulation
-        public Rect ClipRect { get { return xClippingRect.Rect; } }
+        public Rect ClipRect => xClippingRect.Rect;
+
         public void Move(TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
@@ -830,7 +836,6 @@ namespace Dash
             composite.Children.Add(translate);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            //ParentCollection.SetTransformOnBackground(composite);
 
             var compValue = composite.Value;
 
@@ -876,7 +881,7 @@ namespace Dash
 
         private void SetTransformOnBackground(Matrix transformMatrix)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, _numberOfBackgroundRows);
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, NumberOfBackgroundRows);
 
             if (_resourcesLoaded)
             {
@@ -913,7 +918,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
                 _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
-                    Opacity = _backgroundOpacity
+                    Opacity = BackgroundOpacity
                 };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
@@ -1085,7 +1090,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            RenderPreviewTextbox(e);
+            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1101,9 +1106,8 @@ namespace Dash
 
         }
 
-        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        public void RenderPreviewTextbox(Point where)
         {
-            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
             previewTextBuffer = "";
             Canvas.SetLeft(previewTextbox, @where.X);
             Canvas.SetTop(previewTextbox, @where.Y);

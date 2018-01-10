@@ -11,6 +11,7 @@
     d:DesignWidth="400"
     d:DesignHeight="400"
     xmlns:localConverters="using:Dash.Converters"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
     PointerPressed="DocumentView_OnPointerPressed">
@@ -23,59 +24,53 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
     <Grid>
-        <Grid CornerRadius="20" Opacity="0.25" Margin="-12 0 -12 -25" Height="{Binding GroupMargin}" VerticalAlignment="Bottom" x:Name="BorderRegion1" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0 1">
-                    <GradientStop Color="Transparent" Offset="1"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <!--The cloud bubble margins-->
+        <Grid Height="{Binding GroupMargin}" Margin="-10 0 -10 -30"  VerticalAlignment="Bottom" Background="#01010101" x:Name="BorderRegion1" >
+            <Grid CornerRadius="10" Opacity="0.25" Height="20" >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0 1">
+                        <GradientStop Color="Transparent" Offset="1"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
-        <Grid CornerRadius="20" Opacity="0.25" Margin="-25 0 0 -12" Width="{Binding GroupMargin}"  x:Name="BorderRegion2" HorizontalAlignment="Left" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                    <GradientStop Color="Transparent" Offset="0"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="1"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <Grid Margin="-35 0 0 -10"  x:Name="BorderRegion2" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Left" >
+            <Grid CornerRadius="10" Opacity="0.25" Width="20" >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="Transparent" Offset="0"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="1"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
-        <Grid CornerRadius="20" Opacity="0.25" Margin="0 0 -25 -12" Width="{Binding GroupMargin}"  x:Name="BorderRegion3" HorizontalAlignment="Right" >
-            <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1 0">
-                    <GradientStop Color="Transparent" Offset="1"/>
-                    <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                </LinearGradientBrush>
-            </Grid.Background>
+        <Grid Margin="0 0 -35 -10" x:Name="BorderRegion3" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Right" >
+            <Grid CornerRadius="10" Opacity="0.25" Width="20"  >
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1 0">
+                        <GradientStop Color="Transparent" Offset="1"/>
+                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
         </Grid>
-        <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid x:Name="xKeyValPane" Visibility="Collapsed" Tapped="xKeyValPane_Tapped" ManipulationDelta="xKeyValPane_ManipulationDelta">
-            <local:KeyValuePane x:Name="xKeyValuePane"></local:KeyValuePane>
-        </Grid>
-
         <!-- Main document view -->
-        <Grid x:Name="OuterGrid" x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="LightSteelBlue" Grid.Column="1">
+
+        <Grid x:Name="OuterGrid" x:FieldModifier="public">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="0"/>
-            </Grid.ColumnDefinitions>
 
 
             <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">
                     <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-                    <MenuFlyoutItem Text="Delete" Icon="Delete" Foreground="Black" Click="MenuFlyoutItemDelete_Click"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Foreground="Black" Click="MenuFlyoutItemCopy_Click"/>
+                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
                     <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
@@ -85,47 +80,17 @@
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
                 </MenuFlyout>
             </Grid.ContextFlyout>
-            
 
-            <!-- Container for Icon view -->
-            <!--<Grid x:FieldModifier="public" x:Name="xIcon" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                </Grid.RowDefinitions>
 
-                <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
-                <StackPanel x:Name="DocumentViewStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                    <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
-                          HorizontalAlignment="Center"
-                          TextAlignment="Center"
-                          Background="Transparent"  BorderThickness="0"/>
-                </StackPanel>
-            </Grid>-->
 
-        
-            
-            <!--canvas to hold the document view menu-->
-            <Canvas x:Name="xMenuCanvas" Grid.Row="1" Grid.Column="1"></Canvas>
 
-            <Canvas x:Name="xShadowHost"  Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <Rectangle x:Name="xShadowTarget"  Grid.RowSpan="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                   Fill="{ThemeResource DocumentBackground}" >
-                <Rectangle.Resources>
-                    <!-- Animate background color -->
-                    <Storyboard x:Name="colorStoryboard">
-                        <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="{ThemeResource DocumentBackgroundColor}" To="{ThemeResource DocumentHighlightBackgroundColor}" Duration="0:0:0.075"/>
-                    </Storyboard>
-                    <Storyboard x:Name="colorStoryboardOut">
-                        <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
-                                    From="{ThemeResource DocumentHighlightBackgroundColor}" To="{ThemeResource DocumentBackgroundColor}" Duration="0:0:0.075"/>
-                    </Storyboard>
-                </Rectangle.Resources>
-            </Rectangle>
-            <Border x:Name="xGradientOverlay" Grid.RowSpan="2" Grid.ColumnSpan="2" Background="{StaticResource DocumentGradient}" Opacity=".2"></Border>
 
-            <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.ColumnSpan="2" Grid.RowSpan="1" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
+            <!--Used to render the drop shadow and provide a background to the document-->
+            <Canvas x:Name="xShadowHost"  Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <Rectangle x:Name="xDocumentBackground" Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
+
+            <!--The title bar on top of the documents-->
+            <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.Row="0" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
                     <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
                     <TextBox PlaceholderText="Title" Text="" Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
@@ -133,10 +98,7 @@
             </Border>
 
             <!--grid to hold the inner content of the document-->
-            <Grid Name="xTargetContentGrid" Grid.Row="1" Grid.Column="0">
-               
-                
-                
+            <Grid Name="xTargetContentGrid" Grid.Row="1" BorderBrush="LightGray"> 
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <FlyoutBase.AttachedFlyout >
@@ -148,50 +110,24 @@
                 </Grid>
                 <!-- Dragger Button-->
                 <Button x:Name="DraggerButton"
-                    x:FieldModifier="public"
-                    Margin="0,0,-20,-20"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    ManipulationMode="TranslateX, TranslateY"
-                    Visibility="{Binding IsDraggerVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                        x:FieldModifier="public"
+                        Margin="0,0,-20,-20"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        ManipulationMode="TranslateX, TranslateY"
+                        Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                         </ControlTemplate>
                     </Button.Template>
                     <Border Padding="10,10,20,20" Background="Transparent">
                         <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
-                           HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                     </Border>
                 </Button>
             </Grid>
-            <ProgressRing x:Name="xProgressRing" Grid.Row="1" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
+            <ProgressRing x:Name="xProgressRing" Grid.Row="1" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
+        </Grid>
 
-            <!--Rectangles that indicate whether document is a delegate or a copy-->
-            <Grid Grid.Row="0" Grid.Column="0" Margin="0,-23,0,0" HorizontalAlignment="Right" Width="23"
-                Visibility="{Binding Path=DocumentController.HasPrototype, Converter={StaticResource BoolToVisibilityConverter}}" Background="Transparent">
-                <Grid.ContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Text="Prototype" Click="DeepestPrototypeFlyoutItem_OnClick"></MenuFlyoutItem>
-                    </MenuFlyout>
-                </Grid.ContextFlyout>
-                <Canvas HorizontalAlignment="Center" IsHitTestVisible="False">
-                    <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="1"
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
-                    <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="1"
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
-                    <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="12" Canvas.Top="12"
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
-                    <Rectangle Width="10" Height="10" Stroke="Gray" Canvas.Left="1" Canvas.Top="12"
-                       Fill="{x:Bind Path=ViewModel.DocumentController.HasPrototype, Mode=OneWay, Converter={StaticResource BoolToBrushConverter}}"></Rectangle>
-                    <Canvas.RenderTransform>
-                        <TransformGroup>
-                            <RotateTransform Angle="45"></RotateTransform>
-                            <ScaleTransform ScaleX="0.65" ScaleY="0.65"></ScaleTransform>
-                        </TransformGroup>
-                    </Canvas.RenderTransform>
-                </Canvas>
-            </Grid>
-        </Grid>
-        </Grid>
     </Grid>
 </local:SelectionElement>
