@@ -279,10 +279,10 @@ namespace Dash
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
             if (neighboring != null && neighboring.TypedData.Count == 2)
             {
-                int yPos;
+                double yPos;
                 var uri = neighboring.TypedData.First().Data;
                 var where = neighboring.TypedData.Last().Data;
-                if (int.TryParse(where, out yPos))
+                if (double.TryParse(where, out yPos))
                 {
                     MainPage.Instance.WebContext.SetUrl(uri);
                     MainPage.Instance.WebContext.SetScroll(yPos);

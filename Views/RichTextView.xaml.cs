@@ -388,6 +388,11 @@ namespace Dash
         private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
              WC.CountWords();
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            var parentViewModel = parent.ViewModel;
+            parentViewModel.DocumentController.CaptureNeighboringContext();
+            //parent.StackGroup();
+
         }
 
         private string GetRtfText()
