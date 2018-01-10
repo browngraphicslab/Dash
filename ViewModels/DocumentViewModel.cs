@@ -23,7 +23,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
-        private double _groupMargin = 25;
+        private double _groupMargin = 40;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
@@ -38,8 +38,8 @@ namespace Dash
         bool _hasTitle = false;
         public bool HasTitle
         {
-            get { return _hasTitle; }
-            set { SetProperty(ref _hasTitle, value); }
+            get => _hasTitle;
+            set => SetProperty(ref _hasTitle, value);
         }
         public void SetHasTitle(bool active)
         {
@@ -60,24 +60,24 @@ namespace Dash
 
         public bool IsDraggerVisible
         {
-            get { return _isDraggerVisible; }
-            set { SetProperty(ref _isDraggerVisible, value); }
+            get => _isDraggerVisible;
+            set => SetProperty(ref _isDraggerVisible, value);
         }
 
         public bool MenuOpen
         {
-            get { return _menuOpen; }
-            set { SetProperty(ref _menuOpen, value); }
+            get => _menuOpen;
+            set => SetProperty(ref _menuOpen, value);
         }
 
-        public IconTypeEnum IconType { get { return iconType; } }
+        public IconTypeEnum IconType => iconType;
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
 
         public double Width
         {
-            get { return _width; }
+            get => _width;
             set
             {
                 //Debug.Assert(double.IsNaN(value) == false);
@@ -97,7 +97,7 @@ namespace Dash
 
         public double Height
         {
-            get { return _height; }
+            get => _height;
             set
             {
                 //Debug.Assert(double.IsNaN(value) == false);
@@ -152,27 +152,21 @@ namespace Dash
         }
         public double GroupMargin
         {
-            get { return _groupMargin; }
-            set { if (SetProperty(ref _groupMargin, value)) ; }
+            get => _groupMargin;
+            set => SetProperty(ref _groupMargin, value);
         }
 
-        private Color _borderGroupColor = Colors.Yellow;
+        private Color _borderGroupColor = Colors.Transparent;
         public Color BorderGroupColor {
-            get
-            {
-                return _borderGroupColor;
-            }
-            set
-            {
-                if (SetProperty(ref _borderGroupColor, value)) ; 
-            }
+            get => _borderGroupColor;
+            set => SetProperty(ref _borderGroupColor, value);
         }
 
-        public Rect GroupingBounds
+
+        public Rect GroupingBounds(double actualwidth, double actualheight)
         {
-            get
             {
-                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, Width + 2* GroupMargin, Height + 2* GroupMargin));
+                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, actualwidth + 2* GroupMargin, actualheight + GroupMargin));
             }
         }
 
@@ -194,20 +188,20 @@ namespace Dash
 
         public Brush BackgroundBrush
         {
-            get { return _backgroundBrush; }
-            set { SetProperty(ref _backgroundBrush, value); }
+            get => _backgroundBrush;
+            set => SetProperty(ref _backgroundBrush, value);
         }
 
         public Brush BorderBrush
         {
-            get { return _borderBrush; }
-            set { SetProperty(ref _borderBrush, value); }
+            get => _borderBrush;
+            set => SetProperty(ref _borderBrush, value);
         }
 
         public Visibility DocMenuVisibility
         {
-            get { return _docMenuVisibility; }
-            set { SetProperty(ref _docMenuVisibility, value); }
+            get => _docMenuVisibility;
+            set => SetProperty(ref _docMenuVisibility, value);
         }
 
         private FrameworkElement _content = null;
@@ -225,7 +219,9 @@ namespace Dash
         }
 
         private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return keysToFrameworkElements; } set { keysToFrameworkElements = value; }  }
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get => keysToFrameworkElements;
+            set => keysToFrameworkElements = value;
+        }
 
         private bool _isDraggerVisible = true;
 
@@ -452,18 +448,6 @@ namespace Dash
             }
         }
 
-        public void CloseMenu()
-        {
-            DocMenuVisibility = Visibility.Collapsed;
-            MenuOpen = false;
-        }
-
-        public void OpenMenu()
-        {
-            DocMenuVisibility = Visibility.Visible;
-            MenuOpen = true;
-        }
-        
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, BaseCollectionViewModel collectionViewModel)
         {
             var docView = sender as DocumentView;

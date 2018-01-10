@@ -72,9 +72,9 @@ namespace Dash
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
+        private readonly Uri _backgroundPath = new Uri("ms-appx:///Assets/transparent_grid_tilable.png");
         private const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private const float BackgroundOpacity = .95f;
+        private const float BackgroundOpacity = 1.0f;
 
         #endregion
 
@@ -92,6 +92,14 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+        }
+
+        public IEnumerable<DocumentView> DocumentViews()
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+                if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                    yield return doc;
         }
 
         public IOReference GetCurrentReference()
@@ -1082,7 +1090,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            RenderPreviewTextbox(e);
+            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1098,9 +1106,8 @@ namespace Dash
 
         }
 
-        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        public void RenderPreviewTextbox(Point where)
         {
-            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
             previewTextBuffer = "";
             Canvas.SetLeft(previewTextbox, @where.X);
             Canvas.SetTop(previewTextbox, @where.Y);
