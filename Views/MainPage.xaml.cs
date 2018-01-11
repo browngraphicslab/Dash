@@ -122,10 +122,11 @@ namespace Dash
                 if (col.Count == 0)
                 {
                     var documentController = new CollectionNote(null, new Point(0, 0),
-                        CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
-                    col.Add(documentController);
-                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
-                    lastWorkspace = documentController;
+                        CollectionView.CollectionViewType.Freeform, "New Workspace");
+                    documentController.DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(), true);
+                    col.Add(documentController.Document);
+                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController.Document, true);
+                    lastWorkspace = documentController.Document;
                 }
                 else
                 {
