@@ -4,68 +4,78 @@ $(window).bind('hashchange', function () {
     console.log(window.url)
 });
 
+var start = function() {
+    useSocket = true;
+    var socket;
 
-useSocket = true;
-var socket;
+    var socketOpen = false;
+    var messagesToSend = []
+    var sending = false;
 
-var socketOpen = false;
-var messagesToSend = []
-var sending = false;
+    var pollSend = function() {
+        if (socketOpen === true && messagesToSend.length > 0 && !sending) {
+            sending = true;
+            var array = JSON.stringify(messagesToSend)
+            messagesToSend.length = 0;
+            socket.send(array)
+            sending = false
+        }
+    }
 
-var pollSend = function() {
-    if (socketOpen === true && messagesToSend.length > 0 && !sending) {
-        sending = true;
-        var array = JSON.stringify(messagesToSend)
-        messagesToSend.length = 0;
-        socket.send(array)
-        sending = false
+    setInterval(pollSend, 50);
+
+    var sendFunction = function(messageObject) {
+        //console.log(socket)
+        //messagesToSend.push(messageObject)
+        messagesToSend.push(JSON.stringify(messageObject))
+    }
+
+    var manager = new tabManager(sendFunction);
+    var handler = new requestHandler(manager);
+
+    if (useSocket) {
+        if ("WebSocket" in window) {
+            socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
+        } else {
+            console.log("WebSocket is NOT supported by your Browser!");
+        }
+
+        socket.onopen = function() {
+            console.log("Connection Opened");
+            socket.send("browser:123")
+            socketOpen = true;
+        }
+
+        socket.onclose = function () {
+            console.log("close occurred... starting again")
+            start();
+        }
+
+        socket.onerror = function () {
+            console.log("error occurred... starting again")
+            start();
+        }
+
+        socket.onmessage = function(msg) {
+            console.log(msg);
+            handler.handle(msg.data);
+        }
+    }
+
+    tabs_initialized = {}
+    tabs_active = {}
+
+    function guid() {
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+
+        return s4() +s4() + s4() +  s4() + s4() +s4() + s4() +s4() + s4() +s4();
     }
 }
-
-setInterval(pollSend, 50);
-
-var sendFunction = function (messageObject) {
-    //console.log(socket)
-    //messagesToSend.push(messageObject)
-    messagesToSend.push(JSON.stringify(messageObject))
-}
-
-var manager = new tabManager(sendFunction);
-var handler = new requestHandler(manager);
-
-if (useSocket) {
-    if ("WebSocket" in window) {
-        socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
-    } else {
-        console.log("WebSocket is NOT supported by your Browser!");
-    }
-
-    socket.onopen = function(){
-        console.log("Connection Opened");
-        socket.send("browser:123")
-        socketOpen = true;
-    }
-
-
-    socket.onmessage = function(msg){
-        console.log(msg);
-        handler.handle(msg.data);
-    }
-}
-
-tabs_initialized = {}
-tabs_active = {}
-
-function guid() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-          .toString(16)
-          .substring(1);
-    }
-    return s4() + s4() + s4() + s4() +
-      s4() + s4() + s4() + s4() + s4() + s4();
-}
-
+start();
 
 /*
 ///will call the callback when it returns. 

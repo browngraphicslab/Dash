@@ -11,7 +11,7 @@
 
     <Grid Background="DarkGray">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding DocumentViewModels}"
+                 ItemsSource="{Binding GroupingViewModels}"
                  SelectionMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -21,7 +21,7 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
               <DataTemplate>
-                  <local:TreeViewNode FilterString="{x:Bind FilterString}"></local:TreeViewNode>
+                  <local:TreeViewNode ></local:TreeViewNode>
               </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 

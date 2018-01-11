@@ -67,8 +67,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var html    = (inputs[HtmlInputKey] as TextController).Data;
             var script  = (inputs[ScriptKey] as TextController).Data;
@@ -122,7 +121,20 @@ namespace Dash
                         if (f.Value is ListController<DocumentController>)
                             foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
                                 if (!children.GetElements().Contains(d))
+                                {
+                                    foreach (var field in d.EnumDisplayableFields().ToArray())
+                                    {
+                                        if (field.Value is TextController)
+                                        {
+                                            double num;
+                                            if (double.TryParse((field.Value as TextController).Data, out num))
+                                            {
+                                                d.SetField(field.Key, new NumberController(num), true);
+                                            }
+                                        }
+                                    }
                                     children.Add(d);
+                                }
                 }
             }
         };

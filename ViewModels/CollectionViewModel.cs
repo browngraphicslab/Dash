@@ -23,6 +23,12 @@ namespace Dash
             AddViewModels(_collectionFieldModelController.TypedData, context);
             ContainerDocument = container;
 
+            var grouped = container.GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
+            if (grouped != null)
+            {
+                AddGroupedViewModels(grouped.TypedData, context);
+            }
+
             var copiedContext = new Context(context);
 
             if (collection is ReferenceController)
@@ -32,7 +38,7 @@ namespace Dash
                 reference.GetDocumentController(context).AddFieldUpdatedListener(reference.FieldKey,
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                     {
-                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                         var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                         if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                         {
@@ -75,13 +81,57 @@ namespace Dash
                         copiedContext);
                 };
             }
+
+            ContainerDocument.AddFieldUpdatedListener(KeyStore.GroupingKey,
+                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+                {
+                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+                var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                    {
+                        GroupingUpdated(cargs, copiedContext);
+                    }
+                    else
+                    {
+
+                        _collectionFieldModelController = dargs.NewValue
+                            .DereferenceToRoot<ListController<DocumentController>>(context);
+                        if (_collectionFieldModelController == null) return;
+                        var documents = _collectionFieldModelController.GetElements();
+                        GroupingViewModels.Clear();
+
+                        AddGroupedViewModels(documents, context);
+                    }
+                });
+
             CellSize = 250; // TODO figure out where this should be set
-          //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+        }
+
+        private void GroupingUpdated(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
+        {
+            switch (args.ListAction)
+            {
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                    AddGroupedViewModels(args.ChangedDocuments, c);
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
+                    GroupingViewModels.Clear();
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                    RemoveGroupedViewModels(args.ChangedDocuments);
+                    break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
+                    Debug.Fail("We probably shouldn't be here");
+                    //GroupingViewModels.Clear();
+                    //AddGroupedDocuments(args.ChangedDocuments, c);
+                    break;
+            }
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
         public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
-    
+
 
 
 
@@ -144,6 +194,26 @@ namespace Dash
             foreach (var vm in vms)
             {
                 DocumentViewModels.Remove(vm);
+            }
+        }
+
+        private void AddGroupedViewModels(List<DocumentController> documents, Context c)
+        {
+            foreach (var documentController in documents)
+            {
+                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                //documentViewModel.IsDraggerVisible = this.IsSelected;
+                GroupingViewModels.Add(documentViewModel);
+            }
+        }
+
+        private void RemoveGroupedViewModels(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = GroupingViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+            foreach (var vm in vms)
+            {
+                GroupingViewModels.Remove(vm);
             }
         }
 

@@ -53,8 +53,16 @@ namespace Dash
 
             //ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
+
+            Loaded += KeyValuePane_Loaded;
         }
 
+        private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView?.hideDraggerButton();
+            docView?.hideTitleDisplay();
+        }
 
         public void DisableInteraction()
         {
@@ -168,6 +176,7 @@ namespace Dash
                     xNewValueField.Text = "";
                     xTypeComboBox.SelectedIndex = 0;
                     ToggleAddKVPane();
+                    xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
                 }
             }
         }
@@ -236,11 +245,15 @@ namespace Dash
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+               
             }
             else
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                // set type selection box to text by default
+                xTypeComboBox.SelectedIndex = 2;
+                
             }
         }
 
@@ -319,7 +332,7 @@ namespace Dash
             }
             else
             {
-                xNewValueField.IsEnabled = false;
+               // xNewValueField.IsEnabled = false;
             }
         }
 
@@ -530,6 +543,17 @@ namespace Dash
         {
             if (IgnoreE?.FrameId != args.CurrentPoint.FrameId)
                 DragModel =  null;
+        }
+
+        private void xCloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView.DeleteDocument();
         }
     }
 }

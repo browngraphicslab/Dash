@@ -110,7 +110,8 @@ namespace Dash
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.CollectionKey] = new ListController<DocumentController>()
+                        [KeyStore.CollectionKey] = new ListController<DocumentController>(),
+                        [KeyStore.GroupingKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
 
@@ -123,12 +124,19 @@ namespace Dash
                     col = new ListController<DocumentController>();
                     MainDocument.SetField(KeyStore.CollectionKey, col, true);
                 }
+                var grouped = MainDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
+                if (grouped == null)
+                {
+                    grouped = new ListController<DocumentController>();
+                    MainDocument.SetField(KeyStore.GroupingKey, grouped, true);
+                }
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
                     var documentController = new CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
                     col.Add(documentController);
+                    grouped.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
                     lastWorkspace = documentController;
                 }
@@ -145,6 +153,11 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
+            
+            BrowserView.ForceInit();
+
+            //this next line is optional and can be removed.  
+            //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 

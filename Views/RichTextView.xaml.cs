@@ -388,11 +388,8 @@ namespace Dash
         private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
              WC.CountWords();
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            var parentViewModel = parent.ViewModel;
-            parentViewModel.DocumentController.CaptureNeighboringContext();
+            var parent = this.GetFirstAncestorOfType<DocumentView>();  
             //parent.StackGroup();
-
         }
 
         private string GetRtfText()
@@ -406,6 +403,8 @@ namespace Dash
         private bool CanSizeToFit = false;
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            parent.ViewModel.DocumentController.CaptureNeighboringContext();
             CanSizeToFit = true;
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
@@ -1334,7 +1333,7 @@ namespace Dash
                         {
                             xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                             xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                            var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 20));
+                            var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
                             var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
                             collection.LoadNewActiveTextBox("", where2, true);
                         }

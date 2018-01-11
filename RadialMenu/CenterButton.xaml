@@ -32,7 +32,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="Pressed">
+                                <VisualState x:Name="xVisualState">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Fill" Storyboard.TargetName="Ellipse">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="WhiteSmoke"/>

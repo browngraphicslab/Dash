@@ -149,11 +149,7 @@ namespace Dash
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
 
-                _groupingBounds = new TranslateTransform
-                {
-                    X = GroupTransform.Translate.X,
-                    Y = GroupTransform.Translate.Y
-                }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin, _actualHeight + 2 * GroupMargin));
+                UpdateGroupingBounds();
             }
         }
         public double GroupMargin
@@ -168,12 +164,18 @@ namespace Dash
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
+            UpdateGroupingBounds();
+
+        }
+
+        private void UpdateGroupingBounds()
+        {
             _groupingBounds = new TranslateTransform
             {
                 X = GroupTransform.Translate.X,
                 Y = GroupTransform.Translate.Y
-            }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin, _actualHeight + 2 * GroupMargin));
-
+            }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
+                _actualHeight + 2 * GroupMargin));
         }
 
         public Rect GroupingBounds => _groupingBounds;

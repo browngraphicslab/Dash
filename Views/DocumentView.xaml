@@ -24,13 +24,7 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid>
-        <!--The cloud bubble margins, the margins are decided by the documetn view groupMargin-->
-        <Grid Margin="-40 0 -40 -40" x:Name="BorderRegion1" Height="{Binding GroupMargin}"  VerticalAlignment="Bottom" Background="Transparent"/>
-        <Grid Margin="-40 0 0 -40"  x:Name="BorderRegion2" Width="{Binding GroupMargin}" HorizontalAlignment="Left" Background="Transparent"/>
-        <Grid Margin="0 0 -40 -40" x:Name="BorderRegion3" Width="{Binding GroupMargin}" HorizontalAlignment="Right" Background="Transparent" />
-        <Grid Margin="-40 -40 -40 0" x:Name="BorderRegion4" Height="{Binding GroupMargin}"  VerticalAlignment="Top" Background="Transparent" />
-
+    <Grid x:Name="LayoutRoot">
         <!-- Main document view -->
 
         <Grid x:Name="OuterGrid" x:FieldModifier="public">
@@ -49,11 +43,12 @@
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
                     <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
-                    <MenuFlyoutItem Text="Add" Click="MenuFlyoutItemAdd_Click"/>
+                    <MenuFlyoutItem Text="Edit" Click="MenuFlyoutItemLayout_Click"/>
+                    <MenuFlyoutItem Text="Open fields" Click="MenuFlyoutItemAdd_Click"/>
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                    <MenuFlyoutItem Text="Copy history to clipboard" Click="CopyHistory_Click"/>
                 </MenuFlyout>
             </Grid.ContextFlyout>
 
@@ -64,7 +59,7 @@
             <!--The title bar on top of the documents-->
             <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.Row="0" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
-                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
+                    <TextBlock x:Name="xTitleIcon" DoubleTapped="xTitleIcon_DoubleTapped" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
                     <TextBox PlaceholderText="Title" Text="" Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
                 </StackPanel>
             </Border>

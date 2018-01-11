@@ -18,6 +18,7 @@ namespace Dash
         {
             browser.FireUrlUpdated(url);
             browser.FireScrollUpdated(scroll);
+            browser.FireTitleUpdated(title);
 
             if (current)
             {

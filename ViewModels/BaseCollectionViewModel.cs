@@ -63,6 +63,7 @@ namespace Dash
         }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+        public ObservableCollection<DocumentViewModel> GroupingViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         // used to keep track of groups of the currently selected items in a collection
@@ -419,6 +420,21 @@ namespace Dash
             else if (e.DataView.Contains(StandardDataFormats.Html))
             {
                 var html = await e.DataView.GetHtmlFormatAsync();
+
+                //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
+                html = String.Concat(html,
+                    @"<style>
+                      div
+                      {
+                        color: black !important;
+                      }
+
+                      html * {
+                        opacity: 1.0 !important
+                      }
+                    </style>"
+                );
+
                 var splits = new Regex("<").Split(html);
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
@@ -436,7 +452,7 @@ namespace Dash
 
                 if (imgs.Count() == 0)
                 {
-                    var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
+                    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
                     var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     if (title == "")

@@ -108,8 +108,12 @@ namespace Dash
             }
             catch (Exception e)
             {
+                _initted = false;
+                _socket = null;
+                _dataMessageWriter = null;
                 Debug.WriteLine("connection to server failed");
-                throw new Exception("connection to server failed");
+                Debug.WriteLine("communication will be cut until connection resumes");
+                //throw new Exception("connection to server failed");
             }
         }
 
@@ -205,26 +209,35 @@ namespace Dash
             }
         }
 
+        public static void ForceInit()
+        {
+            var r = new PingBrowserRequest();
+            SendToServer(r.Serialize());
+        }
+
+
         public static void OpenTab(string url)
         {
             var r = new NewTabBrowserRequest();
             r.url = url;
             SendToServer(r.Serialize());
-            var a = r.Serialize();
         }
 
         private string _url;
         private double _scroll;
         private bool _isCurrent = false;
         private readonly int Id;
+        private string _title;
 
-        public double Scroll => _scroll;
-        public bool IsCurrent => _isCurrent;
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
         public event EventHandler<bool> CurrentChanged;
+        public event EventHandler<string> TitleChanged;
 
+        public double Scroll => _scroll;
+        public bool IsCurrent => _isCurrent;
         public string Url => _url;
+        public string Title => _title;
 
         private BrowserView(int id)
         {
@@ -258,6 +271,16 @@ namespace Dash
         /// <summary>
         /// should only be called from browser request
         /// </summary>
+        /// <param name="title"></param>
+        public void FireTitleUpdated(string title)
+        {
+            _title = title;
+            TitleChanged?.Invoke(this, title);
+        }
+
+        /// <summary>
+        /// should only be called from browser request
+        /// </summary>
         /// <param name="scroll"></param>
         public void FireScrollUpdated(double scroll)
         {
@@ -283,6 +306,16 @@ namespace Dash
         {
             _isCurrent = current;
             CurrentChanged?.Invoke(this, current);
+        }
+
+        public DocumentContext GetAsContext()
+        {
+            return new DocumentContext()
+            {
+                Url = Url,
+                Scroll = Scroll,
+                Title = Title
+            };
         }
     }
 }

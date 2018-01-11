@@ -11,12 +11,12 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </Page.Resources>
 
-        <!-- negative margin here hides the collection's output dot-->
+    <!-- negative margin here hides the collection's output dot-->
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,0,0">
         <Grid.Resources>
             <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls">
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                                xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls">
 
                 <Style TargetType="localMicrosoft:GridSplitter">
                     <Setter Property="IsTabStop" Value="True"></Setter>
@@ -63,11 +63,11 @@
                     --><!-- Animate background color --><!--
                     <Storyboard x:Name="slideIn">
                         <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
-                         To="0" Duration="0:0:0.075"/>
+                                         To="0" Duration="0:0:0.075"/>
                     </Storyboard>
                     <Storyboard x:Name="slideOut">
                         <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
-                         To="-55" Duration="0:0:0.075"/>
+                                         To="-55" Duration="0:0:0.075"/>
                     </Storyboard>
                 </StackPanel.Resources>
 
@@ -84,7 +84,8 @@
                 </TextBlock.RenderTransform>&#x25b6;</TextBlock>
         </Grid>-->
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>
         </Canvas>
     </Grid>
 </Page>
