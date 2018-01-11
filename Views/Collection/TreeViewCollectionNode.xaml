@@ -21,7 +21,7 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
               <DataTemplate>
-                  <local:TreeViewNode></local:TreeViewNode>
+                  <local:TreeViewNode FilterString="{x:Bind FilterString}"></local:TreeViewNode>
               </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 

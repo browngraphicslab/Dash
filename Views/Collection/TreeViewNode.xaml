@@ -19,6 +19,6 @@
             <TextBlock x:Name="XTextBlock" Foreground="White" Grid.Column="0" DoubleTapped="XTextBlock_OnDoubleTapped"></TextBlock>
             <TextBlock x:Name="XArrowBlock" Foreground="White" Grid.Column="1" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped"></TextBlock>
         </Grid>
-        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}"></local:TreeViewCollectionNode>
+        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{x:Bind FilterString}"></local:TreeViewCollectionNode>
     </StackPanel>
 </UserControl>

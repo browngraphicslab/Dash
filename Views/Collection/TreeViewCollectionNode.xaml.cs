@@ -20,6 +20,15 @@ namespace Dash.Views.Collection
 {
     public sealed partial class TreeViewCollectionNode : UserControl
     {
+        public static readonly DependencyProperty FilterStringProperty = DependencyProperty.Register(
+            "FilterString", typeof(string), typeof(TreeViewCollectionNode), new PropertyMetadata(default(string)));
+
+        public string FilterString
+        {
+            get { return (string) GetValue(FilterStringProperty); }
+            set { SetValue(FilterStringProperty, value); }
+        }
+
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();

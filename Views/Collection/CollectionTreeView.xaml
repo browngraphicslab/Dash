@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
         <Rectangle Fill="White"></Rectangle>
         <TextBox x:Name="XFilterBox" Grid.Row="0" PlaceholderText="Filter text"></TextBox>
-        <local:TreeViewCollectionNode Grid.Row="1"></local:TreeViewCollectionNode>
+        <local:TreeViewCollectionNode Grid.Row="1" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
         <Button Grid.Row="2" HorizontalAlignment="Stretch" Height="40" Background="#747474" Tapped="UIElement_OnTapped">+ Add workspace</Button>
     </Grid>
 </UserControl>
