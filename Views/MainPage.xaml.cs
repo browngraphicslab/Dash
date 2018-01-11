@@ -35,9 +35,13 @@ using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
+using Windows.Graphics.Display;
 using Windows.UI;
 using Dash.Views.Collection;
 using Dash.Views.Document_Menu;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -67,6 +71,7 @@ namespace Dash
             formattableTitleBar.ButtonBackgroundColor = Colors.Transparent;
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = false;
+
             InitializeComponent();
 
             // Set the instance to be itself, there should only ever be one MainView
@@ -424,10 +429,6 @@ namespace Dash
 
 
         #endregion
-
-
-
-
 
         private void Border_Tapped(object sender, TappedRoutedEventArgs e)
         {
