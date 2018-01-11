@@ -227,15 +227,8 @@ namespace Dash
                 
             };
 
-            CollectionTreeView node =
-                new CollectionTreeView()
-                {
-                    DataContext = new CollectionViewModel(MainDocument,
-                        MainDocument.GetField(KeyStore.CollectionKey))
-                };
-            node.Width = 300;
-            node.HorizontalAlignment = HorizontalAlignment.Left;
-            MyGrid.Children.Add(node);
+            xMainTreeView.DataContext = new CollectionViewModel(MainDocument,
+                MainDocument.GetField(KeyStore.CollectionKey));
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
@@ -273,8 +266,8 @@ namespace Dash
         /// <param name="menu"></param>
         public void SetOptionsMenu(OverlayMenu menu)
         {
-            menu.CreateAndRunInstantiationAnimation(true);
-            xMenuCanvas.Content = menu;
+//            menu.CreateAndRunInstantiationAnimation(true);
+            //xMenuCanvas.Content = menu;
         }
 
         /// <summary>
@@ -449,6 +442,18 @@ namespace Dash
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         }
 
-        
+
+        private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            TreeMenuColumn.Width = new GridLength(300 - TreeMenuColumn.Width.Value);
+            if (Math.Abs(TreeMenuColumn.Width.Value) < 0.0001)
+            {
+                CollapseButton.Text = ">";
+            }
+            else
+            {
+                CollapseButton.Text = "<";
+            }
+        }
     }
 }

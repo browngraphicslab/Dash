@@ -17,7 +17,7 @@ using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Collection
+namespace Dash
 {
     public sealed partial class CollectionTreeView : UserControl
     {
