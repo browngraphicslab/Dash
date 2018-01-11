@@ -177,7 +177,7 @@ namespace Dash
             }
         }
 
-        private void AddGroupedViewModels(List<DocumentController> documents, Context context)
+        private void AddGroupedViewModels(List<DocumentController> documents, Context c)
         {
             foreach (var documentController in documents)
             {
