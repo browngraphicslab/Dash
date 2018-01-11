@@ -113,7 +113,20 @@ namespace Dash
             CurrentSelectedElement = selected;
 
             // recursively set our parents to have the correct ancestors
-            ParentSelectionElement?.SetAsAncestorOfSelected(this);
+            if (ParentSelectionElement != null)
+            {
+                ParentSelectionElement.SetAsAncestorOfSelected(this);
+            }
+            // otherwise if we're at the root just make us the lowest selected item
+            else
+            {
+                // new is lowest selected and new is selected
+                IsSelected = true;
+                IsLowestSelected = true;
+
+                // deselect all of the newly selected elements children (not sure if necessary)
+                SetCurrentlySelectedElement(null);
+            }
         }
 
         /// <summary>
