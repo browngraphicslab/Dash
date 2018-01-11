@@ -24,7 +24,7 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid>
+    <Grid x:Name="LayoutRoot">
         <!--The cloud bubble margins, the margins are decided by the documetn view groupMargin-->
         <Grid Margin="-40 0 -40 -40" x:Name="BorderRegion1" Height="{Binding GroupMargin}"  VerticalAlignment="Bottom" Background="Transparent"/>
         <Grid Margin="-40 0 0 -40"  x:Name="BorderRegion2" Width="{Binding GroupMargin}" HorizontalAlignment="Left" Background="Transparent"/>
@@ -49,8 +49,8 @@
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
                     <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Open layout editor" Click="MenuFlyoutItemLayout_Click"/>
-                    <MenuFlyoutItem Text="Add" Click="MenuFlyoutItemAdd_Click"/>
+                    <MenuFlyoutItem Text="Edit" Click="MenuFlyoutItemLayout_Click"/>
+                    <MenuFlyoutItem Text="Open fields" Click="MenuFlyoutItemAdd_Click"/>
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>

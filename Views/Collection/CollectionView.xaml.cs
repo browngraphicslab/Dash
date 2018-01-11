@@ -72,14 +72,14 @@ namespace Dash
         }
 
         private CollectionViewType _viewType;
-        
+
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
             ViewModel = vm;
-            
+
             Unloaded += CollectionView_Unloaded;
         }
 
@@ -99,7 +99,7 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>(); 
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
             ParentDocument.StyleCollection(this);
 
@@ -109,7 +109,7 @@ namespace Dash
 
                 UpdateContextMenu();
             }
-                
+
             // set the top-level viewtype to be freeform by default
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
@@ -208,41 +208,47 @@ namespace Dash
         }
 
         /// <summary>
-        /// Helper function to add a document controller to the main freeform layout
+        /// Helper function to add a document controller to the main freeform layout.
         /// </summary>
+        /// <param name="screenPoint"></param>
         /// <param name="opController"></param>
-        private void addElement(DocumentController opController)
+        private void addElement(Point screenPoint, DocumentController opController)
         {
-            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-
-            var x = pointerPosition.X - Window.Current.Bounds.X;
-            var y = pointerPosition.Y - Window.Current.Bounds.Y;
-            var p = new Point(x, y);
+            var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
             {
-                GroupTransform = new TransformGroupData(p, new Point(), new Point(1, 1))
+                GroupTransform = new TransformGroupData(Util.GetCollectionFreeFormPoint(mp, screenPoint), new Point(), new Point(1, 1))
             };
 
             if (opController != null)
             {
                 //freeForm.ViewModel.AddDocument(opController, null);
-                var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-                mp.ViewModel.AddDocument(opController, null);
+                mp?.ViewModel.AddDocument(opController, null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
             }
         }
 
         #region ClickHandlers for collection context menu items
 
+        /// <summary>
+        /// Gets the screen coordinates of the top left corner of the first flyout item.
+        /// </summary>
+        /// <returns></returns>
+        private Point GetFlyoutOriginCoordinates()
+        {
+            var firstFlyoutItem = ParentDocument.MenuFlyout.Items.FirstOrDefault();
+            return Util.PointTransformFromVisual(new Point(), firstFlyoutItem);
+        }
+
         private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
         {
-            addElement(Util.BlankDoc());
+            addElement(GetFlyoutOriginCoordinates(), Util.BlankDoc());
         }
 
         private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
         {
-            addElement(Util.BlankCollection());
+            addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
         }
 
         private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
@@ -313,7 +319,7 @@ namespace Dash
             FireEllipseInteraction(sender, e, isInput: false, isPressed: false);
         }
 
-        
+
         private void ConnectionEllipseInput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             FireEllipseInteraction(sender, e, isInput: true, isPressed: true);
@@ -488,9 +494,9 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
-        
+
         public MenuButton ViewModes;
-        
+
         private void MakeMenu()
         {
             var collectionButtons = new List<MenuButton>
@@ -501,7 +507,7 @@ namespace Dash
                 },
                 //toggle grid/list/freeform view buttons 
                 (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View}, 
+                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View},
                     new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
                 new MenuButton(Symbol.Camera, "ScrCap", ScreenCap)
 
@@ -589,7 +595,7 @@ namespace Dash
         /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
         /// in order to make ellipses hit test visible and the rest not 
         /// </summary>
-        private void xContentControl_Loaded(object sender, RoutedEventArgs e)         
+        private void xContentControl_Loaded(object sender, RoutedEventArgs e)
         {
             // TODO this method is special cased and therfore hard to debug...
             var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
@@ -599,10 +605,10 @@ namespace Dash
             var visibilityBinding = new Binding
             {
                 Source = datacontext,
-                Path = new PropertyPath(nameof(datacontext.IsSelected)) 
+                Path = new PropertyPath(nameof(datacontext.IsSelected))
             };
 
-            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding); 
+            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding);
         }
     }
 }

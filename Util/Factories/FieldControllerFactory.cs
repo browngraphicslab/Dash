@@ -226,6 +226,9 @@ namespace Dash
                 case OperatorType.ImageRecognition:
                     controller = new ImageRecognitionOperatorFieldModelController(model);
                     break;
+                case OperatorType.ExecuteHtmlJavaScript:
+                    controller = new ExecuteHtmlJavaScriptController(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
