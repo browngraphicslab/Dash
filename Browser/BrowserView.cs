@@ -217,14 +217,17 @@ namespace Dash
         private double _scroll;
         private bool _isCurrent = false;
         private readonly int Id;
+        private string _title;
 
-        public double Scroll => _scroll;
-        public bool IsCurrent => _isCurrent;
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
         public event EventHandler<bool> CurrentChanged;
+        public event EventHandler<string> TitleChanged;
 
+        public double Scroll => _scroll;
+        public bool IsCurrent => _isCurrent;
         public string Url => _url;
+        public string Title => _title;
 
         private BrowserView(int id)
         {
@@ -253,6 +256,16 @@ namespace Dash
         public void MakeCurrent()
         {
             //TODO   
+        }
+
+        /// <summary>
+        /// should only be called from browser request
+        /// </summary>
+        /// <param name="title"></param>
+        public void FireTitleUpdated(string title)
+        {
+            _title = title;
+            TitleChanged?.Invoke(this, title);
         }
 
         /// <summary>

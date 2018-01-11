@@ -848,6 +848,7 @@ namespace Dash
 
         public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {
+            grouped = grouped ?? new List<DocumentView>();
             var docRootBounds = ViewModel.GroupingBounds;
             foreach (var doc in documentViews)
             {
@@ -858,6 +859,17 @@ namespace Dash
                 doc.AddConnected(grouped, documentViews);
             }
 
+            /*
+            var ordered = grouped.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
+            var length = ordered.Length;
+            for (int i = 1; i < length; i++)
+            {
+                ordered[i].GroupTransform = new TransformGroupData(
+                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
+                    , ordered[i].GroupTransform.ScaleCenter
+                    , ordered[i].GroupTransform.ScaleAmount);
+            }
+            */
             return grouped;
         }
 
