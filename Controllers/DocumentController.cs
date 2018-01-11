@@ -780,6 +780,22 @@ namespace Dash
             return field;
         }
 
+        public T GetField<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase
+        {
+            return GetField(key, ignorePrototype) as T;
+        }
+
+        public T GetFieldOrDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
+        {
+            var field = GetField(key, ignorePrototype);
+            if (field != null)
+            {
+                return field as T;
+            }
+            T t = new T();
+            SetField(key, t, true);
+            return t;
+        }
 
         /// <summary>
         ///     Sets all of the document's fields to a given Dictionary of Key FieldModel

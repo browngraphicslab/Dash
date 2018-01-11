@@ -118,18 +118,9 @@ namespace Dash
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
-                var col = MainDocument.GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
-                if (col == null)
-                {
-                    col = new ListController<DocumentController>();
-                    MainDocument.SetField(KeyStore.CollectionKey, col, true);
-                }
-                var grouped = MainDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
-                if (grouped == null)
-                {
-                    grouped = new ListController<DocumentController>();
-                    MainDocument.SetField(KeyStore.GroupingKey, grouped, true);
-                }
+
+                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
+                var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
