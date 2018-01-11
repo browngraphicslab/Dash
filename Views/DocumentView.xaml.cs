@@ -1044,5 +1044,12 @@ namespace Dash
         {
             ShowContext();
         }
+
+        private void CopyHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var data = new DataPackage() { };
+            data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
+            Clipboard.SetContent(data);
+        }
     }
 }

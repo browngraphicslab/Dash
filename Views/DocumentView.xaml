@@ -54,6 +54,7 @@
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                    <MenuFlyoutItem Text="Copy history to clipboard" Click="CopyHistory_Click"/>
                 </MenuFlyout>
             </Grid.ContextFlyout>
 

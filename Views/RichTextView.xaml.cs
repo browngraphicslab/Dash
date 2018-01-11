@@ -388,12 +388,8 @@ namespace Dash
         private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
              WC.CountWords();
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            var parentViewModel = parent.ViewModel;
-            //var source = routedEventArgs.OriginalSource;
-            //parentViewModel.DocumentController.CaptureNeighboringContext();
+            var parent = this.GetFirstAncestorOfType<DocumentView>();  
             //parent.StackGroup();
-
         }
 
         private string GetRtfText()
@@ -407,6 +403,8 @@ namespace Dash
         private bool CanSizeToFit = false;
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            parent.ViewModel.DocumentController.CaptureNeighboringContext();
             CanSizeToFit = true;
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
