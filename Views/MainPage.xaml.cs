@@ -126,12 +126,11 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new CollectionNote(null, new Point(0, 0),
-                        CollectionView.CollectionViewType.Freeform, "New Workspace");
-                    documentController.DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(), true);
-                    col.Add(documentController.Document);
-                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController.Document, true);
-                    lastWorkspace = documentController.Document;
+                    var documentController = new CollectionNote(new Point(0, 0),
+                        CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
+                    col.Add(documentController);
+                    MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
+                    lastWorkspace = documentController;
                 }
                 else
                 {
@@ -178,6 +177,10 @@ namespace Dash
                 var y = pointerPosition.Y - Window.Current.Bounds.Y;
                 var pos = new Point(x, y);
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
+                if (topCollection == null)
+                {
+                    return;
+                }
 
                 // add tabitemviewmodels that directs user to documentviews within the current collection 
 
@@ -201,6 +204,10 @@ namespace Dash
             var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
+            if (topCollection == null)
+            {
+                return;
+            }
             TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
             e.Handled = true;
         }

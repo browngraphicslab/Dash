@@ -30,8 +30,7 @@ namespace Dash.Views.Collection
         {
             var cvm = DataContext as CollectionViewModel;
             Debug.Assert(cvm != null, "cvm != null");
-            var documentController = new NoteDocuments.CollectionNote(null, new Point(0, 0), CollectionView.CollectionViewType.Freeform, "New Workspace " + cvm.CollectionController.Count);
-            documentController.DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(), true);
+            var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, "New Workspace " + cvm.CollectionController.Count);
             cvm.CollectionController.Add(documentController.Document);
         }
     }

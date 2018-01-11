@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -101,11 +102,12 @@ namespace Dash
             }
             public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, string title = "-collection-", double width = 500, double height = 300) : base(DocumentType)
             {
+                Debug.Assert(dataDocument != null);
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
                     _prototypeLayout = CreatePrototypeLayout();
 
-                DataDocument = dataDocument ?? GetDocumentPrototype().MakeDelegate();
+                DataDocument = dataDocument;
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
                 DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 createLayout(where, viewtype, width, height);

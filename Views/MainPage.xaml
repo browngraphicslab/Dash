@@ -36,12 +36,13 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" x:Name="TreeMenuColumn" />
             <ColumnDefinition MinWidth="50" Width="*"/>
             <ColumnDefinition Width="11"/>
         </Grid.ColumnDefinitions>
         <my:GridSplitter />
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
+        <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         
         <Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
             <Grid.RowDefinitions>
