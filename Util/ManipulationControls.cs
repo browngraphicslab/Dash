@@ -420,6 +420,17 @@ namespace Dash
                     groupsList = new ListController<DocumentController>(docView.ParentCollection.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
                     docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
                 }
+                var addedItems = new List<DocumentController>();
+                foreach (var d in docView.ParentCollection.ViewModel.DocumentViewModels)
+                    if (GetGroupForDocument(d.DocumentController)== null && !groupsList.Data.Contains(d.DocumentController))
+                    {
+                        addedItems.Add(d.DocumentController);
+                    }
+                var newGroupsList = new List<DocumentController>(groupsList.TypedData);
+                newGroupsList.AddRange(addedItems);
+                groupsList = new ListController<DocumentController>(newGroupsList);
+                docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+
 
                 var dragGroupDocument = GetGroupForDocument(docView.ViewModel.DocumentController);
                 List<DocumentController> dragDocumentList = null;
@@ -491,15 +502,15 @@ namespace Dash
             var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             foreach (var g in groupList.TypedData)
-            {
-                if (g.Equals(doc))
+            if (g.Equals(doc)) {
+                if (GetViewFromDocument(g) != null)
                 {
-                    return onlyGroups ? null : new List<DocumentController>(new DocumentController[] { g });
+                    return new List<DocumentController>(new DocumentController[] { g });
                 }
                 else
                 {
                     var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(doc)).Count() > 0)
+                    if (cfield != null)
                     {
                         return cfield.Data.Select((cd) => cd as DocumentController).ToList();
                     }
@@ -512,13 +523,19 @@ namespace Dash
         {
             foreach (var dragDocument in dragDocumentList)
             {
-                var dragDocumentBounds = GetViewFromDocument(dragDocument).GroupingBounds;
+                var dragDocumentView = GetViewFromDocument(dragDocument);
+                if (dragDocumentView == null)
+                    continue;
+                var dragDocumentBounds = dragDocumentView.GroupingBounds;
                 foreach (var otherGroup in otherGroups)
                 {
                     var otherGroupMembers = GetGroupDocumentsList(otherGroup);
                     foreach (var otherGroupMember in otherGroupMembers)
                     {
-                        var otherGroupMemberBounds = GetViewFromDocument(otherGroupMember).GroupingBounds;
+                        var otherDocView = GetViewFromDocument(otherGroupMember);
+                        if (otherDocView == null)
+                            continue;
+                        var otherGroupMemberBounds = otherDocView.GroupingBounds;
                         otherGroupMemberBounds.Intersect(dragDocumentBounds);
 
                         if (otherGroupMemberBounds != Rect.Empty)
@@ -839,10 +856,10 @@ namespace Dash
                 if (grouped != null && grouped.Any())
                 {
                     foreach (var g in grouped)
-                    {
-                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                            e.Position, new Point(scaleFactor, scaleFactor)));
-                    }
+                        if (g != null) {
+                            g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                                e.Position, new Point(scaleFactor, scaleFactor)));
+                        }
 
                         
                 }
