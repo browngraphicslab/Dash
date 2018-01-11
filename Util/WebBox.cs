@@ -249,8 +249,11 @@ namespace Dash
             else if (e.Value == "up")
             {
                 web.Tag = new Tuple<Point, Point>(new Point(), new Point());
-                if (Math.Sqrt((pointerPosition.X - down.X)*(pointerPosition.X-down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                if (Math.Sqrt((pointerPosition.X - down.X) * (pointerPosition.X - down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                {
+                    parent.RightTap();
                     parent.OnTapped(null, null);
+                }
                 else
                 {
                     parent.MoveToContainingCollection();
