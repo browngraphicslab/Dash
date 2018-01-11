@@ -42,8 +42,6 @@ namespace Dash
                 {
                     RichTextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
-                    // Update the server
-                    UpdateOnServer();
                 }
 
             }
