@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Graphics.Display;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
+using Windows.UI.ViewManagement;
 using Dash.Browser;
 using DashShared;
 
@@ -109,11 +113,52 @@ namespace Dash
             }
         }
 
+
+        /*
+        private static async Task<Size> GetCurrentDisplaySize()
+        {
+            Size s = new Size();
+            await UITask.RunTask(async () =>
+            {
+                var displayInformation = DisplayInformation.GetForCurrentView();
+                System.Reflection.TypeInfo t = typeof(DisplayInformation).GetTypeInfo();
+                var props = t.DeclaredProperties
+                    .Where(x => x.Name.StartsWith("Screen") && x.Name.EndsWith("InRawPixels")).ToArray();
+                var w = props.Where(x => x.Name.Contains("Width")).First().GetValue(displayInformation);
+                var h = props.Where(x => x.Name.Contains("Height")).First().GetValue(displayInformation);
+                var size = new Size(System.Convert.ToDouble(w), System.Convert.ToDouble(h));
+                switch (displayInformation.CurrentOrientation)
+                {
+                    case DisplayOrientations.Landscape:
+                    case DisplayOrientations.LandscapeFlipped:
+                        size = new Size(Math.Max(size.Width, size.Height), Math.Min(size.Width, size.Height));
+                        break;
+                    case DisplayOrientations.Portrait:
+                    case DisplayOrientations.PortraitFlipped:
+                        size = new Size(Math.Min(size.Width, size.Height), Math.Max(size.Width, size.Height));
+                        break;
+                }
+                s = size;
+            });
+            return s;
+        }
+        */
+
+
         private static async Task HandleIncomingMessage(string read)
         {
             if (read.Equals("both"))
             {
                 Debug.WriteLine("Connected to server and browser!");
+                /*
+                await UITask.RunTask(async () =>
+                {
+                    var size = await GetCurrentDisplaySize();
+                    size = new Size(size.Width / 2, size.Height);
+                    //ApplicationView.PreferredLaunchViewSize = size;
+                    //ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+                    bool result = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryResizeView(size);
+                });*/
             }
             else
             {
