@@ -785,7 +785,7 @@ namespace Dash
             return GetField(key, ignorePrototype) as T;
         }
 
-        public T GetFieldOrDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
+        public T GetFieldOrCreateDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
         {
             var field = GetField(key, ignorePrototype);
             if (field != null)
