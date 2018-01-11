@@ -777,7 +777,7 @@ namespace Dash
                 await Task.Delay(100); // allows for double-tap
 
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection != null)
+                if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
                 {
                     ParentCollection.MaxZ += 1;
                     Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
