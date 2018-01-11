@@ -153,7 +153,9 @@ namespace Dash
         {
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
-            xMainDocView.DataContext = new DocumentViewModel(workspace);
+            var documentViewModel = new DocumentViewModel(workspace);
+            xMainDocView.DataContext = documentViewModel;
+            documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 
