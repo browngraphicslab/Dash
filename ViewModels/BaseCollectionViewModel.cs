@@ -420,6 +420,21 @@ namespace Dash
             else if (e.DataView.Contains(StandardDataFormats.Html))
             {
                 var html = await e.DataView.GetHtmlFormatAsync();
+
+                //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
+                html = String.Concat(html,
+                    @"<style>
+                      div
+                      {
+                        color: black !important;
+                      }
+
+                      html * {
+                        opacity: 1.0 !important
+                      }
+                    </style>"
+                );
+
                 var splits = new Regex("<").Split(html);
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
