@@ -93,6 +93,7 @@ namespace Dash
             MenuFlyout = xMenuFlyout;
         }
 
+
         private void AddBorderRegionHandlers()
         {
             foreach(var region in new FrameworkElement[]{ BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 })
@@ -119,6 +120,8 @@ namespace Dash
                 ToggleSelectionBorder(false);
         }
 
+
+
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
@@ -133,12 +136,10 @@ namespace Dash
             ToggleGroupSelectionBorderColor(false);
         }
 
-
         public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
         {
             ToggleGroupSelectionBorderColor(true);
         }
-
 
         private void CheckForDropOnLink(DocumentView docView)
         {
@@ -186,13 +187,13 @@ namespace Dash
                                 // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                                 // the link is outside the document.
                                 if ((slope < 0 && !(intersectionTopX < screenCoords.X ||
-                                                   intersectionBottomX > screenCoords.X + docView.ActualWidth)
-                                    || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth)))
+                                                    intersectionBottomX > screenCoords.X + docView.ActualWidth)
+                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
+                                                       intersectionBottomX < screenCoords.X + docView.ActualWidth)))
                                 {
                                     // if the document is between the vertical bounds of the link endpoints
                                     if (screenCoords.Y > (Math.Min(curvePoint1.Y, curvePoint2.Y))
-                                                      && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
+                                        && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
                                     {
                                         // connect the dropped document to the documents linked by the path
                                         ChangeConnections(freeformView, docView, link);
@@ -254,7 +255,7 @@ namespace Dash
             var referencedKey = userLink.referencedKey;
             var referencedDoc = userLink.referencedDocument;
 
-            
+
 
             // Check if nodes inputs/outputs are of the same type
             var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
@@ -266,7 +267,7 @@ namespace Dash
             var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorController;
             var referencingDocInputType = referencingDocOpFMController?.Inputs[referencingKey];
 
-            if(droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
+            if (droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
             {
                 // delete the current connection between referenced doc and referencing doc
                 ffView.DeleteLine(link.Key, userLink); // check
@@ -304,8 +305,8 @@ namespace Dash
             else
             {
                 referencingDoc.SetField(referencingKey,
-                new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
-            }                                                                                       
+                    new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
+            }
 
             // add line visually
             ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
@@ -349,7 +350,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -367,7 +368,7 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-                
+
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
@@ -401,7 +402,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
                 var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-               
+
             }
         }
 
@@ -415,14 +416,14 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
 
-#endregion
+        #endregion
 
 
         private void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        
+
 
         MenuButton copyButton;
 
@@ -527,7 +528,7 @@ namespace Dash
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
                 //uncomment to make children in collection stretch
-                fitFreeFormChildrenToTheirLayouts(); 
+                fitFreeFormChildrenToTheirLayouts();
             }
         }
 
@@ -667,7 +668,7 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
-            
+
 
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
@@ -932,7 +933,7 @@ namespace Dash
                 ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
             else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
 
-       }
+        }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1010,7 +1011,7 @@ namespace Dash
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
             ScreenCap();
-            
+
         }
 
 
