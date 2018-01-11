@@ -666,7 +666,7 @@ namespace Dash
                 {
                     xRichEditBox.Document.Selection.CharacterFormat.Name = font;
                 };
-                xFont?.Items?.Add(item);
+                //xFont?.Items?.Add(item); Ellen commented out
             }
         }
 
@@ -720,34 +720,34 @@ namespace Dash
             item.Background = new SolidColorBrush(color);
             item.Height = height;
             // handles what happens when the item gets focus and when it is clicked
-            if (submenu == xColor)
-            {
-                item.Click += delegate
-                {
-                    UpdateDocument();
-                    currentCharFormat = null;
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-                };
-                item.GotFocus += delegate
-                {
-                    Foreground(color, false);
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-                };
-            }
-            else if (submenu == xHighlight)
-            {
-                item.Click += delegate
-                {
-                    UpdateDocument();
-                    currentCharFormat = null;
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-                };
-                item.GotFocus += delegate
-                {
-                    Highlight(color, false);
-                    xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-                };
-            }
+            //if (submenu == xColor)
+            //{
+            //    item.Click += delegate
+            //    {
+            //        UpdateDocument();
+            //        currentCharFormat = null;
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
+            //    };
+            //    item.GotFocus += delegate
+            //    {
+            //        Foreground(color, false);
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+            //    };
+            //}
+            //else if (submenu == xHighlight)
+            //{
+            //    item.Click += delegate
+            //    {
+            //        UpdateDocument();
+            //        currentCharFormat = null;
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
+            //    };
+            //    item.GotFocus += delegate
+            //    {
+            //        Highlight(color, false);
+            //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
+            //    };
+            //} //Ellen commented out
 
             submenu?.Items?.Add(item);
         }
@@ -790,18 +790,18 @@ namespace Dash
             var basics = new List<string>() {"Bold (ctrl+B)", "Italics (ctrl+I)", "Underline (ctrl+U)", "Strikethrough"};
             var scripts = new List<string>() {"Superscript", "Subscript" };
             var caps = new List<string>() {"AllCaps", "SmallCaps"};
-            foreach (var basic in basics)
-            {
-                AddFormatMenuItem(basic, xFormat, true);
-            }
-            foreach (var script in scripts)
-            {
-                AddFormatMenuItem(script, xScript, true);
-            }
-            foreach (var cap in caps)
-            {
-                AddFormatMenuItem(cap, xCaps, true);
-            }
+            //foreach (var basic in basics)
+            //{
+            //    AddFormatMenuItem(basic, xFormat, true);
+            //}
+            //foreach (var script in scripts)
+            //{
+            //    AddFormatMenuItem(script, xScript, true);
+            //}
+            //foreach (var cap in caps)
+            //{
+            //    AddFormatMenuItem(cap, xCaps, true);
+            //} Ellen commented out
         }
 
         /// <summary>
@@ -810,25 +810,25 @@ namespace Dash
         private void AddParagraphFormats()
         {
             var alignmentNames = alignments.Keys;
-            foreach (var alignment in alignmentNames)
-            {
-                AddFormatMenuItem(alignment, xAlignment, false);
-            }
-            var listTypes = markerTypes.Keys;
-            foreach (var type in listTypes)
-            {
-                AddFormatMenuItem(type, xListTypes, false);
-            }
-            var listStyles = markerStyles.Keys;
-            foreach (var style in listStyles)
-            {
-                AddFormatMenuItem(style, xListStyles, false);
-            }
-            var listAlignments = markerAlignments.Keys;
-            foreach (var listAlignment in listAlignments)
-            {
-                AddFormatMenuItem(listAlignment, xListAlignments, false);
-            }
+            //foreach (var alignment in alignmentNames)
+            //{
+            //    AddFormatMenuItem(alignment, xAlignment, false);
+            //}
+            //var listTypes = markerTypes.Keys;
+            //foreach (var type in listTypes)
+            //{
+            //    AddFormatMenuItem(type, xListTypes, false);
+            //}
+            //var listStyles = markerStyles.Keys;
+            //foreach (var style in listStyles)
+            //{
+            //    AddFormatMenuItem(style, xListStyles, false);
+            //}
+            //var listAlignments = markerAlignments.Keys;
+            //foreach (var listAlignment in listAlignments)
+            //{
+            //    AddFormatMenuItem(listAlignment, xListAlignments, false);
+            //} Ellen commented out
         }
 
         /// <summary>
@@ -1560,9 +1560,9 @@ namespace Dash
         {
             OpenContextMenu(sender);
             FlyoutBase.GetAttachedFlyout(xRichEditBox).AllowFocusOnInteraction = true;
-            if (xFont.Items.Count == 0) AddFonts();
-            if (xColor.Items.Count == 0) AddColors(xColor);
-            if (xHighlight.Items.Count == 1) AddColors(xHighlight);
+            //if (xFont.Items.Count == 0) AddFonts();
+            //if (xColor.Items.Count == 0) AddColors(xColor);
+            //if (xHighlight.Items.Count == 1) AddColors(xHighlight); Ellen commented out
         }
 
         /// <summary>
@@ -1650,12 +1650,12 @@ namespace Dash
         /// </summary>
         private void AddFlyoutItems()
         {
-            if (xAlignment.Items.Count == 0) AddParagraphFormats();
-            if (xFormat.Items.Count == 3) AddCharacterFormats();
-            if (xColor.Items.Count == 0) AddColors(xColor);
-            if (xHighlight.Items.Count == 1) AddColors(xHighlight);
-            if (xFont.Items.Count == 0) AddFonts();
-            if (xHighlightOpacity.Items.Count == 0) AddHighlightOpacity();
+            //if (xAlignment.Items.Count == 0) AddParagraphFormats();
+            //if (xFormat.Items.Count == 3) AddCharacterFormats();
+            //if (xColor.Items.Count == 0) AddColors(xColor);
+            //if (xHighlight.Items.Count == 1) AddColors(xHighlight);
+            //if (xFont.Items.Count == 0) AddFonts();
+            //if (xHighlightOpacity.Items.Count == 0) AddHighlightOpacity(); Ellen commented out
         }
 
         /// <summary>
