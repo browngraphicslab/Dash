@@ -128,19 +128,6 @@ namespace Dash
             ToggleSelectionBorder(true);
         }
 
-        public Rect GetBoundingBoxScreenSpace()
-        {
-
-            Point topLeftObjectPoint = new Point(0, 0);
-            Point bottomRightObjectPoint = new Point(ViewModel.Width, ViewModel.Height);
-           
-            var topLeftPoint = Util.PointTransformFromVisual(topLeftObjectPoint, this);
-            var bottomRightPoint = Util.PointTransformFromVisual(bottomRightObjectPoint, this);
-
-            return new Rect(topLeftPoint, bottomRightPoint);
-        }
-
-
         public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             if (sender is DocumentView docView)
@@ -149,12 +136,10 @@ namespace Dash
             ToggleGroupSelectionBorderColor(false);
         }
 
-
         public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
         {
             ToggleGroupSelectionBorderColor(true);
         }
-
 
         private void CheckForDropOnLink(DocumentView docView)
         {
