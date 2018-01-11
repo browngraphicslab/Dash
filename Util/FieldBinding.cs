@@ -73,7 +73,7 @@ namespace Dash
                             $"  Converter   = {converter?.GetType().Name ?? "null"}\n" +
                             $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
 #else
-                        Debug.WriteLine("Error evaluating binding: Error with converter or GetValue, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+                        Debug.WriteLine($"Error evaluating binding: Error with converter or GetValue of {Key.Name}, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
 #endif
                     }
                 }
@@ -90,7 +90,7 @@ namespace Dash
                         $"  Document ID = {Document.Id}" +
                         $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
 #else
-                    Debug.WriteLine("Error evaluating binding: Field was missing and there was no fallback value, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+                    Debug.WriteLine($"Error evaluating binding: Field {Key.Name} was missing and there was no fallback value, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
 #endif
 
                     element.ClearValue(property);

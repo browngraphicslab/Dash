@@ -24,15 +24,6 @@ namespace Dash
         public CollectionTreeView()
         {
             this.InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
-        }
-
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (DataContext is CollectionViewModel)
-            {
-                Debug.WriteLine("test");
-            }
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -40,7 +31,7 @@ namespace Dash
             var cvm = DataContext as CollectionViewModel;
             Debug.Assert(cvm != null, "cvm != null");
             var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, "New Workspace " + cvm.CollectionController.Count);
-            (cvm.ContainerDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>).Add(documentController.Document);
+            (cvm.ContainerDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>)?.Add(documentController.Document);
             cvm.CollectionController.Add(documentController.Document);
         }
     }
