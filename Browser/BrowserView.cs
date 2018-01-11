@@ -297,5 +297,15 @@ namespace Dash
             _isCurrent = current;
             CurrentChanged?.Invoke(this, current);
         }
+
+        public DocumentContext GetAsContext()
+        {
+            return new DocumentContext()
+            {
+                Url = Url,
+                Scroll = Scroll,
+                Title = Title
+            };
+        }
     }
 }

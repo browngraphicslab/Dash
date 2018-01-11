@@ -880,8 +880,8 @@ namespace Dash
                     new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
                     , ordered[i].GroupTransform.ScaleCenter
                     , ordered[i].GroupTransform.ScaleAmount);
-            }
-            */
+            }*/
+            
             return grouped;
         }
 

@@ -277,15 +277,13 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument(null);
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
-            if (neighboring != null && neighboring.TypedData.Count == 3)
+            if (neighboring != null && neighboring.TypedData.Count > 0)
             {
-                double yPos;
-                var uri = neighboring.TypedData.First().Data;
-                var where = neighboring.TypedData[1].Data;
-                if (double.TryParse(where, out yPos))
+                var context = doc.GetLastContext();
+                if (context != null)
                 {
-                    MainPage.Instance.WebContext.SetUrl(uri);
-                    MainPage.Instance.WebContext.SetScroll(yPos);
+                    MainPage.Instance.WebContext.SetUrl(context.Url);
+                    MainPage.Instance.WebContext.SetScroll(context.Scroll);
                 }
             }
         }
@@ -298,11 +296,29 @@ namespace Dash
             }
 
             var dataDocument = doc.GetDataDocument(null);
-            dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new[] {
-                new TextController(MainPage.Instance.WebContext.Url),
-                new TextController(MainPage.Instance.WebContext.Scroll.ToString()),
-                new TextController(MainPage.Instance.WebContext.Title), }), true);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+
+            if (neighboring == null)
+            {
+                neighboring = new ListController<TextController>();
+                dataDocument.SetField(KeyStore.NeighboringDocumentsKey, neighboring, true);
+            }
+
+            var context = MainPage.Instance.WebContext.GetAsContext();
+            neighboring.Add(new TextController(context.Serialize()));
         }
+
+        public static DocumentContext GetLastContext(this DocumentController doc)
+        {
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count > 0)
+            {
+                return neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+            }
+            return null;
+        }
+
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {

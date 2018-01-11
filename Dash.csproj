@@ -98,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
