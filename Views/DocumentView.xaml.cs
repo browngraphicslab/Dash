@@ -756,10 +756,22 @@ namespace Dash
 
         public Rect ClipRect => new Rect();
 
+        public void RightTap()
+        {
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+
+            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
+        }
+
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
+
+
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
@@ -1007,6 +1019,11 @@ namespace Dash
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+        }
+
+        private void xTitleIcon_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            ShowContext();
         }
     }
 }

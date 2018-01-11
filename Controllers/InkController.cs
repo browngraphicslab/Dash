@@ -72,7 +72,7 @@ namespace Dash
                 {
                     InkFieldModel.Data = value;
                     // Update the server
-                    UpdateOnServer();
+                    OnFieldModelUpdated(null);
                 }
             }
         }

@@ -129,7 +129,7 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_isManipulating)
+            if (e !=  null && _isManipulating)
             {
                 e.Complete();
                 return;
