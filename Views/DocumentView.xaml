@@ -14,7 +14,8 @@
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
-    PointerPressed="DocumentView_OnPointerPressed">
+    PointerPressed="DocumentView_OnPointerPressed"
+    SizeChanged="DocumentView_OnSizeChanged">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
@@ -24,37 +25,12 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
     <Grid>
-        <!--The cloud bubble margins-->
-        <Grid Height="{Binding GroupMargin}" Margin="-10 0 -10 -30"  VerticalAlignment="Bottom" Background="#01010101" x:Name="BorderRegion1" >
-            <Grid CornerRadius="10" Opacity="0.25" Height="20" >
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0 1">
-                        <GradientStop Color="Transparent" Offset="1"/>
-                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                    </LinearGradientBrush>
-                </Grid.Background>
-            </Grid>
-        </Grid>
-        <Grid Margin="-35 0 0 -10"  x:Name="BorderRegion2" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Left" >
-            <Grid CornerRadius="10" Opacity="0.25" Width="20" >
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="Transparent" Offset="0"/>
-                        <GradientStop Color="{Binding BorderGroupColor}" Offset="1"/>
-                    </LinearGradientBrush>
-                </Grid.Background>
-            </Grid>
-        </Grid>
-        <Grid Margin="0 0 -35 -10" x:Name="BorderRegion3" Opacity="1" Width="{Binding GroupMargin}" Background="#01010101" HorizontalAlignment="Right" >
-            <Grid CornerRadius="10" Opacity="0.25" Width="20"  >
-                <Grid.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1 0">
-                        <GradientStop Color="Transparent" Offset="1"/>
-                        <GradientStop Color="{Binding BorderGroupColor}" Offset="0"/>
-                    </LinearGradientBrush>
-                </Grid.Background>
-            </Grid>
-        </Grid>
+        <!--The cloud bubble margins, the margins are decided by the documetn view groupMargin-->
+        <Grid Margin="-40 0 -40 -40" x:Name="BorderRegion1" Height="{Binding GroupMargin}"  VerticalAlignment="Bottom" Background="Transparent"/>
+        <Grid Margin="-40 0 0 -40"  x:Name="BorderRegion2" Width="{Binding GroupMargin}" HorizontalAlignment="Left" Background="Transparent"/>
+        <Grid Margin="0 0 -40 -40" x:Name="BorderRegion3" Width="{Binding GroupMargin}" HorizontalAlignment="Right" Background="Transparent" />
+        <Grid Margin="-40 -40 -40 0" x:Name="BorderRegion4" Height="{Binding GroupMargin}"  VerticalAlignment="Top" Background="Transparent" />
+
         <!-- Main document view -->
 
         <Grid x:Name="OuterGrid" x:FieldModifier="public">
@@ -81,10 +57,6 @@
                 </MenuFlyout>
             </Grid.ContextFlyout>
 
-
-
-
-
             <!--Used to render the drop shadow and provide a background to the document-->
             <Canvas x:Name="xShadowHost"  Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Rectangle x:Name="xDocumentBackground" Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
@@ -92,13 +64,15 @@
             <!--The title bar on top of the documents-->
             <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.Row="0" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
                 <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
-                    <TextBlock x:Name="xTitleIcon" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
+                    <TextBlock x:Name="xTitleIcon" DoubleTapped="xTitleIcon_DoubleTapped" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
                     <TextBox PlaceholderText="Title" Text="" Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
                 </StackPanel>
             </Border>
 
             <!--grid to hold the inner content of the document-->
-            <Grid Name="xTargetContentGrid" Grid.Row="1" BorderBrush="LightGray"> 
+            <Grid Name="xTargetContentGrid" Grid.Row="1" >
+
+
                 <!-- Container for document fields view -->
                 <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <FlyoutBase.AttachedFlyout >
@@ -126,6 +100,9 @@
                     </Border>
                 </Button>
             </Grid>
+
+            <!--The selection border-->
+            <Border Name="xSelectionBorder" Grid.Row="1"/>
             <ProgressRing x:Name="xProgressRing" Grid.Row="1" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
         </Grid>
 

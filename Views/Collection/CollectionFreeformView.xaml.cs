@@ -6,6 +6,7 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -94,13 +95,16 @@ namespace Dash
             DragLeave += Collection_DragLeave;
         }
 
-        public IEnumerable<DocumentView> DocumentViews()
+        public List<DocumentView> DocumentViews
         {
-            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-            foreach (var doc in this.GetDescendantsOfType<DocumentView>())
-                if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
-                    yield return doc;
+            get => _documentViews;
+            private set => _documentViews = value;
         }
+
+        //var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+        //    foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+        //if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+        //yield return doc;
 
         public IOReference GetCurrentReference()
         {
@@ -115,11 +119,32 @@ namespace Dash
 
             if (vm != null)
             {
+                // remove old events
+                if (ViewModel?.DocumentViewModels != null)
+                        ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+
+                // add new events
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
+                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
             }
         }
 
+        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                DocumentViews = IterateDocumentViews().ToList();
+            }
+
+            IEnumerable<DocumentView> IterateDocumentViews()
+            {
+                var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+                foreach (var doc in this.GetDescendantsOfType<DocumentView>())
+                    if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                        yield return doc;
+            }
+        }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -319,7 +344,7 @@ namespace Dash
 
         public DocumentView GetDocView(DocumentController doc)
         {
-            return _documentViews.FirstOrDefault(view => view.ViewModel.DocumentController.Equals(doc));
+            return DocumentViews.FirstOrDefault(view => view.ViewModel.DocumentController.Equals(doc));
         }
 
         public void DeleteLine(FieldReference reff, Path line)
@@ -960,6 +985,8 @@ namespace Dash
         #endregion
 
 
+        #region PointerChrome
+
         /// <summary>
         /// When the mouse hovers over the backgorund
         /// </summary>
@@ -967,7 +994,7 @@ namespace Dash
         /// <param name="e"></param>
         private void Background_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.IBeam, 1);
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
         }
 
         /// <summary>
@@ -977,8 +1004,10 @@ namespace Dash
         /// <param name="e"></param>
         private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Windows.UI.Xaml.Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 1);
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
+
+        #endregion
 
         /// <summary>
         /// 
@@ -1180,6 +1209,7 @@ namespace Dash
 
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+
         private List<DocumentView> _documentViews = new List<DocumentView>();
 
         private bool _isToggleOn;
@@ -1187,7 +1217,7 @@ namespace Dash
         {
             _isToggleOn = !_isToggleOn;
             _payload = new Dictionary<DocumentView, DocumentController>();
-            foreach (var docView in _documentViews)
+            foreach (var docView in DocumentViews)
             {
                 if (_isToggleOn)
                 {
@@ -1204,7 +1234,7 @@ namespace Dash
 
         public void DeselectAll()
         {
-            foreach (var docView in _documentViews)
+            foreach (var docView in DocumentViews)
             {
                 Deselect(docView);
                 _payload.Remove(docView);
@@ -1232,6 +1262,8 @@ namespace Dash
             _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
+        // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
+        // TODO there are better hooks to use
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsSelectionEnabled) return;
@@ -1424,23 +1456,25 @@ namespace Dash
         /// <param name="e"></param>
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
-            var documentView = sender as DocumentView;
-            Debug.Assert(documentView != null);
-            if (documentView is null) return;
-            OnDocumentViewLoaded?.Invoke(this, documentView);
-            documentView.OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add(documentView);
-
-            if (loadingPermanentTextbox)
+            if (sender is DocumentView documentView)
             {
-                var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
-                if (richEditBox != null)
+                OnDocumentViewLoaded?.Invoke(this, documentView);
+                documentView.OuterGrid.Tapped += DocumentView_Tapped;
+                DocumentViews.Add(documentView);
+
+                if (loadingPermanentTextbox)
                 {
-                    richEditBox.GotFocus -= RichEditBox_GotFocus;
-                    richEditBox.GotFocus += RichEditBox_GotFocus;
-                    richEditBox.Focus(FocusState.Programmatic);
+                    var richEditBox = documentView.GetDescendantsOfType<RichEditBox>().FirstOrDefault();
+                    if (richEditBox != null)
+                    {
+                        richEditBox.GotFocus -= RichEditBox_GotFocus;
+                        richEditBox.GotFocus += RichEditBox_GotFocus;
+                        richEditBox.Focus(FocusState.Programmatic);
+                        documentView.OnSelected();
+                    }
                 }
             }
+
         }
         private void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {

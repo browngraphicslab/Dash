@@ -436,7 +436,7 @@ namespace Dash
 
                 if (imgs.Count() == 0)
                 {
-                    var matches = new Regex("^.{1,100}:.*").Matches(text.Trim());
+                    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
                     var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     if (title == "")

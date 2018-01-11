@@ -71,11 +71,7 @@ namespace Dash
                 if(PointFieldModel.Data != value)
                 {
                     PointFieldModel.Data = value;
-                    // Update the server
-                    UpdateOnServer();
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
                 }
             }
         }

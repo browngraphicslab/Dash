@@ -148,6 +148,8 @@ namespace Dash
                     if (scaleAmountFieldModelController != null)
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
+
+                UpdateGroupingBounds();
             }
         }
         public double GroupMargin
@@ -156,19 +158,27 @@ namespace Dash
             set => SetProperty(ref _groupMargin, value);
         }
 
-        private Color _borderGroupColor = Colors.Transparent;
-        public Color BorderGroupColor {
-            get => _borderGroupColor;
-            set => SetProperty(ref _borderGroupColor, value);
-        }
+        private Rect _groupingBounds;
 
-
-        public Rect GroupingBounds(double actualwidth, double actualheight)
+        public void UpdateActualSize(double actualwidth, double actualheight)
         {
-            {
-                return new TranslateTransform() { X = GroupTransform.Translate.X, Y = GroupTransform.Translate.Y }.TransformBounds(new Rect(GroupMargin, 0, actualwidth + 2* GroupMargin, actualheight + GroupMargin));
-            }
+            _actualWidth = actualwidth;
+            _actualHeight = actualheight;
+            UpdateGroupingBounds();
+
         }
+
+        private void UpdateGroupingBounds()
+        {
+            _groupingBounds = new TranslateTransform
+            {
+                X = GroupTransform.Translate.X,
+                Y = GroupTransform.Translate.Y
+            }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
+                _actualHeight + 2 * GroupMargin));
+        }
+
+        public Rect GroupingBounds => _groupingBounds;
 
         public void TransformDelta(TransformGroupData delta)
         {
@@ -224,6 +234,8 @@ namespace Dash
         }
 
         private bool _isDraggerVisible = true;
+        private double _actualWidth;
+        private double _actualHeight;
 
         public void UpdateContent()
         {

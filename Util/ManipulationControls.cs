@@ -140,7 +140,6 @@ namespace Dash
         /// </summary>
         private const double ALIGNMENT_THRESHOLD = .2;
 
-        private const double BORDER_THICKNESS = 20;
 
         /// <summary>
         /// Previews the new location/position of the element
@@ -157,9 +156,8 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-            var currentBoundingBox = docRoot.GetBoundingBoxScreenSpace();
-
+            //var currentBoundingBox = docRoot.GetBoundingBoxScreenSpace();
+            var currentBoundingBox = GetBoundingBox(docRoot);
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
@@ -192,24 +190,6 @@ namespace Dash
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            switch (side)
-            {
-                case Side.Bottom:
-                    translate.Y = newBoundingBox.Y - BORDER_THICKNESS;
-                    break;
-                case Side.Top:
-                    translate.Y = newBoundingBox.Y + BORDER_THICKNESS;
-                    break;
-                case Side.Left:
-                    translate.X = newBoundingBox.X + BORDER_THICKNESS;
-                    break;
-                case Side.Right:
-                    translate.X = newBoundingBox.X - BORDER_THICKNESS;
-                    break;
-            }
-
-
-            //var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
             currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
 
             currrentDoc.ViewModel.Width = newBoundingBox.Width;
@@ -217,7 +197,11 @@ namespace Dash
         }
 
 
-
+        /// <summary>
+        /// Places the TemporaryRectangle in the location where the document view being manipulation would be dragged.
+        /// </summary>
+        /// <param name="currentBoundingBox"></param>
+        /// <param name="closestDocumentView"></param>
         private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentView, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null) return;
@@ -225,7 +209,7 @@ namespace Dash
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestDocumentViewScreenBoundingBox = documentView.GetBoundingBoxScreenSpace();
+            var closestDocumentViewScreenBoundingBox = GetBoundingBox(documentView);
             var currentScreenBoundingBox = currentBoundingBox;
             var newBoundingBox =
                 CalculateAligningRectangleForSide(~side, closestDocumentViewScreenBoundingBox, currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
@@ -237,6 +221,7 @@ namespace Dash
             Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
             Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
         }
+
 
         private Tuple<DocumentView, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
         {
@@ -285,7 +270,7 @@ namespace Dash
 
         private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = GetBoundingBox(otherDocumentView); // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
@@ -369,6 +354,23 @@ namespace Dash
 
             return (sourceEnd - sourceStart) / source.Height;
         }
+        /// <summary>
+        /// Returns the bounding box in screen space of a FrameworkElement.
+        /// 
+        /// TODO: move this to a more logical place, such as a Util class or an extension class
+        /// </summary>
+        /// <returns></returns>
+        private Rect GetBoundingBox(FrameworkElement element)
+        {
+            Point topLeftObjectPoint = new Point(0, 0);
+            Point bottomRightObjectPoint = new Point(element.ActualWidth, element.ActualHeight);
+
+            var topLeftPoint = Util.PointTransformFromVisual(topLeftObjectPoint, element);
+            var bottomRightPoint = Util.PointTransformFromVisual(bottomRightObjectPoint, element);
+
+            return new Rect(topLeftPoint, bottomRightPoint);
+        }
+
         #endregion
 
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -383,28 +385,8 @@ namespace Dash
 
 
             _isManipulating = false;
-            var grouped = new List<DocumentViewModel>();
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (parent != null && !_element.Equals(parent))
-            {
-                AddConnected(grouped, docRoot, parent);
-                var recolor = false;
-                foreach (var g in grouped)
-                    if (!Grouped.Contains(g))
-                        recolor = true;
-                foreach (var g in Grouped)
-                    if (!grouped.Contains(g))
-                        recolor = true;
-                if (recolor)
-                {
-                    Random r = new Random();
-                    var BackColor = grouped.Count == 1 ? Colors.Transparent: Windows.UI.Color.FromArgb(0xff, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0);
 
-                    foreach (var g in grouped)
-                        g.BorderGroupColor = BackColor;
-                }
-            }
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
@@ -413,28 +395,9 @@ namespace Dash
             }
         }
 
-        List<DocumentViewModel> Grouped = new List<DocumentViewModel>();
-
-
-
-        private static void AddConnected(List<DocumentViewModel> grouped, DocumentView docRoot, CollectionFreeformView parent)
-        {
-            var docRootBounds = docRoot.ViewModel.GroupingBounds(docRoot.ActualWidth, docRoot.ActualHeight);
-            foreach (var doc in parent.DocumentViews())
-            {
-                var docBounds = doc.ViewModel.GroupingBounds(doc.ActualWidth, doc.ActualHeight);
-                docBounds.Intersect(docRootBounds);
-                if (docBounds != Rect.Empty && !grouped.Contains(doc.ViewModel))
-                {
-                    grouped.Add(doc.ViewModel);
-                    AddConnected(grouped, doc, parent);
-                }
-            }
-        }
-
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_isManipulating)
+            if (e !=  null && _isManipulating)
             {
                 e.Complete();
                 return;
@@ -449,20 +412,15 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             docView?.ToFront();
 
+            if (docView?.ParentCollection?.CurrentView is  CollectionFreeformView freeFormView)
+                _grouping = docView.AddConnected(new List<DocumentView>(), freeFormView.DocumentViews);
+
             _isManipulating = true;
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
             if (e!= null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
-
-            Grouped.Clear();
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (parent != null)
-            {
-                AddConnected(Grouped, docRoot, parent);
-            }
         }
 
         public void AddAllAndHandle()
@@ -545,7 +503,8 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e, Grouped);
+            ;
+            TranslateAndScale(e, _grouping);
         }
 
 
@@ -575,6 +534,7 @@ namespace Dash
         // these constants adjust the sensitivity of the shake
         private static int _millisecondsToShake = 600;
         private static int _sensitivity = 4;
+        private List<DocumentView> _grouping;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -731,7 +691,7 @@ namespace Dash
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, IEnumerable<DocumentViewModel> grouped=null)
+        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentView> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -746,11 +706,15 @@ namespace Dash
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
-                if (grouped != null && grouped.Count() > 0)
+                if (grouped != null && grouped.Any())
                 {
                     foreach (var g in grouped)
-                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                                     e.Position, new Point(scaleFactor, scaleFactor)));
+                    {
+                        g.ViewModel.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                            e.Position, new Point(scaleFactor, scaleFactor)));
+                    }
+
+                        
                 }
                 else
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),

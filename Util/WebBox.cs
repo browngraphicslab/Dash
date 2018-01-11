@@ -88,12 +88,13 @@ namespace Dash
             var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
-            var grid = new Grid {Background = new SolidColorBrush(Colors.Blue), Name = "webGridRoot"};
+            var grid = new Grid {Background = new SolidColorBrush(Colors.Transparent), Name = "webGridRoot"};
             var web = new WebView
             {
                 IsHitTestVisible = true,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
+                VerticalAlignment = VerticalAlignment.Stretch,
+               
             };
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
@@ -248,8 +249,11 @@ namespace Dash
             else if (e.Value == "up")
             {
                 web.Tag = new Tuple<Point, Point>(new Point(), new Point());
-                if (Math.Sqrt((pointerPosition.X - down.X)*(pointerPosition.X-down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                if (Math.Sqrt((pointerPosition.X - down.X) * (pointerPosition.X - down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
+                {
+                    parent.RightTap();
                     parent.OnTapped(null, null);
+                }
                 else
                 {
                     parent.MoveToContainingCollection();
@@ -268,7 +272,7 @@ namespace Dash
             if (args.Uri != null)
             {
                 args.Cancel = true;
-                MainPage.Instance.WebContext.SetUrl(args.Uri.AbsoluteUri);
+                MainPage.Instance.WebContext?.SetUrl(args.Uri.AbsoluteUri);
             }
         }
 

@@ -277,12 +277,12 @@ namespace Dash
         {
             var dataDocument = doc.GetDataDocument(null);
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
-            if (neighboring != null && neighboring.TypedData.Count == 2)
+            if (neighboring != null && neighboring.TypedData.Count == 3)
             {
-                int yPos;
+                double yPos;
                 var uri = neighboring.TypedData.First().Data;
-                var where = neighboring.TypedData.Last().Data;
-                if (int.TryParse(where, out yPos))
+                var where = neighboring.TypedData[1].Data;
+                if (double.TryParse(where, out yPos))
                 {
                     MainPage.Instance.WebContext.SetUrl(uri);
                     MainPage.Instance.WebContext.SetScroll(yPos);
@@ -300,7 +300,8 @@ namespace Dash
             var dataDocument = doc.GetDataDocument(null);
             dataDocument.SetField(KeyStore.NeighboringDocumentsKey, new ListController<TextController>(new[] {
                 new TextController(MainPage.Instance.WebContext.Url),
-                new TextController(MainPage.Instance.WebContext.Scroll.ToString())}), true);
+                new TextController(MainPage.Instance.WebContext.Scroll.ToString()),
+                new TextController(MainPage.Instance.WebContext.Title), }), true);
         }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
