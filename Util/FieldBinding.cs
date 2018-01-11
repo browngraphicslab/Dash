@@ -1,6 +1,4 @@
-﻿#define PRINT_BINDING_ERROR
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,14 +63,16 @@ namespace Dash
                     }
                     else
                     {
-#if PRINT_BINDING_ERROR
+#if PRINT_BINDING_ERROR_DETAILED
                         Debug.WriteLine(
-                            $"Error evaluating binding: Error with converter\n" +
-                            $"  Document ID = {Document.Id}\n" +
+                            $"Error evaluating binding: Error with converter or GetValue\n" +
                             $"  Key         = {Key.Name}\n" +
+                            $"  Document ID = {Document.Id}\n" +
                             $"  Field Data  = {fieldData}\n" +
                             $"  Converter   = {converter?.GetType().Name ?? "null"}\n" +
                             $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                        Debug.WriteLine("Error evaluating binding: Error with converter or GetValue, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
 #endif
                     }
                 }
@@ -82,8 +82,14 @@ namespace Dash
                 }
                 else
                 {
-#if PRINT_BINDING_ERROR
-                    Debug.WriteLine($"Error evaluating binding: Field was missing and there was no fallback value, Document ID = {Document.Id}, Key = {Key.Name}");
+#if PRINT_BINDING_ERROR_DETAILED
+                    Debug.WriteLine(
+                        $"Error evaluating binding: Field was missing and there was no fallback value\n" +
+                        $"  Key         = {Key.Name}\n" + 
+                        $"  Document ID = {Document.Id}" +
+                        $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                    Debug.WriteLine("Error evaluating binding: Field was missing and there was no fallback value, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
 #endif
 
                     element.ClearValue(property);
