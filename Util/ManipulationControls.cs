@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -382,8 +383,7 @@ namespace Dash
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             Snap(false);
-
-
+            
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
 
@@ -397,7 +397,7 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (e !=  null && _isManipulating)
+            if (e != null && _isManipulating)
             {
                 e.Complete();
                 return;
@@ -412,15 +412,145 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             docView?.ToFront();
 
-            if (docView?.ParentCollection?.CurrentView is  CollectionFreeformView freeFormView)
-                _grouping = docView.AddConnected(new List<DocumentView>(), freeFormView.DocumentViews);
+            if (docView.ParentCollection != null)
+            {
+                var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if ((groupsList == null || groupsList.Count == 0) && docView.ParentCollection.ViewModel.DocumentViewModels.Count > 0)
+                {
+                    groupsList = new ListController<DocumentController>(docView.ParentCollection.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
+                    docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+                }
 
+                var dragGroupDocument = GetGroupForDocument(docView.ViewModel.DocumentController);
+                List<DocumentController> dragDocumentList = null;
+                if (dragGroupDocument == null)
+                {
+                    dragGroupDocument = docView.ViewModel.DocumentController;
+                    dragDocumentList = new List<DocumentController>(new DocumentController[] { dragGroupDocument });
+                }
+                else
+                {
+                    var cfield = dragGroupDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    dragDocumentList = cfield.Data.Select((cd) => cd as DocumentController).ToList();
+                }
+                if (docView?.ParentCollection?.CurrentView is CollectionFreeformView freeFormView)
+                {
+                    var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
+                    docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
+                    var groupDragList = GetGroupForDocument(docView.ViewModel.DocumentController)?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.Data;
+                    if (groupDragList != null)
+                        _grouping = groupDragList.Select((gd) => GetViewFromDocument(gd as DocumentController)).ToList();
+                    else _grouping = new List<DocumentViewModel>(new DocumentViewModel[] { docView.ViewModel });
+                }
+
+            }
             _isManipulating = true;
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
-            if (e!= null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
+            if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
+        }
+
+        DocumentController GetGroupForDocument(DocumentController dragDocument)
+        {
+            var docView = _element.GetFirstAncestorOfType<DocumentView>();
+            var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+
+            foreach (var g in groupsList.TypedData)
+            {
+                if (g.Equals(dragDocument))
+                {
+                    return null;
+                }
+                else
+                {
+                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
+                    {
+                        return g;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public DocumentViewModel GetViewFromDocument(DocumentController doc)
+        {
+            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
+            foreach (var dv in parentCollection.ViewModel.DocumentViewModels)
+            {
+                if (dv.DocumentController.Equals(doc))
+                    return dv;
+            }
+            return null;
+        }
+
+        public List<DocumentController>  GetGroupDocumentsList(DocumentController doc, bool onlyGroups = false)
+        {
+            var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+
+            foreach (var g in groupList.TypedData)
+            {
+                if (g.Equals(doc))
+                {
+                    return onlyGroups ? null : new List<DocumentController>(new DocumentController[] { g });
+                }
+                else
+                {
+                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(doc)).Count() > 0)
+                    {
+                        return cfield.Data.Select((cd) => cd as DocumentController).ToList();
+                    }
+                }
+            }
+            return null;
+        }
+
+        public List<DocumentController> AddConnected(List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, IEnumerable<DocumentController> otherGroups)
+        {
+            foreach (var dragDocument in dragDocumentList)
+            {
+                var dragDocumentBounds = GetViewFromDocument(dragDocument).GroupingBounds;
+                foreach (var otherGroup in otherGroups)
+                {
+                    var otherGroupMembers = GetGroupDocumentsList(otherGroup);
+                    foreach (var otherGroupMember in otherGroupMembers)
+                    {
+                        var otherGroupMemberBounds = GetViewFromDocument(otherGroupMember).GroupingBounds;
+                        otherGroupMemberBounds.Intersect(dragDocumentBounds);
+
+                        if (otherGroupMemberBounds != Rect.Empty)
+                        {
+                            var group = GetGroupForDocument(otherGroupMember);
+                            if (group == null) {
+                                dragDocumentList.Add(otherGroupMember);
+                                var newList = otherGroups.ToList();
+                                var newGroup = new DocumentController();
+                                newGroup.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(dragDocumentList), true);
+                                newList.Add(newGroup);
+                                newList.Remove(otherGroup);
+                                newList.Remove(dragGroupDocument);
+                                return newList;
+                            }
+                            else
+                            {
+                                var groupList = group.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                                groupList.AddRange(dragDocumentList);
+                                var newList = otherGroups.ToList();
+                                newList.Remove(dragGroupDocument);
+                                return newList;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            var sameList = otherGroups.ToList();
+            sameList.Add(dragGroupDocument);
+            return sameList;
         }
 
         public void AddAllAndHandle()
@@ -534,7 +664,7 @@ namespace Dash
         // these constants adjust the sensitivity of the shake
         private static int _millisecondsToShake = 600;
         private static int _sensitivity = 4;
-        private List<DocumentView> _grouping;
+        private List<DocumentViewModel> _grouping;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -691,7 +821,7 @@ namespace Dash
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentView> grouped=null)
+        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentViewModel> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -710,7 +840,7 @@ namespace Dash
                 {
                     foreach (var g in grouped)
                     {
-                        g.ViewModel.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
                             e.Position, new Point(scaleFactor, scaleFactor)));
                     }
 
