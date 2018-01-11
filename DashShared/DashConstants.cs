@@ -167,6 +167,7 @@ namespace DashShared
             public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "Parsed Fields");
             public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "WebContext");
             public static KeyModel NeighboringDocumentsKey = new KeyModel("65084356-0CCE-4B06-B080-06F6C4C5B057", "Neighboring Documents");
+            public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "Grouped Documents");
         }
 
         public static class TypeStore
