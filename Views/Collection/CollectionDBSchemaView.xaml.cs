@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
+using Windows.ApplicationModel.DataTransfer;
 using DashShared.Models;
 using Windows.UI.Xaml.Controls;
 
@@ -491,9 +492,19 @@ namespace Dash
             return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
         }
 
-        private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
-            throw new NotImplementedException();
+            List<CollectionDBSchemaRecordViewModel> recordVMs =
+                xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in recordVMs)
+            {
+                docControllerList.Add(vm.Document);
+                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            }
+            args.Data.Properties.Add("DocumentControllerList", docControllerList);
+            args.Data.Properties.Add("View", true);
+            args.Data.RequestedOperation = DataPackageOperation.Link;
         }
     }
 }

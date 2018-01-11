@@ -1070,6 +1070,119 @@ namespace Dash
             CancelDrag(e.Pointer);
         }
 
+
+
+        #region Flyout
+        #endregion
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("drop event from collection");
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
+
+        #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+            ViewModel.UpdateDocumentsOnSelection(isSelected);
+            if (InkController != null)
+            {
+                InkHostCanvas.IsHitTestVisible = isSelected;
+                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+            }
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private bool _singleTapped;
+
+        private async void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            RenderPreviewTextbox(e);
+
+            // so that doubletap is not overrun by tap events 
+            _singleTapped = true;
+            await Task.Delay(100);
+            if (!_singleTapped) return;
+
+            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            if (!IsLowestSelected) OnSelected();
+
+        }
+
+        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
+            previewTextBuffer = "";
+            Canvas.SetLeft(previewTextbox, @where.X);
+            Canvas.SetTop(previewTextbox, @where.Y);
+            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Visibility = Visibility.Visible;
+            previewTextbox.Text = string.Empty;
+            previewTextbox.Focus(FocusState.Programmatic);
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            Debug.WriteLine("preview got focus");
+        }
+
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            _singleTapped = false;
+            e.Handled = true;
+            ChooseLowest(e);
+        }
+
+        private void ChooseLowest(DoubleTappedRoutedEventArgs e)
+        {
+            // get all descendants of free form views and call double tap on the lowest one
+            var freeforms = xItemsControl.GetImmediateDescendantsOfType<CollectionFreeformView>();
+            foreach (var ff in freeforms)
+            {
+                if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
+                {
+                    ff.ChooseLowest(e);
+                    return;
+                }
+            }
+
+            // in the lowest possible collectionfreeform 
+            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>();
+            foreach (DocumentView view in docViews)
+            {
+                if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
+                {
+                    view.OnTapped(view, null); // hack to set selection on the lowest view
+                    return;
+                }
+            }
+
+            // if no docview to select, select the current collectionview 
+            var parentView = this.GetFirstAncestorOfType<DocumentView>();
+            parentView?.OnTapped(parentView, null);
+        }
+
+        #endregion
+
         #region Marquee Select
 
         private Rectangle _marquee;
@@ -1217,117 +1330,6 @@ namespace Dash
 
         #endregion
 
-        #region Flyout
-        #endregion
-
-        #region DragAndDrop
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("drop event from collection");
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        public void SetDropIndicationFill(Brush fill)
-        {
-            XDropIndicationRectangle.Fill = fill;
-        }
-
-        #endregion
-
-        #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-            if (InkController != null)
-            {
-                InkHostCanvas.IsHitTestVisible = isSelected;
-                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
-            }
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
-
-        private bool _singleTapped;
-
-        private async void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            RenderPreviewTextbox(e);
-
-            // so that doubletap is not overrun by tap events 
-            _singleTapped = true;
-            await Task.Delay(100);
-            if (!_singleTapped) return;
-
-            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
-
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-
-            if (!IsLowestSelected) OnSelected();
-
-        }
-
-        private void RenderPreviewTextbox(TappedRoutedEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance));
-            previewTextBuffer = "";
-            Canvas.SetLeft(previewTextbox, @where.X);
-            Canvas.SetTop(previewTextbox, @where.Y);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.Visibility = Visibility.Visible;
-            previewTextbox.Text = string.Empty;
-            previewTextbox.Focus(FocusState.Programmatic);
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-            Debug.WriteLine("preview got focus");
-        }
-
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            _singleTapped = false;
-            e.Handled = true;
-            ChooseLowest(e);
-        }
-
-        private void ChooseLowest(DoubleTappedRoutedEventArgs e)
-        {
-            // get all descendants of free form views and call double tap on the lowest one
-            var freeforms = xItemsControl.GetImmediateDescendantsOfType<CollectionFreeformView>();
-            foreach (var ff in freeforms)
-            {
-                if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
-                {
-                    ff.ChooseLowest(e);
-                    return;
-                }
-            }
-
-            // in the lowest possible collectionfreeform 
-            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>();
-            foreach (DocumentView view in docViews)
-            {
-                if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                {
-                    view.OnTapped(view, null); // hack to set selection on the lowest view
-                    return;
-                }
-            }
-
-            // if no docview to select, select the current collectionview 
-            var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView?.OnTapped(parentView, null);
-        }
-
-        #endregion
-
         #region SELECTION
 
         private bool _isSelectionEnabled;
@@ -1387,6 +1389,7 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
+            docView.xFieldContainer.BorderThickness = new Thickness(0);
         }
 
         public void Select(DocumentView docView)
@@ -1395,6 +1398,8 @@ namespace Dash
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
+            docView.xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+            docView.xFieldContainer.BorderThickness = new Thickness(2);
         }
 
         public void AddToPayload(DocumentView docView)
@@ -1446,8 +1451,14 @@ namespace Dash
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in ViewModel.SelectionGroup)
+            {
+                docControllerList.Add(vm.DocumentController);
+            }
+            e.Data.Properties.Add("DocumentControllerList", docControllerList);
+            e.Data.Properties.Add("View", true);
+            e.Data.RequestedOperation = DataPackageOperation.Link;
         }
         #endregion
 

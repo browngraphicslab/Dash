@@ -61,7 +61,7 @@
                   Grid.Row="1" 
                   SelectionMode="Multiple"
                   Background="#CCDDDDDD"
-                  CanDragItems="False"
+                  CanDragItems="True"
                   Height="100"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
                   Loaded="XRecordsView_OnLoaded"
