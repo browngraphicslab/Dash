@@ -756,16 +756,28 @@ namespace Dash
 
         public Rect ClipRect => new Rect();
 
+        public void RightTap()
+        {
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+
+            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
+        }
+
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
+
+
             if (!IsSelected)
             {
                 await Task.Delay(100); // allows for double-tap
 
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection != null)
+                if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
                 {
                     ParentCollection.MaxZ += 1;
                     Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -848,6 +860,7 @@ namespace Dash
 
         public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {
+            grouped = grouped ?? new List<DocumentView>();
             var docRootBounds = ViewModel.GroupingBounds;
             foreach (var doc in documentViews)
             {
@@ -858,6 +871,17 @@ namespace Dash
                 doc.AddConnected(grouped, documentViews);
             }
 
+            /*
+            var ordered = grouped.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
+            var length = ordered.Length;
+            for (int i = 1; i < length; i++)
+            {
+                ordered[i].GroupTransform = new TransformGroupData(
+                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
+                    , ordered[i].GroupTransform.ScaleCenter
+                    , ordered[i].GroupTransform.ScaleAmount);
+            }
+            */
             return grouped;
         }
 
@@ -1013,6 +1037,11 @@ namespace Dash
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+        }
+
+        private void xTitleIcon_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            ShowContext();
         }
     }
 }

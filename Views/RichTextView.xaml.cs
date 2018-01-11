@@ -390,7 +390,8 @@ namespace Dash
              WC.CountWords();
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var parentViewModel = parent.ViewModel;
-            parentViewModel.DocumentController.CaptureNeighboringContext();
+            //var source = routedEventArgs.OriginalSource;
+            //parentViewModel.DocumentController.CaptureNeighboringContext();
             //parent.StackGroup();
 
         }

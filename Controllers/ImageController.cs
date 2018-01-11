@@ -51,11 +51,7 @@ namespace Dash
                 if (ImageFieldModel.Data != value)
                 {
                     ImageFieldModel.Data = value;
-                    // Update the server
-                    UpdateOnServer();
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server    
                 }
             }
         }
