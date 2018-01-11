@@ -45,17 +45,141 @@
                     </ToolTip.Content>
                 </ToolTip>
             </ToolTipService.ToolTip>
+            
             <!--FORMAT OPTIONS FLYOUT-->
             <FlyoutBase.AttachedFlyout>
                 <Flyout>
-                    <Grid Background="Blue" Width="300" Height="120">
+                    <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
+                    <Grid Width="300" Height="120">
+                        <Grid.Resources>
+                            <!--Button style set here-->
+                            <Style x:Key="xButtonStyle" TargetType="Button">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Height" Value="40"/>
+                                <Setter Property="Width" Value="40"/>
+                                <Setter Property="HorizontalAlignment" Value="Center"/>
+                            </Style>
+                        </Grid.Resources>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0" Background="Red"/>
-                        <Grid Grid.Row="1" Background="Black"/>
+                        <!--First row-->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!--Font family combo box-->
+                            <ComboBox Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="0" BorderBrush="LightGray"/>
+                            <!--Font size combo box-->
+                            <ComboBox Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray"/>
+                            <!--Clear style button-->
+                            <Button Grid.Column="2" Style="{StaticResource xButtonStyle}">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE75C;"/>
+                            </Button>
+                        </Grid>
+                        
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!--Bold button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="0">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DD;"/>
+                            </Button>
+                            <!--Italics button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="1">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DB;"/>
+                            </Button>
+                            <!--Underline button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="2">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DC;"/>
+                            </Button>
+                            <!--Font color button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="3">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8D3;"/>
+                            </Button>
+                            <!--Font highlight button TODO: find icon-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="4">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8D2;"/>
+                            </Button>
+                            <!--Bulleted list button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="5">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FD;"/>
+                            </Button>
+                            <!--Numbered list button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="6">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DD;"/>
+                            </Button>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width=".7*"/>
+                                <ColumnDefinition Width=".7*"/>
+                                <ColumnDefinition Width=".7*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <!--All caps-->
+                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="0">
+                                <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center">AA</TextBlock>
+                            </Button>
+                            <!--Small caps-->
+                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="1">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" Width="20">A</TextBlock>
+                                    <TextBlock FontWeight="Medium" FontSize="12"  VerticalAlignment="Center" Margin="0,4,0,0" Width="20">A</TextBlock>
+
+                                </StackPanel>
+
+                            </Button>
+                            <!--Superscript button-->
+                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="2">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" Width="10">A</TextBlock>
+                                    <TextBlock FontWeight="Medium" FontSize="12"  VerticalAlignment="Center" Margin="0,4,0,0" Width="20">A</TextBlock>
+
+                                </StackPanel>
+                            </Button>
+                            <!--Subscript button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="3">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DD;"/>
+                            </Button>
+                            <!--Strikethrough button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="4">
+                                <Grid>
+                                    <Rectangle Height="1" Width="20" Margin="0,5,0,0" Fill="Black" HorizontalAlignment="Center" VerticalAlignment="Center"></Rectangle>
+                                    <TextBlock FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center">abc</TextBlock>
+                                </Grid>
+                            </Button>
+                            <!--Left alignment button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="5">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E4;"/>
+                            </Button>
+                            <!--Center alignment button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="6">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E3;"/>
+                            </Button>
+                            <!--Right alignment button-->
+                            <Button Style="{StaticResource xButtonStyle}" Grid.Column="7">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E2;"/>
+                            </Button>
+                        </Grid>
+
                     </Grid>
                     
                 </Flyout>
