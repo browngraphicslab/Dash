@@ -545,7 +545,7 @@ namespace Dash
 
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, "Note").Document;
+            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
         }
 
         /// <summary>

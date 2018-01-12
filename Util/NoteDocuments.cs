@@ -61,10 +61,21 @@ namespace Dash
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
                     [KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
-                    [KeyStore.TitleKey] = new TextController("Collection Note"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
-                return new DocumentController(fields, Type, _prototypeID);
+                var protoDoc =  new DocumentController(fields, Type, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [CollectionTitleOperatorController.CollectionDocsKey] =
+                    new DocumentReferenceController(protoDoc.Id, KeyStore.CollectionKey),
+                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -101,7 +112,7 @@ namespace Dash
                     Document = docLayout;
                 }
             }
-            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, string title = "-collection-", double width = 500, double height = 300) : base(DocumentType)
+            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300) : base(DocumentType)
             {
                 Debug.Assert(dataDocument != null);
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
@@ -110,11 +121,10 @@ namespace Dash
 
                 DataDocument = dataDocument;
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
-                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 createLayout(where, viewtype, width, height);
             }
 
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
@@ -122,7 +132,6 @@ namespace Dash
 
                 DataDocument = GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
-                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
                 DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
@@ -143,7 +152,6 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    //[KeyStore.TitleKey]             = new DocumentReferenceController(titleDocId, RichTextTitleOperatorController.ComputedTitle),
                     [RTFieldKey]                    = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                     [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey )
@@ -166,9 +174,8 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype(); 
-                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
                 var richTextLayout = new RichTextBox(new DocumentReferenceController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ richTextLayout.Document });
+                var prototypeLayout = new StackLayout(new DocumentController[] { richTextLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -177,7 +184,7 @@ namespace Dash
                 return prototypeLayout.Document;
             }
             
-            public RichTextNote(DocumentType type, string title = "Title", string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
+            public RichTextNote(DocumentType type, string text = "Something to fill this space?", Point where = new Point(), Size size= new Size()) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 

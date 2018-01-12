@@ -114,7 +114,6 @@ namespace Dash
                         [KeyStore.GroupingKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
@@ -124,8 +123,10 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
+                    //var documentController = new CollectionNote(new Point(0, 0),
+                    //    CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
                     var documentController = new CollectionNote(new Point(0, 0),
-                        CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
+                        CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
                     grouped.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);

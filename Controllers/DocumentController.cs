@@ -45,14 +45,10 @@ namespace Dash
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
             }
         }
-        public bool HasTitle
-        {
-            get
-            {
-                return _fields.ContainsKey(KeyStore.TitleKey) &&
-                                        (_fields[KeyStore.TitleKey] as TextController).Data != "Title";
-            }
-        }
+
+
+        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
+                                _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
 
         /// <summary>
         /// Add: Used when a field is added to a document with a key that is didn't previously contain

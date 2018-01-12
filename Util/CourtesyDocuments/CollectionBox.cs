@@ -47,9 +47,7 @@ namespace Dash
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
             fields[KeyStore.AbstractInterfaceKey] = new TextController("CollectionBox Layout");
 
-            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
-
-            return prototypeDocument;
+            return new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
         }
 
         public override FrameworkElement makeView(DocumentController docController,

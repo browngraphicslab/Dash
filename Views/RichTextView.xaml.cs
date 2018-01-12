@@ -363,7 +363,7 @@ namespace Dash
                     pt.X -= 150;
                     pt.Y -= 50;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, "", 200, 100).Document;
+                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                     MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
                 }
                 else if (target.StartsWith("http"))
@@ -1335,7 +1335,7 @@ namespace Dash
                             xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                             xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                             var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
-                            var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
+                            var postitNote = new RichTextNote(PostitNote.DocumentType, size: new Size(400, 32)).Document;
                             collection.LoadNewActiveTextBox("", where2, true);
                         }
                     }

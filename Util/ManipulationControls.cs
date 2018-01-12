@@ -411,7 +411,7 @@ namespace Dash
 
         void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
         {
-            if (docRoot.ParentCollection == null)
+            if (docRoot?.ParentCollection == null)
                 return;
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
@@ -522,6 +522,7 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
+            if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
             {
                 if (g.Equals(dragDocument))
@@ -732,7 +733,7 @@ namespace Dash
 
             if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                 TranslateAndScale(e, _grouping);
-            else TranslateAndScale(e);
+            else TranslateAndScale(e, _grouping);
 
             DetectShake(sender, e);
 
