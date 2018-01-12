@@ -427,7 +427,8 @@ namespace Dash
 
                 foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
                 {
-                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null)
+                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null && 
+                        !dv.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                         dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
                 }
             }
@@ -603,8 +604,8 @@ namespace Dash
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
                                 var r = new Random();
-                                var solid = (GetViewModelFromDocument(dragDocument)?.BackgroundBrush as SolidColorBrush)?.Color;
-                                var brush = solid != Colors.Transparent ? GetViewModelFromDocument(dragDocument).BackgroundBrush :
+                                var solid = (GetViewModelFromDocument(otherGroupMember)?.BackgroundBrush as SolidColorBrush)?.Color;
+                                var brush = solid != Colors.Transparent ? new SolidColorBrush((Windows.UI.Color)solid) :
                                       new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
                                 foreach (var d in dragDocumentList)
                                     GetViewModelFromDocument(d).BackgroundBrush = brush;
@@ -711,7 +712,6 @@ namespace Dash
                 return;
             }
 
-            ;
             TranslateAndScale(e, _grouping);
         }
 
@@ -728,7 +728,9 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e);
+            if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                TranslateAndScale(e, _grouping);
+            else TranslateAndScale(e);
 
             DetectShake(sender, e);
 
