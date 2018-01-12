@@ -29,12 +29,12 @@ namespace Dash
 {
     public sealed partial class RichTextView : UserControl
     {
+
         #region instance variables
 
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD)));
         
-
         public RichTextModel.RTD Text
         {
             get { return (RichTextModel.RTD)GetValue(TextProperty); }
@@ -45,43 +45,9 @@ namespace Dash
 
         public RichTextController  TargetRTFController = null;
         public ReferenceController TargetFieldReference = null;
-        public Context                       TargetDocContext = null;
+        public Context TargetDocContext = null;
 
-        ///// <summary>
-        ///// Default rich text paragraph format (text alignment, list, spacing... ect.)
-        ///// </summary>
-        //private ITextParagraphFormat defaultParFormat;
-        ///// <summary>
-        ///// Default rich text character format (bold, italics, underlin, script, caps.. ect.)
-        ///// </summary>
-        //private ITextCharacterFormat defaultCharFormat;
-
-        /// <summary>
-        /// A dictionary mapping names of text alignments to their corresponding ParagraphAlignment enums
-        /// </summary>
-        private IDictionary<string, ParagraphAlignment> alignments;
-        /// <summary>
-        /// A dictionary mapping names of list types to their coresponding MarkerType enums
-        /// </summary>
-        private IDictionary<string, MarkerType> markerTypes;
-        /// <summary>
-        /// A dictionary mapping names of list styles to their correspoding MarkerStyle enums
-        /// </summary>
-        private IDictionary<string, MarkerStyle> markerStyles;
-        /// <summary>
-        /// A dictionary mapping names of list alignmetns to their correspoding MarkerAlignment enums
-        /// </summary>
-        private IDictionary<string, MarkerAlignment> markerAlignments;
-
-        /// <summary>
-        /// Instance of a class made for word count and font size binding
-        /// </summary>
-        public WordCount WC;
-
-        /// <summary>
-        /// Keeps track of whether or not the flyout is opened
-        /// </summary>
-        private bool isFlyoutOpen = false;
+        private RichTextFormattingHelper _rtfHelper;
 
         public static bool HasFocus = false;
 
@@ -93,11 +59,6 @@ namespace Dash
         private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
-
-        /// <summary>
-        /// Clone of current selection's paragraph format before preview is set (for removing preview)
-        /// </summary>
-        private ITextParagraphFormat currentParagraphFormat;
 
         // for manipulation movement
         ScrollBar Scroll = null;
@@ -118,28 +79,32 @@ namespace Dash
 
         #endregion
 
+    
         /// <summary>
         /// Constructor
         /// </summary>
         public RichTextView()
         {
             this.InitializeComponent();
-            xRichEditBox.TextChanged += xRichEditBoxOnTextChanged;
             Loaded   += OnLoaded;
             Unloaded += UnLoaded;
 
-            // store a clone of character format after initialization as default format
-            //defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-            //// store a clone of paragraph format after initialization as default format
-            //defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-            //WC = new WordCount(xRichEditBox);
-
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
+
+            _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
+
+            xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+
+            // store a clone of character format after initialization as default format
+            xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+            // store a clone of paragraph format after initialization as default format
+            xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
+
         }
 
 
-        #region main 
+        #region main functionality
 
         private void SizeToFit()
         {
@@ -203,7 +168,6 @@ namespace Dash
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
-
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
@@ -220,7 +184,6 @@ namespace Dash
             }
             xRichEditBox.Document.Selection.SetRange(LastS1, LastS2);
         }
-
 
         public void UpdateDocument()
         {
@@ -289,13 +252,6 @@ namespace Dash
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
             }
             target = null;
-        }
-
-        private void xRichEditBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
-        {
-            WC.CountWords();
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            //parent.StackGroup();
         }
 
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -428,8 +384,8 @@ namespace Dash
             // format and update the tooltip to reflect the properties of the current selection
             //if(xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition) this.FormatToolTipInfo(xRichEditBox.Document.Selection);
             // set to display font size of the current selection on the lower left hand corner
-            WC.Size = xRichEditBox.Document.Selection.CharacterFormat.Size;
-            if (WC.Size < 0) WC.Size = 0;
+            //WC.Size = xRichEditBox.Document.Selection.CharacterFormat.Size;
+            //if (WC.Size < 0) WC.Size = 0;
         }
         
         #endregion
@@ -481,8 +437,8 @@ namespace Dash
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
 
             // Set up dictionaries and bindings to set up rich text formatting functionalities 
-            SetUpEnumDictionaries();
-            SetFontSizeBinding();
+            //SetUpEnumDictionaries();
+            //SetFontSizeBinding();
 
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
             MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
@@ -491,6 +447,10 @@ namespace Dash
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
+
+
+            xFormattingMenuView.richTextView = this;
+            xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
 
         /// <summary>
@@ -591,7 +551,6 @@ namespace Dash
 
         #endregion
         
-
         #region hyperlink
 
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
@@ -670,7 +629,6 @@ namespace Dash
 
         #endregion
 
-
         #region focus
 
         /// <summary>
@@ -696,7 +654,6 @@ namespace Dash
         }
 
         #endregion
-
 
         #region search?
         /// <summary>
@@ -814,7 +771,7 @@ namespace Dash
 
         #endregion
 
-        #region formatting
+        #region text formatting
 
         /// <summary>
         /// Create short cuts for the xRichEditBox (ctrl+I creates indentation by default, ctrl-Z will get rid of the indentation, showing only the italized text)
@@ -831,26 +788,11 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
             var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
                 .HasFlag(CoreVirtualKeyStates.Down);
+
             if (shiftState && !e.Key.Equals(VirtualKey.Shift))
                 if (e.Key.Equals(VirtualKey.Enter))
                 {
-
-                    string text;
-                    xRichEditBox.Document.GetText(TextGetOptions.None, out text);
-                    var length = text.Length;
-                    if (xRichEditBox.Document.Selection.StartPosition == length - 1)
-                    {
-                        var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                        var collection2 = this.GetFirstAncestorOfType<Canvas>();
-                        if (collection != null)
-                        {
-                            xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                            xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                            var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
-                            var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
-                            collection.LoadNewActiveTextBox("", where2, true);
-                        }
-                    }
+                    handleShiftEnter();
                 }
             if (tabState)
             {
@@ -859,41 +801,7 @@ namespace Dash
             }
             if (ctrlState)
             {
-                var selection = xRichEditBox.Document.Selection;
-                if (e.Key.Equals(VirtualKey.B))
-                {
-                    Bold(true);
-                    //FormatToolTipInfo(xRichEditBox.Document.Selection);
-                }
-                else if (e.Key.Equals(VirtualKey.I))
-                {
-                    Italicize(true);
-                    //FormatToolTipInfo(xRichEditBox.Document.Selection);
-                    e.Handled = true;
-                }
-                else if (e.Key.Equals(VirtualKey.U))
-                {
-                    Underline(true);
-                    //FormatToolTipInfo(xRichEditBox.Document.Selection);
-                }
-                else if (e.Key.Equals(VirtualKey.F))
-                {
-                    xSearchBoxPanel.Visibility = Visibility.Visible;
-                    xSearchBox.Focus(FocusState.Programmatic);
-                }
-                else if (e.Key.Equals(VirtualKey.N))
-                {
-                    xRichEditBox.Document.Redo();
-                }
-                else if (e.Key.Equals(VirtualKey.H))
-                {
-                    Highlight(Colors.Yellow, true);
-                    UpdateDocument();
-                }
-                else if (e.Key.Equals(VirtualKey.O))
-                {
-                    OpenContextMenu(sender);
-                }
+                handleControlPressed(sender, e);
             }
             if (altState)
             {
@@ -913,6 +821,64 @@ namespace Dash
             }
         }
 
+        private void handleShiftEnter()
+        {
+            string text;
+            xRichEditBox.Document.GetText(TextGetOptions.None, out text);
+            var length = text.Length;
+            if (xRichEditBox.Document.Selection.StartPosition == length - 1)
+            {
+                var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                var collection2 = this.GetFirstAncestorOfType<Canvas>();
+                if (collection != null)
+                {
+                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                    var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
+                    var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
+                    collection.LoadNewActiveTextBox("", where2, true);
+                }
+            }
+        }
+
+        private void handleControlPressed(object sender, KeyRoutedEventArgs e)
+        {
+            var selection = xRichEditBox.Document.Selection;
+            if (e.Key.Equals(VirtualKey.B))
+            {
+                _rtfHelper.Bold(true);
+                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+            }
+            else if (e.Key.Equals(VirtualKey.I))
+            {
+                _rtfHelper.Italicize(true);
+                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+                e.Handled = true;
+            }
+            else if (e.Key.Equals(VirtualKey.U))
+            {
+                _rtfHelper.Underline(true);
+                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+            }
+            else if (e.Key.Equals(VirtualKey.F))
+            {
+                xSearchBoxPanel.Visibility = Visibility.Visible;
+                xSearchBox.Focus(FocusState.Programmatic);
+            }
+            else if (e.Key.Equals(VirtualKey.N))
+            {
+                xRichEditBox.Document.Redo();
+            }
+            else if (e.Key.Equals(VirtualKey.H))
+            {
+                _rtfHelper.Highlight(Colors.Yellow, true);
+                UpdateDocument();
+            }
+            else if (e.Key.Equals(VirtualKey.O))
+            {
+                OpenContextMenu(sender);
+            }
+        }
 
         #region opening
         /// <summary>
@@ -942,449 +908,13 @@ namespace Dash
         }
         #endregion
 
-
-        //#region dictionaries for formatting menu
-
-        ///// <summary>
-        ///// Sets up all format dictionaries (for creating the flyout menu for format options)
-        ///// </summary>
-        //private void SetUpEnumDictionaries()
-        //{
-        //    SetUpDictionary<ParagraphAlignment>(typeof(ParagraphAlignment), out alignments);
-        //    SetUpDictionary<MarkerType>(typeof(MarkerType), out markerTypes);
-        //    SetUpDictionary<MarkerStyle>(typeof(MarkerStyle), out markerStyles);
-        //    SetUpDictionary<MarkerAlignment>(typeof(MarkerAlignment), out markerAlignments);
-        //}
-
-        ///// <summary>
-        ///// Sets up an enum dictionary where the name of the enum is the key, and the enum itself
-        ///// is the value
-        ///// </summary>
-        ///// <typeparam name="TValue"></typeparam>
-        ///// <param name="type"></param>
-        ///// <param name="dict"></param>
-        //private void SetUpDictionary<TValue>(Type type, out IDictionary<string, TValue> dict)
-        //{
-        //    dict = new Dictionary<string, TValue>();
-        //    var keys = Enum.GetNames(type);
-        //    var vals = Enum.GetValues(type);
-        //    var length = keys.Length;
-        //    for (int i = 0; i < length; i++)
-        //    {
-        //        var key = keys[i];
-        //        if (key != "Undefined")
-        //            dict.Add(key, (TValue)vals.GetValue(i));
-        //    }
-        //}
-        //#endregion
-
-        //#region font size
-        ///// <summary>
-        ///// Add delegates to manage font size in the lower left hand corner of the richtextbox (next to the word count)
-        ///// </summary>
-        //private void AddFontSizeHandlers()
-        //{
-
-        //}
-
-        ///// <summary>
-        ///// Binds the font size of the current selection to the text property of the xFontSizeTextBox
-        ///// </summary>
-        //private void SetFontSizeBinding()
-        //{
-        //    var fontSizeBinding = new Binding()
-        //    {
-        //        Source = WC,
-        //        Path = new PropertyPath(nameof(WC.Size)),
-        //        Mode = BindingMode.TwoWay,
-        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-        //    };
-        //}
-
-        //#endregion
-
-        //#region font family
-        ///// <summary>
-        ///// Add fonts to the format options flyout (under Fonts)
-        ///// </summary>
-        //private void AddFonts()
-        //{
-        //    var FontNames = new List<string>()
-        //    {
-        //        "Arial",
-        //        "Calibri",
-        //        "Cambria",
-        //        "Cambria Math",
-        //        "Comic Sans MS",
-        //        "Courier New",
-        //        "Ebrima",
-        //        "Gadugi",
-        //        "Georgia",
-        //        "Javanese Text Regular Fallback font for Javanese script",
-        //        "Leelawadee UI",
-        //        "Lucida Console",
-        //        "Malgun Gothic",
-        //        "Microsoft Himalaya",
-        //        "Microsoft JhengHei",
-        //        "Microsoft JhengHei UI",
-        //        "Microsoft New Tai Lue",
-        //        "Microsoft PhagsPa",
-        //        "Microsoft Tai Le",
-        //        "Microsoft YaHei",
-        //        "Microsoft YaHei UI",
-        //        "Microsoft Yi Baiti",
-        //        "Mongolian Baiti",
-        //        "MV Boli",
-        //        "Myanmar Text",
-        //        "Nirmala UI",
-        //        "Segoe MDL2 Assets",
-        //        "Segoe Print",
-        //        "Segoe UI",
-        //        "Segoe UI Emoji",
-        //        "Segoe UI Historic",
-        //        "Segoe UI Symbol",
-        //        "SimSun",
-        //        "Times New Roman",
-        //        "Trebuchet MS",
-        //        "Verdana",
-        //        "Webdings",
-        //        "Wingdings",
-        //        "Yu Gothic",
-        //        "Yu Gothic UI"
-        //    };
-        //    foreach (var font in FontNames)
-        //    {
-        //        var item = new MenuFlyoutItem();
-        //        item.Text = font;
-        //        item.Foreground = new SolidColorBrush(Colors.White);
-        //        item.Click += delegate
-        //        {
-        //            //currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-        //            UpdateDocument();
-        //        };
-        //        item.GotFocus += delegate
-        //        {
-        //            xRichEditBox.Document.Selection.CharacterFormat.Name = font;
-        //        };
-        //        //xFont?.Items?.Add(item); Ellen commented out
-        //    }
-        //}
-        //#endregion
-
-        //#region FormattingMenuEventHandlers
-        //private void ResetButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    xRichEditBox.Document.Selection.CharacterFormat.SetClone(defaultCharFormat);
-        //    xRichEditBox.Document.Selection.ParagraphFormat.SetClone(defaultParFormat);
-        //}
-
-        //private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Bold(true);
-        //}
-
-        //private void ItalicsButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Italicize(true);
-        //}
-
-        //private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Underline(true);
-        //}
-
-        //private void AllCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    AllCaps(true);
-        //}
-
-        //private void SmallCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    SmallCaps(true);
-        //}
-
-        //private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Superscript(true);
-        //}
-
-        //private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Subscript(true);
-        //}
-
-        //private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Strikethrough(true);
-        //}
-
-        //private void LeftAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Alignment(ParagraphAlignment.Left, true);
-        //}
-
-        //private void CenterAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Alignment(ParagraphAlignment.Center, true);
-        //}
-
-        //private void RightAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    Alignment(ParagraphAlignment.Right, true);
-        //}
-
-        //private void BulletedListButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
-        //    {
-        //        Marker(MarkerType.None, true);
-        //    }
-        //    else
-        //    {
-        //        Marker(MarkerType.Bullet, true);
-        //    }
-        //}
-
-        //private void NumberedListButton_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.UnicodeSequence)
-        //    {
-        //        Marker(MarkerType.None, true);
-        //    } else
-        //    {
-        //        Marker(MarkerType.UnicodeSequence, true);
-        //    }
-        //}
-
-        //private void FontColorBackground_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-
-        //}
-
-        //private void FontHighlightButton_Tapped_1(object sender, TappedRoutedEventArgs e)
-        //{
-
-        //}
-
-        //#endregion
-        
-        //#region formatting helpers
-        ///// <summary>
-        ///// Makes current selection in the xRichEditBox bold
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Bold(bool updateDocument)
-        //{
-        //    // on/off instead of toggle to know exactly what state it is in (to determine whether a selection is bold or not)
-        //    if (this.xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On)
-        //    {
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.Off;
-        //    }
-        //    else
-        //    {
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
-        //    }
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Italicizes current selection in xRichEditBox
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Italicize(bool updateDocument)
-        //{
-        //    if (this.xRichEditBox.Document.Selection.CharacterFormat.Italic == FormatEffect.On)
-        //    {
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Off;
-        //    }
-        //    else
-        //    {
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.On;
-        //    }
-        //    //this.xRichEditBox.Document.Selection.CharacterFormat.Italic = FormatEffect.Toggle;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Underlines the current selection in xRichEditBox
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Underline(bool updateDocument)
-        //{
-        //    if (this.xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None)
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.Single;
-        //    else
-        //        this.xRichEditBox.Document.Selection.CharacterFormat.Underline = UnderlineType.None;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Strikethrough the current selection in xRichEditBox
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Strikethrough(bool updateDocument)
-        //{
-        //    if (xRichEditBox.Document.Selection.CharacterFormat.Strikethrough == FormatEffect.On)
-        //        xRichEditBox.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.Off;
-        //    else
-        //        xRichEditBox.Document.Selection.CharacterFormat.Strikethrough = FormatEffect.On;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Formats the current selection in xRichEditBox into superscripts
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Superscript(bool updateDocument)
-        //{
-        //    if (xRichEditBox.Document.Selection.CharacterFormat.Superscript == FormatEffect.On)
-        //        xRichEditBox.Document.Selection.CharacterFormat.Superscript = FormatEffect.Off;
-        //    else
-        //        xRichEditBox.Document.Selection.CharacterFormat.Superscript = FormatEffect.On;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Formats the current selection in xRichEditBox into subscripts
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void Subscript(bool updateDocument)
-        //{
-        //    if (xRichEditBox.Document.Selection.CharacterFormat.Subscript == FormatEffect.On)
-        //        xRichEditBox.Document.Selection.CharacterFormat.Subscript = FormatEffect.Off;
-        //    else
-        //        xRichEditBox.Document.Selection.CharacterFormat.Subscript = FormatEffect.On;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Formats the current selection in xRichEditBox into smallcaps
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void SmallCaps(bool updateDocument)
-        //{
-        //    if (xRichEditBox.Document.Selection.CharacterFormat.SmallCaps == FormatEffect.On)
-        //        xRichEditBox.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.Off;
-        //    else
-        //        xRichEditBox.Document.Selection.CharacterFormat.SmallCaps = FormatEffect.On;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Formats the current selection in xRichEditBox into allcaps
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="updateDocument"></param>
-        //private void AllCaps(bool updateDocument)
-        //{
-        //    if (xRichEditBox.Document.Selection.CharacterFormat.AllCaps == FormatEffect.On)
-        //        xRichEditBox.Document.Selection.CharacterFormat.AllCaps = FormatEffect.Off;
-        //    else
-        //        xRichEditBox.Document.Selection.CharacterFormat.AllCaps = FormatEffect.On;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Highlights the current selection in xRichEditBox, the color of the highlight is specified by background
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="background"></param>
-        ///// <param name="updateDocument"></param>
-        //private void Highlight(Color background, bool updateDocument)
-        //{
-        //    xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = background;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Changes the color of the font of the current selection in xRichEditBox, the font color is specified by color
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="color"></param>
-        ///// <param name="updateDocument"></param>
-        //private void Foreground(Color color, bool updateDocument)
-        //{
-        //    xRichEditBox.Document.Selection.CharacterFormat.ForegroundColor = color;
-        //    if (updateDocument) UpdateDocument();
-        //}
-
-        ///// <summary>
-        ///// Sets the paragraph alignment of the current selection to be what's specified by alignment
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="alignment"></param>
-        ///// <param name="updateDocument"></param>
-        //private void Alignment(object alignment, bool updateDocument)
-        //{
-        //    if (alignment != null && alignment.GetType() == typeof(ParagraphAlignment))
-        //    {
-        //        xRichEditBox.Document.Selection.ParagraphFormat.Alignment = (ParagraphAlignment)alignment;
-        //        if (updateDocument) UpdateDocument();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Sets the list marker of the current selection to be what's specified by type
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="type"></param>
-        ///// <param name="updateDocument"></param>
-        //private void Marker(object type, bool updateDocument)
-        //{
-        //    if (type != null && type.GetType() == typeof(MarkerType))
-        //    {
-        //        xRichEditBox.Document.Selection.ParagraphFormat.ListType = (MarkerType)type;
-        //        if (updateDocument) UpdateDocument();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Sets the list marker style of the current selection to be what's specified by type
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="type"></param>
-        ///// <param name="updateDocument"></param>
-        //private void MarkerStyle(object type, bool updateDocument)
-        //{
-        //    if (type != null && type.GetType() == typeof(MarkerStyle))
-        //    {
-        //        xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
-        //        if (updateDocument) UpdateDocument();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Sets the marker alignment of the current selection to be what's specified by type
-        ///// Updates document if updateDocument is true
-        ///// </summary>
-        ///// <param name="type"></param>
-        ///// <param name="updateDocument"></param>
-        //private void MarkerAlignment(object type, bool updateDocument)
-        //{
-        //    if (type != null && type.GetType() == typeof(MarkerAlignment))
-        //    {
-        //        xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
-        //        if (updateDocument) UpdateDocument();
-        //    }
-        //}
-
-        //#endregion
-
         #endregion
-
     }
 }
 
+
 public  class KeepForLater
 {
-
     #region tooltip
     /// <summary>
     /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
@@ -1444,8 +974,38 @@ public  class KeepForLater
     #endregion tooltip
 
 
-
     #region maybe keep for reference later
+
+
+    ///// <summary>
+    ///// Sets the list marker style of the current selection to be what's specified by type
+    ///// Updates document if updateDocument is true
+    ///// </summary>
+    ///// <param name="type"></param>
+    ///// <param name="updateDocument"></param>
+    //private void MarkerStyle(object type, bool updateDocument)
+    //{
+    //    if (type != null && type.GetType() == typeof(MarkerStyle))
+    //    {
+    //        xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
+    //        if (updateDocument) richTextView.UpdateDocument();
+    //    }
+    //}
+
+    ///// <summary>
+    ///// Sets the marker alignment of the current selection to be what's specified by type
+    ///// Updates document if updateDocument is true
+    ///// </summary>
+    ///// <param name="type"></param>
+    ///// <param name="updateDocument"></param>
+    //private void MarkerAlignment(object type, bool updateDocument)
+    //{
+    //    if (type != null && type.GetType() == typeof(MarkerAlignment))
+    //    {
+    //        xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
+    //        if (updateDocument) richTextView.UpdateDocument();
+    //    }
+    //}
 
     /// <summary>
     /// Opens format options flyout on holding
