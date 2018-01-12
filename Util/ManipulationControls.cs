@@ -414,35 +414,19 @@ namespace Dash
 
             if (docView.ParentCollection != null)
             {
-                var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if ((groupsList == null || groupsList.Count == 0) && docView.ParentCollection.ViewModel.DocumentViewModels.Count > 0)
-                {
-                    groupsList = new ListController<DocumentController>(docView.ParentCollection.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
-                    docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
-                }
+                var groupsList = GetGroupsList(docView.ParentCollection);
 
-                var dragGroupDocument = GetGroupForDocument(docView.ViewModel.DocumentController);
-                List<DocumentController> dragDocumentList = null;
-                if (dragGroupDocument == null)
-                {
-                    dragGroupDocument = docView.ViewModel.DocumentController;
-                    dragDocumentList = new List<DocumentController>(new DocumentController[] { dragGroupDocument });
-                }
-                else
-                {
-                    var cfield = dragGroupDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    dragDocumentList = cfield.Data.Select((cd) => cd as DocumentController).ToList();
-                }
+                DocumentController dragGroupDocument;
+                var dragDocumentList = GetDragGroupInfo(docView, out dragGroupDocument);
+
                 if (docView?.ParentCollection?.CurrentView is CollectionFreeformView freeFormView)
                 {
                     var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
                     docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
-                    var groupDragList = GetGroupForDocument(docView.ViewModel.DocumentController)?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.Data;
-                    if (groupDragList != null)
-                        _grouping = groupDragList.Select((gd) => GetViewFromDocument(gd as DocumentController)).ToList();
-                    else _grouping = new List<DocumentViewModel>(new DocumentViewModel[] { docView.ViewModel });
-                }
 
+                    DocumentController newDragGroupDocument;
+                    _grouping = GetDragGroupInfo(docView, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
+                }
             }
             _isManipulating = true;
             _processManipulation = true;
@@ -450,6 +434,39 @@ namespace Dash
             _numberOfTimesDirChanged = 0;
             if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
+        }
+
+        List<DocumentController> GetDragGroupInfo(DocumentView docView, out DocumentController dragGroupDocument)
+        {
+            dragGroupDocument = GetGroupForDocument(docView.ViewModel.DocumentController);
+            var dragDocumentList = dragGroupDocument?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            if (dragDocumentList == null)
+            {
+                dragGroupDocument = docView.ViewModel.DocumentController;
+                dragDocumentList = new List<DocumentController>(new DocumentController[] { dragGroupDocument });
+            }
+            return dragDocumentList;
+        }
+
+        ListController<DocumentController> GetGroupsList(CollectionView collectionView)
+        {
+            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            if ((groupsList == null || groupsList.Count == 0) && collectionView.ViewModel.DocumentViewModels.Count > 0)
+            {
+                groupsList = new ListController<DocumentController>(collectionView.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
+                collectionView.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+            }
+            var addedItems = new List<DocumentController>();
+            foreach (var d in collectionView.ViewModel.DocumentViewModels)
+                if (GetGroupForDocument(d.DocumentController) == null && !groupsList.Data.Contains(d.DocumentController))
+                {
+                    addedItems.Add(d.DocumentController);
+                }
+            var newGroupsList = new List<DocumentController>(groupsList.TypedData);
+            newGroupsList.AddRange(addedItems);
+            groupsList = new ListController<DocumentController>(newGroupsList);
+            collectionView.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+            return groupsList;
         }
 
         DocumentController GetGroupForDocument(DocumentController dragDocument)
@@ -475,7 +492,7 @@ namespace Dash
             return null;
         }
 
-        public DocumentViewModel GetViewFromDocument(DocumentController doc)
+        public DocumentViewModel GetViewModelFromDocument(DocumentController doc)
         {
             var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
             foreach (var dv in parentCollection.ViewModel.DocumentViewModels)
@@ -491,15 +508,15 @@ namespace Dash
             var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             foreach (var g in groupList.TypedData)
-            {
-                if (g.Equals(doc))
+            if (g.Equals(doc)) {
+                if (GetViewModelFromDocument(g) != null)
                 {
-                    return onlyGroups ? null : new List<DocumentController>(new DocumentController[] { g });
+                    return new List<DocumentController>(new DocumentController[] { g });
                 }
                 else
                 {
                     var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(doc)).Count() > 0)
+                    if (cfield != null)
                     {
                         return cfield.Data.Select((cd) => cd as DocumentController).ToList();
                     }
@@ -512,13 +529,19 @@ namespace Dash
         {
             foreach (var dragDocument in dragDocumentList)
             {
-                var dragDocumentBounds = GetViewFromDocument(dragDocument).GroupingBounds;
+                var dragDocumentView = GetViewModelFromDocument(dragDocument);
+                if (dragDocumentView == null)
+                    continue;
+                var dragDocumentBounds = dragDocumentView.GroupingBounds;
                 foreach (var otherGroup in otherGroups)
                 {
                     var otherGroupMembers = GetGroupDocumentsList(otherGroup);
                     foreach (var otherGroupMember in otherGroupMembers)
                     {
-                        var otherGroupMemberBounds = GetViewFromDocument(otherGroupMember).GroupingBounds;
+                        var otherDocView = GetViewModelFromDocument(otherGroupMember);
+                        if (otherDocView == null)
+                            continue;
+                        var otherGroupMemberBounds = otherDocView.GroupingBounds;
                         otherGroupMemberBounds.Intersect(dragDocumentBounds);
 
                         if (otherGroupMemberBounds != Rect.Empty)
@@ -839,10 +862,10 @@ namespace Dash
                 if (grouped != null && grouped.Any())
                 {
                     foreach (var g in grouped)
-                    {
-                        g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                            e.Position, new Point(scaleFactor, scaleFactor)));
-                    }
+                        if (g != null) {
+                            g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
+                                e.Position, new Point(scaleFactor, scaleFactor)));
+                        }
 
                         
                 }
