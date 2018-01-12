@@ -32,15 +32,6 @@ namespace Dash.Views.Collection
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
-        }
-
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (args.NewValue != null && !(args.NewValue is CollectionViewModel))
-            {
-                Debug.WriteLine("test");
-            }
         }
     }
 }

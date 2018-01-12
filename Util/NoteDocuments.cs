@@ -59,6 +59,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
+                    [KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
                     [KeyStore.TitleKey] = new TextController("Collection Note"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
@@ -124,6 +125,7 @@ namespace Dash
                 DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
                 createLayout(where, viewtype, width, height);
 
