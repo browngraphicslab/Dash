@@ -153,6 +153,7 @@ namespace Dash
                 _localContext.View = null;
                 GC.Collect();
                 Debug.WriteLine("Destroyed Child");
+                ViewModel.SetHasTitle(ViewModel.IsSelected);
             }
 
             if (showContext)
@@ -162,6 +163,8 @@ namespace Dash
                 var context = ViewModel.DocumentController.GetDataDocument(null).GetLastContext();
                 if (context == null) return;
                 var source = new Uri(context.Url);
+                ViewModel.SetHasTitle(true);
+
                 if (_localContext.View == null)
                 {
                     _localContext.View = new WebAndPdfView(source)
