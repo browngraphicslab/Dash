@@ -162,6 +162,10 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
 
+            xOuterGrid.PointerPressed += OnPointerPressed;
+            xOuterGrid.PointerMoved += OnPointerMoved;
+            xOuterGrid.PointerReleased += OnPointerReleased;
+
             if (InkController != null)
             {
                 MakeInkCanvas();
@@ -1046,21 +1050,33 @@ namespace Dash
                 var droppedField = _currReference.FieldReference;
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
 
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
-                                     droppedSrcDoc.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()
+                                         ?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
+                                     droppedSrcDoc
+                                         .GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
                                      CollectionView.CollectionViewType.Schema.ToString();
-                
-                var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
-                var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
+
+                //var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
+                var cnote = new CollectionNote(
+                    this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position),
+                    (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType),
+                        sourceViewType));
+                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey,
+                    new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey),
+                    true);
+
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
-                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null)
+                        .GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey,
+                        new TextController(field), true);
                 }
 
 
@@ -1069,13 +1085,164 @@ namespace Dash
                 for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
                     if (itemsPanelCanvas.Children[i] is ContentPresenter)
                     {
-                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
-                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
+                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)
+                            ?.Content as CollectionView;
+                        EndDrag(
+                            new IOReference(
+                                new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey),
+                                false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
                     }
             }
             CancelDrag(e.Pointer);
         }
+
+        #region Marquee Select
+
+        private Rectangle _marquee;
+        private bool _multiSelect;
+        private Point _marqueeAnchor;
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
+                _multiSelect = (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
+                MarqueeSelectDocs(marqueeRect);
+                _marquee = null;
+                e.Handled = true;
+            }
+            xOuterGrid.ReleasePointerCapture(e.Pointer);
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var CurrentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!CurrentPoint.Properties.IsLeftButtonPressed || _marquee == null) return;
+            var pos = CurrentPoint.Position;
+            var dX = pos.X - _marqueeAnchor.X;
+            var dY = pos.Y - _marqueeAnchor.Y;
+            double newHeight = 0;
+            double newWidth = 0;
+            var newAnchor = new Point();
+            if (dX > 0 && dY > 0)
+            {
+                newAnchor = _marqueeAnchor;
+                newWidth = dX;
+                newHeight = dY;
+            }
+            if (dX > 0 && dY < 0)
+            {
+                newAnchor = _marqueeAnchor;
+                newAnchor.Y += dY;
+                newHeight = -dY;
+                newWidth = dX;
+            }
+            if (dX < 0 && dY > 0)
+            {
+                newAnchor = _marqueeAnchor;
+                newAnchor.X += dX;
+                newWidth = -dX;
+                newHeight = dY;
+            }
+            if (dX < 0 && dY < 0)
+            {
+                newAnchor = _marqueeAnchor;
+                newAnchor.X += dX;
+                newWidth = -dX;
+                newAnchor.Y += dY;
+                newHeight = -dY;
+            }
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+            args.Handled = true;
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marquee = new Rectangle()
+                {
+                    Stroke = new SolidColorBrush(Colors.Gray),
+                    StrokeThickness = 1.5 / Zoom,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    CompositeMode = ElementCompositeMode.SourceOver
+                };
+
+                SelectionCanvas.Children.Add(_marquee);
+                Canvas.SetLeft(_marquee, pos.X);
+                Canvas.SetTop(_marquee, pos.Y);
+                _marqueeAnchor = pos;
+            }
+        }
+
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+            var selectedDocs = new List<DocumentView>();
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                IEnumerable<DocumentViewModel> docs =
+                    xItemsControl.Items.OfType<DocumentViewModel>();
+                foreach (var docvm in docs)
+                {
+                    var doc = docvm.DocumentController;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    if (double.IsNaN(width)) width = 0;
+                    var height = doc.GetHeightField().Data;
+                    if (double.IsNaN(height)) height = 0;
+                    var points = new List<Point>
+                    {
+                        position,
+                        new Point(position.X + width, position.Y),
+                        new Point(position.X + width, position.Y + height),
+                        new Point(position.X, position.Y + height),
+                        new Point(position.X + width/2, position.Y + height/2)
+                    };
+                    bool inMarquee = false;
+                    foreach (var refPoint in points)
+                    {
+                        if (marquee.Contains(refPoint))
+                        {
+                            inMarquee = true;
+                        }
+                    }
+                    if (inMarquee)
+                    {
+                        if (xItemsControl.ItemContainerGenerator != null && xItemsControl
+                                .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                        {
+                            var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                            if (documentView != null) selectedDocs.Add(
+                                documentView);
+                        }
+                    }
+                }
+            }
+            foreach (var docView in selectedDocs)
+            {
+                Select(docView);
+                AddToPayload(docView);
+            }
+            //Makes the collectionview's selection mode "Multiple" if documents were selected.
+            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            {
+                var parentView = this.GetFirstAncestorOfType<CollectionView>();
+                parentView.MakeSelectionModeMultiple();
+            }
+        }
+
+        #endregion
 
         #region Flyout
         #endregion
@@ -1243,18 +1410,21 @@ namespace Dash
 
         private void Deselect(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+            ViewModel.SelectionGroup.Remove(docView.ViewModel);
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
+            docView.xFieldContainer.BorderThickness = new Thickness(0);
         }
 
         public void Select(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
+            ViewModel.SelectionGroup.Add(docView.ViewModel);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
+            docView.xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+            docView.xFieldContainer.BorderThickness = new Thickness(2);
         }
 
         public void AddToPayload(DocumentView docView)
@@ -1309,7 +1479,14 @@ namespace Dash
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in ViewModel.SelectionGroup)
+            {
+                docControllerList.Add(vm.DocumentController);
+            }
+            e.Data.Properties.Add("DocumentControllerList", docControllerList);
+            e.Data.Properties.Add("View", true);
+            e.Data.RequestedOperation = DataPackageOperation.Link;
         }
         #endregion
 
@@ -1317,6 +1494,8 @@ namespace Dash
 
         public InkController InkController;
         public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
         private bool loadingPermanentTextbox;
 
         public double Zoom { get { return ManipulationControls.ElementScale; } }
