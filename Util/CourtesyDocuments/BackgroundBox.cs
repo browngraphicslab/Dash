@@ -35,8 +35,9 @@ namespace Dash
             
             // get a delegate of the prototype layout (which already has fields set on it)
             Document = GetLayoutPrototype().MakeDelegate();
-            var color = Color.FromArgb(0x33, 0x47, 0x98, 0xf3);
-            Document.SetField(KeyStore.BackgroundColorKey, new TextController(color.ToString()), true);
+            var r = new Random();
+            var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
+            Document.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
 
             // replace any of the default fields on the prototype delegate with the new fields
             Document.SetFields(fields, true);
@@ -75,14 +76,6 @@ namespace Dash
             // create the  view
             var background = new Grid();
             background.Loaded += Background_Loaded;
-
-            var hexColor = docController.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
-            if (hexColor == null)
-            {
-                var r = new Random();
-                hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
-                docController.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
-            }
 
             // make the pdf respond to resizing, interactions etc...
             SetupBindings(background, docController, context);

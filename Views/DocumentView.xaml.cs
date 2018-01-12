@@ -483,7 +483,7 @@ namespace Dash
             }
 
             ToFront();
-
+            ManipulationControls.ManipulationCompleted(null, false);
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -859,7 +859,8 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down &&
+                ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                 return;
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
