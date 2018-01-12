@@ -200,7 +200,7 @@ namespace Dash
         /// (including center) inside _lasso's convex hull. If
         /// </summary>
         /// <param name="selectionPoints"></param>
-        private void SelectDocs(PointCollection selectionPoints)
+        private void LassoSelectDocs(PointCollection selectionPoints)
         {
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
@@ -272,7 +272,6 @@ namespace Dash
         private void UnprocessedInput_PointerPressed(
             InkUnprocessedInput sender, PointerEventArgs args)
         {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Cross, 0);
             if (args.CurrentPoint.Properties.IsBarrelButtonPressed || args.CurrentPoint.Properties.IsRightButtonPressed)
                 _inkSelectionMode = InkSelectionMode.Document;
             else
@@ -318,7 +317,7 @@ namespace Dash
             }
             else if (_inkSelectionMode == InkSelectionMode.Document)
             {
-                SelectDocs(_lasso.Points);
+                LassoSelectDocs(_lasso.Points);
             }
         }
 
