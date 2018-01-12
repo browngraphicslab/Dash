@@ -31,12 +31,12 @@
                          BorderThickness="0"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
-                         Holding="XRichEditBox_OnHolding"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
                         
                          >
-            <!--FORMAT PROPERTIES TOOLTIP-->
+            <!--FORMAT PROPERTIES TOOLTIP-->                          <!--Holding="XRichEditBox_OnHolding"-->
+
             <ToolTipService.ToolTip>
                 <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
                     <ToolTip.Content>
@@ -76,7 +76,7 @@
                             <!--Font family combo box-->
                             <ComboBox Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="0" BorderBrush="LightGray"/>
                             <!--Font size combo box-->
-                            <ComboBox Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray"/>
+                            <ComboBox Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray" />
                             <!--Clear style button-->
                             <Button Grid.Column="2" Style="{StaticResource xButtonStyle}" Margin="0,-12,0,0" Tapped="ResetButton_Tapped">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE75C;"/>
@@ -106,14 +106,14 @@
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DC;"/>
                             </Button>
                             <!--Font color button-->
-                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
+                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3" Tapped="FontColorBackground_Tapped">
                                 <Grid Width="25" Height="25" Margin="0,-5,0,0">
                                     <TextBlock FontSize="22" HorizontalAlignment="Center" Margin="0,-2,0,0" VerticalAlignment="Center">A</TextBlock>
                                     <Rectangle Width="20" Height="4" Fill="Black" Margin="0,22,0,0"/>
                                 </Grid>
                             </Button>
-                            <!--Font highlight button TODO: find icon-->
-                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4">
+                            <!--Font highlight button-->
+                            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4" Tapped="FontHighlightButton_Tapped_1">
                                 <Grid BorderBrush="DarkSlateGray" Background="White" BorderThickness="1" Width="25" Height="25" Margin="0,-5,0,0">
                                     <TextBlock FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center">A</TextBlock>
                                 </Grid>
@@ -124,9 +124,10 @@
                             </Button>
                             <!--Numbered list button-->
                             <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="6" HorizontalAlignment="Center" Tapped="NumberedListButton_Tapped">
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,0,0">
-                                    <TextBlock Height="10" FontSize="8" FontWeight="Bold">1---</TextBlock>
-                                    <TextBlock Height="10" FontSize="8" FontWeight="Bold">2---</TextBlock>
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,-8,0,0">
+                                    <TextBlock Height="15" FontSize="8" FontWeight="Bold">1---</TextBlock>
+                                    <TextBlock Height="15" FontSize="8" FontWeight="Bold" Margin="0,-8,0,0">2---</TextBlock>
+                                    <TextBlock Height="15" FontSize="8" FontWeight="Bold" Margin="0,-8,0,0">3---</TextBlock>
                                 </StackPanel>
                             </Button>
                         </Grid>

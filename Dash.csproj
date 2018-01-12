@@ -236,6 +236,7 @@
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
     <Compile Include="Controllers\UserCreatedLink.cs" />
+    <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
@@ -287,6 +288,9 @@
       <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
+    <Compile Include="Views\FormattingMenu.xaml.cs">
+      <DependentUpon>FormattingMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
@@ -764,6 +768,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DBFilterChartBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FormattingMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
