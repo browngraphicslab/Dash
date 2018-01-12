@@ -711,7 +711,6 @@ namespace Dash
                 return;
             }
 
-            ;
             TranslateAndScale(e, _grouping);
         }
 
@@ -728,7 +727,9 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e);
+            if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                TranslateAndScale(e, _grouping);
+            else TranslateAndScale(e);
 
             DetectShake(sender, e);
 

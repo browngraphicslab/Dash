@@ -426,7 +426,8 @@ namespace Dash
 
         public void ToFront()
         {
-            if (ParentCollection == null) return;
+            if (ParentCollection == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
@@ -869,8 +870,12 @@ namespace Dash
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
                 if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
                 {
-                    ParentCollection.MaxZ += 1;
-                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
+                    if (zindex > -100)
+                    {
+                        ParentCollection.MaxZ += 1;
+                        Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    }
                     OnSelected();
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 

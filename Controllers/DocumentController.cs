@@ -1266,6 +1266,10 @@ namespace Dash
             {
                 return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(BackgroundBox.DocumentType))
+            {
+                return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
