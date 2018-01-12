@@ -144,6 +144,7 @@ namespace Dash
 
         public void ShowLocalContext(bool showContext)
         {
+
             ViewModel.ShowLocalContext = showContext;
 
             if (!showContext && _localContext.View != null)
@@ -185,17 +186,12 @@ namespace Dash
                 {
                     _localContext.View.Source = source;
                 }
-
-          
             }
-
-
-
         }
 
         private void AddBorderRegionHandlers()
         {
-            foreach (var region in new FrameworkElement[] {xTitle})
+            foreach (var region in new FrameworkElement[] { xTitleBorder })
             {
                 region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
                 region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
@@ -216,7 +212,9 @@ namespace Dash
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (IsSelected == false)
+            {
                 ToggleSelectionBorder(false);
+            }
 
             _ptrIn = false;
             if (_ctrlDown == false) ShowLocalContext(false);
@@ -499,7 +497,6 @@ namespace Dash
             //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             if (ParentCollection != null)
             {
@@ -732,15 +729,6 @@ namespace Dash
                 else
                     key = keyList?.Data?.First() as KeyController;
 
-                var Binding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.TwoWay,
-                    Document = dataDoc,
-                    Key = key,
-                    Context = context
-                };
-                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
-
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
         }
@@ -908,6 +896,9 @@ namespace Dash
         private void ToggleSelectionBorder(bool isBorderOn)
         {
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+            xTitleIcon.Foreground = isBorderOn
+                ? (SolidColorBrush) App.Current.Resources["TitleText"]
+                    : new SolidColorBrush(Colors.Transparent);
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
@@ -1022,18 +1013,6 @@ namespace Dash
                 this.Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
-        }
-
-        private void XTitle_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel == null)
-                return;
-            // change the titlekey 
-            var titleField = ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null);
-            if (titleField == null)
-                ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
-            else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-
         }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
