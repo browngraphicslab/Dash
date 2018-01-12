@@ -187,7 +187,7 @@ namespace Dash
                 documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
 
             var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ViewModel.Width, currrentDoc.ViewModel.Height);
+                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
@@ -374,10 +374,7 @@ namespace Dash
 
         #endregion
 
-        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Snap(true);
-        }
+
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
@@ -388,6 +385,11 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
+        }
+
+        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Snap(true);
         }
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)

@@ -309,6 +309,7 @@ namespace Dash
                     new TransformGroupData(new Point(pointerPosition.X - offset.X, pointerPosition.Y - offset.Y), dvm.GroupTransform.ScaleCenter, dvm.GroupTransform.ScaleAmount);
                 //parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
                 parent.DocumentView_ManipulationDelta(null, null);
+                parent.ManipulationControls.ElementOnManipulationDelta(null, null);
             }
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
