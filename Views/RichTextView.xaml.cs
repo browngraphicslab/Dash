@@ -1531,7 +1531,7 @@ namespace Dash
             {
                 FlyoutBase.ShowAttachedFlyout(element);
                 FlyoutBase.GetAttachedFlyout(element)?.ShowAt(element);
-                AddFlyoutItems();
+                //AddFlyoutItems();
             }
             currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
@@ -1663,11 +1663,98 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void XResetAll_OnClick(object sender, RoutedEventArgs e)
+        //private void XResetAll_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    xRichEditBox.Document.Selection.CharacterFormat.SetClone(defaultCharFormat);
+        //    xRichEditBox.Document.Selection.ParagraphFormat.SetClone(defaultParFormat);
+        //}
+
+        #region FormattingMenuEventHandlers
+        private void ResetButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             xRichEditBox.Document.Selection.CharacterFormat.SetClone(defaultCharFormat);
             xRichEditBox.Document.Selection.ParagraphFormat.SetClone(defaultParFormat);
         }
+
+        private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Bold(true);
+        }
+
+        private void ItalicsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Italicize(true);
+        }
+
+        private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Underline(true);
+        }
+
+        private void AllCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            AllCaps(true);
+        }
+
+        private void SmallCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            SmallCaps(true);
+        }
+
+        private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Superscript(true);
+        }
+
+        private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Subscript(true);
+        }
+
+        private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Strikethrough(true);
+        }
+
+        private void LeftAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Alignment(ParagraphAlignment.Left, true);
+        }
+
+        private void CenterAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Alignment(ParagraphAlignment.Center, true);
+        }
+
+        private void RightAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Alignment(ParagraphAlignment.Right, true);
+        }
+
+        private void BulletedListButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
+            {
+                Marker(MarkerType.None, true);
+            }
+            else
+            {
+                Marker(MarkerType.Bullet, true);
+            }
+        }
+
+        private void NumberedListButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Arabic)
+            {
+                Marker(MarkerType.None, true);
+            } else
+            {
+                Marker(MarkerType.Arabic, true);
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
