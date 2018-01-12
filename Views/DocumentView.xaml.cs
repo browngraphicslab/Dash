@@ -483,6 +483,7 @@ namespace Dash
             }
 
             ToFront();
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
             ManipulationControls.ManipulationCompleted(null, false);
         }
 
@@ -852,9 +853,13 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down &&
+            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
+                CoreVirtualKeyStates.Down &&
                 ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            {
+                ViewModel.SetSelected(null, true);
                 return;
+            }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 

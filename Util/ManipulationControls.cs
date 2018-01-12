@@ -520,6 +520,7 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
+            if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
             {
                 if (g.Equals(dragDocument))
@@ -528,8 +529,10 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
+                    var cfield =
+                        g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument))
+                            .Count() > 0)
                     {
                         return g;
                     }
@@ -730,7 +733,7 @@ namespace Dash
 
             if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                 TranslateAndScale(e, _grouping);
-            else TranslateAndScale(e);
+            else TranslateAndScale(e, _grouping);
 
             DetectShake(sender, e);
 

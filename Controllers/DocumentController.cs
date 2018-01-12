@@ -47,7 +47,8 @@ namespace Dash
         }
 
 
-        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&_fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
+        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
+                                _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
 
         /// <summary>
         /// Add: Used when a field is added to a document with a key that is didn't previously contain
