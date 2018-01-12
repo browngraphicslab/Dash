@@ -46,7 +46,7 @@ namespace Dash
 
         public override FieldModelController<OperatorModel> Copy()
         {
-            return new AddOperatorController(OperatorFieldModel);
+            return new AddOperatorController();
         }
         public override object GetValue(Context context)
         {
@@ -54,7 +54,7 @@ namespace Dash
         }
         public override bool SetValue(object value)
         {
-            return false;
+            throw new System.NotImplementedException();
         }
     }
 }

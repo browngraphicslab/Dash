@@ -35,15 +35,12 @@ namespace Dash
 
         public RichTextModel.RTD Data
         {
-            get { return RichTextFieldModel.Data; }
+            get => RichTextFieldModel.Data;
             set
             {
-                if (RichTextFieldModel.Data != value)
-                {
-                    RichTextFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
-                }
-
+                if (RichTextFieldModel.Data == value) return;
+                RichTextFieldModel.Data = value;
+                OnFieldModelUpdated(null);
             }
         }
         public override object GetValue(Context context)
@@ -52,9 +49,9 @@ namespace Dash
         }
         public override bool SetValue(object value)
         {
-            if (value is RichTextModel.RTD)
+            if (value is RichTextModel.RTD rtd)
             {
-                Data = value as RichTextModel.RTD;
+                Data = rtd;
                 return true;
             }
             return false;

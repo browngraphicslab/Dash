@@ -53,8 +53,9 @@ namespace DashShared
         Regex,
         Melt,
         ExecuteHtmlJavaScript,
-        Sentence_Analyzer,
-        Extract_Keywords,
-        ImageRecognition
+        SentenceAnalyzer,
+        ExtractKeywords,
+        ImageRecognition,
+        RichTextTitle
     }
 }
