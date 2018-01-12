@@ -23,7 +23,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
-        private double _groupMargin = 40;
+        private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
@@ -35,7 +35,7 @@ namespace Dash
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
 
-        bool _hasTitle = false;
+        bool _hasTitle;
         public bool HasTitle
         {
             get => _hasTitle;
@@ -47,6 +47,16 @@ namespace Dash
                 HasTitle = active;
             else HasTitle = DocumentController.GetDataDocument(null).HasTitle && !Undecorated;
         }
+
+        private bool _showLocalContext;
+
+        public bool ShowLocalContext
+        {
+            get => _showLocalContext;
+            set => SetProperty(ref _showLocalContext, value);
+        }
+
+
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -253,7 +263,7 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
 
-            BackgroundBrush = new SolidColorBrush(Colors.White);
+            BackgroundBrush = new SolidColorBrush(Colors.Transparent);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 

@@ -24,16 +24,9 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid x:Name="LayoutRoot">
+    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
         <!-- Main document view -->
-
         <Grid x:Name="OuterGrid" x:FieldModifier="public">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-
             <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">
@@ -53,19 +46,56 @@
             </Grid.ContextFlyout>
 
             <!--Used to render the drop shadow and provide a background to the document-->
-            <Canvas x:Name="xShadowHost"  Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <Rectangle x:Name="xDocumentBackground" Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
+            <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
-            <!--The title bar on top of the documents-->
-            <Border x:Name="xTitleBorder" Visibility="{Binding Path=HasTitle,Converter={StaticResource BoolToVisibilityConverter}}" Opacity=".75" HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Top" Grid.Row="0" BorderThickness="0,0,0,1" Height="25" Margin="5,-25,0,0" Padding="0,0,0,3">
-                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Padding="0,0,5,0">
-                    <TextBlock x:Name="xTitleIcon" DoubleTapped="xTitleIcon_DoubleTapped" FontFamily="{StaticResource FontAwesome}" Foreground="{ThemeResource TitleText}" Padding="0" Margin="0,3,4,0" FontSize="16" Text="{StaticResource DocumentPlainIcon}" />
-                    <TextBox PlaceholderText="Title" Text="" Padding="0" Foreground="{ThemeResource TitleText}" Background="Transparent" x:Name="xTitle" BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" LostFocus="XTitle_LostFocus"></TextBox>
-                </StackPanel>
-            </Border>
+            <RelativePanel x:Name="xMetadataPanel" 
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
+                  >
+                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" >
+                    <TextBlock x:Name="xTitleIcon" 
+                               FontFamily="{StaticResource FontAwesome}" 
+                               Foreground="{ThemeResource TitleText}" 
+                               FontSize="15" 
+                               Text="{StaticResource DocumentPlainIcon}" 
+                               HorizontalAlignment="Stretch"
+                               Height="32"
+                    />
+                </Border>
+                <Border RelativePanel.LeftOf="xTitleBorder" >
+                    <TextBox PlaceholderText="Title" Text="" 
+                             Padding="0, 5, 5, 0"
+                             Foreground="{ThemeResource TitleText}" 
+                             Background="Transparent" x:Name="xTitle" 
+                             BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" 
+                             LostFocus="XTitle_LostFocus"
+                             MinWidth="150"
+                             TextAlignment="Right"
+                             VerticalContentAlignment="Center"
+                             VerticalAlignment="Center"
+                             Visibility="{Binding Path=HasTitle}"/>
+                </Border>
+                <Border                  
+                        x:Name="xContextTitleBorder"
+                        RelativePanel.Below="xTitleBorder"
+                        RelativePanel.AlignRightWithPanel="True"
+                        RelativePanel.AlignLeftWithPanel="True">
+                    <HyperlinkButton                              
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Foreground="CornflowerBlue"
+                        Content=""
+                        Tapped="xContextLinkTapped"
+                        VerticalContentAlignment="Center"
+                        x:Name="xContextTitle"
+                        Margin="0, 0, 15, 0"
+                        Visibility="{Binding Path=ShowLocalContext}"/>
+                </Border>
+            </RelativePanel>
 
             <!--grid to hold the inner content of the document-->
-            <Grid Name="xTargetContentGrid" Grid.Row="1" >
+            <Grid Name="xTargetContentGrid">
 
 
                 <!-- Container for document fields view -->
@@ -97,8 +127,8 @@
             </Grid>
 
             <!--The selection border-->
-            <Border Name="xSelectionBorder" Grid.Row="1"/>
-            <ProgressRing x:Name="xProgressRing" Grid.Row="1" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
+            <Border Name="xSelectionBorder"/>
+            <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
         </Grid>
 
     </Grid>

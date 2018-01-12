@@ -101,7 +101,7 @@ namespace Dash
                     }), true);
                     borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
                     borderRegion.ManipulationStarted += ElementOnManipulationStarted;
-                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
+                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
                 }
             }
             element.ManipulationMode = ManipulationModes.All;
@@ -379,20 +379,60 @@ namespace Dash
             Snap(true);
         }
 
+        public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
+        }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
+                ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
+        }
+
+        public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
             Snap(false);
             
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
 
+            SplitupGroupings(canSplitupDragGroup, docRoot);
+
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => docRoot.MoveToContainingCollection() ));
+                    () => docRoot.MoveToContainingCollection()));
                 manipulationCompletedRoutedEventArgs.Handled = true;
             }
+        }
+
+        void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
+        {
+            if (docRoot.ParentCollection == null)
+                return;
+            var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
+            if (groupToSplit != null && canSplitupDragGroup)
+            {
+                var docsToReassign = groupToSplit.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+
+                var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                groupsList.Remove(groupToSplit);
+
+                foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
+                {
+                    if (dv != null)
+                        SetupGroupings(dv, docRoot.ParentCollection);
+                }
+
+                foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
+                {
+                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null)
+                        dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
+                }
+            }
+            else
+                SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
         }
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -409,25 +449,11 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
-            var docView = _element.GetFirstAncestorOfType<DocumentView>();
-            docView?.ToFront();
+            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            docRoot?.ToFront();
+            
+             SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
 
-            if (docView.ParentCollection != null)
-            {
-                var groupsList = GetGroupsList(docView.ParentCollection);
-
-                DocumentController dragGroupDocument;
-                var dragDocumentList = GetDragGroupInfo(docView, out dragGroupDocument);
-
-                if (docView?.ParentCollection?.CurrentView is CollectionFreeformView freeFormView)
-                {
-                    var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                    docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
-
-                    DocumentController newDragGroupDocument;
-                    _grouping = GetDragGroupInfo(docView, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
-                }
-            }
             _isManipulating = true;
             _processManipulation = true;
 
@@ -436,13 +462,32 @@ namespace Dash
                 e.Handled = true;
         }
 
-        List<DocumentController> GetDragGroupInfo(DocumentView docView, out DocumentController dragGroupDocument)
+        private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
-            dragGroupDocument = GetGroupForDocument(docView.ViewModel.DocumentController);
+            if (parentCollection == null)
+                return;
+            var groupsList = GetGroupsList(parentCollection);
+
+            DocumentController dragGroupDocument;
+            var dragDocumentList = GetDragGroupInfo(docViewModel, out dragGroupDocument);
+
+            if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
+            {
+                var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
+                parentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
+
+                DocumentController newDragGroupDocument;
+                _grouping = GetDragGroupInfo(docViewModel, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
+            }
+        }
+
+        List<DocumentController> GetDragGroupInfo(DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
+        {
+            dragGroupDocument = GetGroupForDocument(docViewModel.DocumentController);
             var dragDocumentList = dragGroupDocument?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
             if (dragDocumentList == null)
             {
-                dragGroupDocument = docView.ViewModel.DocumentController;
+                dragGroupDocument = docViewModel.DocumentController;
                 dragDocumentList = new List<DocumentController>(new DocumentController[] { dragGroupDocument });
             }
             return dragDocumentList;
@@ -536,6 +581,8 @@ namespace Dash
                 foreach (var otherGroup in otherGroups)
                 {
                     var otherGroupMembers = GetGroupDocumentsList(otherGroup);
+                    if (otherGroupMembers == null)
+                        continue;
                     foreach (var otherGroupMember in otherGroupMembers)
                     {
                         var otherDocView = GetViewModelFromDocument(otherGroupMember);
@@ -555,6 +602,12 @@ namespace Dash
                                 newList.Add(newGroup);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
+                                var r = new Random();
+                                var solid = (GetViewModelFromDocument(dragDocument)?.BackgroundBrush as SolidColorBrush)?.Color;
+                                var brush = solid != Colors.Transparent ? GetViewModelFromDocument(dragDocument).BackgroundBrush :
+                                      new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
+                                foreach (var d in dragDocumentList)
+                                    GetViewModelFromDocument(d).BackgroundBrush = brush;
                                 return newList;
                             }
                             else
@@ -563,6 +616,8 @@ namespace Dash
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
+                                foreach (var d in dragDocumentList)
+                                    GetViewModelFromDocument(d).BackgroundBrush = GetViewModelFromDocument(otherGroupMember).BackgroundBrush;
                                 return newList;
                             }
                         }
