@@ -50,12 +50,11 @@
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
             <RelativePanel x:Name="xMetadataPanel" 
-                  VerticalAlignment="Stretch"
+                  VerticalAlignment="Top"
                   HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
                   >
                 <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" >
                     <TextBlock x:Name="xTitleIcon" 
-                               DoubleTapped="xTitleIcon_DoubleTapped" 
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="{ThemeResource TitleText}" 
                                FontSize="15" 
@@ -77,30 +76,24 @@
                              VerticalAlignment="Center"
                              Visibility="{Binding Path=HasTitle}"/>
                 </Border>
-                <Border 
+                <Border                  
                         x:Name="xContextTitleBorder"
                         RelativePanel.Below="xTitleBorder"
                         RelativePanel.AlignRightWithPanel="True"
                         RelativePanel.AlignLeftWithPanel="True">
-                    <TextBlock 
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Stretch"
-                             TextAlignment="Center"
-                             Text="RelativePanel Class (Windows.UI.Xaml.Controls) - UWP app developer | Microsoft Docs"
-                             Visibility="{Binding Path=ShowLocalContext}"/>
+                    <HyperlinkButton                              
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Foreground="CornflowerBlue"
+                        Content=""
+                        Tapped="xContextLinkTapped"
+                        VerticalContentAlignment="Center"
+                        x:Name="xContextTitle"
+                        Margin="0, 0, 15, 0"
+                        Visibility="{Binding Path=ShowLocalContext}"/>
                 </Border>
-                <Border 
-                    x:Name="xContextContentBorder"
-                    RelativePanel.Below="xContextTitleBorder"
-                    RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.AlignLeftWithPanel="True"
-                    >
-                </Border>
+            </RelativePanel>
 
-
-
-            </RelativePanel>            
-            
             <!--grid to hold the inner content of the document-->
             <Grid Name="xTargetContentGrid">
 

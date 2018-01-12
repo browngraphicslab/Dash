@@ -134,6 +134,7 @@
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
+    <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />

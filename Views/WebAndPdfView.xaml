@@ -9,16 +9,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" SizeChanged="OuterGridOnSizeChanged">
+    <Grid x:Name="xOuterGrid" SizeChanged="OuterGridOnSizeChanged" Background="LightGray">
         <WebView x:Name="xWebContent"
             NavigationStarting="WebView_OnNavigationStarting"
             NavigationCompleted="WebView_OnNavigationCompleted"
-            UnviewableContentIdentified="WebView_OnUnviewableContentIdentified"
-                 Source="http://www.google.com"></WebView>
-        <local:PdfView x:Name="xPdfContent" 
-                 Visibility="Collapsed"/>
-        <!--<Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Black"></Rectangle>-->
-
-
+            UnviewableContentIdentified="WebView_OnUnviewableContentIdentified"/>
+        <Rectangle x:Name="xWebBrush"/>
+        <local:PdfView x:Name="xPdfContent" Visibility="Collapsed"/>
+        <ProgressRing x:Name="xProgressRing" 
+                      HorizontalAlignment="Center" VerticalAlignment="Center" 
+                      Height="300" Width="300"
+                      IsActive="True"
+                      />
     </Grid>
 </UserControl>

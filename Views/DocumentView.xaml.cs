@@ -74,7 +74,7 @@ namespace Dash
             }
         }
 
-        private ContextWebView _localContext = new ContextWebView(null, .3, 1280, 720);
+        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
 
 
         // == CONSTRUCTORs ==
@@ -146,15 +146,19 @@ namespace Dash
         {
             ViewModel.ShowLocalContext = showContext;
 
-            if (!showContext)
+            if (!showContext && _localContext.View != null)
             {
                 // TODO hide the context
-                xContextContentBorder.Child = null;
+                xShadowHost.Children.Remove(_localContext.View);
                 _localContext.View = null;
                 GC.Collect();
+                Debug.WriteLine("Destroyed Child");
             }
-            else
+
+            if (showContext)
             {
+                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
                 var context = ViewModel.DocumentController.GetDataDocument(null).GetLastContext();
                 if (context == null) return;
                 var source = new Uri(context.Url);
@@ -164,15 +168,22 @@ namespace Dash
                     {
                         Width = _localContext.Width,
                         Height = _localContext.Height,
-                        RenderTransform =
-                            new ScaleTransform {ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor}
+                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
                     };
-                    xContextContentBorder.Child = _localContext.View;
+                    xShadowHost.Children.Add(_localContext.View);
+                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
+                    Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+                    xContextTitle.Content = context.Title;
+
+
+                    Debug.WriteLine("Created Child");
                 }
                 else if (!_localContext.View.Source.Equals(source))
                 {
                     _localContext.View.Source = source;
                 }
+
+          
             }
 
 
@@ -183,9 +194,9 @@ namespace Dash
         {
             foreach (var region in new FrameworkElement[] {xTitle})
             {
-                
+                region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
+                region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
             }
-
         }
 
         private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -205,7 +216,7 @@ namespace Dash
                 ToggleSelectionBorder(false);
 
             _ptrIn = false;
-            ShowLocalContext(false);
+            if (_ctrlDown == false) ShowLocalContext(false);
         }
 
 
@@ -1127,7 +1138,7 @@ namespace Dash
             ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
 
-        private void xTitleIcon_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             ShowContext();
         }
@@ -1135,6 +1146,7 @@ namespace Dash
         private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
+            if (_localContext.View != null) Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
