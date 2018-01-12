@@ -35,7 +35,7 @@ namespace Dash
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
 
-        bool _hasTitle = false;
+        bool _hasTitle;
         public bool HasTitle
         {
             get => _hasTitle;
@@ -47,6 +47,16 @@ namespace Dash
                 HasTitle = active;
             else HasTitle = DocumentController.GetDataDocument(null).HasTitle && !Undecorated;
         }
+
+        private bool _showLocalContext;
+
+        public bool ShowLocalContext
+        {
+            get => _showLocalContext;
+            set => SetProperty(ref _showLocalContext, value);
+        }
+
+
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
