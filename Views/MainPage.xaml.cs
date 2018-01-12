@@ -231,7 +231,7 @@ namespace Dash
                 
             };
 
-            xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.CollectionKey));
+            xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
