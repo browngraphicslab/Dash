@@ -859,6 +859,8 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                return;
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
