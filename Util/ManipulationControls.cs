@@ -387,6 +387,14 @@ namespace Dash
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
 
+            var docView = _element.GetFirstAncestorOfType<DocumentView>();
+            docView?.ToFront();
+
+            if (docView.ParentCollection != null)
+            {
+                UpdateGroupings(docView);
+            }
+
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
@@ -414,19 +422,7 @@ namespace Dash
 
             if (docView.ParentCollection != null)
             {
-                var groupsList = GetGroupsList(docView.ParentCollection);
-
-                DocumentController dragGroupDocument;
-                var dragDocumentList = GetDragGroupInfo(docView, out dragGroupDocument);
-
-                if (docView?.ParentCollection?.CurrentView is CollectionFreeformView freeFormView)
-                {
-                    var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                    docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
-
-                    DocumentController newDragGroupDocument;
-                    _grouping = GetDragGroupInfo(docView, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
-                }
+                UpdateGroupings(docView);
             }
             _isManipulating = true;
             _processManipulation = true;
@@ -434,6 +430,23 @@ namespace Dash
             _numberOfTimesDirChanged = 0;
             if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
+        }
+
+        private void UpdateGroupings(DocumentView docView)
+        {
+            var groupsList = GetGroupsList(docView.ParentCollection);
+
+            DocumentController dragGroupDocument;
+            var dragDocumentList = GetDragGroupInfo(docView, out dragGroupDocument);
+
+            if (docView?.ParentCollection?.CurrentView is CollectionFreeformView freeFormView)
+            {
+                var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
+                docView.ParentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
+
+                DocumentController newDragGroupDocument;
+                _grouping = GetDragGroupInfo(docView, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
+            }
         }
 
         List<DocumentController> GetDragGroupInfo(DocumentView docView, out DocumentController dragGroupDocument)
@@ -594,7 +607,7 @@ namespace Dash
             var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
             var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
 
-            return Windows.UI.Color.FromArgb(255, r, g, b);
+            return Windows.UI.Color.FromArgb(a, r, g, b);
         }
 
         public void AddAllAndHandle()
