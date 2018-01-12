@@ -187,7 +187,7 @@ namespace Dash
                 documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
 
             var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ViewModel.Width, currrentDoc.ViewModel.Height);
+                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight); // Width/Height could be Nan --  .ViewModel.Width, currrentDoc.ViewModel.Height);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
