@@ -52,7 +52,7 @@ namespace Dash.Views.Collection
 
                 var fieldBinding = new FieldBinding<TextController>
                 {
-                    Document = dvm.DocumentController,
+                    Document = dvm.DocumentController.GetDataDocument(null),
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
@@ -61,7 +61,7 @@ namespace Dash.Views.Collection
                     Tag = "TreeViewNode text block binding"
                 };
 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
+                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;

@@ -182,7 +182,6 @@ namespace Dash
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
 
@@ -201,7 +200,6 @@ namespace Dash
                     docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
                     docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(size.Width == 0 ? 400 : size.Width), true);
                     docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(size.Height == 0 ? 400 : size.Height), true);
-                    docLayout.SetField(KeyStore.TitleKey, new TextController(title), true);
                     Document = docLayout;
                 }
             }
