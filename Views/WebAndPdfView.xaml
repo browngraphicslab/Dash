@@ -14,7 +14,6 @@
             NavigationStarting="WebView_OnNavigationStarting"
             NavigationCompleted="WebView_OnNavigationCompleted"
             UnviewableContentIdentified="WebView_OnUnviewableContentIdentified"/>
-        <Rectangle x:Name="xWebBrush"/>
         <local:PdfView x:Name="xPdfContent" Visibility="Collapsed"/>
         <ProgressRing x:Name="xProgressRing" 
                       HorizontalAlignment="Center" VerticalAlignment="Center" 

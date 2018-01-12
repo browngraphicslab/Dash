@@ -29,6 +29,8 @@ namespace Dash
             (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            Document.SetField(KeyStore.DocumentContextKey,
+                (refToImage as ReferenceController).GetDocumentController(null), true);
         }
 
         public override FrameworkElement makeView(DocumentController docController, Context context,

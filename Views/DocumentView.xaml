@@ -53,28 +53,15 @@
                   VerticalAlignment="Top"
                   HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
                   >
-                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" >
+                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" >
                     <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
-                               Foreground="{ThemeResource TitleText}" 
+                               Foreground="Transparent" 
                                FontSize="15" 
                                Text="{StaticResource DocumentPlainIcon}" 
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
-                <Border RelativePanel.LeftOf="xTitleBorder" >
-                    <TextBox PlaceholderText="Title" Text="" 
-                             Padding="0, 5, 5, 0"
-                             Foreground="{ThemeResource TitleText}" 
-                             Background="Transparent" x:Name="xTitle" 
-                             BorderThickness="0" FontSize="15" KeyDown="XTitle_OnKeyDown" 
-                             LostFocus="XTitle_LostFocus"
-                             MinWidth="150"
-                             TextAlignment="Right"
-                             VerticalContentAlignment="Center"
-                             VerticalAlignment="Center"
-                             Visibility="{Binding Path=HasTitle}"/>
                 </Border>
                 <Border                  
                         x:Name="xContextTitleBorder"

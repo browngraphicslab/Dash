@@ -56,8 +56,14 @@ namespace Dash
             return DereferenceToRoot(context) as T;
         }
 
+        /// <summary>
+        /// Sets the value on the field. Basically an untyped data setter
+        /// </summary>
         public abstract bool SetValue(object value);
 
+        /// <summary>
+        /// Sets the value from the field. Basically an untyped data getter
+        /// </summary>
         public abstract object GetValue(Context context);
 
 

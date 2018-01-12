@@ -29,7 +29,6 @@ namespace Dash
 
 
         private Uri _source;
-        private WebViewBrush _webViewBrush;
 
         public Uri Source
         {
@@ -67,7 +66,6 @@ namespace Dash
         private void WebView_OnNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
             xProgressRing.IsActive = false;
-            _webViewBrush.Redraw();
         }
 
         private async void WebView_OnUnviewableContentIdentified(WebView sender, WebViewUnviewableContentIdentifiedEventArgs args)
@@ -100,10 +98,6 @@ namespace Dash
             if (xWebContent != null)
             {
                 xWebContent.Visibility = Visibility.Visible;
-                _webViewBrush = new WebViewBrush();
-                _webViewBrush.SetSource(xWebContent);
-                xWebBrush.Fill = _webViewBrush;
-                xWebBrush.Visibility = Visibility.Visible;
             }
         }
 
@@ -126,8 +120,7 @@ namespace Dash
             xWebContent.Height = xOuterGrid.ActualHeight;
             xPdfContent.Width = xOuterGrid.ActualWidth;
             xPdfContent.Height = xOuterGrid.ActualHeight;
-            xWebBrush.Width = xOuterGrid.ActualWidth;
-            xWebBrush.Height = xOuterGrid.ActualHeight;
+
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
