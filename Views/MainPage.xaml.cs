@@ -123,6 +123,11 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
+            
+            BrowserView.ForceInit();
+
+            //this next line is optional and can be removed.  
+            //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 

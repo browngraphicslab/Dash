@@ -40,7 +40,7 @@ namespace Dash
                 [OutputCollection] = TypeInfo.List
             };
 
-        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.Sentence_Analyzer))
+        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.SentenceAnalyzer))
         {
         }
 

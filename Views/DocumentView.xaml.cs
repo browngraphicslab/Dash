@@ -53,6 +53,29 @@ namespace Dash
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        private bool _ctrlDown;
+        private bool _ptrIn;
+
+        private class ContextWebView
+        {
+            public WebAndPdfView View;
+            public double ScaleFactor;
+            public double ActualWidth => Width * ScaleFactor;
+            public double ActualHeight => Height * ScaleFactor;
+            public double Width;
+            public double Height;
+
+            public ContextWebView(WebAndPdfView view, double scaleFactor, double width, double height)
+            {
+                View = view;
+                ScaleFactor = scaleFactor;
+                Width = width;
+                Height = height;
+            }
+        }
+
+        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
+
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -63,12 +86,13 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
+
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 }));
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -89,13 +113,85 @@ namespace Dash
             AddBorderRegionHandlers();
 
 
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+            Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
+
+
 
             MenuFlyout = xMenuFlyout;
         }
 
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+
+            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
+            if (!ctrl.HasFlag(CoreVirtualKeyStates.Down))
+            {
+                _ctrlDown = false;
+                ShowLocalContext(false);
+            }
+        }
+
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
+            if (ctrl.HasFlag(CoreVirtualKeyStates.Down))
+            {
+                _ctrlDown = true;
+                if (_ptrIn) ShowLocalContext(true);
+            }
+        }
+
+        public void ShowLocalContext(bool showContext)
+        {
+
+            ViewModel.ShowLocalContext = showContext;
+
+            if (!showContext && _localContext.View != null)
+            {
+                // TODO hide the context
+                xShadowHost.Children.Remove(_localContext.View);
+                _localContext.View = null;
+                GC.Collect();
+                Debug.WriteLine("Destroyed Child");
+                ViewModel.SetHasTitle(ViewModel.IsSelected);
+            }
+
+            if (showContext)
+            {
+                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
+                var context = ViewModel.DocumentController.GetDataDocument(null).GetLastContext();
+                if (context == null) return;
+                var source = new Uri(context.Url);
+                ViewModel.SetHasTitle(true);
+
+                if (_localContext.View == null)
+                {
+                    _localContext.View = new WebAndPdfView(source)
+                    {
+                        Width = _localContext.Width,
+                        Height = _localContext.Height,
+                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                    };
+                    xShadowHost.Children.Add(_localContext.View);
+                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
+                    Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+                    xContextTitle.Content = context.Title;
+
+
+                    Debug.WriteLine("Created Child");
+                }
+                else if (!_localContext.View.Source.Equals(source))
+                {
+                    _localContext.View.Source = source;
+                }
+            }
+        }
+
         private void AddBorderRegionHandlers()
         {
-            foreach(var region in new FrameworkElement[]{ BorderRegion1, BorderRegion2, BorderRegion3, BorderRegion4 })
+            foreach (var region in new FrameworkElement[] { xTitleBorder })
             {
                 region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
                 region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
@@ -116,14 +212,25 @@ namespace Dash
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (IsSelected == false)
+            {
                 ToggleSelectionBorder(false);
+            }
+
+            _ptrIn = false;
+            if (_ctrlDown == false) ShowLocalContext(false);
         }
+
+
 
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
+            _ptrIn = true;
+
+            if (_ctrlDown) ShowLocalContext(true);
         }
+
 
         public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
@@ -133,12 +240,10 @@ namespace Dash
             ToggleGroupSelectionBorderColor(false);
         }
 
-
         public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
         {
             ToggleGroupSelectionBorderColor(true);
         }
-
 
         private void CheckForDropOnLink(DocumentView docView)
         {
@@ -186,13 +291,13 @@ namespace Dash
                                 // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
                                 // the link is outside the document.
                                 if ((slope < 0 && !(intersectionTopX < screenCoords.X ||
-                                                   intersectionBottomX > screenCoords.X + docView.ActualWidth)
-                                    || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                      intersectionBottomX < screenCoords.X + docView.ActualWidth)))
+                                                    intersectionBottomX > screenCoords.X + docView.ActualWidth)
+                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
+                                                       intersectionBottomX < screenCoords.X + docView.ActualWidth)))
                                 {
                                     // if the document is between the vertical bounds of the link endpoints
                                     if (screenCoords.Y > (Math.Min(curvePoint1.Y, curvePoint2.Y))
-                                                      && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
+                                        && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
                                     {
                                         // connect the dropped document to the documents linked by the path
                                         ChangeConnections(freeformView, docView, link);
@@ -254,7 +359,7 @@ namespace Dash
             var referencedKey = userLink.referencedKey;
             var referencedDoc = userLink.referencedDocument;
 
-            
+
 
             // Check if nodes inputs/outputs are of the same type
             var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
@@ -266,7 +371,7 @@ namespace Dash
             var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorController;
             var referencingDocInputType = referencingDocOpFMController?.Inputs[referencingKey];
 
-            if(droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
+            if (droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
             {
                 // delete the current connection between referenced doc and referencing doc
                 ffView.DeleteLine(link.Key, userLink); // check
@@ -304,8 +409,8 @@ namespace Dash
             else
             {
                 referencingDoc.SetField(referencingKey,
-                new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
-            }                                                                                       
+                    new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
+            }
 
             // add line visually
             ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
@@ -349,7 +454,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
         }
 
-        
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
@@ -367,7 +472,7 @@ namespace Dash
             // add corresponding instance of this to hierarchical view
             if (!IsMainCollection && ViewModel != null)
             {
-                
+
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
@@ -392,16 +497,11 @@ namespace Dash
             //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
-            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
-                //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-               
             }
         }
 
@@ -415,14 +515,14 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
 
-#endregion
+        #endregion
 
 
         private void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        
+
 
         MenuButton copyButton;
 
@@ -430,6 +530,7 @@ namespace Dash
         {
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
+
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -527,7 +628,7 @@ namespace Dash
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
             {
                 //uncomment to make children in collection stretch
-                fitFreeFormChildrenToTheirLayouts(); 
+                fitFreeFormChildrenToTheirLayouts();
             }
         }
 
@@ -628,19 +729,8 @@ namespace Dash
                 else
                     key = keyList?.Data?.First() as KeyController;
 
-                var Binding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.TwoWay,
-                    Document = dataDoc,
-                    Key = key,
-                    Context = context
-                };
-                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
-
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
-
-            //initDocumentOnDataContext();
         }
 
         #region Menu
@@ -667,7 +757,7 @@ namespace Dash
         private void CopyDocument()
         {
             _moveTimer.Stop();
-            
+
 
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
@@ -806,6 +896,9 @@ namespace Dash
         private void ToggleSelectionBorder(bool isBorderOn)
         {
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+            xTitleIcon.Foreground = isBorderOn
+                ? (SolidColorBrush) App.Current.Resources["TitleText"]
+                    : new SolidColorBrush(Colors.Transparent);
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
@@ -880,8 +973,8 @@ namespace Dash
                     new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
                     , ordered[i].GroupTransform.ScaleCenter
                     , ordered[i].GroupTransform.ScaleAmount);
-            }
-            */
+            }*/
+            
             return grouped;
         }
 
@@ -921,18 +1014,6 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        private void XTitle_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel == null)
-                return;
-            // change the titlekey 
-            var titleField = ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null);
-            if (titleField == null)
-                ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
-            else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-
-       }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
@@ -1010,7 +1091,7 @@ namespace Dash
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
             ScreenCap();
-            
+
         }
 
 
@@ -1039,9 +1120,22 @@ namespace Dash
             ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
 
-        private void xTitleIcon_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             ShowContext();
+        }
+
+        private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
+            if (_localContext.View != null) Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+        }
+
+        private void CopyHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var data = new DataPackage() { };
+            data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
+            Clipboard.SetContent(data);
         }
     }
 }

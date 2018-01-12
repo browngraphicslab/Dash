@@ -140,12 +140,24 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.TitleKey]             = new TextController("Prototype Title"),
+                    //[KeyStore.TitleKey]             = new DocumentReferenceController(titleDocId, RichTextTitleOperatorController.ComputedTitle),
                     [RTFieldKey]                    = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                     [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey )
                 };
-                return new DocumentController(fields, Type, _prototypeID);
+                var protoDoc = new DocumentController(fields, Type, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [RichTextTitleOperatorController.RichTextKey] =
+                    new DocumentReferenceController(protoDoc.Id, RTFieldKey),
+                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
             }
 
             public override DocumentController CreatePrototypeLayout()

@@ -32,6 +32,7 @@ namespace Dash
             Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.Resuming += OnResuming;
         }
 
         /// <summary>
@@ -113,5 +114,17 @@ namespace Dash
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
+
+
+        /// <summary>
+        /// called when the application resumes after having suspended
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="o"></param>
+        private void OnResuming(object sender, object o)
+        {
+            BrowserView.ForceInit();
+        }
+
     }
 }
