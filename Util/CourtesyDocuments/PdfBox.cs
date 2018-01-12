@@ -47,6 +47,7 @@ namespace Dash
 
             // replace any of the default fields on the prototype delegate with the new fields
             Document.SetFields(fields, true);
+            Document.SetField(KeyStore.DocumentContextKey, GetPdfReference(Document).GetDocumentController(null), true);
         }
 
         /// <summary>
