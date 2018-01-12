@@ -65,7 +65,7 @@ namespace Dash.Views.Collection
                 if (collection != null)
                 {
                     _isCollection = true;
-                    CollectionTreeView.DataContext = new CollectionViewModel(dvm.DocumentController, collection);
+                    CollectionTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.CollectionKey));
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, fieldBinding);
