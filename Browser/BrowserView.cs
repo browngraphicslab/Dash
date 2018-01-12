@@ -108,8 +108,12 @@ namespace Dash
             }
             catch (Exception e)
             {
+                _initted = false;
+                _socket = null;
+                _dataMessageWriter = null;
                 Debug.WriteLine("connection to server failed");
-                throw new Exception("connection to server failed");
+                Debug.WriteLine("communication will be cut until connection resumes");
+                //throw new Exception("connection to server failed");
             }
         }
 
@@ -205,12 +209,18 @@ namespace Dash
             }
         }
 
+        public static void ForceInit()
+        {
+            var r = new PingBrowserRequest();
+            SendToServer(r.Serialize());
+        }
+
+
         public static void OpenTab(string url)
         {
             var r = new NewTabBrowserRequest();
             r.url = url;
             SendToServer(r.Serialize());
-            var a = r.Serialize();
         }
 
         private string _url;

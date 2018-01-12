@@ -305,7 +305,19 @@ namespace Dash
             }
 
             var context = MainPage.Instance.WebContext.GetAsContext();
-            neighboring.Add(new TextController(context.Serialize()));
+
+            if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
+            {
+                var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+                if (!context.Equals(last))
+                {
+                    neighboring.Add(new TextController(context.Serialize()));
+                }
+            }
+            else
+            {
+                neighboring.Add(new TextController(context.Serialize()));
+            }
         }
 
         public static DocumentContext GetLastContext(this DocumentController doc)
@@ -319,6 +331,16 @@ namespace Dash
             return null;
         }
 
+        public static List<DocumentContext> GetAllContexts(this DocumentController doc)
+        {
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count > 0)
+            {
+                return neighboring.TypedData.Select(d => d.Data.CreateObject<DocumentContext>()).ToList();
+            }
+            return null;
+        }
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {

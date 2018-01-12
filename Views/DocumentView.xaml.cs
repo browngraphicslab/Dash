@@ -92,7 +92,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true);
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
@@ -181,6 +181,10 @@ namespace Dash
 
         private void AddBorderRegionHandlers()
         {
+            foreach (var region in new FrameworkElement[] {xTitle})
+            {
+                
+            }
 
         }
 
@@ -1131,6 +1135,13 @@ namespace Dash
         private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
+        }
+
+        private void CopyHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var data = new DataPackage() { };
+            data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
+            Clipboard.SetContent(data);
         }
     }
 }
