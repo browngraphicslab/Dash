@@ -472,7 +472,7 @@ namespace Dash
                         var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
-                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;
+                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 300, 300, related).Document;
                     htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     foreach (var str in strings)

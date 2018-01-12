@@ -112,7 +112,6 @@ namespace Dash
                         [KeyStore.CollectionKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }

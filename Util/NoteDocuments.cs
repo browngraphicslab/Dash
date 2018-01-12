@@ -60,10 +60,21 @@ namespace Dash
                 {
                     [CollectedDocsKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
-                    [KeyStore.TitleKey] = new TextController("Collection Note"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
-                return new DocumentController(fields, Type, _prototypeID);
+                var protoDoc =  new DocumentController(fields, Type, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [CollectionTitleOperatorController.CollectionDocsKey] =
+                    new DocumentReferenceController(protoDoc.Id, CollectedDocsKey),
+                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -100,7 +111,7 @@ namespace Dash
                     Document = docLayout;
                 }
             }
-            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, string title = "-collection-", double width = 500, double height = 300) : base(DocumentType)
+            public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
@@ -108,11 +119,10 @@ namespace Dash
 
                 DataDocument = dataDocument ?? GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
-                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 createLayout(where, viewtype, width, height);
             }
 
-            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype,  string title = "-collection-", double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : base(DocumentType)
             {
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
@@ -120,7 +130,6 @@ namespace Dash
 
                 DataDocument = GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
-                DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 

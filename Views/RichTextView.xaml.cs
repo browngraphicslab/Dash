@@ -362,7 +362,7 @@ namespace Dash
                     pt.X -= 150;
                     pt.Y -= 50;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, "", 200, 100).Document;
+                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                     MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
                 }
                 else if (target.StartsWith("http"))

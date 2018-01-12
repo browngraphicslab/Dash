@@ -71,7 +71,6 @@ namespace Dash
                 e.GetPosition(MainPage.Instance));
 
             var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
-            cnote.Document.SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(), true);
             var newDoc = cnote.Document;
             
             collection.ViewModel.AddDocument(newDoc, null);

@@ -56,6 +56,7 @@ namespace DashShared
         SentenceAnalyzer,
         ExtractKeywords,
         ImageRecognition,
-        RichTextTitle
+        RichTextTitle,
+        CollectionTitle
     }
 }

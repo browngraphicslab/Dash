@@ -409,7 +409,7 @@ namespace Dash
 
         void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
         {
-            if (docRoot.ParentCollection == null)
+            if (docRoot?.ParentCollection == null)
                 return;
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
