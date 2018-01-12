@@ -253,7 +253,7 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
 
-            BackgroundBrush = new SolidColorBrush(Colors.White);
+            BackgroundBrush = new SolidColorBrush(Colors.Transparent);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 

@@ -24,7 +24,7 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid x:Name="LayoutRoot">
+    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
         <!-- Main document view -->
 
         <Grid x:Name="OuterGrid" x:FieldModifier="public">

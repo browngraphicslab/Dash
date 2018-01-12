@@ -551,18 +551,28 @@ namespace Dash
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
                                 var newGroup = new DocumentController();
+
                                 newGroup.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(dragDocumentList), true);
+                                Random r = new Random();
+                                var BackColor = dragGroupDocument?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey,null)?.Data ?? Windows.UI.Color.FromArgb(0x33, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0).ToString();
+                                newGroup.SetField(KeyStore.DocumentTextKey, new TextController(BackColor), true);
                                 newList.Add(newGroup);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
+                                foreach (var dd in dragDocumentList)
+                                    GetViewModelFromDocument(dd).BackgroundBrush = new SolidColorBrush(ColorConvert(BackColor));
                                 return newList;
                             }
                             else
                             {
                                 var groupList = group.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                                Random r = new Random();
+                                var BackColor = otherGroups.First()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? Windows.UI.Color.FromArgb(0x33, (byte)r.Next(0, 256), (byte)r.Next(0, 256), (byte)0).ToString();
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
+                                foreach (var dd in groupList.TypedData)
+                                    GetViewModelFromDocument(dd).BackgroundBrush = new SolidColorBrush(ColorConvert(BackColor));
                                 return newList;
                             }
                         }
@@ -574,6 +584,17 @@ namespace Dash
             var sameList = otherGroups.ToList();
             sameList.Add(dragGroupDocument);
             return sameList;
+        }
+        public Windows.UI.Color ColorConvert(string colorStr)
+        {
+            colorStr = colorStr.Replace("#", string.Empty);
+
+            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
+            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
+            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
+            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
+
+            return Windows.UI.Color.FromArgb(255, r, g, b);
         }
 
         public void AddAllAndHandle()
