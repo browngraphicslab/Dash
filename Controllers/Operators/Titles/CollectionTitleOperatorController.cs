@@ -40,14 +40,14 @@ namespace Dash
 
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                //var firstDoc = collDocs.Data.Cast<DocumentController>().OrderBy(dc => dc.GetPositionField().Data.Y)
-                //    .FirstOrDefault(dc => dc.HasTitle);
+                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField().Data.Y)
+                    .FirstOrDefault(dc => dc.HasTitle);
 
-                //output = firstDoc?.Title;
+                output = firstDoc?.Title;
             }
 
 
-            outputs[ComputedTitle] = new TextController(output ?? "untitled collection");
+            outputs[ComputedTitle] = new TextController(output ?? "");
         }
 
         public override FieldModelController<OperatorModel> Copy()
