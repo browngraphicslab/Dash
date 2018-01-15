@@ -67,6 +67,7 @@ namespace Dash.Views.Collection
                     _isCollection = true;
                     CollectionTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.GroupingKey));
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                    fieldBinding.Tag = "TreeViewNodeCol";
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, fieldBinding);
             }

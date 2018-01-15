@@ -47,7 +47,7 @@ namespace Dash
             }
 
 
-            outputs[ComputedTitle] = output ?? new TextController("");
+            outputs[ComputedTitle] = output ?? new TextController("Untitled Collection");
         }
 
         public override FieldModelController<OperatorModel> Copy()
