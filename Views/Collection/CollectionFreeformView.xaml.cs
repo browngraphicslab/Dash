@@ -1013,11 +1013,8 @@ namespace Dash
 
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
+
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             // If drawing a link node and you release onto the canvas, if the handle you're drawing from
@@ -1110,65 +1107,37 @@ namespace Dash
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
                 Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
-                _multiSelect = (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
                 MarqueeSelectDocs(marqueeRect);
+                _multiSelect = (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
                 _marquee = null;
                 e.Handled = true;
             }
+       
             xOuterGrid.ReleasePointerCapture(e.Pointer);
+            
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
-            var CurrentPoint = args.GetCurrentPoint(SelectionCanvas);
-            if (!CurrentPoint.Properties.IsLeftButtonPressed || _marquee == null) return;
-            var pos = CurrentPoint.Position;
+            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!currentPoint.Properties.IsLeftButtonPressed) return;
+
+            var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
             var dY = pos.Y - _marqueeAnchor.Y;
-            double newHeight = 0;
-            double newWidth = 0;
-            var newAnchor = new Point();
-            if (dX > 0 && dY > 0)
-            {
-                newAnchor = _marqueeAnchor;
-                newWidth = dX;
-                newHeight = dY;
-            }
-            if (dX > 0 && dY < 0)
-            {
-                newAnchor = _marqueeAnchor;
-                newAnchor.Y += dY;
-                newHeight = -dY;
-                newWidth = dX;
-            }
-            if (dX < 0 && dY > 0)
-            {
-                newAnchor = _marqueeAnchor;
-                newAnchor.X += dX;
-                newWidth = -dX;
-                newHeight = dY;
-            }
-            if (dX < 0 && dY < 0)
-            {
-                newAnchor = _marqueeAnchor;
-                newAnchor.X += dX;
-                newWidth = -dX;
-                newAnchor.Y += dY;
-                newHeight = -dY;
-            }
-            Canvas.SetLeft(_marquee, newAnchor.X);
-            Canvas.SetTop(_marquee, newAnchor.Y);
-            _marquee.Width = newWidth;
-            _marquee.Height = newHeight;
-            args.Handled = true;
-        }
 
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0)
+            //Height and width depend on the difference in position of the current point and the anchor (initial point)
+            double newWidth = (dX > 0) ? dX : -dX;
+            double newHeight = (dY > 0) ? dY : -dY;
+
+            //Anchor point should also be moved if dX or dY are moved
+            var newAnchor = _marqueeAnchor;
+            if(dX < 0) newAnchor.X += dX;
+            if (dY < 0) newAnchor.Y += dY;
+
+
+            if (newWidth > 5 && newHeight > 5 && _marquee == null)
             {
-                xOuterGrid.CapturePointer(args.Pointer);
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 _marquee = new Rectangle()
                 {
                     Stroke = new SolidColorBrush(Colors.Gray),
@@ -1176,12 +1145,34 @@ namespace Dash
                     StrokeDashArray = new DoubleCollection { 5, 2 },
                     CompositeMode = ElementCompositeMode.SourceOver
                 };
-
                 SelectionCanvas.Children.Add(_marquee);
-                Canvas.SetLeft(_marquee, pos.X);
-                Canvas.SetTop(_marquee, pos.Y);
-                _marqueeAnchor = pos;
             }
+
+            if (_marquee == null) return;
+
+            //Adjust the marquee rectangle
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+
+            args.Handled = true;
+            
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0)
+            {
+                
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                
+            }
+            
+            
         }
 
         private void MarqueeSelectDocs(Rect marquee)
@@ -1217,6 +1208,7 @@ namespace Dash
                             inMarquee = true;
                         }
                     }
+
                     if (inMarquee)
                     {
                         if (xItemsControl.ItemContainerGenerator != null && xItemsControl
