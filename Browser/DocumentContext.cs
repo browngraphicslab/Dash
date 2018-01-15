@@ -12,6 +12,8 @@ namespace Dash
         public double Scroll { get; set; }
         public string Url { get; set; }
         public string Title { get; set; }
+        public double ViewDuration { get; set; }
+
 
         public override bool Equals(object obj)
         {

@@ -404,8 +404,6 @@ namespace Dash
         private bool CanSizeToFit = false;
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent.ViewModel.DocumentController.CaptureNeighboringContext();
             CanSizeToFit = true;
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
@@ -1395,6 +1393,12 @@ namespace Dash
                     xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                 }
             }
+
+            if (!ctrlState && !altState)
+            {
+                var parent = this.GetFirstAncestorOfType<DocumentView>();
+                parent.ViewModel.DocumentController.CaptureNeighboringContext();
+            }
         }
 
         /// <summary>
@@ -1402,10 +1406,12 @@ namespace Dash
         /// </summary>
         private Dictionary<int, ITextCharacterFormat> originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
 
+
         /// <summary>
         /// The length of the previous search query
         /// </summary>
         private int prevQueryLength;
+
 
         /// <summary>
         /// Searches content of the xRichEditBox, highlights all results

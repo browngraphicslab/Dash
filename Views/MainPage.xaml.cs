@@ -1,46 +1,29 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Input;
 using Windows.Foundation;
-using Windows.Storage;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
-using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 using Flurl;
 using Flurl.Http;
-using Flurl.Http.Content;
-using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
-using Visibility = Windows.UI.Xaml.Visibility;
-using static Dash.NoteDocuments;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
-using Windows.Graphics.Display;
 using Windows.UI;
-using Dash.Views.Document_Menu;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
