@@ -416,7 +416,7 @@ namespace Dash
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
             {
-                var docsToReassign = groupToSplit.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
                 var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                 groupsList.Remove(groupToSplit);
@@ -487,7 +487,7 @@ namespace Dash
         List<DocumentController> GetDragGroupInfo(DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
         {
             dragGroupDocument = GetGroupForDocument(docViewModel.DocumentController);
-            var dragDocumentList = dragGroupDocument?.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null)?.TypedData;
+            var dragDocumentList = dragGroupDocument?.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null)?.TypedData;
             if (dragDocumentList == null)
             {
                 dragGroupDocument = docViewModel.DocumentController;
@@ -498,7 +498,7 @@ namespace Dash
 
         ListController<DocumentController> GetGroupsList(CollectionView collectionView)
         {
-            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
             if ((groupsList == null || groupsList.Count == 0) && collectionView.ViewModel.DocumentViewModels.Count > 0)
             {
                 groupsList = new ListController<DocumentController>(collectionView.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
@@ -531,7 +531,7 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                     if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
                     {
                         return g;
@@ -564,7 +564,7 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                     if (cfield != null)
                     {
                         return cfield.Data.Select((cd) => cd as DocumentController).ToList();
@@ -616,7 +616,7 @@ namespace Dash
                             }
                             else
                             {
-                                var groupList = group.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                                var groupList = group.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
