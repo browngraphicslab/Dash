@@ -880,6 +880,11 @@ namespace Dash
             }
         }
 
+        private void xRichEditBox_SelectionChanged_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         #region opening
         /// <summary>
         /// Opens the format options flyout
@@ -1029,125 +1034,7 @@ public  class KeepForLater
     {
         //WC.CountWords();
     }
-
-    /// <summary>
-    /// Add opacity levels to the format options flyout (under Highlight, in Opacity tab)
-    /// </summary>
-    private void AddHighlightOpacity()
-    {
-        // doesn't really work yet
-        //double opacity = 1;
-        //while (opacity > 0)
-        //{
-        //    var item = new MenuFlyoutItem();
-        //    var menuText = opacity.ToString();
-        //    item.Text = menuText.ToString();
-        //    item.Click += delegate
-        //    {
-        //        UpdateDocument();
-        //        currentCharFormat = null;
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray);
-        //    };
-        //    item.GotFocus += delegate
-        //    {
-        //        var highlight = xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor;
-        //        var color = Color.FromArgb((byte)(opacity * 255), highlight.R, highlight.G, highlight.B);
-        //        Highlight(color, false);
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-        //    };
-        //    xHighlightOpacity?.Items?.Add(item);
-        //    opacity -= 0.1;
-        //}
-    }
-
-
-
-    #region colors
-    /// <summary>
-    /// Add colors to the format options flyout (under Highlight and Color)
-    /// </summary>
-    /// <param name="item"></param>
-    private void AddColors(MenuFlyoutSubItem item)
-    {
-        AddColorRange(Colors.Red, Colors.Violet, item);
-        AddColorRange(Colors.Violet, Colors.Blue, item);
-        AddColorRange(Colors.Blue, Colors.Aqua, item);
-        AddColorRange(Colors.Aqua, Colors.Green, item);
-        AddColorRange(Colors.Green, Colors.Yellow, item);
-        item?.Items?.Add(new MenuFlyoutSeparator());
-        AddColorRange(Colors.White, Colors.Black, item);
-    }
-
-    /// <summary>
-    /// Creates a range of color starting from color1 to color2
-    /// </summary>
-    /// <param name="color1"></param>
-    /// <param name="color2"></param>
-    /// <param name="item"></param>
-    private void AddColorRange(Color color1, Color color2, MenuFlyoutSubItem item)
-    {
-        int r1 = color1.R;
-        int rEnd = color2.R;
-        int b1 = color1.B;
-        int bEnd = color2.B;
-        int g1 = color1.G;
-        int gEnd = color2.G;
-        for (byte i = 0; i < 25; i++)
-        {
-            var rAverage = r1 + (int)((rEnd - r1) * i / 25);
-            var gAverage = g1 + (int)((gEnd - g1) * i / 25);
-            var bAverage = b1 + (int)((bEnd - b1) * i / 25);
-            AddColorMenuItem(Color.FromArgb(255, (byte)rAverage, (byte)gAverage, (byte)bAverage), item, 2);
-        }
-    }
-
-    /// <summary>
-    /// Adds color as a menu item under the specified submenu tab (either Highlight or Color) in the format options flyout
-    /// </summary>
-    /// <param name="color"></param>
-    /// <param name="submenu"></param>
-    /// <param name="height"></param>
-    private void AddColorMenuItem(Color color, MenuFlyoutSubItem submenu, double height)
-    {
-        var item = new MenuFlyoutItem();
-        item.Background = new SolidColorBrush(color);
-        item.Height = height;
-        // handles what happens when the item gets focus and when it is clicked
-        //if (submenu == xColor)
-        //{
-        //    item.Click += delegate
-        //    {
-        //        UpdateDocument();
-        //        currentCharFormat = null;
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-        //    };
-        //    item.GotFocus += delegate
-        //    {
-        //        Foreground(color, false);
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-        //    };
-        //}
-        //else if (submenu == xHighlight)
-        //{
-        //    item.Click += delegate
-        //    {
-        //        UpdateDocument();
-        //        currentCharFormat = null;
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-        //    };
-        //    item.GotFocus += delegate
-        //    {
-        //        Highlight(color, false);
-        //        xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-        //    };
-        //} //Ellen commented out
-
-        submenu?.Items?.Add(item);
-    }
-    #endregion
-
-
-
+    
     #endregion
 
 }

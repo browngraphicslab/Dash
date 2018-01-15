@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -68,14 +69,24 @@
                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DC;"/>
             </Button>
             <!--Font color button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3" Tapped="FontColorBackground_Tapped">
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged"/>
+                    </Flyout>
+                </Button.Flyout>
                 <Grid Width="25" Height="25" Margin="0,-5,0,0">
                     <TextBlock FontSize="22" HorizontalAlignment="Center" Margin="0,-2,0,0" VerticalAlignment="Center">A</TextBlock>
                     <Rectangle Width="20" Height="4" Fill="Black" Margin="0,22,0,0"/>
                 </Grid>
             </Button>
             <!--Font highlight button-->
-            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4" Tapped="FontHighlightButton_Tapped">
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackgroundColorPicker_SelectedColorChanged"/>
+                    </Flyout>
+                </Button.Flyout>
                 <Grid BorderBrush="DarkSlateGray" Background="White" BorderThickness="1" Width="25" Height="25" Margin="0,-5,0,0">
                     <TextBlock FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center">A</TextBlock>
                 </Grid>

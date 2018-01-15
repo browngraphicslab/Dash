@@ -1,20 +1,13 @@
-﻿using System;
+﻿using Syncfusion.UI.Xaml.Controls.Media;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -56,6 +49,7 @@ namespace Dash
             this.InitializeComponent();
 
             Loaded += FormattingMenuView_Loaded;
+            //var x = new SfColorPicker();
         }
 
 
@@ -127,7 +121,7 @@ namespace Dash
             }
 
             //set index as calibri
-            xFontFamilyComboBox.SelectedIndex = 1;
+            //xFontFamilyComboBox.SelectedItem = null;
         }
 
 
@@ -169,7 +163,7 @@ namespace Dash
             }
 
             //set index as calibri
-            //xFontFamilyComboBox.SelectedIndex = 1;
+            //xFontFamilyComboBox.SelectedItem = null;
         }
 
         #endregion
@@ -288,17 +282,7 @@ namespace Dash
                 _rtfHelper.Marker(MarkerType.UnicodeSequence, true);
             }
         }
-
-        private void FontColorBackground_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
-        private void FontHighlightButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
+        
         #endregion
 
         #region ComboBox
@@ -316,11 +300,30 @@ namespace Dash
             xRichEditBox.Document.Selection.CharacterFormat.Size = (float) Convert.ToDouble(selectedFontSize.ToString());
         }
 
-        #endregion
 
         #endregion
 
+        #endregion
 
+        private void xForegroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var colorPicker = sender as SfColorPicker;
+            if(colorPicker != null)
+            {
+                var color = colorPicker.SelectedColor;
+                _rtfHelper.Foreground(color, true);
+            }
+        }
+
+        private void xBackgroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            var colorPicker = sender as SfColorPicker;
+            if (colorPicker != null)
+            {
+                var color = colorPicker.SelectedColor;
+                _rtfHelper.Highlight(color, true);
+            }
+        }
     }
 
     public class RichTextFormattingHelper
