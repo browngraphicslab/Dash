@@ -81,7 +81,7 @@ namespace Dash
                 {
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    GroupingUpdated(cargs, copiedContext);
+                    if (cargs != null) GroupingUpdated(cargs, copiedContext);
                 });
 
             CellSize = 250; // TODO figure out where this should be set

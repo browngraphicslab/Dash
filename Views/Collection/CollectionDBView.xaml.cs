@@ -58,7 +58,7 @@ namespace Dash
                     }
                     return null;
                 });
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, term, 200, 300, collection.Where((c)=> c != null).ToList()).Document;
+                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 300, collection.Where((c)=> c != null).ToList()).Document;
                 
                 args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
             }

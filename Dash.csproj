@@ -121,6 +121,7 @@
     <Compile Include="Controllers\Operators\ImageRecognitionOperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
@@ -150,6 +151,7 @@
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />

@@ -202,7 +202,7 @@ namespace Dash
             if (Scroll.Visibility == Visibility.Visible)
                 released(null, null);
         }
-        
+    
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
@@ -231,7 +231,7 @@ namespace Dash
                     pt.X -= 150;
                     pt.Y -= 50;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, "", 200, 100).Document;
+                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                     MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
                 }
                 else if (target.StartsWith("http"))
@@ -580,6 +580,7 @@ namespace Dash
         void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
         {
             if (theDoc != null)
+
             {
                 string link = "\"" + theDoc.GetId() + "\"";
                 if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null)?.Data?.StartsWith("http"))

@@ -187,7 +187,7 @@ namespace Dash
                 documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
 
             var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ViewModel.Width, currrentDoc.ViewModel.Height);
+                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
@@ -374,10 +374,7 @@ namespace Dash
 
         #endregion
 
-        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Snap(true);
-        }
+
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
@@ -388,6 +385,11 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
+        }
+
+        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Snap(true);
         }
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
@@ -409,7 +411,7 @@ namespace Dash
 
         void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
         {
-            if (docRoot.ParentCollection == null)
+            if (docRoot?.ParentCollection == null)
                 return;
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
@@ -427,7 +429,8 @@ namespace Dash
 
                 foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
                 {
-                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null)
+                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null && 
+                        !dv.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                         dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
                 }
             }
@@ -519,6 +522,7 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
+            if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
             {
                 if (g.Equals(dragDocument))
@@ -527,8 +531,10 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
+                    var cfield =
+                        g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument))
+                            .Count() > 0)
                     {
                         return g;
                     }
@@ -603,8 +609,8 @@ namespace Dash
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
                                 var r = new Random();
-                                var solid = (GetViewModelFromDocument(dragDocument)?.BackgroundBrush as SolidColorBrush)?.Color;
-                                var brush = solid != Colors.Transparent ? GetViewModelFromDocument(dragDocument).BackgroundBrush :
+                                var solid = (GetViewModelFromDocument(otherGroupMember)?.BackgroundBrush as SolidColorBrush)?.Color;
+                                var brush = solid != Colors.Transparent ? new SolidColorBrush((Windows.UI.Color)solid) :
                                       new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
                                 foreach (var d in dragDocumentList)
                                     GetViewModelFromDocument(d).BackgroundBrush = brush;
@@ -711,7 +717,6 @@ namespace Dash
                 return;
             }
 
-            ;
             TranslateAndScale(e, _grouping);
         }
 
@@ -728,7 +733,9 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e);
+            if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                TranslateAndScale(e, _grouping);
+            else TranslateAndScale(e, _grouping);
 
             DetectShake(sender, e);
 
