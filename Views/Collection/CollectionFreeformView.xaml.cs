@@ -1278,6 +1278,10 @@ namespace Dash
         {
             e.Handled = true;
 
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+
+
             RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
             // so that doubletap is not overrun by tap events 
