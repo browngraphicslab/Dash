@@ -656,7 +656,7 @@ namespace Dash
 
         #endregion
 
-        #region search?
+        #region search
         /// <summary>
         /// Searches content of the xRichEditBox, highlights all results
         /// </summary>
@@ -915,13 +915,8 @@ namespace Dash
         #endregion
 
         #endregion
-    }
-}
-
-
-public  class KeepForLater
-{
-    #region tooltip
+        
+        #region commented out code
     /// <summary>
     /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
     /// </summary>
@@ -976,67 +971,9 @@ public  class KeepForLater
     //        xFormatTipText.Inlines.Add(lineBreak);
     //    }
     //}
-
-    #endregion tooltip
-
-
-    #region maybe keep for reference later
-
-
-    ///// <summary>
-    ///// Sets the list marker style of the current selection to be what's specified by type
-    ///// Updates document if updateDocument is true
-    ///// </summary>
-    ///// <param name="type"></param>
-    ///// <param name="updateDocument"></param>
-    //private void MarkerStyle(object type, bool updateDocument)
-    //{
-    //    if (type != null && type.GetType() == typeof(MarkerStyle))
-    //    {
-    //        xRichEditBox.Document.Selection.ParagraphFormat.ListStyle = (MarkerStyle)type;
-    //        if (updateDocument) richTextView.UpdateDocument();
-    //    }
-    //}
-
-    ///// <summary>
-    ///// Sets the marker alignment of the current selection to be what's specified by type
-    ///// Updates document if updateDocument is true
-    ///// </summary>
-    ///// <param name="type"></param>
-    ///// <param name="updateDocument"></param>
-    //private void MarkerAlignment(object type, bool updateDocument)
-    //{
-    //    if (type != null && type.GetType() == typeof(MarkerAlignment))
-    //    {
-    //        xRichEditBox.Document.Selection.ParagraphFormat.ListAlignment = (MarkerAlignment)type;
-    //        if (updateDocument) richTextView.UpdateDocument();
-    //    }
-    //}
-
-    /// <summary>
-    /// Opens format options flyout on holding
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    //private void XRichEditBox_OnHolding(object sender, HoldingRoutedEventArgs e)
-    //{
-    //    OpenContextMenu(sender);
-    //    FlyoutBase.GetAttachedFlyout(xRichEditBox).AllowFocusOnInteraction = true;
-    //    //if (xFont.Items.Count == 0) AddFonts();
-    //    //if (xColor.Items.Count == 0) AddColors(xColor);
-    //    //if (xHighlight.Items.Count == 1) AddColors(xHighlight); Ellen commented out
-    //}
-
-
-    /// <summary>
-    /// Add delegates to manage word count in the lower left hand corner of the richtextbox
-    /// </summary>
-    private void AddWordCountHandlers()
-    {
-        //WC.CountWords();
-    }
-    
     #endregion
-
+    }
 }
+
+
 
