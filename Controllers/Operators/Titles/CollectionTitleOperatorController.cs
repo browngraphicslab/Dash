@@ -36,18 +36,18 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            string output = null;
+            TextController output = null;
 
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
                 var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField().Data.Y)
-                    .FirstOrDefault(dc => dc.HasTitle);
+                    .FirstOrDefault(dc => dc.GetDataDocument(null).GetField(KeyStore.TitleKey) != null);
 
-                output = firstDoc?.Title;
+                output = firstDoc?.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
 
-            outputs[ComputedTitle] = new TextController(output ?? "");
+            outputs[ComputedTitle] = output ?? new TextController("");
         }
 
         public override FieldModelController<OperatorModel> Copy()
