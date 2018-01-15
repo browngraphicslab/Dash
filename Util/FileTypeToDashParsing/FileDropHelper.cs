@@ -235,7 +235,7 @@ namespace Dash
             else if (files.Any())
             {
                 // create a containing collection to hold all the files
-                var outputCollection = new ListController<DocumentController>();
+                var outputCollection = new List<DocumentController>();
 
                 // for each file, get it's type, parse it, and add it to the output collection
                 foreach (var file in files)
@@ -248,14 +248,8 @@ namespace Dash
                     }
                 }
 
-                // add the output collection to the workspace at the proper position
-                var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(),
-                    new DocumentType(DashShared.UtilShared.GenerateNewId(), "File Input Collection"));
-                outputDoc.SetField(KeyStore.DataKey, outputCollection, true);
-                outputDoc.SetActiveLayout(
-                    new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), where.X,
-                        where.Y, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
-                collectionViewModel.AddDocument(outputDoc, null);
+                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
+                collectionViewModel.AddDocument(cnote.Document, null);
 
             }
             else

@@ -86,11 +86,11 @@ namespace Dash
                 rowDocs.Add(delgate);
             } while (csv.Read());
 
-            var outputDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType(UtilShared.GenerateNewId(), "CSV Collection"));
-            outputDoc.SetField(KeyStore.DataKey, new ListController<DocumentController>(rowDocs), true);
-            outputDoc.SetActiveLayout(new CollectionBox(new DocumentReferenceController(outputDoc.GetId(), KeyStore.DataKey), 0, 0, 200, 200, CollectionView.CollectionViewType.Schema).Document, true, true);
 
-            return outputDoc;
+
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 200, rowDocs);
+
+            return cnote.Document;
         }
 
         /// <summaryl>

@@ -426,7 +426,8 @@ namespace Dash
 
         public void ToFront()
         {
-            if (ParentCollection == null) return;
+            if (ParentCollection == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
@@ -482,7 +483,8 @@ namespace Dash
             }
 
             ToFront();
-
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+            ManipulationControls.ManipulationCompleted(null, false);
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -720,14 +722,7 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-                var keyList = dataDoc.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-                var key = KeyStore.TitleKey;
-                if (key == null || !(keyList?.Data?.Count() > 0))
-                {
-                    dataDoc.GetTitleFieldOrSetDefault(context);
-                }
-                else
-                    key = keyList?.Data?.First() as KeyController;
+
 
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
@@ -762,7 +757,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
@@ -771,7 +766,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
@@ -858,6 +853,13 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
+                CoreVirtualKeyStates.Down &&
+                ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            {
+                ViewModel.SetSelected(null, true);
+                return;
+            }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
@@ -869,8 +871,12 @@ namespace Dash
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
                 if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
                 {
-                    ParentCollection.MaxZ += 1;
-                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
+                    if (zindex > -100)
+                    {
+                        ParentCollection.MaxZ += 1;
+                        Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    }
                     OnSelected();
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 

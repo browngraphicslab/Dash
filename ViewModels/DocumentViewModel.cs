@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Globalization;
 
 namespace Dash
 {
@@ -26,7 +27,7 @@ namespace Dash
         private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
-        private Brush _backgroundBrush;
+        private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
         private Brush _borderBrush;
         private IconTypeEnum iconType;
         private Visibility _docMenuVisibility = Visibility.Collapsed;
@@ -209,7 +210,15 @@ namespace Dash
         public Brush BackgroundBrush
         {
             get => _backgroundBrush;
-            set => SetProperty(ref _backgroundBrush, value);
+            set  {
+                if (SetProperty(ref _backgroundBrush, value))
+                {
+                    if (value is SolidColorBrush)
+                    {
+                        DocumentController.SetField(KeyStore.BackgroundColorKey, new TextController((value as SolidColorBrush).Color.ToString()), true);
+                    }
+                }
+            }
         }
 
         public Brush BorderBrush
@@ -262,8 +271,7 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
-
-            BackgroundBrush = new SolidColorBrush(Colors.Transparent);
+            
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 
@@ -277,6 +285,17 @@ namespace Dash
             
             DocumentController.GetDataDocument(context).AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
             titleChanged(null, null, null);
+
+
+            var hexColor = documentController.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
+            if (hexColor != null)
+            {
+                byte a = byte.Parse(hexColor.Substring(1, 2), NumberStyles.HexNumber);
+                byte r = byte.Parse(hexColor.Substring(3, 2), NumberStyles.HexNumber);
+                byte g = byte.Parse(hexColor.Substring(5, 2), NumberStyles.HexNumber);
+                byte b = byte.Parse(hexColor.Substring(7, 2), NumberStyles.HexNumber);
+                _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
+            }
         }
         void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
