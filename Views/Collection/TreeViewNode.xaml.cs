@@ -56,8 +56,6 @@ namespace Dash.Views.Collection
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
-                    FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot,
-                    XamlAssignmentDereferenceLevel =  XamlDerefernceLevel.DereferenceToRoot,
                     Tag = "TreeViewNode text block binding"
                 };
 

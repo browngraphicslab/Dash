@@ -1146,7 +1146,6 @@ namespace Dash
             previewTextbox.Focus(FocusState.Programmatic);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-            Debug.WriteLine("preview got focus");
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
