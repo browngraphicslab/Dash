@@ -36,10 +36,10 @@ namespace Dash
             refToCollection.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey,
                 delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
-                    if (!copiedContext.IsCompatibleWith(context1.DocContextList))//TODO tfs: why do we need to do this now?
-                    {
-                        return;
-                    }
+                    //if (!copiedContext.IsCompatibleWith(context1.DocContextList))//TODO tfs: why do we need to do this now?
+                    //{
+                    //    return;
+                    //}
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                     if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)

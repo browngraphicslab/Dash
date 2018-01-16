@@ -688,6 +688,7 @@ namespace Dash
             var context = new Context(this);
             var shouldExecute = false;
             var fieldChanged = false;
+            // ReSharper disable once AssignmentInConditionalExpression
             if (fieldChanged = SetFieldHelper(key, field, forceMask))
             {
                 shouldExecute = ShouldExecute(context, key);
@@ -871,7 +872,7 @@ namespace Dash
             {
                 return;
             }
-            //if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
+            if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);

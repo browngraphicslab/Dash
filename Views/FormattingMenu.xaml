@@ -1,0 +1,172 @@
+﻿<UserControl
+    x:Class="Dash.FormattingMenuView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
+    <Grid Width="300" Height="130">
+        <Grid.Resources>
+            <!--Button style set here-->
+            <Style x:Key="xButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="2"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!--First row with font family, font size, and clear style-->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!--Font family combo box-->
+            <ComboBox Name="xFontFamilyComboBox" Height="30" HorizontalAlignment="Stretch" Margin="10,0,9.5,0" Grid.Column="0" BorderBrush="LightGray" ItemsSource="{x:Bind FontFamilyNames}" DisplayMemberPath="Source" SelectionChanged="FontFamilyComboBox_SelectionChanged"/>
+            <!--Font size combo box-->
+            <ComboBox Name="xFontSizeComboBox" Height="30" HorizontalAlignment="Stretch" Margin="10,0,10,0" Grid.Column="1" BorderBrush="LightGray" SelectionChanged="FontSizeComboBox_SelectionChanged"/>
+            <!--Clear style button-->
+            <Button Grid.Column="2" Style="{StaticResource xButtonStyle}" Margin="0,-12,0,0" Tapped="ResetButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE75C;"/>
+            </Button>
+        </Grid>
+
+        <!--Second row with 7 formatting buttons-->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!--Bold button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="0" Tapped="BoldButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DD;"/>
+            </Button>
+            <!--Italics button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="1" Tapped="ItalicsButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DB;"/>
+            </Button>
+            <!--Underline button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="2" Tapped="UnderlineButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8DC;"/>
+            </Button>
+            <!--Font color button-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker x:Name="xForegroundColorPicker" SelectedColorChanged="xForegroundColorPicker_SelectedColorChanged"/>
+                    </Flyout>
+                </Button.Flyout>
+                <Grid Width="25" Height="25" Margin="0,-5,0,0">
+                    <TextBlock FontSize="22" HorizontalAlignment="Center" Margin="0,-2,0,0" VerticalAlignment="Center">A</TextBlock>
+                    <Rectangle Width="20" Height="4" Fill="Black" Margin="0,22,0,0"/>
+                </Grid>
+            </Button>
+            <!--Font highlight button-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="4">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackgroundColorPicker_SelectedColorChanged"/>
+                    </Flyout>
+                </Button.Flyout>
+                <Grid BorderBrush="DarkSlateGray" Background="White" BorderThickness="1" Width="25" Height="25" Margin="0,-5,0,0">
+                    <TextBlock FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center">A</TextBlock>
+                </Grid>
+            </Button>
+            <!--Bulleted list button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="5" Tapped="BulletedListButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8FD;" Margin="0,-5,0,0"/>
+            </Button>
+            <!--Numbered list button-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="6" HorizontalAlignment="Center" Tapped="NumberedListButton_Tapped">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0,-8,0,0">
+                    <TextBlock Height="15" FontSize="8" FontWeight="Bold">1---</TextBlock>
+                    <TextBlock Height="15" FontSize="8" FontWeight="Bold" Margin="0,-8,0,0">2---</TextBlock>
+                    <TextBlock Height="15" FontSize="8" FontWeight="Bold" Margin="0,-8,0,0">3---</TextBlock>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!--The thin gray divider between the second and third rows of buttons-->
+        <Rectangle Fill="LightGray" Height="1.3" Grid.Row="2"/>
+
+        <!--Third row with 5 formatting buttons and paragraph alignment options-->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width=".7*"/>
+                <ColumnDefinition Width=".7*"/>
+                <ColumnDefinition Width=".7*"/>
+
+            </Grid.ColumnDefinitions>
+            <!--All caps-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="0" Tapped="AllCapsButton_Tapped">
+                <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center">AA</TextBlock>
+            </Button>
+            <!--Small caps-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="1" HorizontalAlignment="Center" Margin="10,0,0,0" Tapped="SmallCapsButton_Tapped">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
+                    <TextBlock FontWeight="Medium" FontSize="12"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,3,20,0">A</TextBlock>
+                </StackPanel>
+
+            </Button>
+            <!--Superscript button-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="2" HorizontalAlignment="Center" Margin="7,0,0,0" Tapped="SuperscriptButton_Tapped">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
+                    <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,-8,20,0">1</TextBlock>
+                </StackPanel>
+            </Button>
+            <!--Subscript button-->
+            <Button Width="50" Style="{StaticResource xButtonStyle}" Grid.Column="3" HorizontalAlignment="Center" Tapped="SubscriptButton_Tapped">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock FontWeight="Medium" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,0,0">A</TextBlock>
+                    <TextBlock FontWeight="Medium" FontSize="10"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="-20,8,20,0">1</TextBlock>
+                </StackPanel>
+            </Button>
+            <!--Strikethrough button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="4" Margin="-18,0,0,0" Tapped="StrikethroughButton_Tapped">
+                <Grid>
+                    <Rectangle Height="1" Width="20" Margin="0,5,0,0" Fill="Black" HorizontalAlignment="Center" VerticalAlignment="Center"></Rectangle>
+                    <TextBlock FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center">abc</TextBlock>
+                </Grid>
+            </Button>
+            <!--Left alignment button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="5" Tapped="LeftAlignButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E4;"/>
+            </Button>
+            <!--Center alignment button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="6" Tapped="CenterAlignButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E3;"/>
+            </Button>
+            <!--Right alignment button-->
+            <Button Style="{StaticResource xButtonStyle}" Grid.Column="7" Tapped="RightAlignButton_Tapped">
+                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8E2;"/>
+            </Button>
+        </Grid>
+
+    </Grid>
+</UserControl>

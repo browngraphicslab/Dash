@@ -109,6 +109,8 @@ namespace Dash
                 else
                 {
                     docLayout.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+                    docLayout.SetField(KeyStore.DataKey, new DocumentReferenceController(DataDocument.Id,
+                        KeyStore.CollectionKey), true);
                     Document = docLayout;
                 }
             }
