@@ -76,13 +76,7 @@ namespace Dash
         /// </summary>
         public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType :  IController<T>
         {
-            List< string > ids = new List<string>();
-            foreach (var c in _controllers)
-                if (c.Value is TControllerType && !ids.Contains(c.Value.GetId()))
-                {
-                    ids.Add(c.Value.GetId());
-                    yield return c.Value as TControllerType;
-                }
+            return _controllers.Values.OfType<TControllerType>();
         }
 
         /// <summary>

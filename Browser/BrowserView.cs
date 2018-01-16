@@ -216,7 +216,7 @@ namespace Dash
         }
 
 
-        public static void OpenTab(string url)
+        public static void OpenTab(string url = "https://en.wikipedia.org/wiki/Special:RandomInCategory/Good_articles")
         {
             var r = new NewTabBrowserRequest();
             r.url = url;
@@ -228,6 +228,7 @@ namespace Dash
         private bool _isCurrent = false;
         private readonly int Id;
         private string _title;
+        private long _startTimeOfBeingCurrent = 0; 
 
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
@@ -238,6 +239,21 @@ namespace Dash
         public bool IsCurrent => _isCurrent;
         public string Url => _url;
         public string Title => _title;
+
+        /// <summary>
+        /// returns -1 if the tab isn't active
+        /// </summary>
+        public double MillisecondsSinceBecomingCurrentTab
+        {
+            get
+            {
+                if (!_isCurrent)
+                {
+                    return -1;
+                }
+                return (double) ((DateTime.Now.Ticks - _startTimeOfBeingCurrent) / TimeSpan.TicksPerMillisecond);
+            }
+        }
 
         private BrowserView(int id)
         {
@@ -305,6 +321,10 @@ namespace Dash
         private void SetIsCurrent(bool current)
         {
             _isCurrent = current;
+            if (current)
+            {
+                _startTimeOfBeingCurrent = DateTime.Now.Ticks;
+            }
             CurrentChanged?.Invoke(this, current);
         }
 
@@ -314,7 +334,8 @@ namespace Dash
             {
                 Url = Url,
                 Scroll = Scroll,
-                Title = Title
+                Title = Title,
+                ViewDuration = MillisecondsSinceBecomingCurrentTab
             };
         }
     }

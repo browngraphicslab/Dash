@@ -160,7 +160,7 @@ namespace Dash
             {
                 if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
-                var context = ViewModel.DocumentController.GetDataDocument(null).GetLastContext();
+                var context = ViewModel.DocumentController.GetDataDocument(null).GetFirstContext();
                 if (context == null) return;
                 var source = new Uri(context.Url);
                 ViewModel.SetHasTitle(true);

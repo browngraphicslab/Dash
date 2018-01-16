@@ -1,4 +1,5 @@
-﻿ using Windows.UI.Xaml;
+﻿ using System;
+ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
@@ -67,6 +68,20 @@ namespace Dash
         public override string ToString()
         {
             return Data;
+        }
+
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            int maxStringSize = 125;
+            var lowerData = Data.ToLower();
+            if (lowerData.Contains(searchString))
+            {
+                var index = lowerData.IndexOf(searchString);
+                index = Math.Max(0, index - ((maxStringSize-searchString.Length)/2));
+                var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
+                return new StringSearchModel(substring);
+            }
+            return StringSearchModel.False;
         }
 
         public override FieldModelController<TextModel> Copy()
