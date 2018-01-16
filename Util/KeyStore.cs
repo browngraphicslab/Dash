@@ -42,6 +42,8 @@ namespace Dash
         public static KeyController NeighboringDocumentsKey = new KeyController(DashConstants.KeyStore.NeighboringDocumentsKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
         public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
+        public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
+        public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
 
         /// <summary>
         /// Key for collection data

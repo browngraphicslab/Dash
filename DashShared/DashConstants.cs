@@ -170,6 +170,8 @@ namespace DashShared
             public static KeyModel NeighboringDocumentsKey = new KeyModel("65084356-0CCE-4B06-B080-06F6C4C5B057", "Neighboring Documents");
             public static KeyModel LastWorkspaceKey = new KeyModel("66F05DB2-2F68-4E37-985D-36303A1AF4E4", "Last Workspace");
             public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "Grouped Documents");
+            public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
+            public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
         }
 
         public static class TypeStore

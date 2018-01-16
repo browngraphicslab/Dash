@@ -63,7 +63,6 @@ namespace Dash
         }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public ObservableCollection<DocumentViewModel> GroupingViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         // used to keep track of groups of the currently selected items in a collection

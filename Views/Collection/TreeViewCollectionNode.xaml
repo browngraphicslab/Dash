@@ -12,7 +12,7 @@
 
     <Grid Background="DarkGray">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding GroupingViewModels}"
+                 ItemsSource="{Binding DocumentViewModels}"
                  SelectionMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
