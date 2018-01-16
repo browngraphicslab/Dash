@@ -9,15 +9,15 @@ namespace Dash
     public class SearchResultViewModel
     {
 
-        public SearchResultViewModel(string title, string id)
+        public SearchResultViewModel(string title, string contextualText)
         {
-            Id = id;
+            ContextualText = contextualText;
             Title = title;
         }
 
         public string Title { get; private set; }
 
-        public string Id { get; private set; }
+        public string ContextualText { get; private set; }
 
     }
 }

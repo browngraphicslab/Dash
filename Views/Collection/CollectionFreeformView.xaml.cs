@@ -95,16 +95,7 @@ namespace Dash
             DragLeave += Collection_DragLeave;
         }
 
-        public List<DocumentView> DocumentViews
-        {
-            get => _documentViews;
-            private set => _documentViews = value;
-        }
-
-        //var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-        //    foreach (var doc in this.GetDescendantsOfType<DocumentView>())
-        //if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
-        //yield return doc;
+        public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
 
         public IOReference GetCurrentReference()
         {
@@ -1052,7 +1043,7 @@ namespace Dash
                 
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
-                cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
+                cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
@@ -1146,7 +1137,6 @@ namespace Dash
             previewTextbox.Focus(FocusState.Programmatic);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
-            Debug.WriteLine("preview got focus");
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -1209,8 +1199,6 @@ namespace Dash
 
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-
-        private List<DocumentView> _documentViews = new List<DocumentView>();
 
         private bool _isToggleOn;
         public void ToggleSelectAllItems()

@@ -53,7 +53,7 @@ namespace Dash
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
-        private bool _ctrlDown;
+        private bool _f1Down;
         private bool _ptrIn;
 
         private class ContextWebView
@@ -105,7 +105,6 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
-            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
             AddHandler(PointerEnteredEvent, new PointerEventHandler(DocumentView_PointerEntered), true);
             AddHandler(PointerExitedEvent, new PointerEventHandler(DocumentView_PointerExited), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
@@ -124,20 +123,20 @@ namespace Dash
         private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
         {
 
-            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
-            if (!ctrl.HasFlag(CoreVirtualKeyStates.Down))
+            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            if (!f1.HasFlag(CoreVirtualKeyStates.Down))
             {
-                _ctrlDown = false;
+                _f1Down = false;
                 ShowLocalContext(false);
             }
         }
 
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
         {
-            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
-            if (ctrl.HasFlag(CoreVirtualKeyStates.Down))
+            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            if (f1.HasFlag(CoreVirtualKeyStates.Down))
             {
-                _ctrlDown = true;
+                _f1Down = true;
                 if (_ptrIn) ShowLocalContext(true);
             }
         }
@@ -200,12 +199,12 @@ namespace Dash
 
         private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(false);
+            ToggleGroupSelectionBorderColor(true);
         }
 
         private void BorderRegion_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(true);
+            ToggleGroupSelectionBorderColor(false);
         }
 
         // since this is public it can be called with any parameters, be safe, check everything
@@ -216,8 +215,11 @@ namespace Dash
                 ToggleSelectionBorder(false);
             }
 
+            ToggleGroupSelectionBorderColor(false);
+
+
             _ptrIn = false;
-            if (_ctrlDown == false) ShowLocalContext(false);
+            if (_f1Down == false) ShowLocalContext(false);
         }
 
 
@@ -226,9 +228,11 @@ namespace Dash
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
+            ToggleGroupSelectionBorderColor(true);
+
             _ptrIn = true;
 
-            if (_ctrlDown) ShowLocalContext(true);
+            if (_f1Down) ShowLocalContext(true);
         }
 
 
@@ -238,11 +242,6 @@ namespace Dash
                 CheckForDropOnLink(docView);
 
             ToggleGroupSelectionBorderColor(false);
-        }
-
-        public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
-        {
-            ToggleGroupSelectionBorderColor(true);
         }
 
         private void CheckForDropOnLink(DocumentView docView)
@@ -484,6 +483,8 @@ namespace Dash
 
             ToFront();
             if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
+            // TODO this causes groups to show up, and needs to be moved
             ManipulationControls.ManipulationCompleted(null, false);
         }
 
@@ -540,6 +541,7 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
+            ToggleGroupSelectionBorderColor(true);
             ViewModel?.TransformDelta(delta);
         }
 
@@ -899,35 +901,54 @@ namespace Dash
             }
         }
 
-        private void ToggleSelectionBorder(bool isBorderOn)
+        /// <summary>
+        /// Turn the selection border on or off based on isBorderOn, also toggles the title
+        /// icon visibility based on isBorderOn unless the user specifically overrides this
+        /// behavior with isTitleVisible
+        /// </summary>
+        private void ToggleSelectionBorder(bool isBorderOn, bool? isTitleVisible = null)
         {
+
+            // change the thickness of the border so that it's visible
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
-            xTitleIcon.Foreground = isBorderOn
-                ? (SolidColorBrush) App.Current.Resources["TitleText"]
+
+            // show the title icon based on isBorderOn, unless isTitleVisible is set
+            xTitleIcon.Foreground = isTitleVisible ?? isBorderOn
+                ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
         }
 
-        private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
+        private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
         {
+            // get all the document views that are in the same collection as ourself
             var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
-            var DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
 
-            if (DocumentGroup.Count < 2) isGroupSelectionOn = false;
+            // get all the document views connected to ourself (forming a group)
+            var documentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
 
+            // if we are by ourself then hide the border
+            if (documentGroup.Count < 2) isGroupBorderVisible = false;
+
+
+            // iterate over all the documents in the collection
             foreach (var dv in allDocumentViews)
             {
-                if (DocumentGroup.Contains(dv))
+                // turn on the borders for documents in the group
+                if (documentGroup.Contains(dv))
                 {
+                    // don't turn on our own border (for aesthetic reasons)
                     if (dv != this)
                     {
-                        dv.ToggleSelectionBorder(isGroupSelectionOn);
+                        dv.ToggleSelectionBorder(isGroupBorderVisible, false);
                     }
 
-                    dv.xSelectionBorder.BorderBrush = isGroupSelectionOn
+
+                    dv.xSelectionBorder.BorderBrush = isGroupBorderVisible
                         ? GroupSelectionBorderColor
                         : SingleSelectionBorderColor;
                 }
+                // turn off the borders for documents not in the group
                 else
                 {
                     dv.ToggleSelectionBorder(false);

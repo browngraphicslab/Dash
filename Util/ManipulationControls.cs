@@ -18,6 +18,22 @@ using static Dash.NoteDocuments;
 namespace Dash
 {
 
+    public class ManipulationDeltaData
+    {
+        public ManipulationDeltaData(Point position, Point translation, float scale)
+        {
+            Position = position;
+            Translation = translation;
+            Scale = scale;
+        }
+
+        public Point Position { get; }
+        public Point Translation { get; }
+        public float Scale { get; }
+    }
+      
+
+
     /// <summary>
     /// Instantiations of this class in a UserControl element will give that
     /// control's selected UIElement the ability to be moved and zoomed based on
@@ -75,6 +91,7 @@ namespace Dash
         /// <param name="element">The element to add manipulation to</param>
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
+        /// <param name="borderRegions"></param>
         public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions=null)
         {
             _element = element;
@@ -84,21 +101,17 @@ namespace Dash
 
             if (_doesRespondToManipulationDelta)
             {
-                element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+                element.ManipulationDelta += ElementOnManipulationDelta;
             }
             if (_doesRespondToPointerWheel)
             {
-                element.PointerWheelChanged += PointerWheelMoveAndScale;
+                element.PointerWheelChanged += ElementOnPointerWheelChanged;
             }
             if (borderRegions != null)
             {
                 foreach (var borderRegion in borderRegions)
                 {
                     borderRegion.ManipulationMode = ManipulationModes.All;
-                    borderRegion.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((obj, args) =>
-                    {
-
-                    }), true);
                     borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
                     borderRegion.ManipulationStarted += ElementOnManipulationStarted;
                     borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
@@ -106,7 +119,6 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(ElementOnManipulationDelta), true);
             element.ManipulationInertiaStarting += ElementOnManipulationInertiaStarting;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
@@ -145,7 +157,7 @@ namespace Dash
         /// <summary>
         /// Previews the new location/position of the element
         /// </summary>
-        private void Snap(bool preview)
+        public void Snap(bool preview)
         {
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
@@ -378,19 +390,14 @@ namespace Dash
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
-            ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
+            ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
-                ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
-        }
-
-        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Snap(true);
-        }
+                ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
+        } 
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
@@ -416,9 +423,9 @@ namespace Dash
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
             {
-                var docsToReassign = groupToSplit.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
-                var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                 groupsList.Remove(groupToSplit);
 
                 foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
@@ -477,7 +484,7 @@ namespace Dash
             if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
             {
                 var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                parentCollection.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
+                parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
 
                 DocumentController newDragGroupDocument;
                 _grouping = GetDragGroupInfo(docViewModel, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
@@ -487,7 +494,7 @@ namespace Dash
         List<DocumentController> GetDragGroupInfo(DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
         {
             dragGroupDocument = GetGroupForDocument(docViewModel.DocumentController);
-            var dragDocumentList = dragGroupDocument?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            var dragDocumentList = dragGroupDocument?.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null)?.TypedData;
             if (dragDocumentList == null)
             {
                 dragGroupDocument = docViewModel.DocumentController;
@@ -498,11 +505,11 @@ namespace Dash
 
         ListController<DocumentController> GetGroupsList(CollectionView collectionView)
         {
-            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
             if ((groupsList == null || groupsList.Count == 0) && collectionView.ViewModel.DocumentViewModels.Count > 0)
             {
                 groupsList = new ListController<DocumentController>(collectionView.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
-                collectionView.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+                collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
             }
             var addedItems = new List<DocumentController>();
             foreach (var d in collectionView.ViewModel.DocumentViewModels)
@@ -510,17 +517,29 @@ namespace Dash
                 {
                     addedItems.Add(d.DocumentController);
                 }
+
+            var removedGroups = new List<DocumentController>();
+            var docsInCollection = collectionView.ViewModel.DocumentViewModels.Select((dv) => dv.DocumentController);
+            foreach (var g in groupsList.TypedData)
+            {
+                var groupDocs = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (!docsInCollection.Contains((g)) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)) == null))
+                {
+                    removedGroups.Add(g);
+                }
+            }
             var newGroupsList = new List<DocumentController>(groupsList.TypedData);
             newGroupsList.AddRange(addedItems);
+            newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
             groupsList = new ListController<DocumentController>(newGroupsList);
-            collectionView.ParentDocument.ViewModel.DocumentController.SetField(KeyStore.GroupingKey, groupsList, true);
+            collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
             return groupsList;
         }
 
         DocumentController GetGroupForDocument(DocumentController dragDocument)
         {
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
-            var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
@@ -531,10 +550,8 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield =
-                        g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument))
-                            .Count() > 0)
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
                     {
                         return g;
                     }
@@ -556,7 +573,7 @@ namespace Dash
 
         public List<DocumentController>  GetGroupDocumentsList(DocumentController doc, bool onlyGroups = false)
         {
-            var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             foreach (var g in groupList.TypedData)
             if (g.Equals(doc)) {
@@ -566,7 +583,7 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                     if (cfield != null)
                     {
                         return cfield.Data.Select((cd) => cd as DocumentController).ToList();
@@ -604,7 +621,7 @@ namespace Dash
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
                                 var newGroup = new DocumentController();
-                                newGroup.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(dragDocumentList), true);
+                                newGroup.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(dragDocumentList), true);
                                 newList.Add(newGroup);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
@@ -618,7 +635,7 @@ namespace Dash
                             }
                             else
                             {
-                                var groupList = group.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                                var groupList = group.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
@@ -644,13 +661,13 @@ namespace Dash
             if (_doesRespondToManipulationDelta)
             {
                 _element.ManipulationDelta -= EmptyManipulationDelta;
-                _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+                _element.ManipulationDelta += ElementOnManipulationDelta;
             }
 
             if (_doesRespondToPointerWheel)
             {
                 _element.PointerWheelChanged -= EmptyPointerWheelChanged;
-                _element.PointerWheelChanged += PointerWheelMoveAndScale;
+                _element.PointerWheelChanged += ElementOnPointerWheelChanged;
             }
             _disabled = false;
         }
@@ -671,12 +688,12 @@ namespace Dash
 
             if (_doesRespondToManipulationDelta)
             {
-                _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+                _element.ManipulationDelta -= ElementOnManipulationDelta;
                 _element.ManipulationDelta += EmptyManipulationDelta;
             }
             if (_doesRespondToPointerWheel)
             {
-                _element.PointerWheelChanged -= PointerWheelMoveAndScale;
+                _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
                 _element.PointerWheelChanged += EmptyPointerWheelChanged;
             }
             _handle = handle;
@@ -685,7 +702,7 @@ namespace Dash
 
         // == METHODS ==
 
-        private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
+        private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (PointerWheelEnabled)
             {
@@ -717,28 +734,27 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e, _grouping);
+            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
+            Snap(true);
+            e.Handled = true;
         }
 
 
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;
             }
 
-            if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
-                TranslateAndScale(e, _grouping);
-            else TranslateAndScale(e, _grouping);
-
+            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
             DetectShake(sender, e);
-
+            Snap(true);
+            e.Handled = true;
         }
 
         // keeps track of whether the node has been shaken hard enough
@@ -749,7 +765,7 @@ namespace Dash
         // these constants adjust the sensitivity of the shake
         private static int _millisecondsToShake = 600;
         private static int _sensitivity = 4;
-        private List<DocumentViewModel> _grouping;
+        public List<DocumentViewModel> _grouping;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -903,45 +919,45 @@ namespace Dash
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        /// <param name="canTranslate">Are translate controls allowed?</param>
-        /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentViewModel> grouped=null)
+        /// <param name="grouped"></param>
+        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
-            e.Handled = true;
 
-            var scaleFactor = e.Delta.Scale;
+            var scaleFactor = e.Scale;
             ElementScale *= scaleFactor;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Translation, handleControl);
+
+
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
+                // translate the entire group except for
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
+                    e.Position, new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
-                    foreach (var g in grouped)
-                        if (g != null) {
-                            g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                                e.Position, new Point(scaleFactor, scaleFactor)));
-                        }
-
-                        
+                    var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+                    foreach (var g in grouped.Except(new List<DocumentViewModel> {docRoot.ViewModel}))
+                    {
+                        g?.TransformDelta(transformGroup);
+                    }
                 }
-                else
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                        e.Position, new Point(scaleFactor, scaleFactor)));
+
+                OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
             }
         }
 
         public void Dispose()
         {
-            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta -= ElementOnManipulationDelta;
             _element.ManipulationDelta -= EmptyManipulationDelta;
-            _element.PointerWheelChanged -= PointerWheelMoveAndScale;
+            _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
             _element.PointerWheelChanged -= EmptyPointerWheelChanged;
         }
 

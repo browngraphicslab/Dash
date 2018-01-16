@@ -132,7 +132,7 @@ namespace Dash
             
         }
 
-        public static void DisplayDocument(BaseCollectionViewModel collectionView, DocumentController docController, Point? where = null)
+        public static void DisplayDocument(BaseCollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
@@ -144,7 +144,7 @@ namespace Dash
                 //var w = docController.GetWidthField().Data;
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
-            collectionView.AddDocument(docController, null); 
+            collectionViewModel.AddDocument(docController, null); 
         }
 
 

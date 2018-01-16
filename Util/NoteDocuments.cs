@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,14 +52,14 @@ namespace Dash
 
         public class CollectionNote : NoteDocument
         {
-            public static KeyController CollectedDocsKey = new KeyController("F12AEF6B-C302-45D6-B0B8-A9906EF16DAF", "Collected Docs");
             public static string APISignature = "Collected Docs Note Data API";
 
             public override DocumentController CreatePrototype()
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
-                    [CollectedDocsKey] = new ListController<DocumentController>(),
+                    [KeyStore.CollectionKey] = new ListController<DocumentController>(),
+                    [KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
@@ -67,7 +68,7 @@ namespace Dash
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
                     [CollectionTitleOperatorController.CollectionDocsKey] =
-                    new DocumentReferenceController(protoDoc.Id, CollectedDocsKey),
+                    new DocumentReferenceController(protoDoc.Id, KeyStore.CollectionKey),
                     [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
                 }, DocumentType.DefaultType);
 
@@ -80,7 +81,7 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype();
-                var prototypeLayout = new CollectionBox(new DocumentReferenceController(prototype.GetId(), CollectedDocsKey), 0, 0, double.NaN, double.NaN);
+                var prototypeLayout = new CollectionBox(new DocumentReferenceController(prototype.GetId(), KeyStore.CollectionKey), 0, 0, double.NaN, double.NaN);
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
@@ -108,16 +109,19 @@ namespace Dash
                 else
                 {
                     docLayout.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+                    docLayout.SetField(KeyStore.DataKey, new DocumentReferenceController(DataDocument.Id,
+                        KeyStore.CollectionKey), true);
                     Document = docLayout;
                 }
             }
             public CollectionNote(DocumentController dataDocument, Point where, CollectionView.CollectionViewType viewtype, double width = 500, double height = 300) : base(DocumentType)
             {
+                Debug.Assert(dataDocument != null);
                 _prototypeID = "03F76CDF-21F1-404A-9B2C-3377C025DA0A";
                 if (_prototypeLayout == null)
                     _prototypeLayout = CreatePrototypeLayout();
 
-                DataDocument = dataDocument ?? GetDocumentPrototype().MakeDelegate();
+                DataDocument = dataDocument;
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
                 createLayout(where, viewtype, width, height);
             }
@@ -131,7 +135,8 @@ namespace Dash
                 DataDocument = GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
-                DataDocument.SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
                 createLayout(where, viewtype, width, height);
 
