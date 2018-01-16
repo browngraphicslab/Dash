@@ -253,7 +253,6 @@ namespace Dash
         }
 
         ScrollBar Scroll = null;
-        Tuple<Point, Point> HackToDragWithRightMouseButton = null;
 
         private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
@@ -265,6 +264,7 @@ namespace Dash
 
         public string target = null;
         private bool _rightPressed = false;
+        private Point  _rightPos = new Point();
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -273,21 +273,18 @@ namespace Dash
             if (_rightPressed)
             {
                 if (moveHdlr == null)
-                    moveHdlr = new PointerEventHandler(RichTextView_PointerMoved);
+                    moveHdlr = RichTextView_PointerMoved;
                 if (releasedHdlr == null)
-                    releasedHdlr = new PointerEventHandler(RichTextView_PointerReleased);
+                    releasedHdlr = RichTextView_PointerReleased;
                 this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
                 this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
                 this.RemoveHandler(PointerMovedEvent, moveHdlr);
                 this.AddHandler(PointerMovedEvent, moveHdlr, true);
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
-                var down_and_offset = HackToDragWithRightMouseButton;
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-                var rt = parent.RenderTransform.TransformPoint(new Point());
-                HackToDragWithRightMouseButton = new Tuple<Point, Point>(pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
+                _rightPos = pointerPosition;
                 this.CapturePointer(e.Pointer);
                 parent.ManipulationControls.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
@@ -296,21 +293,14 @@ namespace Dash
         }
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (HackToDragWithRightMouseButton != null)
-            {
-                var down_and_offset = HackToDragWithRightMouseButton;
-                var down   = down_and_offset.Item1;
-                var offset = down_and_offset.Item2;
-                var parent = this.GetFirstAncestorOfType<DocumentView>();
-                var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-                var dvm = parent.ViewModel;
-                dvm.GroupTransform =
-                    new TransformGroupData(new Point(pointerPosition.X - offset.X, pointerPosition.Y - offset.Y), dvm.GroupTransform.ScaleCenter, dvm.GroupTransform.ScaleAmount);
-                //parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X - offset.X, Y = pointerPosition.Y - offset.Y };
-                parent.DocumentView_ManipulationDelta(null, null);
-                parent.ManipulationControls.ElementOnManipulationDelta(null, null);
-            }
+            var parent = this.GetFirstAncestorOfType<DocumentView>();
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
+            var translation = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
+            _rightPos = pointerPosition;
+            parent.ManipulationControls.TranslateAndScale(new
+                ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
+                    translation,
+                    1.0f), parent.ManipulationControls._grouping);
         }
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -324,7 +314,7 @@ namespace Dash
                 parent.MoveToContainingCollection();
             if (_rightPressed)
             {
-                var delta = new Point(pointerPosition.X - HackToDragWithRightMouseButton.Item1.X, pointerPosition.Y - HackToDragWithRightMouseButton.Item1.Y);
+                var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
                 var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());

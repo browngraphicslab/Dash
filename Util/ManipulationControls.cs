@@ -18,6 +18,22 @@ using static Dash.NoteDocuments;
 namespace Dash
 {
 
+    public class ManipulationDeltaData
+    {
+        public ManipulationDeltaData(Point position, Point translation, float scale)
+        {
+            Position = position;
+            Translation = translation;
+            Scale = scale;
+        }
+
+        public Point Position { get; }
+        public Point Translation { get; }
+        public float Scale { get; }
+    }
+      
+
+
     /// <summary>
     /// Instantiations of this class in a UserControl element will give that
     /// control's selected UIElement the ability to be moved and zoomed based on
@@ -75,6 +91,7 @@ namespace Dash
         /// <param name="element">The element to add manipulation to</param>
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
+        /// <param name="borderRegions"></param>
         public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions=null)
         {
             _element = element;
@@ -84,21 +101,17 @@ namespace Dash
 
             if (_doesRespondToManipulationDelta)
             {
-                element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+                element.ManipulationDelta += ElementOnManipulationDelta;
             }
             if (_doesRespondToPointerWheel)
             {
-                element.PointerWheelChanged += PointerWheelMoveAndScale;
+                element.PointerWheelChanged += ElementOnPointerWheelChanged;
             }
             if (borderRegions != null)
             {
                 foreach (var borderRegion in borderRegions)
                 {
                     borderRegion.ManipulationMode = ManipulationModes.All;
-                    borderRegion.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler((obj, args) =>
-                    {
-
-                    }), true);
                     borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
                     borderRegion.ManipulationStarted += ElementOnManipulationStarted;
                     borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
@@ -106,7 +119,6 @@ namespace Dash
             }
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.AddHandler(UIElement.ManipulationDeltaEvent, new ManipulationDeltaEventHandler(ElementOnManipulationDelta), true);
             element.ManipulationInertiaStarting += ElementOnManipulationInertiaStarting;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
@@ -385,12 +397,7 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
-        }
-
-        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Snap(true);
-        }
+        } 
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
@@ -642,13 +649,13 @@ namespace Dash
             if (_doesRespondToManipulationDelta)
             {
                 _element.ManipulationDelta -= EmptyManipulationDelta;
-                _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+                _element.ManipulationDelta += ElementOnManipulationDelta;
             }
 
             if (_doesRespondToPointerWheel)
             {
                 _element.PointerWheelChanged -= EmptyPointerWheelChanged;
-                _element.PointerWheelChanged += PointerWheelMoveAndScale;
+                _element.PointerWheelChanged += ElementOnPointerWheelChanged;
             }
             _disabled = false;
         }
@@ -669,12 +676,12 @@ namespace Dash
 
             if (_doesRespondToManipulationDelta)
             {
-                _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+                _element.ManipulationDelta -= ElementOnManipulationDelta;
                 _element.ManipulationDelta += EmptyManipulationDelta;
             }
             if (_doesRespondToPointerWheel)
             {
-                _element.PointerWheelChanged -= PointerWheelMoveAndScale;
+                _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
                 _element.PointerWheelChanged += EmptyPointerWheelChanged;
             }
             _handle = handle;
@@ -683,7 +690,7 @@ namespace Dash
 
         // == METHODS ==
 
-        private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
+        private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (PointerWheelEnabled)
             {
@@ -715,28 +722,27 @@ namespace Dash
                 return;
             }
 
-            TranslateAndScale(e, _grouping);
+            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
+            Snap(true);
+            e.Handled = true;
         }
 
 
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;
             }
 
-            if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
-                TranslateAndScale(e, _grouping);
-            else TranslateAndScale(e, _grouping);
-
+            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
             DetectShake(sender, e);
-
+            Snap(true);
+            e.Handled = true;
         }
 
         // keeps track of whether the node has been shaken hard enough
@@ -747,7 +753,7 @@ namespace Dash
         // these constants adjust the sensitivity of the shake
         private static int _millisecondsToShake = 600;
         private static int _sensitivity = 4;
-        private List<DocumentViewModel> _grouping;
+        public List<DocumentViewModel> _grouping;
 
         /// <summary>
         /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
@@ -901,45 +907,45 @@ namespace Dash
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        /// <param name="canTranslate">Are translate controls allowed?</param>
-        /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e, List<DocumentViewModel> grouped=null)
+        /// <param name="grouped"></param>
+        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped=null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
-            e.Handled = true;
 
-            var scaleFactor = e.Delta.Scale;
+            var scaleFactor = e.Scale;
             ElementScale *= scaleFactor;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            var translate = Util.TranslateInCanvasSpace(e.Translation, handleControl);
+
+
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
+                // translate the entire group except for
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
+                    e.Position, new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
-                    foreach (var g in grouped)
-                        if (g != null) {
-                            g.TransformDelta(new TransformGroupData(new Point(translate.X, translate.Y),
-                                e.Position, new Point(scaleFactor, scaleFactor)));
-                        }
-
-                        
+                    var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+                    foreach (var g in grouped.Except(new List<DocumentViewModel> {docRoot.ViewModel}))
+                    {
+                        g?.TransformDelta(transformGroup);
+                    }
                 }
-                else
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                        e.Position, new Point(scaleFactor, scaleFactor)));
+
+                OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
             }
         }
 
         public void Dispose()
         {
-            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta -= ElementOnManipulationDelta;
             _element.ManipulationDelta -= EmptyManipulationDelta;
-            _element.PointerWheelChanged -= PointerWheelMoveAndScale;
+            _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
             _element.PointerWheelChanged -= EmptyPointerWheelChanged;
         }
 

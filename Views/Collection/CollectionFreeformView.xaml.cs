@@ -95,16 +95,7 @@ namespace Dash
             DragLeave += Collection_DragLeave;
         }
 
-        public List<DocumentView> DocumentViews
-        {
-            get => _documentViews;
-            private set => _documentViews = value;
-        }
-
-        //var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-        //    foreach (var doc in this.GetDescendantsOfType<DocumentView>())
-        //if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
-        //yield return doc;
+        public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
 
         public IOReference GetCurrentReference()
         {
@@ -1208,8 +1199,6 @@ namespace Dash
 
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-
-        private List<DocumentView> _documentViews = new List<DocumentView>();
 
         private bool _isToggleOn;
         public void ToggleSelectAllItems()
