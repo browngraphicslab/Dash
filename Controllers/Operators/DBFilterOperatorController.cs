@@ -91,7 +91,7 @@ namespace Dash.Controllers.Operators
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var idocs        = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey]);
-            var dbDocs       = (idocs as ListController<DocumentController>)?.TypedData ?? (idocs as DocumentController)?.GetDereferencedField<ListController<DocumentController>>(CollectionNote.CollectedDocsKey, null).TypedData;
+            var dbDocs       = (idocs as ListController<DocumentController>)?.TypedData ?? (idocs as DocumentController)?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null).TypedData;
             var selectedBars = (!inputs.ContainsKey(SelectedKey))  ? null : (inputs[SelectedKey]    as ListController<NumberController>)?.Data;
             var pattern      =  !inputs.ContainsKey(FilterFieldKey)? null : (inputs[FilterFieldKey] as TextController)?.Data.Trim(' ', '\r').Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
             var autofit      =  !inputs.ContainsKey(AutoFitKey)    ? false :(inputs[AutoFitKey]    as NumberController).Data != 0;

@@ -36,32 +36,32 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300" x:Name="TreeMenuColumn" />
             <ColumnDefinition MinWidth="50" Width="*"/>
-            <ColumnDefinition Width="11"/>
         </Grid.ColumnDefinitions>
-        <my:GridSplitter />
-
+        <!--<my:GridSplitter />-->
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView"  x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
+        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"></local:CollectionTreeView>
+        <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
+        <local:MainSearchBox Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="300"></local:MainSearchBox>
+        <TextBlock x:Name="CollapseButton" Grid.Column="1" Text="&lt;" VerticalAlignment="Center" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped"></TextBlock>
         
-        <local:MainSearchBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="300"></local:MainSearchBox>
-
-        <Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
+        <!--<Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
             <Border Grid.Row="1" Background="{ThemeResource DarkBackground}"></Border>
-        </Grid>
+        </Grid>-->
         <!-- Document Options Menu, exists ONLY if isFixed is set in DocumentView settings!! -->
-        <Grid Margin="0,0,0,0" HorizontalAlignment="Right">
+        <!--<Grid Margin="0,0,0,0" HorizontalAlignment="Right">
             <Grid.RenderTransform>
                 <CompositeTransform x:Name="xMenuCanvasTransform" TranslateX="0"/>
             </Grid.RenderTransform>
             <StackPanel x:Name="xRightSideMenu" Orientation="Horizontal" HorizontalAlignment="Right">
                 <StackPanel.Resources>
 
-                    <!-- Animate background color -->
+                    --><!-- Animate background color --><!--
                     <Storyboard x:Name="slideIn">
                         <DoubleAnimation Storyboard.TargetName="xMenuCanvasTransform" Storyboard.TargetProperty="TranslateX"
                                          To="0" Duration="0:0:0.075"/>
@@ -72,7 +72,7 @@
                     </Storyboard>
                 </StackPanel.Resources>
 
-                <!-- fixed document menu -->
+                --><!-- fixed document menu --><!--
                 <Border Visibility="Collapsed" Tapped="Border_Tapped" HorizontalAlignment="Right" Padding="8,15" VerticalAlignment="Center" Background="#FF303030">
                     <Image Source="ms-appx:///Assets/docmenu.png" Stretch="None" Opacity=".75"></Image>
                 </Border>
@@ -83,7 +83,7 @@
                 <TextBlock.RenderTransform>
                     <CompositeTransform ScaleX="0.6"/>
                 </TextBlock.RenderTransform>&#x25b6;</TextBlock>
-        </Grid>
+        </Grid>-->
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>

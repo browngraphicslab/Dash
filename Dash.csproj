@@ -245,6 +245,15 @@
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
+      <DependentUpon>CollectionTreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\TreeViewCollectionNode.xaml.cs">
+      <DependentUpon>TreeViewCollectionNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\TreeViewNode.xaml.cs">
+      <DependentUpon>TreeViewNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
@@ -727,6 +736,18 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\UWPCommunityToolkit\Markdown\MarkdownTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\TreeViewCollectionNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\TreeViewNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

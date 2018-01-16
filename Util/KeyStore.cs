@@ -40,6 +40,7 @@ namespace Dash
         public static KeyController ParsedFieldKey = new KeyController(DashConstants.KeyStore.ParsedFieldsKey);
         public static KeyController WebContextKey = new KeyController(DashConstants.KeyStore.WebContextKey);
         public static KeyController NeighboringDocumentsKey = new KeyController(DashConstants.KeyStore.NeighboringDocumentsKey);
+        public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
         public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
 
         /// <summary>

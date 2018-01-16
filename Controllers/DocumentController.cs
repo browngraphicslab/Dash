@@ -688,6 +688,7 @@ namespace Dash
             var context = new Context(this);
             var shouldExecute = false;
             var fieldChanged = false;
+            // ReSharper disable once AssignmentInConditionalExpression
             if (fieldChanged = SetFieldHelper(key, field, forceMask))
             {
                 shouldExecute = ShouldExecute(context, key);
@@ -776,6 +777,22 @@ namespace Dash
             return field;
         }
 
+        public T GetField<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase
+        {
+            return GetField(key, ignorePrototype) as T;
+        }
+
+        public T GetFieldOrCreateDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
+        {
+            var field = GetField(key, ignorePrototype);
+            if (field != null)
+            {
+                return field as T;
+            }
+            T t = new T();
+            SetField(key, t, true);
+            return t;
+        }
 
         /// <summary>
         ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
@@ -855,7 +872,7 @@ namespace Dash
             {
                 return;
             }
-            if (context.ContainsAncestorOf(this))
+            if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
