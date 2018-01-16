@@ -24,12 +24,12 @@ namespace Dash
     public class DocumentController : FieldModelController<DocumentModel>
     {
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-        
+
         public bool HasDelegates
         {
             get
             {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ? 
+                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ?
                     _fields[KeyStore.DelegatesKey] as ListController<DocumentController> : null;
 
                 if (currentDelegates == null)
@@ -37,7 +37,8 @@ namespace Dash
                 return currentDelegates.Data.Any();
             }
         }
-        public bool HasPrototype {
+        public bool HasPrototype
+        {
             get
             {
                 return _fields.ContainsKey(KeyStore.PrototypeKey) &&
@@ -480,10 +481,11 @@ namespace Dash
                     else if (curField is TextController tc)
                         tc.Data = textInput;
                     else if (curField is ImageController ic)
-                         try
+                        try
                         {
                             ic.Data = new Uri(textInput);
-                        } catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             ic.Data = null;
                         }
@@ -593,19 +595,24 @@ namespace Dash
                 var oldPrototype = oldField as DocumentController;
                 if (oldPrototype != null)
                 {
-                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c) {
-                                                ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                                                oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                                            };
+                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)//TODO This doesnt do anything
+                    {
+                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
+                        oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
+                    };
+                    oldPrototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
                 }
 
                 var prototype = field as DocumentController;
                 if (prototype != null)
                 {
-                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c) {
-                                                ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                                                prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                                            };
+                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                    {
+                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
+                        prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
+                    };
+                    prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                    prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
                 }
             }
 
@@ -644,7 +651,7 @@ namespace Dash
             if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey))
             {
                 FieldControllerBase.FieldUpdatedHandler handler =
-                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
@@ -661,7 +668,7 @@ namespace Dash
                 if (oldField != null)
                 {
                     oldField.FieldModelUpdated -=
-                        handler; // TODO does this even work, isn't it removing the new reference to handler not the old one
+                        handler; // TODO does this even work, isn't it removing the new reference to handler not the old one (Yes it is, this needs to be fixed)
                 }
                 if (newField != null)
                 {
@@ -700,11 +707,7 @@ namespace Dash
             {
                 Execute(context, true);
             }
-            if (key.Equals(KeyStore.PrototypeKey))
-            {
-                GetPrototype().PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                GetPrototype().PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
-            }
+
             return fieldChanged;
         }
 
@@ -867,7 +870,7 @@ namespace Dash
 
         private void OnPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentFieldUpdatedEventArgs) args;
+            var dargs = (DocumentFieldUpdatedEventArgs)args;
             if (_fields.ContainsKey(dargs.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
             {
                 return;
@@ -1337,7 +1340,7 @@ namespace Dash
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
             {
-                var delegates = (ListController<DocumentController>) _fields[KeyStore.DelegatesKey];
+                var delegates = (ListController<DocumentController>)_fields[KeyStore.DelegatesKey];
                 foreach (var del in delegates.Data)
                 {
                     del.DeleteOnServer();
