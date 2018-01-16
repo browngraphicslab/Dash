@@ -112,11 +112,8 @@ namespace Dash
 
             AddBorderRegionHandlers();
 
-
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
-
-
 
             MenuFlyout = xMenuFlyout;
         }

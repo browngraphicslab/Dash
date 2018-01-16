@@ -32,6 +32,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
 using Flurl.Util;
+using NewControls.Geometry;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -48,7 +49,6 @@ namespace Dash
         public const float MinScale = 0.25f;
 
         #endregion
-
 
         #region LinkingVariables
 
@@ -93,6 +93,15 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
+        {
+            if (args.VirtualKey == VirtualKey.Back)
+            {
+                ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
+            }
         }
 
         public List<DocumentView> DocumentViews
@@ -988,7 +997,6 @@ namespace Dash
 
         #endregion
 
-
         #region PointerChrome
 
         /// <summary>
@@ -1012,9 +1020,7 @@ namespace Dash
         }
 
         #endregion
-
-
-
+        
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             // If drawing a link node and you release onto the canvas, if the handle you're drawing from
@@ -1114,7 +1120,6 @@ namespace Dash
             }
        
             xOuterGrid.ReleasePointerCapture(e.Pointer);
-            
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
@@ -1162,17 +1167,12 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0)
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 && (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)))
             {
-                
                 xOuterGrid.CapturePointer(args.Pointer);
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 _marqueeAnchor = pos;
-                
             }
-            
-            
         }
 
         private void MarqueeSelectDocs(Rect marquee)
@@ -1192,39 +1192,21 @@ namespace Dash
                     if (double.IsNaN(width)) width = 0;
                     var height = doc.GetHeightField().Data;
                     if (double.IsNaN(height)) height = 0;
-                    var points = new List<Point>
+                    var rect = new Rect(position, new Size(width, height));
+                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
                     {
-                        position,
-                        new Point(position.X + width, position.Y),
-                        new Point(position.X + width, position.Y + height),
-                        new Point(position.X, position.Y + height),
-                        new Point(position.X + width/2, position.Y + height/2)
-                    };
-                    bool inMarquee = false;
-                    foreach (var refPoint in points)
-                    {
-                        if (marquee.Contains(refPoint))
-                        {
-                            inMarquee = true;
-                        }
-                    }
-
-                    if (inMarquee)
-                    {
-                        if (xItemsControl.ItemContainerGenerator != null && xItemsControl
-                                .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
-                        {
-                            var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                            if (documentView != null) selectedDocs.Add(
+                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                        if (documentView != null)
+                            selectedDocs.Add(
                                 documentView);
-                        }
                     }
                 }
             }
             foreach (var docView in selectedDocs)
             {
                 Select(docView);
-                AddToPayload(docView);
+                //AddToPayload(docView);
             }
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
             if (!IsSelectionEnabled && selectedDocs.Count > 0)
@@ -1361,17 +1343,12 @@ namespace Dash
                 _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
-                    foreach (var pair in _payload)
-                    {
-                        Deselect(pair.Key);
-                    }
-                    _payload = new Dictionary<DocumentView, DocumentController>();
+                    DeselectAll();
                 }
             }
         }
 
-
-        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+        
 
         private List<DocumentView> _documentViews = new List<DocumentView>();
 
@@ -1379,36 +1356,32 @@ namespace Dash
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
-            _payload = new Dictionary<DocumentView, DocumentController>();
             foreach (var docView in DocumentViews)
             {
                 if (_isToggleOn)
                 {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
                 }
                 else
                 {
                     Deselect(docView);
-                    _payload.Remove(docView);
                 }
             }
         }
 
         public void DeselectAll()
         {
-            foreach (var docView in DocumentViews)
+            foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
             {
                 Deselect(docView);
-                _payload.Remove(docView);
             }
+            ViewModel.SelectionGroup.Clear();
         }
 
         private void Deselect(DocumentView docView)
         {
             ViewModel.SelectionGroup.Remove(docView.ViewModel);
             docView.CanDrag = false;
-            docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
             docView.xFieldContainer.BorderThickness = new Thickness(0);
         }
@@ -1417,16 +1390,11 @@ namespace Dash
         {
             ViewModel.SelectionGroup.Add(docView.ViewModel);
             docView.CanDrag = true;
-            docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
             docView.xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
             docView.xFieldContainer.BorderThickness = new Thickness(2);
         }
-
-        public void AddToPayload(DocumentView docView)
-        {
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-        }
+        
 
         // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
         // TODO there are better hooks to use
@@ -1438,12 +1406,10 @@ namespace Dash
             if (docView.CanDrag)
             {
                 Deselect(docView);
-                _payload.Remove(docView);
             }
             else
             {
                 Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
             }
             e.Handled = true;
         }
@@ -1452,15 +1418,6 @@ namespace Dash
         {
             Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
-
-            //if (ItemsCarrier.Instance.StartingCollection == null)
-            //    return;
-            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            //foreach (var view in _payload.Keys.ToList())
-            //    _documentViews.Remove(view);
-
-            //_payload = new Dictionary<DocumentView, DocumentController>();
-            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
 
@@ -1493,7 +1450,6 @@ namespace Dash
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
         private bool loadingPermanentTextbox;
-
         public double Zoom { get { return ManipulationControls.ElementScale; } }
         private TextBox previewTextbox { get; set; }
 

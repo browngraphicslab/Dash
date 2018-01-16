@@ -210,7 +210,6 @@ namespace Dash
             foreach (var docView in selectionList)
             {
                 FreeformView.Select(docView);
-                FreeformView.AddToPayload(docView);
             }
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
             if (!FreeformView.IsSelectionEnabled && selectionList.Count > 0) 
