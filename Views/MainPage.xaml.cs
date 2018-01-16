@@ -37,7 +37,6 @@ using Windows.UI.Xaml.Media;
 using Windows.ApplicationModel.Core;
 using Windows.Graphics.Display;
 using Windows.UI;
-using Dash.Views.Collection;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -155,6 +154,7 @@ namespace Dash
 
         public void SetCurrentWorkspace(DocumentController workspace)
         {
+            workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);

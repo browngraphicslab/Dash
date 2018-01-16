@@ -16,7 +16,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Collection
+namespace Dash
 {
     public sealed partial class TreeViewCollectionNode : UserControl
     {
@@ -29,9 +29,28 @@ namespace Dash.Views.Collection
             set { SetValue(FilterStringProperty, value); }
         }
 
+        public static readonly DependencyProperty ContainingDocumentProperty = DependencyProperty.Register(
+            "ContainingDocument", typeof(DocumentController), typeof(TreeViewCollectionNode), new PropertyMetadata(default(DocumentController)));
+
+        public DocumentController ContainingDocument
+        {
+            get { return (DocumentController) GetValue(ContainingDocumentProperty); }
+            set { SetValue(ContainingDocumentProperty, value); }
+        }
+
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
+
+            DataContextChanged += TreeViewCollectionNode_DataContextChanged;
+        }
+
+        private void TreeViewCollectionNode_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (args.NewValue != null)
+            {
+                Debug.WriteLine("test");
+            }
         }
     }
 }

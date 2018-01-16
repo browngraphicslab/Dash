@@ -620,9 +620,8 @@ namespace Dash
                             if (group == null) {
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
-                                var newGroup = new DocumentController();
-                                newGroup.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(dragDocumentList), true);
-                                newList.Add(newGroup);
+                                var newGroup = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 500, 300, dragDocumentList);
+                                newList.Add(newGroup.DataDocument);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
                                 var r = new Random();
