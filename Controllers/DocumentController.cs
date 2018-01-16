@@ -688,6 +688,7 @@ namespace Dash
             var context = new Context(this);
             var shouldExecute = false;
             var fieldChanged = false;
+            // ReSharper disable once AssignmentInConditionalExpression
             if (fieldChanged = SetFieldHelper(key, field, forceMask))
             {
                 shouldExecute = ShouldExecute(context, key);

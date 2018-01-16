@@ -467,7 +467,6 @@ namespace Dash
 
         private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
-            return;
             if (parentCollection == null)
                 return;
             var groupsList = GetGroupsList(parentCollection);
