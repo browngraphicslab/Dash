@@ -180,6 +180,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowKey,
+                FallbackValue = 0,
                 Context = context
             };
 
@@ -193,6 +194,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnKey,
+                FallbackValue = 0,
                 Context = context
             };
 
@@ -206,6 +208,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowSpanKey,
+                FallbackValue = 1,
                 Context = context
             };
 
@@ -219,6 +222,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnSpanKey,
+                FallbackValue = 1,
                 Context = context
             };
 

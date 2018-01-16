@@ -411,12 +411,12 @@ namespace Dash
 
         void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
         {
-            if (docRoot.ParentCollection == null)
+            if (docRoot?.ParentCollection == null)
                 return;
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
             {
-                var docsToReassign = groupToSplit.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
                 var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                 groupsList.Remove(groupToSplit);
@@ -487,7 +487,7 @@ namespace Dash
         List<DocumentController> GetDragGroupInfo(DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
         {
             dragGroupDocument = GetGroupForDocument(docViewModel.DocumentController);
-            var dragDocumentList = dragGroupDocument?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            var dragDocumentList = dragGroupDocument?.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null)?.TypedData;
             if (dragDocumentList == null)
             {
                 dragGroupDocument = docViewModel.DocumentController;
@@ -510,8 +510,20 @@ namespace Dash
                 {
                     addedItems.Add(d.DocumentController);
                 }
+
+            var removedGroups = new List<DocumentController>();
+            var docsInCollection = collectionView.ViewModel.DocumentViewModels.Select((dv) => dv.DocumentController);
+            foreach (var g in groupsList.TypedData)
+            {
+                var groupDocs = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (!docsInCollection.Contains((g)) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)) == null))
+                {
+                    removedGroups.Add(g);
+                }
+            }
             var newGroupsList = new List<DocumentController>(groupsList.TypedData);
             newGroupsList.AddRange(addedItems);
+            newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
             groupsList = new ListController<DocumentController>(newGroupsList);
             collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
             return groupsList;
@@ -522,6 +534,7 @@ namespace Dash
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
+            if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
             {
                 if (g.Equals(dragDocument))
@@ -530,7 +543,7 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                     if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
                     {
                         return g;
@@ -563,7 +576,7 @@ namespace Dash
                 }
                 else
                 {
-                    var cfield = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                     if (cfield != null)
                     {
                         return cfield.Data.Select((cd) => cd as DocumentController).ToList();
@@ -601,7 +614,7 @@ namespace Dash
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
                                 var newGroup = new DocumentController();
-                                newGroup.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(dragDocumentList), true);
+                                newGroup.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(dragDocumentList), true);
                                 newList.Add(newGroup);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
@@ -615,7 +628,7 @@ namespace Dash
                             }
                             else
                             {
-                                var groupList = group.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                                var groupList = group.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
@@ -732,7 +745,7 @@ namespace Dash
 
             if (_element.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
                 TranslateAndScale(e, _grouping);
-            else TranslateAndScale(e);
+            else TranslateAndScale(e, _grouping);
 
             DetectShake(sender, e);
 

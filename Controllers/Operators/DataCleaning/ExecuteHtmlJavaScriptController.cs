@@ -76,7 +76,7 @@ namespace Dash
                 var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
                 var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema, "Json Collection");
+                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
 
                 MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
                     async () => new execClass(correctedHtml, script, doc)));
@@ -116,7 +116,7 @@ namespace Dash
                 if (id == Id)
                 {
                     var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
-                    var children = Cnote.DataDocument.GetDereferencedField(CollectionNote.CollectedDocsKey, null) as ListController<DocumentController>;
+                    var children = Cnote.DataDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
                             foreach (var d in (f.Value as ListController<DocumentController>).TypedData)

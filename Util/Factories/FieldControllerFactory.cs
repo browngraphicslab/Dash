@@ -163,6 +163,9 @@ namespace Dash
                 case OperatorType.RichTextTitle:
                     controller = new RichTextTitleOperatorController(model);
                     break;
+                case OperatorType.CollectionTitle:
+                    controller = new CollectionTitleOperatorController(model);
+                    break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
