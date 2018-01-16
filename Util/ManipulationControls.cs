@@ -170,7 +170,7 @@ namespace Dash
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
             //var currentBoundingBox = docRoot.GetBoundingBoxScreenSpace();
-            var currentBoundingBox = GetBoundingBox(docRoot);
+            var currentBoundingBox = docRoot.ViewModel.GroupingBounds;
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);

@@ -175,6 +175,8 @@ namespace Dash
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
+            DocumentController.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
+            DocumentController.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
             UpdateGroupingBounds();
 
         }
