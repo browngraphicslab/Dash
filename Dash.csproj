@@ -136,6 +136,7 @@
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
+    <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\Endpoint.cs" />
@@ -150,6 +151,7 @@
     <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
@@ -165,6 +167,7 @@
     <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
+    <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="TagCloud\ComponentFactory.cs" />
@@ -238,9 +241,11 @@
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
     <Compile Include="Controllers\UserCreatedLink.cs" />
+    <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
@@ -289,8 +294,14 @@
       <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
+    <Compile Include="Views\FormattingMenu.xaml.cs">
+      <DependentUpon>FormattingMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainSearchBox.xaml.cs">
+      <DependentUpon>MainSearchBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
@@ -769,7 +780,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\FormattingMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\KeyValueSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainSearchBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1123,6 +1142,9 @@
       <Version>10.0.2</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.Pdf.UWP46">
+      <Version>15.4.0.20</Version>
+    </PackageReference>
+    <PackageReference Include="Syncfusion.SfColorPickers.UWP46">
       <Version>15.4.0.20</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">

@@ -77,6 +77,11 @@ namespace Dash
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;
 
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+        }
+
         public override string ToString()
         {
             return $"({Data})";

@@ -31,12 +31,11 @@
                          BorderThickness="0"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
-                         Holding="XRichEditBox_OnHolding"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
-                        
                          >
-            <!--FORMAT PROPERTIES TOOLTIP-->
+            <!--FORMAT PROPERTIES TOOLTIP-->                          <!--Holding="XRichEditBox_OnHolding"-->
+
             <ToolTipService.ToolTip>
                 <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
                     <ToolTip.Content>
@@ -45,33 +44,12 @@
                     </ToolTip.Content>
                 </ToolTip>
             </ToolTipService.ToolTip>
+            
             <!--FORMAT OPTIONS FLYOUT-->
             <FlyoutBase.AttachedFlyout>
-                <MenuFlyout>
-                    <MenuFlyout.MenuFlyoutPresenterStyle>
-                        <Style TargetType="MenuFlyoutPresenter">
-                            <Setter Property="Background"  Value="{StaticResource DarkBackground}"></Setter>
-                            <Setter Property="Opacity" Value="0.8"></Setter>
-                        </Style>
-                    </MenuFlyout.MenuFlyoutPresenterStyle>
-                    <MenuFlyoutSubItem x:Name="xFormat" Text="Font" Foreground="White" GotFocus="FormatGroup_OnGotFocus">
-                        <MenuFlyoutSubItem x:Name="xFont" Text="Font" GotFocus="FontGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
-                        <MenuFlyoutSubItem x:Name="xScript" Text="Script" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
-                        <MenuFlyoutSubItem x:Name="xCaps" Text="Caps" Foreground="White" GotFocus="FormatGroup_OnGotFocus"></MenuFlyoutSubItem>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xParagraph" Text="Paragraph" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus">
-                        <MenuFlyoutSubItem x:Name="xAlignment" Text="Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
-                        <MenuFlyoutSubItem x:Name="xListTypes" Text="List" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
-                        <MenuFlyoutSubItem x:Name="xListStyles" Text="List Style" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
-                        <MenuFlyoutSubItem x:Name="xListAlignments" Text="List Alignment" Foreground="White" GotFocus="ParagraphGroup_OnGotFocus"></MenuFlyoutSubItem>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xHighlight" Text="Higlight" GotFocus="HighlightGroup_OnGotFocus" Foreground="White">
-                        <MenuFlyoutSubItem x:Name="xHighlightOpacity" Text="Opacity" GotFocus="HighlightGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
-                    </MenuFlyoutSubItem>
-                    <MenuFlyoutSubItem x:Name="xColor" Text="Color" GotFocus="ColorGroup_OnGotFocus" Foreground="White"></MenuFlyoutSubItem>
-                    <MenuFlyoutSeparator></MenuFlyoutSeparator>
-                    <MenuFlyoutItem x:Name="xResetAll" Text="Reset All" Foreground="White" Click="XResetAll_OnClick"></MenuFlyoutItem>
-                </MenuFlyout>
+                <Flyout>
+                    <local:FormattingMenuView x:Name="xFormattingMenuView"/>
+                </Flyout>
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>
 

@@ -216,7 +216,7 @@ namespace Dash
         }
 
 
-        public static void OpenTab(string url)
+        public static void OpenTab(string url = "https://en.wikipedia.org/wiki/Special:RandomInCategory/Good_articles")
         {
             var r = new NewTabBrowserRequest();
             r.url = url;
