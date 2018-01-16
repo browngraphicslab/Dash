@@ -63,9 +63,21 @@ namespace Dash.Views.Collection
                 if (collection != null)
                 {
                     _isCollection = true;
-                    CollectionTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.GroupingKey));
+                    CollectionTreeView.DataContext =
+                        new CollectionViewModel(
+                            new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
+                                KeyStore.GroupingKey));
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                    XArrowBlock.Visibility = Visibility.Visible;
                     fieldBinding.Tag = "TreeViewNodeCol";
+                }
+                else
+                {
+                    _isCollection = false;
+                    XArrowBlock.Text = "";
+                    XArrowBlock.Visibility = Visibility.Collapsed;
+                    CollectionTreeView.DataContext = null;
+                    CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, fieldBinding);
             }

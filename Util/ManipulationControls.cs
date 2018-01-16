@@ -467,6 +467,7 @@ namespace Dash
 
         private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
+            return;
             if (parentCollection == null)
                 return;
             var groupsList = GetGroupsList(parentCollection);
@@ -510,8 +511,20 @@ namespace Dash
                 {
                     addedItems.Add(d.DocumentController);
                 }
+
+            var removedGroups = new List<DocumentController>();
+            var docsInCollection = collectionView.ViewModel.DocumentViewModels.Select((dv) => dv.DocumentController);
+            foreach (var g in groupsList.TypedData)
+            {
+                var groupDocs = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (!docsInCollection.Contains((g)) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)) == null))
+                {
+                    removedGroups.Add(g);
+                }
+            }
             var newGroupsList = new List<DocumentController>(groupsList.TypedData);
             newGroupsList.AddRange(addedItems);
+            newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
             groupsList = new ListController<DocumentController>(newGroupsList);
             collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
             return groupsList;

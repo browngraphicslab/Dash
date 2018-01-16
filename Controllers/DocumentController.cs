@@ -871,7 +871,7 @@ namespace Dash
             {
                 return;
             }
-            //if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
+            if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
