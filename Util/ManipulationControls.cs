@@ -157,7 +157,7 @@ namespace Dash
         /// <summary>
         /// Previews the new location/position of the element
         /// </summary>
-        private void Snap(bool preview)
+        public void Snap(bool preview)
         {
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
