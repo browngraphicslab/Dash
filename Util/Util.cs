@@ -92,6 +92,21 @@ namespace Dash
         }
 
         /// <summary>
+        /// Transforms rect in from-spcae to a rect in to-space
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public static Rect RectTransformFromVisual(Rect rect, UIElement from, UIElement to = null)
+        {
+            if (to == null) to = Window.Current.Content;
+            var topLeftPoint = @from.TransformToVisual(to).TransformPoint(new Point(rect.Left, rect.Top));
+            var bottomRightPoint = @from.TransformToVisual(to).TransformPoint(new Point(rect.Right, rect.Bottom));
+            return new Rect(topLeftPoint, bottomRightPoint);
+        }
+
+        /// <summary>
         ///     Given a position relative to the MainPage, returns the transformed position corresponding
         ///     to the given collection's freeform view.
         /// </summary>

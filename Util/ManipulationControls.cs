@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using NewControls.Geometry;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -169,8 +170,8 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
-            //var currentBoundingBox = docRoot.GetBoundingBoxScreenSpace();
-            var currentBoundingBox = GetBoundingBox(docRoot);
+            //var currentBoundingBox = GetBoundingBox(docRoot);
+            var currentBoundingBox = docRoot.ViewModel.GroupingBounds;
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
@@ -198,8 +199,7 @@ namespace Dash
             var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
                 documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
 
-            var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
@@ -219,20 +219,23 @@ namespace Dash
         {
             if (closestDocumentView == null) return;
 
+            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+
+            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestDocumentViewScreenBoundingBox = GetBoundingBox(documentView);
-            var currentScreenBoundingBox = currentBoundingBox;
-            var newBoundingBox =
-                CalculateAligningRectangleForSide(~side, closestDocumentViewScreenBoundingBox, currentScreenBoundingBox.Width, currentScreenBoundingBox.Height);
+            var closestBoundsInCollectionSpace = documentView.ViewModel.GroupingBounds;
+            var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
+            //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
+            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, parent?.xItemsControl.ItemsPanelRoot);
+            MainPage.Instance.TemporaryRectangle.Width = boundingBoxScreenSpace.Width;
+            MainPage.Instance.TemporaryRectangle.Height = boundingBoxScreenSpace.Height;
 
-            MainPage.Instance.TemporaryRectangle.Width = newBoundingBox.Width;
-            MainPage.Instance.TemporaryRectangle.Height = newBoundingBox.Height;
-
-            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, newBoundingBox.X);
-            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, newBoundingBox.Y);
+            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.X);
+            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
         }
 
 
@@ -254,36 +257,38 @@ namespace Dash
         /// <returns></returns>
         private List<Tuple<DocumentView, Side, double>> HitTestFromSides(Rect currentBoundingBox)
         {
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
 
+            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
+            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            Debug.Assert(parent != null);
+
+            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+
+            var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
+           
             foreach (var side in sides)
             {
-                //Rect that will be hittested for
-                var rect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
-                var hitDocumentViews = VisualTreeHelper.FindElementsInHostCoordinates(rect, mainView, true).ToArray().Where(el => el is DocumentView).ToArray();
-
-                foreach (var obj in hitDocumentViews)
+                var sideRect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
+                foreach (var sibling in listOfSiblings)
                 {
-                    var documentView = obj as DocumentView;
-                    if ((!documentView.Equals(MainPage.Instance.xMainDocView)) && (!documentView.Equals(this)))
+                    Rect intersection = sideRect;
+                    intersection.Intersect(sibling.ViewModel.GroupingBounds); //Mutates intersection
+
+                    var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
+                    if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
                     {
-                        var confidence = CalculateSnappingConfidence(side, rect, documentView);
-                        if (confidence >= ALIGNMENT_THRESHOLD)
-                        {
-                            documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(documentView, side, confidence));
-                        }
+                        documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(sibling, side, confidence));
                     }
                 }
             }
-
+            
             return documentViewsAboveThreshold;
         }
 
         private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = GetBoundingBox(otherDocumentView); // otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = otherDocumentView.ViewModel.GroupingBounds; // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
@@ -367,6 +372,7 @@ namespace Dash
 
             return (sourceEnd - sourceStart) / source.Height;
         }
+        /*
         /// <summary>
         /// Returns the bounding box in screen space of a FrameworkElement.
         /// 
@@ -383,6 +389,7 @@ namespace Dash
 
             return new Rect(topLeftPoint, bottomRightPoint);
         }
+        */
 
         #endregion
 
