@@ -517,7 +517,7 @@ namespace Dash
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
                     1.0f), parent.ManipulationControls._grouping);
-            parent.ManipulationControls.Snap(true);
+            if(parent.ManipulationControls._grouping.Count < 2) parent.ManipulationControls.Snap(true);
         }
 
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
