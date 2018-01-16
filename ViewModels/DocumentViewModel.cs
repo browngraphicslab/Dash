@@ -24,7 +24,7 @@ namespace Dash
         // == MEMBERS, GETTERS, SETTERS ==
         private double _height;
         private double _width;
-        private double _groupMargin = 0; //TODO: NEED TO MAKE A PARALLEL VARIABLE
+        private double _groupMargin = 25; //TODO: NEED TO MAKE A PARALLEL VARIABLE
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
@@ -170,7 +170,7 @@ namespace Dash
         }
 
         private Rect _groupingBounds;
-
+        private Rect _bounds;
         public void UpdateActualSize(double actualwidth, double actualheight)
         {
             _actualWidth = actualwidth;
@@ -189,10 +189,20 @@ namespace Dash
                 Y = GroupTransform.Translate.Y
             }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
                 _actualHeight + 2 * GroupMargin));
+
+            _bounds = new TranslateTransform
+            {
+                X = GroupTransform.Translate.X,
+                Y = GroupTransform.Translate.Y
+            }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
         }
 
+        /// <summary>
+        /// Bounds that include the group margin
+        /// </summary>
         public Rect GroupingBounds => _groupingBounds;
 
+        public Rect Bounds => _bounds;
         public void TransformDelta(TransformGroupData delta)
         {
             var currentTranslate = GroupTransform.Translate;

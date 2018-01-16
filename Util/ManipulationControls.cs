@@ -170,8 +170,7 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
-            //var currentBoundingBox = GetBoundingBox(docRoot);
-            var currentBoundingBox = docRoot.ViewModel.GroupingBounds;
+            var currentBoundingBox = docRoot.ViewModel.Bounds;
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
@@ -226,7 +225,7 @@ namespace Dash
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestBoundsInCollectionSpace = documentView.ViewModel.GroupingBounds;
+            var closestBoundsInCollectionSpace = documentView.ViewModel.Bounds;
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
@@ -273,7 +272,7 @@ namespace Dash
                 foreach (var sibling in listOfSiblings)
                 {
                     Rect intersection = sideRect;
-                    intersection.Intersect(sibling.ViewModel.GroupingBounds); //Mutates intersection
+                    intersection.Intersect(sibling.ViewModel.Bounds); //Mutates intersection
 
                     var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
                     if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
@@ -288,7 +287,7 @@ namespace Dash
 
         private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = otherDocumentView.ViewModel.GroupingBounds; // otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = otherDocumentView.ViewModel.Bounds; // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
