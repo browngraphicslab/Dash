@@ -99,7 +99,7 @@ namespace Dash
                     {
                         var bottomText = (fieldSearch?.RelatedString ?? keySearch?.RelatedString)?.Replace('\n',' ').Replace('\t', ' ').Replace('\r', ' ');
                         var title = string.IsNullOrEmpty(documentController.Title) ? topText : documentController.Title;
-                        results.Add(new SearchResultViewModel(title, bottomText ?? documentController.Id));
+                        results.Add(new SearchResultViewModel(title, bottomText ?? "", documentController.Id));
                     }
                 }
             }
