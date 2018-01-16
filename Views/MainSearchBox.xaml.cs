@@ -133,7 +133,7 @@ namespace Dash
             {
                 return null;
             }
-            return new SearchResultViewModel((ContentController<FieldModel>.GetController<DocumentController>(doc.Id)?.GetField(KeyStore.TitleKey) as TextController)?.Data ?? "", doc.Id);
+            return new SearchResultViewModel((ContentController<FieldModel>.GetController<DocumentController>(doc.Id)?.GetField(KeyStore.TitleKey) as TextController)?.Data ?? "", doc.Id, doc.Id);
         }
 
         private bool TextFieldContains(TextController field, string searchString)
