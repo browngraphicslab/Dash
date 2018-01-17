@@ -92,7 +92,7 @@ namespace Dash
             var data = docController.GetDereferencedField(key, context) as ImageController;
             if (data == null)
                 return;
-            var binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
                 Key = KeyStore.DataKey,

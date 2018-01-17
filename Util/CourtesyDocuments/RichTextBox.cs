@@ -24,7 +24,7 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldControllerBase>()
+                var binding = new FieldBinding<RichTextController>()
                 {
                     Document = docController,
                     Key = KeyStore.DataKey,

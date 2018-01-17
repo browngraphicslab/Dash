@@ -31,15 +31,17 @@ namespace Dash
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
-                var binding = new FieldBinding<FieldControllerBase>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = Windows.UI.Xaml.Data.BindingMode.TwoWay,
-                    Context = context,
-                    GetConverter = GetFieldConverter
-                };
-                element.AddFieldBinding(DocumentView.DataContextProperty, binding);
+                Debug.Fail("Why are we here");
+                //TODO tfs: This doesn't work anymore
+                //var binding = new FieldBinding<FieldControllerBase>()
+                //{
+                //    Document = docController,
+                //    Key = KeyStore.DataKey,
+                //    Mode = Windows.UI.Xaml.Data.BindingMode.TwoWay,
+                //    Context = context,
+                //    GetConverter = GetFieldConverter
+                //};
+                //element.AddFieldBinding(DocumentView.DataContextProperty, binding);
             }
         }
         protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)

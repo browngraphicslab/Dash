@@ -536,7 +536,7 @@ namespace Dash
             return groupsList;
         }
 
-        DocumentController GetGroupForDocument(DocumentController dragDocument)
+        public DocumentController GetGroupForDocument(DocumentController dragDocument)
         {
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);

@@ -31,6 +31,7 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using DashShared.Models;
 using Flurl.Util;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -68,6 +69,9 @@ namespace Dash
 
 
         public ManipulationControls ManipulationControls;
+
+        public bool TagMode { get; set; }
+        public string TagKey { get; set; } = "Name";
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -996,6 +1000,44 @@ namespace Dash
         private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        #endregion
+
+        #region Tagging
+
+        public void TagNote(string tagValue, DocumentView docView)
+        {
+            if (!TagMode)
+            {
+                return;
+            }
+
+            var groupDoc = docView.ManipulationControls.GetGroupForDocument(docView.ViewModel.DocumentController);
+            ListController<DocumentController> group =
+                groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            if (groupDoc == null || group == null)
+            {
+                return;
+            }
+
+            DocumentController image = null;
+            foreach (var documentController in group.TypedData)
+            {
+                if (documentController.DocumentType.Equals(ImageBox.DocumentType))
+                {
+                    image = documentController.GetDataDocument(null);
+                    break;
+                }
+            }
+
+            if (image != null)
+            {
+                var id = UtilShared.GetDeterministicGuid(TagKey);
+                var key = ContentController<FieldModel>.HasController(id) ? ContentController<FieldModel>.GetController<KeyController>(id) : new KeyController(id, TagKey);
+
+                image.SetField(key, new TextController(tagValue), true);
+            }
         }
 
         #endregion

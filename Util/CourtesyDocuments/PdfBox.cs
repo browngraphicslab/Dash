@@ -137,7 +137,7 @@ namespace Dash
             {
                 return;
             }
-            var binding = new FieldBinding<FieldControllerBase>()
+            var binding = new FieldBinding<ImageController>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,

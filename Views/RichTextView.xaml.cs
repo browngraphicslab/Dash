@@ -96,6 +96,22 @@ namespace Dash
             _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
 
             xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+            xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
+            {
+                var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                if (freeform == null)
+                {
+                    return;
+                }
+
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if(docView== null)
+                {
+                    return ;
+                }
+
+                freeform.TagNote(xRichEditBox.Document.Selection.Text, docView);
+            };
 
             // store a clone of character format after initialization as default format
             xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
