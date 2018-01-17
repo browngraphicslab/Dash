@@ -114,38 +114,50 @@ namespace Dash
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
-            var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-            var myDoc = (DataContext as DocumentViewModel).DocumentController;
-            if (col != null && grp != null)
+            e.Handled = true;
+            var docToFocus = (DataContext as DocumentViewModel).DocumentController;
+            if (_isCollection)
             {
-                if (grp.TypedData.Contains(myDoc))
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (docsInGroup != null)
                 {
-                    if (!col.TypedData.Contains(myDoc))
-                    {
+                    docToFocus = docsInGroup.TypedData.FirstOrDefault();
+                }
+            }
+            if (! MainPage.Instance.NavigateToDocumentInWorkspace(docToFocus))
+                MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            //var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+            //var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            //var myDoc = (DataContext as DocumentViewModel).DocumentController;
+            //if (col != null && grp != null)
+            //{
+            //    if (grp.TypedData.Contains(myDoc))
+            //    {
+            //        if (!col.TypedData.Contains(myDoc))
+            //        {
                         
-                    }
-                    else
-                    {
-                        Debug.WriteLine("solo");
-                    }
-                }
-                else
-                {
-                    if (!col.TypedData.Contains(myDoc))
-                    {
-                        Debug.Fail("Error, where are we?");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Col but no group");
-                    }
-                }
-            }
-            else
-            {
-                Debug.WriteLine("Not a group");
-            }
+            //        }
+            //        else
+            //        {
+            //            Debug.WriteLine("solo");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (!col.TypedData.Contains(myDoc))
+            //        {
+            //            Debug.Fail("Error, where are we?");
+            //        }
+            //        else
+            //        {
+            //            Debug.WriteLine("Col but no group");
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Debug.WriteLine("Not a group");
+            //}
             //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
