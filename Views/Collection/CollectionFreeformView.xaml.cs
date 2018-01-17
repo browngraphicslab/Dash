@@ -1006,11 +1006,11 @@ namespace Dash
 
         #region Tagging
 
-        public void TagNote(string tagValue, DocumentView docView)
+        public bool TagNote(string tagValue, DocumentView docView)
         {
             if (!TagMode)
             {
-                return;
+                return false;
             }
 
             var groupDoc = docView.ManipulationControls.GetGroupForDocument(docView.ViewModel.DocumentController);
@@ -1018,7 +1018,7 @@ namespace Dash
                 groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
             if (groupDoc == null || group == null)
             {
-                return;
+                return false;
             }
 
             DocumentController image = null;
@@ -1037,7 +1037,9 @@ namespace Dash
                 var key = ContentController<FieldModel>.HasController(id) ? ContentController<FieldModel>.GetController<KeyController>(id) : new KeyController(id, TagKey);
 
                 image.SetField(key, new TextController(tagValue), true);
+                return true;
             }
+            return false;
         }
 
         #endregion

@@ -110,7 +110,11 @@ namespace Dash
                     return ;
                 }
 
-                freeform.TagNote(xRichEditBox.Document.Selection.Text, docView);
+                if (freeform.TagNote(xRichEditBox.Document.Selection.Text, docView))
+                {
+                    //var start = xRichEditBox.Document.Selection.StartPosition;
+                    //xRichEditBox.Document.Selection.SetRange(start, start);
+                }
             };
 
             // store a clone of character format after initialization as default format
