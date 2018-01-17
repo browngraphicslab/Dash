@@ -438,14 +438,14 @@ namespace Dash
         private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             TreeMenuColumn.Width = new GridLength(300 - TreeMenuColumn.Width.Value);
-            if (Math.Abs(TreeMenuColumn.Width.Value) < 0.0001)
-            {
-                CollapseButton.Text = ">";
-            }
-            else
-            {
-                CollapseButton.Text = "<";
-            }
+            //if (Math.Abs(TreeMenuColumn.Width.Value) < 0.0001)
+            //{
+            //    CollapseButton.Text = ">";
+            //}
+            //else
+            //{
+            //    CollapseButton.Text = "<";
+            //}
         }
     }
 }
