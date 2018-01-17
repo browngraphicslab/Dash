@@ -24,7 +24,6 @@ using Newtonsoft.Json.Linq;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
-using Dash.Views.Collection;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -143,12 +142,45 @@ namespace Dash
 
         public void SetCurrentWorkspace(DocumentController workspace)
         {
+            workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+        }
+
+        public bool NavigateToDocumentInWorkspace(DocumentController document)
+        {
+            var dvm = xMainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (coll != null)
+                return NavigateToDocument(coll, null, coll, document);
+            return false;
+        }
+
+        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
+        {
+            foreach (var dm in collection.ViewModel.DocumentViewModels)
+                if (dm.DocumentController.Equals(document))
+                {
+                    var containerViewModel = rootViewModel ?? dm;
+                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
+                    var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
+                    var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
+                        new Point(
+                            containerViewModel.GroupTransform.Translate.X + containerViewModel.Width / 2,
+                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.Height / 2));
+                    root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    return true;
+                }
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
+                {
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
+                        return true;
+                }
+            return false;
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)

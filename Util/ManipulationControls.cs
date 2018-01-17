@@ -204,7 +204,7 @@ namespace Dash
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
+            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
 
             currrentDoc.ViewModel.Width = newBoundingBox.Width;
             currrentDoc.ViewModel.Height = newBoundingBox.Height;
@@ -406,7 +406,7 @@ namespace Dash
             
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-
+            
             SplitupGroupings(canSplitupDragGroup, docRoot);
 
             if (manipulationCompletedRoutedEventArgs != null)
@@ -464,7 +464,7 @@ namespace Dash
             docRoot?.ToFront();
             
              SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-
+            
             _isManipulating = true;
             _processManipulation = true;
 
@@ -472,7 +472,7 @@ namespace Dash
             if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
         }
-
+        
         private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
             if (parentCollection == null)
@@ -621,9 +621,8 @@ namespace Dash
                             if (group == null) {
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
-                                var newGroup = new DocumentController();
-                                newGroup.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(dragDocumentList), true);
-                                newList.Add(newGroup);
+                                var newGroup = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 500, 300, dragDocumentList);
+                                newList.Add(newGroup.DataDocument);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);
                                 var r = new Random();
@@ -653,6 +652,17 @@ namespace Dash
             var sameList = otherGroups.ToList();
             sameList.Add(dragGroupDocument);
             return sameList;
+        }
+        public Windows.UI.Color ColorConvert(string colorStr)
+        {
+            colorStr = colorStr.Replace("#", string.Empty);
+
+            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
+            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
+            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
+            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
+
+            return Windows.UI.Color.FromArgb(a, r, g, b);
         }
 
         public void AddAllAndHandle()
@@ -842,7 +852,7 @@ namespace Dash
             if (!_processManipulation) return;
             e.Handled = true;
 
-            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            if (e.KeyModifiers.HasFlag(VirtualKey.Control))
             {
 
                 //Get mousepoint in canvas space 
@@ -855,21 +865,18 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
-                        point.Position, new Point(scaleAmount, scaleAmount)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount)));
             }
             else
             {
                 var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
                 if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0), new Point(1, 1)));
                 }
                 else
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount), new Point(1, 1)));
                 }
 
             }
@@ -913,7 +920,7 @@ namespace Dash
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left + r.Width / 2, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt));
             }
         }
 
@@ -939,8 +946,7 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
-                    e.Position, new Point(scaleFactor, scaleFactor));
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y), new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
