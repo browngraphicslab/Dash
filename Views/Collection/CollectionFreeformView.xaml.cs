@@ -1105,6 +1105,7 @@ namespace Dash
         private Rectangle _marquee;
         private bool _multiSelect;
         private Point _marqueeAnchor;
+        private bool _isSelecting;
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -1114,18 +1115,23 @@ namespace Dash
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
                 Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
                 MarqueeSelectDocs(marqueeRect);
-                _multiSelect = (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
+                _multiSelect = false;
                 _marquee = null;
+                _isSelecting = false;
                 e.Handled = true;
             }
        
             xOuterGrid.ReleasePointerCapture(e.Pointer);
+            Debug.WriteLine("number selected: " + ViewModel.SelectionGroup.Count());
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             var currentPoint = args.GetCurrentPoint(SelectionCanvas);
-            if (!currentPoint.Properties.IsLeftButtonPressed) return;
+            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
+
+            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
+            
 
             var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
@@ -1167,11 +1173,14 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 && (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)))
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 _marqueeAnchor = pos;
+                _isSelecting = true;
             }
         }
 
@@ -1261,8 +1270,9 @@ namespace Dash
             e.Handled = true;
 
             SelectionCanvas.Children.Clear();
-            if (!_multiSelect) DeselectAll();
+            DeselectAll();
 
+            _isSelecting = false;
 
             RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
@@ -1348,8 +1358,6 @@ namespace Dash
             }
         }
 
-        
-
         private List<DocumentView> _documentViews = new List<DocumentView>();
 
         private bool _isToggleOn;
@@ -1357,16 +1365,10 @@ namespace Dash
         {
             _isToggleOn = !_isToggleOn;
             foreach (var docView in DocumentViews)
-            {
                 if (_isToggleOn)
-                {
                     Select(docView);
-                }
                 else
-                {
                     Deselect(docView);
-                }
-            }
         }
 
         public void DeselectAll()
@@ -1381,37 +1383,14 @@ namespace Dash
         private void Deselect(DocumentView docView)
         {
             ViewModel.SelectionGroup.Remove(docView.ViewModel);
-            docView.CanDrag = false;
-            docView.DragStarting -= DocView_OnDragStarting;
-            docView.xFieldContainer.BorderThickness = new Thickness(0);
+            docView.ToggleMultiSelected(false);
+            
         }
 
         public void Select(DocumentView docView)
         {
             ViewModel.SelectionGroup.Add(docView.ViewModel);
-            docView.CanDrag = true;
-            docView.DragStarting += DocView_OnDragStarting;
-            docView.xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
-            docView.xFieldContainer.BorderThickness = new Thickness(2);
-        }
-        
-
-        // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
-        // TODO there are better hooks to use
-        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!IsSelectionEnabled) return;
-
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
-            if (docView.CanDrag)
-            {
-                Deselect(docView);
-            }
-            else
-            {
-                Select(docView);
-            }
-            e.Handled = true;
+            docView.ToggleMultiSelected(true);
         }
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
@@ -1590,7 +1569,6 @@ namespace Dash
             if (sender is DocumentView documentView)
             {
                 OnDocumentViewLoaded?.Invoke(this, documentView);
-                documentView.OuterGrid.Tapped += DocumentView_Tapped;
                 DocumentViews.Add(documentView);
 
                 if (loadingPermanentTextbox)

@@ -55,6 +55,7 @@ namespace Dash
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
         private bool _ctrlDown;
         private bool _ptrIn;
+        private bool _multiSelected;
 
         private class ContextWebView
         {
@@ -137,6 +138,26 @@ namespace Dash
                 _ctrlDown = true;
                 if (_ptrIn) ShowLocalContext(true);
             }
+        }
+
+        public void ToggleMultiSelected(bool isMultiSelected)
+        {
+            if (isMultiSelected == _multiSelected) return;
+            var freeformView = ParentCollection.CurrentView as CollectionFreeformView;
+            if (freeformView == null) return;
+            if (!isMultiSelected)
+            {
+                this.CanDrag = false;
+                this.DragStarting -= freeformView.DocView_OnDragStarting;
+                xFieldContainer.BorderThickness = new Thickness(0);
+            } else
+            {
+                this.CanDrag = true;
+                this.DragStarting += freeformView.DocView_OnDragStarting;
+                xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+                xFieldContainer.BorderThickness = new Thickness(2);
+            }
+            _multiSelected = isMultiSelected;
         }
 
         public void ShowLocalContext(bool showContext)
@@ -875,6 +896,7 @@ namespace Dash
                         Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                     }
                     OnSelected();
+                    
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
