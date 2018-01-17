@@ -104,7 +104,18 @@ namespace Dash.Views.Collection
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            e.Handled = true;
+            var docToFocus = (DataContext as DocumentViewModel).DocumentController;
+            if (_isCollection)
+            {
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (docsInGroup != null)
+                {
+                    docToFocus = docsInGroup.TypedData.FirstOrDefault();
+                }
+            }
+            if (! MainPage.Instance.NavigateToDocumentInWorkspace(docToFocus))
+                MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
 }
