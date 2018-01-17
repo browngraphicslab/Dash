@@ -390,13 +390,13 @@ namespace Dash
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
-            ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
+            ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
-                ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
+                ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
         } 
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
