@@ -43,8 +43,18 @@
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"></local:CollectionTreeView>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
-        <local:MainSearchBox Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Top" Width="300"></local:MainSearchBox>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1">
+            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+                <local:MainSearchBox x:Name="xMainSearchBox" Width="300"></local:MainSearchBox>
+            </Grid>
+            <Button Name="xSearchButton" Tapped="xSearchButton_Tapped">
+                <TextBlock x:Name="xTextBlock" Text="&#xE721;" FontFamily="Segoe MDL2 Assets">
+                </TextBlock>
+            </Button>
+        </StackPanel>
+        
         <TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></TextBlock>
+        
         
         <!--<Grid HorizontalAlignment="Left" Margin="0,0,0,0" Width="{Binding ElementName=xAddMenu, Path=Width}">
             <Grid.RowDefinitions>
