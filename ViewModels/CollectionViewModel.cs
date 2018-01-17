@@ -9,83 +9,79 @@ namespace Dash
 {
     public class CollectionViewModel : BaseCollectionViewModel
     {
-        private ListController<DocumentController> _collectionFieldModelController;
-        public ListController<DocumentController> CollectionController { get { return _collectionFieldModelController; } }
+        public ListController<DocumentController> CollectionController => _collectionRef.DereferenceToRoot<ListController<DocumentController>>(_context);
 
         public InkController InkController;
 
-        public DocumentController ContainerDocument;
+        public DocumentController ContainerDocument => _collectionRef.GetDocumentController(_context);
 
-        public CollectionViewModel(DocumentController container, FieldControllerBase collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        private FieldReference _collectionRef;
+        private Context _context;
+
+        public CollectionViewModel(FieldReference refToCollection, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            Debug.Assert(collection != null);
-            _collectionFieldModelController = collection.DereferenceToRoot<ListController<DocumentController>>(context);
-            AddViewModels(_collectionFieldModelController.TypedData, context);
-            ContainerDocument = container;
+            Debug.Assert(refToCollection != null);
+            _collectionRef = refToCollection;
+            _context = context;
+            AddViewModels(CollectionController.TypedData, context);
+
+            var grouped = ContainerDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
+            if (grouped != null)
+            {
+                AddGroupedViewModels(grouped.TypedData, context);
+            }
 
             var copiedContext = new Context(context);
 
-            if (collection is ReferenceController)
-            {
-                var reference = collection as ReferenceController;
-                _collectionKey = reference.FieldKey;
-                reference.GetDocumentController(context).AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
-                    {
-                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                        var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                        if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
-                        {
-                            UpdateViewModels(cargs, copiedContext);
-                        }
-                        else
-                        {
-
-                            _collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
-                            if (_collectionFieldModelController == null) return;
-                            var documents = _collectionFieldModelController.GetElements();
-                            DocumentViewModels.Clear();
-
-                            AddViewModels(documents, context);
-                            //TODO tfs: I don't think we actually want to do this...
-                            //bool newDoc = DocumentViewModels.Count != documents.Count;
-                            //if (!newDoc)
-                            //    foreach (var d in DocumentViewModels.Select((v) => v.DocumentController))
-                            //        if (!documents.Contains(d))
-                            //        {
-                            //            newDoc = true;
-                            //            break;
-                            //        }
-                            //if (newDoc)
-                            //{
-                            //    if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                            //        DocumentViewModels.Clear();
-                            //    if (cargs == null)
-                            //        cargs = new ListController<DocumentController>.CollectionFieldUpdatedEventArgs(ListController<DocumentController>.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                            //    UpdateViewModels(cargs, copiedContext);
-                            //}
-                        }
-                    });
-            }
-            else
-            {
-                collection.FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+            refToCollection.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey,
+                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
-                    UpdateViewModels(args as ListController<DocumentController>.ListFieldUpdatedEventArgs,
-                        copiedContext);
-                };
-            }
+                    //if (!copiedContext.IsCompatibleWith(context1.DocContextList))//TODO tfs: why do we need to do this now?
+                    //{
+                    //    return;
+                    //}
+                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+                    var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                    {
+                        UpdateViewModels(cargs, copiedContext);
+                    }
+                    else
+                    {
+
+                        var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
+                        if (collectionFieldModelController == null) return;
+                        var documents = collectionFieldModelController.GetElements();
+                        DocumentViewModels.Clear();
+
+                        AddViewModels(documents, context);
+                    }
+                });
 
             ContainerDocument.AddFieldUpdatedListener(KeyStore.GroupingKey,
-                delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
-                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    GroupingUpdated(cargs, copiedContext);
+                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                    {
+                        GroupingUpdated(cargs, copiedContext);
+                    }
+                    else
+                    {
+
+                        var collectionFieldModelController = dargs.NewValue
+                            .DereferenceToRoot<ListController<DocumentController>>(context);
+                        if (collectionFieldModelController == null) return;
+                        var documents = collectionFieldModelController.GetElements();
+                        GroupingViewModels.Clear();
+
+                        AddGroupedViewModels(documents, context);
+                    }
                 });
 
             CellSize = 250; // TODO figure out where this should be set
-          //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+                            //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
         private void GroupingUpdated(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
@@ -111,7 +107,7 @@ namespace Dash
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
         public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
-    
+
 
 
 
@@ -129,7 +125,7 @@ namespace Dash
             SelectionGroup.Clear();
             foreach (var vmp in itemsToDelete)
             {
-                _collectionFieldModelController.Remove(vmp.DocumentController);
+                CollectionController.Remove(vmp.DocumentController);
             }
         }
 
@@ -225,7 +221,7 @@ namespace Dash
 
 
             // just update the collection, the colllection will update our view automatically
-            _collectionFieldModelController.Add(doc);
+            CollectionController.Add(doc);
         }
 
         public override void RemoveDocuments(List<DocumentController> documents)
@@ -239,7 +235,7 @@ namespace Dash
         public override void RemoveDocument(DocumentController document)
         {
             // just update the collection, the colllection will update our view automatically
-            _collectionFieldModelController.Remove(document);
+            CollectionController.Remove(document);
         }
 
         #endregion

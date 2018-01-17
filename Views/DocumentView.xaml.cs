@@ -53,6 +53,29 @@ namespace Dash
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
+        private bool _f1Down;
+        private bool _ptrIn;
+
+        private class ContextWebView
+        {
+            public WebAndPdfView View;
+            public double ScaleFactor;
+            public double ActualWidth => Width * ScaleFactor;
+            public double ActualHeight => Height * ScaleFactor;
+            public double Width;
+            public double Height;
+
+            public ContextWebView(WebAndPdfView view, double scaleFactor, double width, double height)
+            {
+                View = view;
+                ScaleFactor = scaleFactor;
+                Width = width;
+                Height = height;
+            }
+        }
+
+        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
+
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -63,6 +86,7 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
+
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
@@ -81,7 +105,6 @@ namespace Dash
             this.Drop += OnDrop;
 
             AddHandler(ManipulationCompletedEvent, new ManipulationCompletedEventHandler(DocumentView_ManipulationCompleted), true);
-            AddHandler(ManipulationDeltaEvent, new ManipulationDeltaEventHandler(DocumentView_ManipulationDelta), true);
             AddHandler(PointerEnteredEvent, new PointerEventHandler(DocumentView_PointerEntered), true);
             AddHandler(PointerExitedEvent, new PointerEventHandler(DocumentView_PointerExited), true);
             AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
@@ -89,14 +112,85 @@ namespace Dash
             AddBorderRegionHandlers();
 
 
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+            Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
+
+
 
             MenuFlyout = xMenuFlyout;
         }
 
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+
+            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            if (!f1.HasFlag(CoreVirtualKeyStates.Down))
+            {
+                _f1Down = false;
+                ShowLocalContext(false);
+            }
+        }
+
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            if (f1.HasFlag(CoreVirtualKeyStates.Down))
+            {
+                _f1Down = true;
+                if (_ptrIn) ShowLocalContext(true);
+            }
+        }
+
+        public void ShowLocalContext(bool showContext)
+        {
+
+            ViewModel.ShowLocalContext = showContext;
+
+            if (!showContext && _localContext.View != null)
+            {
+                // TODO hide the context
+                xShadowHost.Children.Remove(_localContext.View);
+                _localContext.View = null;
+                GC.Collect();
+                Debug.WriteLine("Destroyed Child");
+                ViewModel.SetHasTitle(ViewModel.IsSelected);
+            }
+
+            if (showContext)
+            {
+                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
+                var context = ViewModel.DocumentController.GetDataDocument(null).GetFirstContext();
+                if (context == null) return;
+                var source = new Uri(context.Url);
+                ViewModel.SetHasTitle(true);
+
+                if (_localContext.View == null)
+                {
+                    _localContext.View = new WebAndPdfView(source)
+                    {
+                        Width = _localContext.Width,
+                        Height = _localContext.Height,
+                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                    };
+                    xShadowHost.Children.Add(_localContext.View);
+                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
+                    Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+                    xContextTitle.Content = context.Title;
+
+
+                    Debug.WriteLine("Created Child");
+                }
+                else if (!_localContext.View.Source.Equals(source))
+                {
+                    _localContext.View.Source = source;
+                }
+            }
+        }
 
         private void AddBorderRegionHandlers()
         {
-            foreach(var region in new FrameworkElement[]{ xTitle })
+            foreach (var region in new FrameworkElement[] { xTitleBorder })
             {
                 region.AddHandler(PointerEnteredEvent, new PointerEventHandler(BorderRegion_PointerEntered), true);
                 region.AddHandler(PointerExitedEvent, new PointerEventHandler(BorderRegion_PointerExited), true);
@@ -105,19 +199,27 @@ namespace Dash
 
         private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(false);
+            ToggleGroupSelectionBorderColor(true);
         }
 
         private void BorderRegion_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(true);
+            ToggleGroupSelectionBorderColor(false);
         }
 
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (IsSelected == false)
+            {
                 ToggleSelectionBorder(false);
+            }
+
+            ToggleGroupSelectionBorderColor(false);
+
+
+            _ptrIn = false;
+            if (_f1Down == false) ShowLocalContext(false);
         }
 
 
@@ -126,7 +228,13 @@ namespace Dash
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorder(true);
+            ToggleGroupSelectionBorderColor(true);
+
+            _ptrIn = true;
+
+            if (_f1Down) ShowLocalContext(true);
         }
+
 
         public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
@@ -134,11 +242,6 @@ namespace Dash
                 CheckForDropOnLink(docView);
 
             ToggleGroupSelectionBorderColor(false);
-        }
-
-        public void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs manipulationDeltaRoutedEventArgs)
-        {
-            ToggleGroupSelectionBorderColor(true);
         }
 
         private void CheckForDropOnLink(DocumentView docView)
@@ -322,7 +425,8 @@ namespace Dash
 
         public void ToFront()
         {
-            if (ParentCollection == null) return;
+            if (ParentCollection == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
@@ -378,7 +482,10 @@ namespace Dash
             }
 
             ToFront();
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
+            // TODO this causes groups to show up, and needs to be moved
+            ManipulationControls.ManipulationCompleted(null, false);
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -393,16 +500,11 @@ namespace Dash
             //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
-            xTitle.Text = title;
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
-            xTitleBorder.Margin = new Thickness(width + xTitleBorder.Margin.Left, xTitleBorder.Margin.Top, width, xTitleBorder.Margin.Bottom);
             if (ParentCollection != null)
             {
-                //ViewModel.DocumentController.SetTitleField(title);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
-                var layoutDoc = ViewModel.DocumentController.GetActiveLayout(null) ?? ViewModel.DocumentController;
-
             }
         }
 
@@ -432,12 +534,14 @@ namespace Dash
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
 
+
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
+            ToggleGroupSelectionBorderColor(true);
             ViewModel?.TransformDelta(delta);
         }
 
@@ -620,28 +724,10 @@ namespace Dash
                 var context = new Context(ViewModel.DocumentController);
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
                 context.AddDocumentContext(dataDoc);
-                var keyList = dataDoc.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-                var key = KeyStore.TitleKey;
-                if (key == null || !(keyList?.Data?.Count() > 0))
-                {
-                    dataDoc.GetTitleFieldOrSetDefault(context);
-                }
-                else
-                    key = keyList?.Data?.First() as KeyController;
 
-                var Binding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.TwoWay,
-                    Document = dataDoc,
-                    Key = key,
-                    Context = context
-                };
-                xTitle.AddFieldBinding(TextBox.TextProperty, Binding);
 
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
-
-            //initDocumentOnDataContext();
         }
 
         #region Menu
@@ -673,7 +759,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
         private void CopyViewDocument()
         {
@@ -682,7 +768,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
@@ -769,6 +855,13 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
+                CoreVirtualKeyStates.Down &&
+                ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            {
+                ViewModel.SetSelected(null, true);
+                return;
+            }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
@@ -780,8 +873,12 @@ namespace Dash
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
                 if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
                 {
-                    ParentCollection.MaxZ += 1;
-                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
+                    if (zindex > -100)
+                    {
+                        ParentCollection.MaxZ += 1;
+                        Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                    }
                     OnSelected();
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
@@ -804,32 +901,54 @@ namespace Dash
             }
         }
 
-        private void ToggleSelectionBorder(bool isBorderOn)
+        /// <summary>
+        /// Turn the selection border on or off based on isBorderOn, also toggles the title
+        /// icon visibility based on isBorderOn unless the user specifically overrides this
+        /// behavior with isTitleVisible
+        /// </summary>
+        private void ToggleSelectionBorder(bool isBorderOn, bool? isTitleVisible = null)
         {
+
+            // change the thickness of the border so that it's visible
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+
+            // show the title icon based on isBorderOn, unless isTitleVisible is set
+            xTitleIcon.Foreground = isTitleVisible ?? isBorderOn
+                ? (SolidColorBrush) Application.Current.Resources["TitleText"]
+                    : new SolidColorBrush(Colors.Transparent);
         }
 
-        private void ToggleGroupSelectionBorderColor(bool isGroupSelectionOn)
+        private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
         {
+            // get all the document views that are in the same collection as ourself
             var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
-            var DocumentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
 
-            if (DocumentGroup.Count < 2) isGroupSelectionOn = false;
+            // get all the document views connected to ourself (forming a group)
+            var documentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
 
+            // if we are by ourself then hide the border
+            if (documentGroup.Count < 2) isGroupBorderVisible = false;
+
+
+            // iterate over all the documents in the collection
             foreach (var dv in allDocumentViews)
             {
-                if (DocumentGroup.Contains(dv))
+                // turn on the borders for documents in the group
+                if (documentGroup.Contains(dv))
                 {
+                    // don't turn on our own border (for aesthetic reasons)
                     if (dv != this)
                     {
-                        dv.ToggleSelectionBorder(isGroupSelectionOn);
+                        dv.ToggleSelectionBorder(isGroupBorderVisible, false);
                     }
 
-                    dv.xSelectionBorder.BorderBrush = isGroupSelectionOn
+
+                    dv.xSelectionBorder.BorderBrush = isGroupBorderVisible
                         ? GroupSelectionBorderColor
                         : SingleSelectionBorderColor;
                 }
+                // turn off the borders for documents not in the group
                 else
                 {
                     dv.ToggleSelectionBorder(false);
@@ -921,18 +1040,6 @@ namespace Dash
                 this.Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
-        }
-
-        private void XTitle_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel == null)
-                return;
-            // change the titlekey 
-            var titleField = ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null);
-            if (titleField == null)
-                ViewModel.DocumentController.SetField(KeyStore.TitleKey, new TextController(xTitle.Text), true);
-            else ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data = xTitle.Text;
-
         }
 
         private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
@@ -1040,9 +1147,15 @@ namespace Dash
             ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
 
-        private void xTitleIcon_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             ShowContext();
+        }
+
+        private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
+            if (_localContext.View != null) Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)

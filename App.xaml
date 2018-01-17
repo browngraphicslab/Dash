@@ -129,7 +129,7 @@
             <Setter Property="Margin" Value="0,0,1,1"></Setter>
             <Setter Property="Padding" Value="0"></Setter>
         </Style>
-        
+
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
             <!-- prevents node from moving while mouse is over UI element-->
@@ -529,7 +529,7 @@
             <Setter Property="Background" Value="Transparent"></Setter>
             <Setter Property="FontFamily" Value="Segoe UI"></Setter>
         </Style>
-        
+
         <!-- for forcing text styles to apply -->
         <Style TargetType="TextBlock" x:Key="xForceTextBlockDefault">
             <Setter Property="Foreground" Value="{StaticResource MainText}"></Setter>
@@ -570,7 +570,7 @@
             <Setter Property="BorderThickness" Value="0,0,1,0"></Setter>
             <Setter Property="BorderBrush" Value="Transparent"></Setter>
         </Style>
-        
+
         <Style TargetType="StackPanel" x:Key="xMenuItemStackPanel">
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
             <Setter Property="Margin" Value="0,1,0,0"></Setter>
@@ -683,7 +683,7 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
-        
+
         <!--csv import list view-->
         <Style TargetType="ListView" x:Key="xDragAndDropListView">
             <Setter Property="ShowsScrollingPlaceholders" Value="False"/>
@@ -708,7 +708,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- schema list view -->
         <Style TargetType="ListView" x:Key="xSchemaListView">
             <Setter Property="ItemContainerStyle">
@@ -775,16 +775,15 @@
         </Style>
 
         <!-- CONVERTERS-->
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
-        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"></local:BoolToBoldConverter>
-        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
-        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"></local:BoundControllerToFrameworkElementConverter>
-        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"></local:ReferenceFieldModelControllerToFrameworkElementConverter>
-        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"></local:ObjectToStringConverter>
-        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
-        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-        <local:TypeToFillConverter x:Key="TypeToFillConverter"></local:TypeToFillConverter>
-        <!--local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></-->
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
+        <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
+        <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
+        <local:ObjectToStringConverter x:Key="ObjectToStringConverter"/>
+        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
+        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
+        <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
 
         <!-- MISC. STYLES-->
         <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">

@@ -37,7 +37,7 @@ namespace Dash
         public static TabMenu Instance => _instance ?? (_instance = new TabMenu());
 
         // The CollectionFreeformView to which items from tab menu will be added 
-        private static CollectionFreeformView _addsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
+        private static CollectionFreeformView _addsToThisCollection;
         // The position relative to the collectionfreeformview in which items from tab menu will be added 
         private static Point _whereToAdd;
         #endregion

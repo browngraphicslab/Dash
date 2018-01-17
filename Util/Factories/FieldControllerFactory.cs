@@ -160,6 +160,12 @@ namespace Dash
             OperatorController controller = null;
             switch (model.Type)
             {
+                case OperatorType.RichTextTitle:
+                    controller = new RichTextTitleOperatorController(model);
+                    break;
+                case OperatorType.CollectionTitle:
+                    controller = new CollectionTitleOperatorController(model);
+                    break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
@@ -217,10 +223,10 @@ namespace Dash
                 case OperatorType.Melt:
                     controller = new MeltOperatorController(model);
                     break;
-                case OperatorType.Sentence_Analyzer:
+                case OperatorType.SentenceAnalyzer:
                     controller = new ExtractSentencesOperatorController(model);
                     break;
-                case OperatorType.Extract_Keywords:
+                case OperatorType.ExtractKeywords:
                     controller = new ExtractKeywordsOperatorController(model);
                     break;
                 case OperatorType.ImageRecognition:

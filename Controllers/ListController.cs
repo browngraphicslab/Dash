@@ -260,6 +260,17 @@ namespace Dash
         }
 
         /// <summary>
+        /// recurs on all list items
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
+        }
+
+
+        /// <summary>
         /// Provides data about how the list changed. Similar to NotifyCollectionChangedEventArgs.
         /// </summary>
         public class ListFieldUpdatedEventArgs : FieldUpdatedEventArgs

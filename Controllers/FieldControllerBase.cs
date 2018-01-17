@@ -56,8 +56,14 @@ namespace Dash
             return DereferenceToRoot(context) as T;
         }
 
+        /// <summary>
+        /// Sets the value on the field. Basically an untyped data setter
+        /// </summary>
         public abstract bool SetValue(object value);
 
+        /// <summary>
+        /// Sets the value from the field. Basically an untyped data getter
+        /// </summary>
         public abstract object GetValue(Context context);
 
 
@@ -148,6 +154,15 @@ namespace Dash
             hstack.Children.Add(ele);
             sp.Children.Add(hstack);
         }
+
+        /// <summary>
+        /// search method which should return whether this field contains the string being searched for.
+        /// 
+        /// The string should always be lowercased
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        public abstract StringSearchModel SearchForString(string searchString);
 
         /// <summary>
         ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock

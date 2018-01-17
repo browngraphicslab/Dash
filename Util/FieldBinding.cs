@@ -15,7 +15,8 @@ namespace Dash
 {
     public delegate IValueConverter GetConverter<in T>(T field) where T : FieldControllerBase;
 
-    public enum XamlDerefernceLevel {
+    public enum XamlDerefernceLevel
+    {
         DereferenceToRoot,
         DereferenceOneLevel
     };
@@ -34,7 +35,12 @@ namespace Dash
 
         public IValueConverter Converter;
         public object ConverterParameter;
-        
+
+        //Debug stuff
+        //Tag that can be set on a binding that will be printed if the binding fails
+        //so that you can know which exact binding is failing
+        public String Tag;
+
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
             var refField = Document.GetField(Key) as ReferenceController;
@@ -56,7 +62,20 @@ namespace Dash
                     {
                         element.SetValue(property, xamlData);
                     }
-                    Debug.WriteLine($"Error evaluating binding: Error with converter, Document ID = {Document.Id}, Key = {Key.Name}, Converter = {converter?.GetType().Name ?? "null"}");
+                    else
+                    {
+#if PRINT_BINDING_ERROR_DETAILED
+                        Debug.WriteLine(
+                            $"Error evaluating binding: Error with converter or GetValue\n" +
+                            $"  Key         = {Key.Name}\n" +
+                            $"  Document ID = {Document.Id}\n" +
+                            $"  Field Data  = {fieldData}\n" +
+                            $"  Converter   = {converter?.GetType().Name ?? "null"}\n" +
+                            $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                        Debug.WriteLine($"Error evaluating binding: Error with converter or GetValue of {Key.Name}, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+#endif
+                    }
                 }
                 else if (FallbackValue != null)
                 {
@@ -64,7 +83,15 @@ namespace Dash
                 }
                 else
                 {
-                    Debug.WriteLine($"Error evaluating binding: Field was missing and there was no fallback value, Document ID = {Document.Id}, Key = {Key.Name}");
+#if PRINT_BINDING_ERROR_DETAILED
+                    Debug.WriteLine(
+                        $"Error evaluating binding: Field was missing and there was no fallback value\n" +
+                        $"  Key         = {Key.Name}\n" + 
+                        $"  Document ID = {Document.Id}" +
+                        $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                    Debug.WriteLine($"Error evaluating binding: Field {Key.Name} was missing and there was no fallback value, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+#endif
 
                     element.ClearValue(property);
                 }
@@ -72,11 +99,12 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
-            if (field is ReferenceController) {
+            var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key, Context);
+            if (field is ReferenceController)
+            {
                 xamlData = new Tuple<Context, object>(Context, xamlData);
             }
-            
+
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
             var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, String.Empty);
 
@@ -86,8 +114,13 @@ namespace Dash
 
     public static class BindingExtension
     {
+        private static Dictionary<UIElement, Dictionary<DependencyProperty,
+            Action>> _bindingMap =
+            new Dictionary<UIElement, Dictionary<DependencyProperty, Action>>();
+
         public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
+            TryRemoveOldBinding(element, property);
             switch (binding.Mode)
             {
                 case BindingMode.OneTime:
@@ -102,6 +135,33 @@ namespace Dash
             }
         }
 
+        private static void TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
+        {
+            if (!_bindingMap.ContainsKey(element))
+            {
+                return;
+            }
+            var dict = _bindingMap[element];
+            if (!dict.ContainsKey(property))
+            {
+                return;
+            }
+            var t = dict[property];
+            t();
+            dict.Remove(property);
+        }
+
+        private static void AddRemoveBindingAction(FrameworkElement element, DependencyProperty property, Action removeBinding)
+        {
+            if (!_bindingMap.ContainsKey(element))
+            {
+                _bindingMap[element] = new Dictionary<DependencyProperty, Action>();
+            }
+
+            Debug.Assert(!_bindingMap[element].ContainsKey(property));
+            _bindingMap[element][property] = removeBinding;
+        }
+
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase
         {
             binding.ConvertToXaml(element, property, binding.Context);
@@ -112,24 +172,48 @@ namespace Dash
             FieldControllerBase.FieldUpdatedHandler handler =
                 (sender, args, context) =>
                 {
+                    if (binding.Context == null)
+                    {
+                        binding.ConvertToXaml(element, property, context);
+
+                    }
+                    else
                     if (binding.Context.IsCompatibleWith(context.DocContextList))
                     {
-                        var equals = binding.Context.DocContextList.Where((d) => !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout") && !context.DocContextList.Contains(d));
-                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context: binding.Context);
+                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
+                        binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
                     }
                 };
+
             if (element.IsInVisualTree())
             {
+                binding.ConvertToXaml(element, property, binding.Context);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
             }
-            element.Loaded += delegate (object sender, RoutedEventArgs args)
+
+            void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
+                binding.ConvertToXaml(element, property, binding.Context);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            };
-            element.Unloaded += delegate (object sender, RoutedEventArgs args)
+            }
+
+            element.Loaded += OnElementOnLoaded;
+
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
                 binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-            };
+            }
+
+            element.Unloaded += OnElementOnUnloaded;
+
+            void RemoveBinding()
+            {
+                element.Loaded -= OnElementOnLoaded;
+                element.Unloaded -= OnElementOnUnloaded;
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+            }
+
+            AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
@@ -140,21 +224,21 @@ namespace Dash
                 (sender, args, context) =>
                 {
                     updateUI = false;
-                if (binding.Context == null)
-                {
-                    binding.ConvertToXaml(element, property, context);
+                    if (binding.Context == null)
+                    {
+                        binding.ConvertToXaml(element, property, context);
 
-                }
-                else
-                if (binding.Context.IsCompatibleWith(context.DocContextList))
-                {
-                    var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || ( !d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
+                    }
+                    else
+                    if (binding.Context.IsCompatibleWith(context.DocContextList))
+                    {
+                        var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
                     }
                     updateUI = true;
                 };
             DependencyPropertyChangedCallback callback =
-                (sender, dp)   =>
+                (sender, dp) =>
                 {
                     if (updateUI)
                     {
@@ -166,20 +250,41 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                handler(null,new DocumentController.DocumentFieldUpdatedEventArgs(null, null, DocumentController.FieldUpdatedAction.Add, null, null, false), binding.Context);
-            }
-            element.Loaded += delegate (object sender, RoutedEventArgs args)
-            {
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-            };
-            element.Unloaded += delegate (object sender, RoutedEventArgs args)
+            }
+
+            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            {
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
+            }
+
+            element.Loaded += OnElementOnLoaded;
+
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
                 binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                 element.UnregisterPropertyChangedCallback(property, token);
-            };
+                token = -1;
+            }
 
+            element.Unloaded += OnElementOnUnloaded;
+
+            void RemoveBinding()
+            {
+                element.Loaded -= OnElementOnLoaded;
+                element.Unloaded -= OnElementOnUnloaded;
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                if (token != -1)
+                {
+                    element.UnregisterPropertyChangedCallback(property, token);
+                }
+            }
+
+            AddRemoveBindingAction(element, property, RemoveBinding);
         }
     }
 }

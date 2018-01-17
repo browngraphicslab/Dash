@@ -364,8 +364,8 @@ namespace Dash
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
-                    cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, new ListController<DocumentController>(subDocs), true);
-                else cnote.Document.GetDataDocument(null).SetField(CollectionNote.CollectedDocsKey, dragData.HeaderColumnReference, true);
+                    cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
+                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.HeaderColumnReference, true);
                 cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
 
                 AddDocument(cnote.Document, null);
@@ -472,7 +472,7 @@ namespace Dash
                         var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
-                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, "", 300, 300, related).Document;
+                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 300, 300, related).Document;
                     htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     foreach (var str in strings)
@@ -494,14 +494,14 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(PostitNote.DocumentType, "");
+                var t = new RichTextNote(PostitNote.DocumentType);
                 t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text, text)), true);
                 AddDocument(t.Document, null);
             }
             else if (e.DataView.Contains(StandardDataFormats.Text))
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, "");
+                var t = new RichTextNote(PostitNote.DocumentType);
                 t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
@@ -585,7 +585,7 @@ namespace Dash
                         newDoc.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
                     if (e.DataView.Properties.ContainsKey("SelectedText"))
                     {
-                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<ListController<DocumentController>>(CollectionNote.CollectedDocsKey, null)?.Data;
+                        var col = newDoc.GetDataDocument(null)?.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.Data;
 
                     }
                     return newDoc;
