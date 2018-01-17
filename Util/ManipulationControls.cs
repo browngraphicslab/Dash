@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using static Dash.NoteDocuments;
+using Point = Windows.Foundation.Point;
 
 namespace Dash
 {

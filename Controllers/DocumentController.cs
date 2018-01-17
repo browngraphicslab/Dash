@@ -156,7 +156,7 @@ namespace Dash
         }
 
         /// <summary>
-        ///     A wrapper for <see cref="Model.Fields" />. Change this to propogate changes
+        ///     A wrapper for <see cref="" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();

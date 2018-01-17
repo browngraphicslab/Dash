@@ -19,11 +19,31 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Microsoft.Toolkit.Uwp;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
+
+    public class ContextWebView
+    {
+        public WebAndPdfView View;
+        public double ScaleFactor;
+        public double ActualWidth => Width * ScaleFactor;
+        public double ActualHeight => Height * ScaleFactor;
+        public double Width;
+        public double Height;
+
+        public ContextWebView(WebAndPdfView view, double scaleFactor, double width, double height)
+        {
+            View = view;
+            ScaleFactor = scaleFactor;
+            Width = width;
+            Height = height;
+        }
+    }
+
     public sealed partial class WebAndPdfView : UserControl, INotifyPropertyChanged
     {
 
