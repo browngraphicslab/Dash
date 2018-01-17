@@ -13,7 +13,8 @@
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                        QuerySubmitted="AutoSuggestBox_QuerySubmitted" 
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        Name="xAutoSuggestBox"
                         >
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="dash:SearchResultViewModel">

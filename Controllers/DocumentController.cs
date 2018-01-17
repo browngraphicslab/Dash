@@ -297,7 +297,7 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
-        public DocumentController GetDataDocument(Context context)
+        public DocumentController GetDataDocument(Context context = null)
         {
             return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
         }

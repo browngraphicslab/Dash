@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -22,13 +25,16 @@ namespace Dash
 {
     public sealed partial class MainSearchBox : UserControl
     {
+        //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
+        private string _currentSearch = "";
 
         public MainSearchBox()
         {
             this.InitializeComponent();
+            xAutoSuggestBox.ItemsSource = new ObservableCollection<SearchResultViewModel>();
         }
 
-        private async void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
@@ -38,11 +44,28 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
+                //_tokenSource?.Cancel();
+                //Debug.WriteLine("Task canceled");
+                //_tokenSource = new CancellationTokenSource();
+                var text = sender.Text.ToLower();
+                _currentSearch = text;
+                //Task.Factory.StartNew(async () =>
+                //{
+                    //Search(sender, sender.Text.ToLower());
+                (sender.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
-                //Search(sender, sender.Text.ToLower());
-                var vms = LocalSearch(sender.Text.ToLower());
-                var results = new ObservableCollection<SearchResultViewModel>(vms);
-                sender.ItemsSource = results;
+                var vms = LocalSearch(text);
+                var first = vms.Take(75).ToArray();
+                Debug.WriteLine("Search Results: "+first.Length);
+                foreach (var searchResultViewModel in first) 
+                {
+                    (sender.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+                }
+                    
+                //}, _tokenSource.Token);
+
+                
+
             }
         }
 
@@ -77,18 +100,30 @@ namespace Dash
         /// <returns></returns>
         private IEnumerable<SearchResultViewModel> LocalSearch(string searchString)
         {
-            var results = new List<SearchResultViewModel>();
+            var documentTree = DocumentTree.MainPageTree;
+            var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
             foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
             {
-                foreach (var kvp in documentController.DocumentModel.Fields)
+                if (searchString != _currentSearch)
                 {
-                    var keySearch = ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Key).SearchForString(searchString);
-                    var fieldSearch = ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value).SearchForString(searchString);
+                    Debug.WriteLine("ended early-------------------------");
+                    return new List<SearchResultViewModel>();
+                }
+
+                int foundCount = 0;
+                string lastTopText = "";
+                StringSearchModel lastKeySearch = null;
+                StringSearchModel lastFieldSearch = null;
+
+                foreach (var kvp in documentController.EnumDisplayableFields())
+                {
+                    var keySearch = kvp.Key.SearchForString(searchString);
+                    var fieldSearch = kvp.Value.SearchForString(searchString);
 
                     string topText = null;
                     if (fieldSearch.StringFound)
                     {
-                        topText = ContentController<FieldModel>.GetController<KeyController>(kvp.Key).Name;
+                        topText = kvp.Key.Name;
                     }
                     else if (keySearch.StringFound)
                     {
@@ -97,13 +132,44 @@ namespace Dash
 
                     if (keySearch.StringFound || fieldSearch.StringFound)
                     {
-                        var bottomText = (fieldSearch?.RelatedString ?? keySearch?.RelatedString)?.Replace('\n',' ').Replace('\t', ' ').Replace('\r', ' ');
-                        var title = string.IsNullOrEmpty(documentController.Title) ? topText : documentController.Title;
-                        results.Add(new SearchResultViewModel(title, bottomText ?? "", documentController.Id));
+                        foundCount++;
+
+                        //compare old search models to current one, trying to predict which would be better for the user to see
+                        var newIsBetter = lastFieldSearch == null || (lastFieldSearch.RelatedString?.Length ?? 0) < (fieldSearch.RelatedString?.Length ?? 0);
+                        newIsBetter |= (lastFieldSearch?.RelatedString?.ToCharArray()?.Take(50)?.Where(c => c == ' ')?.Count() ?? 0) < 
+                            (fieldSearch?.RelatedString?.ToCharArray()?.Take(50)?.Where(c => c == ' ')?.Count() ?? 0);
+
+                        if (newIsBetter)
+                        { 
+                            lastTopText = topText;
+                            lastKeySearch = keySearch;
+                            lastFieldSearch = fieldSearch;
+                        }
                     }
                 }
+
+                if (foundCount > 0)
+                {
+                    var bottomText = (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
+                    var title = string.IsNullOrEmpty(documentController.Title) ? lastTopText : documentController.Title;
+                    string preTitle = "";
+
+                    var documentNode = documentTree[documentController.Id];
+                    if (documentNode?.Parents?.FirstOrDefault() != null)
+                    {
+                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.Title) ? documentNode.Parents.First().ViewDocument.Title : documentNode.Parents.First().DataDocument.Title) + " >  ";
+                    }
+
+                    var vm = new SearchResultViewModel(preTitle + title, bottomText ?? "", documentController.Id);
+
+                    if (!countToResults.ContainsKey(foundCount))
+                    {
+                        countToResults.Add(foundCount, new List<SearchResultViewModel>());
+                    }
+                    countToResults[foundCount].Add(vm);
+                }
             }
-            return results;
+            return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
             //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
         }
 
