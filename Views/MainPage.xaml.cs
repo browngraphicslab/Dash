@@ -51,6 +51,10 @@ namespace Dash
         public static InkController InkController = new InkController();
         public BrowserView WebContext => BrowserView.Current;
 
+        public bool SearchVisible { get; private set; }
+
+
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -75,6 +79,8 @@ namespace Dash
 
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+
+            SearchVisible = false;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -132,7 +138,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
-            
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -233,7 +239,7 @@ namespace Dash
             {
                 return;
             }
-            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
+            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true);
             e.Handled = true;
         }
 
@@ -249,7 +255,7 @@ namespace Dash
             OperatorMenuFlyout = new Flyout
             {
                 Content = TabMenu.Instance,
-                
+
             };
 
             xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
@@ -269,7 +275,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas); 
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -290,7 +296,7 @@ namespace Dash
         /// <param name="menu"></param>
         public void SetOptionsMenu(OverlayMenu menu)
         {
-//            menu.CreateAndRunInstantiationAnimation(true);
+            //            menu.CreateAndRunInstantiationAnimation(true);
             //xMenuCanvas.Content = menu;
         }
 
@@ -323,7 +329,7 @@ namespace Dash
             // make sure elementToDisplay is never cut from screen 
             if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
             {
-                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50; 
+                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50;
             }
             if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
             {
@@ -335,6 +341,7 @@ namespace Dash
         }
 
 
+
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
@@ -344,13 +351,22 @@ namespace Dash
         private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             TreeMenuColumn.Width = new GridLength(300 - TreeMenuColumn.Width.Value);
-            if (Math.Abs(TreeMenuColumn.Width.Value) < 0.0001)
+        }
+
+        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+            if (SearchVisible)
             {
-                CollapseButton.Text = ">";
+                SearchVisible = false;
+                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xTextBlock.Text = "\uE721";
             }
             else
             {
-                CollapseButton.Text = "<";
+                SearchVisible = true;
+                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xTextBlock.Text = "\uE8BB";
             }
         }
     }
