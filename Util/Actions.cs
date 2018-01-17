@@ -169,7 +169,7 @@ namespace Dash
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
             {
-                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                GroupTransform = new TransformGroupData(translate, new Point(1, 1))
             };
 
             if (opController != null)

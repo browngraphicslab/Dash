@@ -497,14 +497,6 @@ namespace Dash
             return posField;
         }
 
-        public static PointController GetScaleCenterField(this DocumentController doc, Context context = null)
-        {
-            var activeLayout = doc.GetActiveLayout();
-            var scaleCenterField = activeLayout?.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
-                                       new Context(context)) as PointController ?? doc.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as PointController;
-            return scaleCenterField;
-        }
-
         public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)
         {
             var activeLayout = doc.GetActiveLayout();
