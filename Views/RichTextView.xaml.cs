@@ -271,8 +271,8 @@ namespace Dash
                         var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
                         parentDoc.DeleteDocument(true);
                     }
+                    return;
                 }
-                return;
             }
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
@@ -304,7 +304,7 @@ namespace Dash
                         // see if we can find a document whose primary keys match the text
                         var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
 
-                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
+                         createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
                     }
                 }
             }

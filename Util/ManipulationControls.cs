@@ -405,7 +405,7 @@ namespace Dash
             
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-
+            
             SplitupGroupings(canSplitupDragGroup, docRoot);
 
             if (manipulationCompletedRoutedEventArgs != null)
@@ -463,7 +463,7 @@ namespace Dash
             docRoot?.ToFront();
             
              SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-
+            
             _isManipulating = true;
             _processManipulation = true;
 
@@ -471,7 +471,7 @@ namespace Dash
             if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
         }
-
+        
         private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
             if (parentCollection == null)
@@ -652,6 +652,17 @@ namespace Dash
             var sameList = otherGroups.ToList();
             sameList.Add(dragGroupDocument);
             return sameList;
+        }
+        public Windows.UI.Color ColorConvert(string colorStr)
+        {
+            colorStr = colorStr.Replace("#", string.Empty);
+
+            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
+            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
+            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
+            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
+
+            return Windows.UI.Color.FromArgb(a, r, g, b);
         }
 
         public void AddAllAndHandle()
