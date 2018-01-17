@@ -156,6 +156,15 @@ namespace Dash
         }
 
         /// <summary>
+        /// search method which should return whether this field contains the string being searched for.
+        /// 
+        /// The string should always be lowercased
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        public abstract StringSearchModel SearchForString(string searchString);
+
+        /// <summary>
         ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
         ///     displaying the number of items stored in collection/list
         /// </summary>

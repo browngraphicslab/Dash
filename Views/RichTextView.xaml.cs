@@ -257,8 +257,6 @@ namespace Dash
 
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent.ViewModel.DocumentController.CaptureNeighboringContext();
             CanSizeToFit = true;
             var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
             if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
@@ -621,7 +619,6 @@ namespace Dash
                 }
                 else break;
             }
-
             return atPos;
         }
 
@@ -640,6 +637,7 @@ namespace Dash
             HasFocus = true;
         }
 
+
         /// <summary>
         /// Sets HasFocus to false (allows tab to invoke tab menu when richeditbox does not have focus)
         /// </summary>
@@ -654,6 +652,7 @@ namespace Dash
         #endregion
 
         #region search
+
         /// <summary>
         /// Searches content of the xRichEditBox, highlights all results
         /// </summary>
@@ -816,6 +815,11 @@ namespace Dash
                 {
                     xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                 }
+            }
+            if (!ctrlState && !altState)
+            {
+                var parent = this.GetFirstAncestorOfType<DocumentView>();
+                parent.ViewModel.DocumentController.CaptureNeighboringContext();
             }
         }
 
