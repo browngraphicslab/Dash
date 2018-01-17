@@ -24,7 +24,6 @@ using Newtonsoft.Json.Linq;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
-using Dash.Views.Collection;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -143,12 +142,45 @@ namespace Dash
 
         public void SetCurrentWorkspace(DocumentController workspace)
         {
+            workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+        }
+
+        public bool NavigateToDocumentInWorkspace(DocumentController document)
+        {
+            var dvm = xMainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (coll != null)
+                return NavigateToDocument(coll, null, coll, document);
+            return false;
+        }
+
+        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
+        {
+            foreach (var dm in collection.ViewModel.DocumentViewModels)
+                if (dm.DocumentController.Equals(document))
+                {
+                    var containerViewModel = rootViewModel ?? dm;
+                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
+                    var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
+                    var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
+                        new Point(
+                            containerViewModel.GroupTransform.Translate.X + containerViewModel.Width / 2,
+                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.Height / 2));
+                    root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    return true;
+                }
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
+                {
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
+                        return true;
+                }
+            return false;
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
@@ -302,133 +334,7 @@ namespace Dash
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-        #region Requests
 
-        private enum HTTPRequestMethod
-        {
-            Get,
-            Post
-        }
-
-        private async void TwitterTestButtonOnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            // authorization on the tiwtter api
-            var twitterBase = "https://api.twitter.com";
-            var twitterAuthEndpoint = twitterBase.AppendPathSegments("oauth2", "token");
-            var twitterConsumerKey = "GSrTmog2xY7PWzxSjfGQDuKAH";
-            var twitterConsumerSecret = "6QOcnCElbr4u80tiWspoGQTYryFyyRoXxMgiSZv4fq0Fox3dhV";
-            var token = await OAuth2Authentication(twitterAuthEndpoint, twitterConsumerKey, twitterConsumerSecret);
-
-            var userName = "alanalevinson";
-            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
-            var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
-
-            var responseAsDocument = new JsonToDashUtil().ParseJsonString(tweetsByUser, tweetsByUserURL.ToString(true));
-            DisplayDocument(responseAsDocument);
-
-        }
-
-        private async Task<string> MakeRequest(string baseUrl, HTTPRequestMethod method, string token = null)
-        {
-            return await MakeRequest(new Url(baseUrl), method, token);
-        }
-
-        private async Task<string> MakeRequest(Url baseUrl, HTTPRequestMethod method, string token = null)
-        {
-            IFlurlClient client = new FlurlClient(baseUrl);
-            //Authorization header with the value of Bearer <base64 bearer token value from step 2>
-            if (token != null)
-            {
-                var encodedToken = Base64Encode(token);
-                client = baseUrl.WithHeader("Authorization", $"Bearer {token}");
-            }
-
-            HttpResponseMessage response = null;
-            if (method == HTTPRequestMethod.Get)
-            {
-                response = await client.GetAsync();
-            }
-            else if (method == HTTPRequestMethod.Post)
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-
-            return await GetStringFromResponseAsync(response);
-
-        }
-
-        private async Task<string> OAuth2Authentication(string authBaseUrl, string consumerKey, string consumerSecret)
-        {
-            return await OAuth2Authentication(new Url(authBaseUrl), consumerKey, consumerSecret);
-        }
-
-
-        private async Task<string> OAuth2Authentication(Url authBaseUrl, string consumerKey, string consumerSecret)
-        {
-            var concatKeySecret = $"{consumerKey}:{consumerSecret}";
-            var encodedKeySecret = Base64Encode(concatKeySecret);
-
-            var authResponse = await authBaseUrl.WithHeader("Authorization", $"Basic {encodedKeySecret}")
-                .PostUrlEncodedAsync(new
-                {
-                    grant_type = "client_credentials"
-                });
-
-            // get the string from the response, including decompression and checking for success
-            var responseString = await GetStringFromResponseAsync(authResponse);
-
-            if (responseString != null)
-            {
-                return JObject.Parse(responseString).GetValue("access_token").Value<string>();
-            }
-            return null;
-        }
-
-        private async Task<string> GetStringFromResponseAsync(HttpResponseMessage authResponse)
-        {
-            if (authResponse != null && authResponse.IsSuccessStatusCode)
-            {
-                if (authResponse.Content.Headers.ContentEncoding.Contains("gzip"))
-                {
-                    var bytes = await authResponse.Content.ReadAsByteArrayAsync();
-                    return Unzip(bytes);
-                }
-                return await authResponse.Content.ReadAsStringAsync();
-            }
-            return null;
-        }
-
-        public string Base64Encode(string plainText)
-        {
-            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
-            return Convert.ToBase64String(plainTextBytes);
-        }
-
-        public string Unzip(byte[] bytes)
-        {
-            using (var msi = new MemoryStream(bytes))
-            using (var mso = new MemoryStream())
-            {
-                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
-                {
-                    gs.CopyTo(mso);
-                }
-                return Encoding.UTF8.GetString(mso.ToArray());
-            }
-        }
-
-
-        #endregion
-
-        private void Border_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-        
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;

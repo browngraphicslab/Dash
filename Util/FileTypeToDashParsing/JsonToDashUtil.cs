@@ -12,6 +12,7 @@ using Windows.Storage;
 using CsvHelper;
 using DashShared;
 using Microsoft.Toolkit.Uwp;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

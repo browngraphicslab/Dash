@@ -157,8 +157,8 @@ namespace Dash
                     var documentNode = documentTree[documentController.Id];
                     if (documentNode?.Parents?.FirstOrDefault() != null)
                     {
-                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data) ? "?" :
-                            documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data) + " >  ";
+                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
+                            documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
                     }
 
                     var vm = new SearchResultViewModel(preTitle + title, bottomText ?? "", documentController.Id);

@@ -56,24 +56,6 @@ namespace Dash
         private bool _f1Down;
         private bool _ptrIn;
 
-        private class ContextWebView
-        {
-            public WebAndPdfView View;
-            public double ScaleFactor;
-            public double ActualWidth => Width * ScaleFactor;
-            public double ActualHeight => Height * ScaleFactor;
-            public double Width;
-            public double Height;
-
-            public ContextWebView(WebAndPdfView view, double scaleFactor, double width, double height)
-            {
-                View = view;
-                ScaleFactor = scaleFactor;
-                Width = width;
-                Height = height;
-            }
-        }
-
         private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
 
 
@@ -160,7 +142,7 @@ namespace Dash
             {
                 if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
-                var context = ViewModel.DocumentController.GetDataDocument(null).GetFirstContext();
+                var context = ViewModel.DocumentController.GetFirstContext();
                 if (context == null) return;
                 var source = new Uri(context.Url);
                 ViewModel.SetHasTitle(true);
@@ -580,7 +562,7 @@ namespace Dash
             double scale = Math.Max(Math.Max(dx, dy), 0.1);
             Debug.WriteLine(scale);
             var gt = ViewModel.GroupTransform;
-            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
         }
 
         /// <summary>

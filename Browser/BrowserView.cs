@@ -343,7 +343,8 @@ namespace Dash
                 Url = Url,
                 Scroll = Scroll,
                 Title = Title,
-                ViewDuration = MillisecondsSinceBecomingCurrentTab
+                ViewDuration = MillisecondsSinceBecomingCurrentTab,
+                CreationTimeTicks = DateTime.Now.Ticks
             };
         }
     }
