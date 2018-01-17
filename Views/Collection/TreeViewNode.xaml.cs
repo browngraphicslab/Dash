@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Collection
+namespace Dash
 {
     public sealed partial class TreeViewNode : UserControl
     {
@@ -29,6 +29,15 @@ namespace Dash.Views.Collection
         {
             get { return (string) GetValue(FilterStringProperty); }
             set { SetValue(FilterStringProperty, value); }
+        }
+
+        public static readonly DependencyProperty ContainingDocumentProperty = DependencyProperty.Register(
+            "ContainingDocument", typeof(DocumentController), typeof(TreeViewNode), new PropertyMetadata(default(DocumentController)));
+
+        public DocumentController ContainingDocument
+        {
+            get { return (DocumentController) GetValue(ContainingDocumentProperty); }
+            set { SetValue(ContainingDocumentProperty, value); }
         }
 
         private bool _isCollection = false;
@@ -67,6 +76,7 @@ namespace Dash.Views.Collection
                         new CollectionViewModel(
                             new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
                                 KeyStore.GroupingKey));
+                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;
                     fieldBinding.Tag = "TreeViewNodeCol";
@@ -104,7 +114,51 @@ namespace Dash.Views.Collection
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            e.Handled = true;
+            var docToFocus = (DataContext as DocumentViewModel).DocumentController;
+            if (_isCollection)
+            {
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (docsInGroup != null)
+                {
+                    docToFocus = docsInGroup.TypedData.FirstOrDefault();
+                }
+            }
+            if (! MainPage.Instance.NavigateToDocumentInWorkspace(docToFocus))
+                MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+            //var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+            //var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            //var myDoc = (DataContext as DocumentViewModel).DocumentController;
+            //if (col != null && grp != null)
+            //{
+            //    if (grp.TypedData.Contains(myDoc))
+            //    {
+            //        if (!col.TypedData.Contains(myDoc))
+            //        {
+                        
+            //        }
+            //        else
+            //        {
+            //            Debug.WriteLine("solo");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (!col.TypedData.Contains(myDoc))
+            //        {
+            //            Debug.Fail("Error, where are we?");
+            //        }
+            //        else
+            //        {
+            //            Debug.WriteLine("Col but no group");
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Debug.WriteLine("Not a group");
+            //}
+            //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
 }

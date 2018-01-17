@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using DashShared;
 using Microsoft.Toolkit.Uwp;
+using Microsoft.Toolkit.Uwp.Helpers;
 
 namespace Dash
 {

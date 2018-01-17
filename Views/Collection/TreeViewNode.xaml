@@ -1,8 +1,8 @@
 ﻿<UserControl
-    x:Class="Dash.Views.Collection.TreeViewNode"
+    x:Class="Dash.TreeViewNode"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views.Collection"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -19,6 +19,6 @@
             <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="1" DoubleTapped="XTextBlock_OnDoubleTapped"></TextBlock>
             <TextBlock x:Name="XArrowBlock" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped"></TextBlock>
         </Grid>
-        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{x:Bind FilterString}"></local:TreeViewCollectionNode>
+        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{x:Bind FilterString}" ContainingDocument="{x:Bind ContainingDocument}"></local:TreeViewCollectionNode>
     </StackPanel>
 </UserControl>

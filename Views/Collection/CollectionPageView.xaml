@@ -45,7 +45,18 @@
             <ColumnDefinition Width="11"/>
             <ColumnDefinition Width="150"/>
         </Grid.ColumnDefinitions>
-        <local:DocumentView x:Name="xDocView" Grid.Column="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Grid x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition>
+                    
+                </RowDefinition>
+                <RowDefinition Height="*">
+                    
+                </RowDefinition>
+            </Grid.RowDefinitions>
+            <local:DocumentView x:Name="xDocView" Grid.Column="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <TextBox Name="xDocTitle" Grid.Row="1" Width="200" Height="30" VerticalAlignment="Bottom"   HorizontalAlignment="Left" Visibility="Collapsed"></TextBox>
+        </Grid>
         <localMicrosoft:GridSplitter 
             x:Name="xSplitter"
             Grid.Column="1" Width="11" Opacity="0" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"

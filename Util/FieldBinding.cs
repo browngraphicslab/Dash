@@ -108,7 +108,11 @@ namespace Dash
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
             var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, String.Empty);
 
-            return field.SetValue(fieldData);
+            if (field == null && fieldData is string)
+                Document.SetField(Key, new TextController(fieldData as string), true);
+            else if (field != null)
+                return field.SetValue(fieldData);
+            return false;
         }
     }
 

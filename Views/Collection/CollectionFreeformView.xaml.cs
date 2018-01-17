@@ -838,8 +838,8 @@ namespace Dash
 
             var scale = new ScaleTransform
             {
-                CenterX = transformationDelta.ScaleCenter.X,
-                CenterY = transformationDelta.ScaleCenter.Y,
+                CenterX = 0,
+                CenterY = 0,
                 ScaleX = transformationDelta.ScaleAmount.X,
                 ScaleY = transformationDelta.ScaleAmount.Y
             };

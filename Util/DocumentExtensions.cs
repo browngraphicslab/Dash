@@ -277,7 +277,7 @@ namespace Dash
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 var context = doc.GetFirstContext();
@@ -297,12 +297,12 @@ namespace Dash
             }
 
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 
             if (neighboring == null)
             {
                 neighboring = new ListController<TextController>();
-                dataDocument.SetField(KeyStore.NeighboringDocumentsKey, neighboring, true);
+                dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
             }
 
             var context = MainPage.Instance.WebContext.GetAsContext();
@@ -326,7 +326,7 @@ namespace Dash
         public static DocumentContext GetLongestViewedContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
@@ -340,7 +340,7 @@ namespace Dash
         public static string GetLongestViewedContextUrl(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
@@ -356,7 +356,7 @@ namespace Dash
         public static DocumentContext GetLastContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 return neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
@@ -367,7 +367,7 @@ namespace Dash
         public static DocumentContext GetFirstContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 return neighboring.TypedData.First().Data.CreateObject<DocumentContext>();
@@ -378,7 +378,7 @@ namespace Dash
         public static List<DocumentContext> GetAllContexts(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument(null);
-            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 return neighboring.TypedData.Select(d => d.Data.CreateObject<DocumentContext>()).ToList();
@@ -495,14 +495,6 @@ namespace Dash
             }
 
             return posField;
-        }
-
-        public static PointController GetScaleCenterField(this DocumentController doc, Context context = null)
-        {
-            var activeLayout = doc.GetActiveLayout();
-            var scaleCenterField = activeLayout?.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
-                                       new Context(context)) as PointController ?? doc.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as PointController;
-            return scaleCenterField;
         }
 
         public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)

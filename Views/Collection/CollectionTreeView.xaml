@@ -2,13 +2,14 @@
     x:Class="Dash.CollectionTreeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views.Collection"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    Background="White">
+    Background="White"
+    d:DataContext="{d:DesignInstance local:CollectionViewModel}">
     <UserControl.Resources>
         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#686868</SolidColorBrush>
     </UserControl.Resources>
@@ -27,5 +28,6 @@
         <TextBox x:Name="XFilterBox" FontSize="16" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
         <local:TreeViewCollectionNode Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
         <Button Grid.Row="3" HorizontalAlignment="Stretch" Height="55" Background="#CC778888" Foreground="#DDEEFFFF" FontWeight="Medium" Tapped="UIElement_OnTapped">ADD WORKSPACE</Button>
+
     </Grid>
 </UserControl>
