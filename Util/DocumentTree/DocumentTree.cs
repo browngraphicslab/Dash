@@ -66,21 +66,20 @@ namespace Dash
 
         private void Parse(DocumentNode node)
         {
-            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+            _parsed.Add(node);
+            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
+            //childDocuments.AddRange(node.ViewDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null) ?? new List<DocumentController>());
             var childNodes = new List<DocumentNode>(childDocuments.Count);
-            foreach (var childDoc in childDocuments.TypedData)
+            foreach (var childDoc in childDocuments)
             {
-                var childnode = CreateNode(childDoc);
-                node.AddChild(childnode);
-                childNodes.Add(node);
+                var childNode = CreateNode(childDoc);
+                node.AddChild(childNode);
+                childNodes.Add(childNode);
             }
+            childNodes = childNodes.Where(i => !_parsed.Contains(i)).ToList();
             foreach (var childNode in childNodes)
             {
-                if (!_parsed.Contains(childNode))
-                {
-                    _parsed.Add(childNode);
-                    Parse(childNode);
-                }
+                Parse(childNode);
             }
         }
     }

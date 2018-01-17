@@ -71,7 +71,7 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            return obj is DocumentNode && ((DocumentNode) obj).Id.Equals(Id);
+            return (obj is DocumentNode) && ((DocumentNode) obj).Id.Equals(Id);
         }
     }
 }
