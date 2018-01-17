@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using static Dash.NoteDocuments;
+using Point = Windows.Foundation.Point;
 
 namespace Dash
 {
@@ -628,8 +629,8 @@ namespace Dash
                                 var solid = (GetViewModelFromDocument(otherGroupMember)?.BackgroundBrush as SolidColorBrush)?.Color;
                                 var brush = solid != Colors.Transparent ? new SolidColorBrush((Windows.UI.Color)solid) :
                                       new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
-                                foreach (var d in dragDocumentList)
-                                    GetViewModelFromDocument(d).BackgroundBrush = brush;
+                                foreach (var dvm in dragDocumentList.Select((d) => GetViewModelFromDocument(d)).Where((dvm) => dvm != null))
+                                    dvm.BackgroundBrush = brush;
                                 return newList;
                             }
                             else

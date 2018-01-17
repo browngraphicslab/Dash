@@ -68,7 +68,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Page, Text, DB, Schema, TreeView
+            Freeform, List, Grid, Page, Text, DB, Schema, TreeView, Timeline
         }
 
         private CollectionViewType _viewType;
@@ -138,6 +138,13 @@ namespace Dash
                 case CollectionViewType.Text:
                     SetTextView();
                     break;
+                case CollectionViewType.TreeView:
+                    break;
+                case CollectionViewType.Timeline:
+                    SetTimelineView();
+                    break;
+                default:
+                    throw new NotImplementedException("You need to add support for your collectionview here");
             }
 
             // TODO remove this arbtirary styling here
@@ -239,6 +246,10 @@ namespace Dash
             var schema = new MenuFlyoutItem() { Text = "Schema" };
             schema.Click += MenuFlyoutItemSchema_Click;
             viewCollectionAs.Items.Add(schema);
+
+            var timeline = new MenuFlyoutItem() { Text = "Timeline" };
+            timeline.Click += MenuFlyoutItemTimeline_Click;
+            viewCollectionAs.Items.Add(timeline);
         }
 
         /// <summary>
@@ -308,6 +319,11 @@ namespace Dash
         private void MenuFlyoutItemSchema_Click(object sender, RoutedEventArgs e)
         {
             SetSchemaView();
+        }
+
+        private void MenuFlyoutItemTimeline_Click(object sender, RoutedEventArgs e)
+        {
+            SetTimelineView();
         }
 
         #endregion
@@ -450,6 +466,17 @@ namespace Dash
             ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
 
             ViewModes?.HighlightAction(SetSchemaView);
+        }
+
+        private void SetTimelineView()
+        {
+            if (CurrentView is CollectionTimelineView) return;
+            CurrentView = new CollectionTimelineView();
+            xContentControl.Content = CurrentView;
+            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
+            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
+
+            ViewModes?.HighlightAction(SetTimelineView);
         }
 
         private void SetListView()

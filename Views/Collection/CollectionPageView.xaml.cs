@@ -81,9 +81,13 @@ namespace Dash
                 xPageNumContainer.Children.Remove(xPageNum);
                 xPageNum = new TextBlock();
 
+                xDocContainer.Children.Remove(xDocTitle);
+                xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width=200, Height=30 };
+                Grid.SetRow(xDocTitle, 1);
+
                 var binding = new FieldBinding<TextController>()
                 {
-                    Mode = BindingMode.TwoWay,
+                    Mode = BindingMode.OneWay,
                     Document = value.DocumentController.GetDataDocument(null),
                     Key = KeyStore.TitleKey
                 };
@@ -93,9 +97,20 @@ namespace Dash
                     value.Content.Loaded -= Content_Loaded;
                     value.Content.Loaded += Content_Loaded;
                 }
+                var captionBinding = new FieldBinding<TextController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = value.DocumentController.GetDataDocument(null),
+                    Key = KeyStore.CaptionKey
+                };
 
                 xPageNumContainer.Children.Add(xPageNum);
                 xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
+                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                xDocContainer.Children.Add(xDocTitle);
+                if (value.DocumentController.GetDataDocument(null).GetField(KeyStore.CaptionKey) == null)
+                    xDocTitle.Visibility = Visibility.Collapsed;
+                else xDocTitle.Visibility = Visibility.Visible; 
 
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 if (ind >= 0)
@@ -275,11 +290,24 @@ namespace Dash
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.PageDown)
-                NextButton_Click( sender,  e);
+            {
+                NextButton_Click(sender, e);
+                e.Handled = true;
+            } 
             if (e.Key == Windows.System.VirtualKey.PageUp)
+            {
                 PrevButton_Click(sender, e);
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
-        
+
+        private void xDocTitle_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+        }
+
+        private void xDocTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

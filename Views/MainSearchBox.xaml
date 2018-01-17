@@ -13,12 +13,13 @@
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
-                        QuerySubmitted="AutoSuggestBox_QuerySubmitted" 
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        Name="xAutoSuggestBox"
                         >
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Text="{Binding Title}"></TextBlock>
+                    <StackPanel Orientation="Vertical" Margin="5">
+                        <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
                         <TextBlock Text="{Binding ContextualText}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
