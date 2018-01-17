@@ -1371,5 +1371,11 @@ namespace Dash
         {
             return new DocumentController();
         }
+
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+            //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
+        }
     }
 }

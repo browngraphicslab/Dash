@@ -169,6 +169,8 @@ namespace Dash
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
+            DocumentController.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
+            DocumentController.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
             UpdateGroupingBounds();
 
         }
@@ -265,7 +267,6 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
-            
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 

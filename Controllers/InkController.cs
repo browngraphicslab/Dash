@@ -152,6 +152,11 @@ namespace Dash
             }
         }
 
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+        }
+
         public void Redo(InkCanvas sender)
         {
             if (_redoStack.Count > 0)

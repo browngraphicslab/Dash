@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
+<<<<<<< HEAD
 VisualStudioVersion = 15.0.27130.2010
+=======
+VisualStudioVersion = 15.0.27130.2020
+>>>>>>> cc8108ce59c14b34ae684d00605a45ff5b56994f
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dash", "Dash.csproj", "{7355FA95-4259-465B-8C8D-26DEED418788}"
 EndProject
@@ -33,9 +37,9 @@ Global
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Debug|x86.ActiveCfg = Debug|x86
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Debug|x86.Build.0 = Debug|x86
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Debug|x86.Deploy.0 = Debug|x86
-		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.ActiveCfg = Release|x64
-		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.Build.0 = Release|x64
-		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.Deploy.0 = Release|x64
+		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.ActiveCfg = Release|x86
+		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.Build.0 = Release|x86
+		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|Any CPU.Deploy.0 = Release|x86
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|ARM.ActiveCfg = Release|ARM
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|ARM.Build.0 = Release|ARM
 		{7355FA95-4259-465B-8C8D-26DEED418788}.Release|ARM.Deploy.0 = Release|ARM
@@ -80,6 +84,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {68D2F664-ACDC-4F66-8534-1205310D7FC7}
+		SolutionGuid = {DC1EC917-44F0-4575-9E03-B12C4356F85D}
 	EndGlobalSection
 EndGlobal

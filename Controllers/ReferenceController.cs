@@ -126,6 +126,17 @@ namespace Dash
             return "Ref";
         }
 
+        /// <summary>
+        /// we dont want referenced obejects to search again, for now.  
+        /// This could lead to big issues with performance, not knowing how to display such a distant result, and also with inifinite loops
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+        }
+
         public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.SaveOnServer(success, error);

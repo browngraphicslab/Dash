@@ -265,8 +265,11 @@ namespace Dash
                 [KeyStore.PositionFieldKey] = new PointController(pos),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
                 [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
-                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString())
-            };
+                [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
+                [KeyStore.ActualWidthKey] = new NumberController(double.NaN),
+                [KeyStore.ActualHeightKey] = new NumberController(double.NaN)
+                
+        };
 
             if (data != null)
                 fields.Add(KeyStore.DataKey, data);

@@ -8,6 +8,7 @@ using Dash.Controllers;
 using DashShared.Models;
 using System;
 using Windows.UI.Xaml.Controls;
+using Flurl.Util;
 
 namespace Dash
 {
@@ -279,7 +280,7 @@ namespace Dash
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
-                var context = doc.GetLastContext();
+                var context = doc.GetFirstContext();
                 if (context != null)
                 {
                     MainPage.Instance.WebContext.SetUrl(context.Url);
@@ -309,15 +310,47 @@ namespace Dash
             if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
             {
                 var last = neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
-                if (!context.Equals(last))
+                if (context.Equals(last))
                 {
-                    neighboring.Add(new TextController(context.Serialize()));
+                    neighboring.Remove(neighboring.TypedData.Last());
                 }
+                neighboring.Add(new TextController(context.Serialize()));
             }
             else
             {
                 neighboring.Add(new TextController(context.Serialize()));
             }
+        }
+
+
+        public static DocumentContext GetLongestViewedContext(this DocumentController doc)
+        {
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count > 0)
+            {
+                var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
+                var maxDuration = contexts.Max(context => context.ViewDuration);
+                var longestViewed = contexts.First(context => context.ViewDuration == maxDuration);
+                return longestViewed;
+            }
+            return null;
+        }
+
+        public static string GetLongestViewedContextUrl(this DocumentController doc)
+        {
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count > 0)
+            {
+                var contexts = neighboring.TypedData.Select(td => td.Data.CreateObject<DocumentContext>());
+                var grouped = contexts.GroupBy(c => c.Url);
+                var enumerable = grouped as IGrouping<string, DocumentContext>[] ?? grouped.ToArray();
+                var maxSum = enumerable.Max(group => group.Sum(i => i.ViewDuration));
+                var url = enumerable.First(group => group.Sum(i => i.ViewDuration) == maxSum).Key;
+                return url;
+            }
+            return null;
         }
 
         public static DocumentContext GetLastContext(this DocumentController doc)
@@ -327,6 +360,17 @@ namespace Dash
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
                 return neighboring.TypedData.Last().Data.CreateObject<DocumentContext>();
+            }
+            return null;
+        }
+
+        public static DocumentContext GetFirstContext(this DocumentController doc)
+        {
+            var dataDocument = doc.GetDataDocument(null);
+            var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.NeighboringDocumentsKey, null);
+            if (neighboring != null && neighboring.TypedData.Count > 0)
+            {
+                return neighboring.TypedData.First().Data.CreateObject<DocumentContext>();
             }
             return null;
         }
