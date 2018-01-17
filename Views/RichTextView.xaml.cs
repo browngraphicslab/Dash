@@ -517,7 +517,9 @@ namespace Dash
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
                     1.0f), parent.ManipulationControls._grouping);
-            if(parent.ManipulationControls._grouping.Count < 2) parent.ManipulationControls.Snap(true);
+
+            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
+            if(parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2) parent.ManipulationControls.Snap(true);
         }
 
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)

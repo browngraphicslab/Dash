@@ -390,7 +390,7 @@ namespace Dash
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
-            Snap(false);
+            Snap(false); //Always snap if done manipulating the "border"
             ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
         }
 
@@ -398,7 +398,8 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                if(_grouping == null || _grouping.Count < 2) Snap(false);
+                if(_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
             }
         } 

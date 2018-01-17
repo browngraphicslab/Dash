@@ -78,7 +78,7 @@ namespace Dash
         public bool MenuOpen
         {
             get => _menuOpen;
-            set => SetProperty(ref _menuOpen, value);
+            set => SetProperty(ref _menuOpen, value); 
         }
 
         public IconTypeEnum IconType => iconType;
