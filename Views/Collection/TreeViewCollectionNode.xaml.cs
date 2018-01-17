@@ -41,16 +41,6 @@ namespace Dash
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
-
-            DataContextChanged += TreeViewCollectionNode_DataContextChanged;
-        }
-
-        private void TreeViewCollectionNode_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (args.NewValue != null)
-            {
-                Debug.WriteLine("test");
-            }
         }
     }
 }

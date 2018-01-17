@@ -580,7 +580,7 @@ namespace Dash
             double scale = Math.Max(Math.Max(dx, dy), 0.1);
             Debug.WriteLine(scale);
             var gt = ViewModel.GroupTransform;
-            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, gt.ScaleCenter, new Point(scale, scale));
+            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
         }
 
         /// <summary>

@@ -203,7 +203,7 @@ namespace Dash
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
+            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
 
             currrentDoc.ViewModel.Width = newBoundingBox.Width;
             currrentDoc.ViewModel.Height = newBoundingBox.Height;
@@ -840,7 +840,7 @@ namespace Dash
             if (!_processManipulation) return;
             e.Handled = true;
 
-            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            if (e.KeyModifiers.HasFlag(VirtualKey.Control))
             {
 
                 //Get mousepoint in canvas space 
@@ -853,21 +853,18 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
-                        point.Position, new Point(scaleAmount, scaleAmount)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount)));
             }
             else
             {
                 var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
                 if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0), new Point(1, 1)));
                 }
                 else
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount), new Point(1, 1)));
                 }
 
             }
@@ -911,7 +908,7 @@ namespace Dash
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left + r.Width / 2, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt));
             }
         }
 
@@ -937,8 +934,7 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
-                    e.Position, new Point(scaleFactor, scaleFactor));
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y), new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();

@@ -335,7 +335,7 @@ namespace Dash
                     // using this as a setter for the transform massive hack - LM
                     var _ = new DocumentViewModel(opController)
                     {
-                        GroupTransform = new TransformGroupData(where, new Point(), new Point(1, 1))
+                        GroupTransform = new TransformGroupData(where, new Point(1, 1))
                     };
                     AddDocument(opController, null);
                 }

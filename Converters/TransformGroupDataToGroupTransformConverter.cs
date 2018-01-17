@@ -16,8 +16,8 @@ namespace Dash
             var group = new TransformGroup();
             group.Children.Add(new ScaleTransform
             {
-                CenterX = data.ScaleCenter.X,
-                CenterY = data.ScaleCenter.Y,
+                CenterX = 0,
+                CenterY = 0,
                 ScaleX = data.ScaleAmount.X,
                 ScaleY = data.ScaleAmount.Y
             });

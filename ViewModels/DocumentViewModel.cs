@@ -25,7 +25,7 @@ namespace Dash
         private double _height;
         private double _width;
         private double _groupMargin = 25;
-        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
+        private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
         private Brush _borderBrush;
@@ -146,12 +146,6 @@ namespace Dash
                     //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
                     Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
                     posFieldModelController.Data = value.Translate;
-                    // set scale center
-                    var scaleCenterFieldModelController =
-                        LayoutDocument.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as
-                            PointController;
-                    if (scaleCenterFieldModelController != null)
-                        scaleCenterFieldModelController.Data = value.ScaleCenter;
                     // set scale amount
                     var scaleAmountFieldModelController =
                         LayoutDocument.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
@@ -204,7 +198,7 @@ namespace Dash
             var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
-            GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+            GroupTransform = new TransformGroupData(translate, scaleAmount);
         }
 
         public Brush BackgroundBrush
@@ -276,7 +270,7 @@ namespace Dash
             DataBindingSource.Add(documentController.DocumentModel);
 
             SetUpSmallIcon();
-            _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
+            _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
             documentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
@@ -301,6 +295,7 @@ namespace Dash
         {
             SetHasTitle(!Undecorated && DocumentController.GetDataDocument(null).HasTitle);
         }
+
         private void SetUpSmallIcon()
         {
             var iconFieldModelController =
@@ -335,7 +330,6 @@ namespace Dash
             oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
             oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
             oldLayoutDoc.GetPositionField().FieldModelUpdated -= PosFieldModelController_FieldModelUpdatedEvent;
-            oldLayoutDoc.GetScaleCenterField().FieldModelUpdated -= ScaleCenterFieldModelController_FieldModelUpdatedEvent;
             oldLayoutDoc.GetScaleAmountField().FieldModelUpdated -= ScaleAmountFieldModelController_FieldModelUpdatedEvent;
         }
 
@@ -379,21 +373,20 @@ namespace Dash
                 activeLayout = docController;
             if (activeLayout != null)
             {
-                var scaleCenterFieldModelController = docController.GetScaleCenterField();
-                var scaleAmountFieldModelController = docController.GetScaleAmountField();
-                if (scaleCenterFieldModelController != null)
-                {
-                    var posFieldModelController = docController.GetPositionField();
-                    if (scaleAmountFieldModelController != null)
-                        GroupTransform = new TransformGroupData(posFieldModelController.Data,
-                            scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-                    posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-                    scaleCenterFieldModelController.FieldModelUpdated +=
-                        ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-                }
-                if (scaleAmountFieldModelController != null)
-                    scaleAmountFieldModelController.FieldModelUpdated +=
+                //TODO These events should probably be added to and removed from the document, not to the fields
+                var scaleAmountField = docController.GetScaleAmountField();
+                if (scaleAmountField != null)
+                    scaleAmountField.FieldModelUpdated +=
                         ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+                var posField = docController.GetPositionField();
+                if (posField != null)
+                {
+                    posField.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                }
+                if (posField != null && scaleAmountField != null)
+                {
+                    GroupTransform = new TransformGroupData(posField.Data, scaleAmountField.Data);
+                }
             }
 
         }
@@ -467,16 +460,7 @@ namespace Dash
             var posFieldModelController = sender as PointController;
             if (posFieldModelController != null)
             {
-                GroupTransform = new TransformGroupData(posFieldModelController.Data, GroupTransform.ScaleCenter, GroupTransform.ScaleAmount);
-            }
-        }
-
-        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var scaleCenterFieldModelController = sender as PointController;
-            if (scaleCenterFieldModelController != null)
-            {
-                GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleCenterFieldModelController.Data, GroupTransform.ScaleAmount);
+                GroupTransform = new TransformGroupData(posFieldModelController.Data, GroupTransform.ScaleAmount);
             }
         }
 
@@ -485,7 +469,7 @@ namespace Dash
             var scaleAmountFieldModelController = sender as PointController;
             if (scaleAmountFieldModelController != null)
             {
-                GroupTransform = new TransformGroupData(GroupTransform.Translate, GroupTransform.ScaleCenter, scaleAmountFieldModelController.Data);
+                GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleAmountFieldModelController.Data);
             }
         }
 
