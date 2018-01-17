@@ -42,6 +42,8 @@ namespace Dash
         public static KeyController NeighboringDocumentsKey = new KeyController(DashConstants.KeyStore.NeighboringDocumentsKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
         public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
+        public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
+        public static KeyController ActualHeightKey = new KeyController(DashConstants.KeyStore.ActualHeightKey);
 
         /// <summary>
         /// Key for collection data
@@ -56,5 +58,7 @@ namespace Dash
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
+
+
     }
 }

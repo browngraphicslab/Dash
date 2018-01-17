@@ -84,6 +84,12 @@ namespace Dash
 
         }
 
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+        }
+
+
         public bool IsCompound()
         {
             return OperatorFieldModel.IsCompound;

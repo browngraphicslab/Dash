@@ -19,7 +19,7 @@
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <StackPanel Orientation="Vertical">
                         <TextBlock Text="{Binding Title}"></TextBlock>
-                        <TextBlock Text="{Binding Id}"></TextBlock>
+                        <TextBlock Text="{Binding ContextualText}"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </AutoSuggestBox.ItemTemplate>

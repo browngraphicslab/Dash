@@ -92,5 +92,10 @@ namespace Dash
         {
             return new RectController(Data);
         }
+
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            return StringSearchModel.False;
+        }
     }
 }

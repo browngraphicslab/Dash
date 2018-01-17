@@ -75,6 +75,20 @@ namespace Dash
             }
         }
 
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            int maxStringSize = 125;
+            var lowerData = Data.ReadableString.ToLower();
+            if (lowerData.Contains(searchString))
+            {
+                var index = lowerData.IndexOf(searchString);
+                index = Math.Max(0, index - ((maxStringSize - searchString.Length) / 2));
+                var substring = Data.ReadableString.Substring(index, Math.Min(maxStringSize, Data.ReadableString.Length - index));
+                return new StringSearchModel(substring);
+            }
+            return StringSearchModel.False;
+        }
+
         // bcz: just want the basic behavior of converting the field into a string.. no need to override.
         //public override FrameworkElement GetTableCellView(Context context)
         //{

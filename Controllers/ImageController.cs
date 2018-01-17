@@ -56,6 +56,14 @@ namespace Dash
             }
         }
 
+        public override StringSearchModel SearchForString(string searchString)
+        {
+            if (((ImageModel) Model).Data.AbsoluteUri.ToLower().Contains(searchString))
+            {
+                return new StringSearchModel(Data.AbsoluteUri);
+            }
+            return StringSearchModel.False;
+        }
 
         public override FrameworkElement GetTableCellView(Context context)
         {

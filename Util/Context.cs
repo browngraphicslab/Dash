@@ -54,6 +54,10 @@ namespace Dash
         /// <returns></returns>
         public bool ContainsAncestorOf(DocumentController doc)
         {
+            if (DocContextList.Contains(doc))
+            {
+                return true;
+            }
             var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
             return doc.IsDelegateOf(deepestRelative); 
         }
