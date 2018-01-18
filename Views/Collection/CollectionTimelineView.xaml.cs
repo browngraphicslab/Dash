@@ -115,6 +115,8 @@ namespace Dash
         private void CollectionTimelineView_Unloaded(object sender, RoutedEventArgs e)
         {
             RemoveViewModelEvents(ViewModel);
+            TimelineElement.LastX = 0;
+            TimelineElement.LastY = 0;
             Unloaded -= CollectionTimelineView_Unloaded;
         }
 

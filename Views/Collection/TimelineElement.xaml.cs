@@ -79,15 +79,36 @@ namespace Dash
             ShowLocalContext(true);
         }
 
+        public static double LastX = 0;
+        public static double LastY = 0;
+
+        private double _minGap = 30;
+        private double _maxGap = 300;
+
         private void UpdateTimelinePosition()
         {
             var x = CalculateXPosition(ViewModel, ParentTimeline.Metadata);
             var y = CalculateYPosition(ViewModel, ParentTimeline.Metadata);
+
+            var gapDistance = x - LastX;
+            if (gapDistance < _minGap)
+            {
+                x = LastX + _minGap;
+            }
+            else if (gapDistance > _maxGap)
+            {
+                x = LastX + _maxGap;
+            }
+
+
             RenderTransform = new TranslateTransform()
             {
                 X = x,
                 Y = y
             };
+
+            LastX = x;
+            LastY = y;
         }
 
         private double CalculateYPosition(TimelineElementViewModel context, TimelineMetadata metadata)
