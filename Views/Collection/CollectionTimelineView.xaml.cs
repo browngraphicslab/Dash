@@ -78,7 +78,7 @@ namespace Dash
 
             Metadata = new TimelineMetadata
             {
-                LeftRightMargin = 50
+                LeftRightMargin = 160
             };
         }
 

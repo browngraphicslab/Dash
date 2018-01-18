@@ -55,6 +55,7 @@ namespace Dash
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
         private bool _f1Down;
         private bool _ptrIn;
+        private bool _multiSelected;
 
         private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
 
@@ -93,11 +94,8 @@ namespace Dash
 
             AddBorderRegionHandlers();
 
-
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
-
-
 
             MenuFlyout = xMenuFlyout;
         }
@@ -123,9 +121,30 @@ namespace Dash
             }
         }
 
+        public void ToggleMultiSelected(bool isMultiSelected)
+        {
+            if (isMultiSelected == _multiSelected) return;
+            var freeformView = ParentCollection.CurrentView as CollectionFreeformView;
+            if (freeformView == null) return;
+            if (!isMultiSelected)
+            {
+                this.CanDrag = false;
+                this.DragStarting -= freeformView.DocView_OnDragStarting;
+                xFieldContainer.BorderThickness = new Thickness(0);
+            } else
+            {
+                this.CanDrag = true;
+                this.DragStarting += freeformView.DocView_OnDragStarting;
+                xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
+                xFieldContainer.BorderThickness = new Thickness(2);
+            }
+            _multiSelected = isMultiSelected;
+        }
+
         public void ShowLocalContext(bool showContext)
         {
-
+            if (ViewModel == null)
+                return;
             ViewModel.ShowLocalContext = showContext;
 
             if (!showContext && _localContext.View != null)
@@ -134,7 +153,6 @@ namespace Dash
                 xShadowHost.Children.Remove(_localContext.View);
                 _localContext.View = null;
                 GC.Collect();
-                Debug.WriteLine("Destroyed Child");
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
             }
 
@@ -159,9 +177,6 @@ namespace Dash
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
                     Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
                     xContextTitle.Content = context.Title;
-
-
-                    Debug.WriteLine("Created Child");
                 }
                 else if (!_localContext.View.Source.Equals(source))
                 {
@@ -407,7 +422,7 @@ namespace Dash
 
         public void ToFront()
         {
-            if (ParentCollection == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
                 return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -464,7 +479,7 @@ namespace Dash
             }
 
             ToFront();
-            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true) return;
 
             // TODO this causes groups to show up, and needs to be moved
             ManipulationControls.ManipulationCompleted(null, false);
@@ -862,6 +877,7 @@ namespace Dash
                         Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                     }
                     OnSelected();
+                    
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
@@ -1039,30 +1055,45 @@ namespace Dash
 
         public void MoveToContainingCollection()
         {
-           var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null)
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            if (collection == null ||ViewModel == null)
                 return;
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
             var y = pointerPosition2.Y - Window.Current.Bounds.Y;
             var pos = new Point(x, y);
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<CollectionView>();
-            
-            foreach (var nestedCollection in topCollection)
+
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>();
+
+            foreach (var nestedDocument in topCollection)
+            {
+                CollectionView nestedCollection = null;
+                if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                    nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
                 if (nestedCollection != null)
                 {
                     if (nestedCollection.GetAncestors().ToList().Contains(this))
                         continue;
-                    if (!nestedCollection.Equals(collection) )
+                    if (!nestedCollection.Equals(collection))
                     {
                         var where = nestedCollection.CurrentView is CollectionFreeformView ?
                             Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                             new Point();
-                        nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                        collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        if (nestedCollection.CurrentView is CollectionPageView && ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString?.StartsWith("#") == true)
+                        {
+                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                            this.DeleteDocument();
+                            return;
+                        }
+                        else
+                        {
+                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        }
                     }
                     break;
                 }
+            }
         }
 
         #region Context menu click handlers
@@ -1126,7 +1157,7 @@ namespace Dash
 
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+            ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
 
         private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)

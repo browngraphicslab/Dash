@@ -409,17 +409,17 @@ namespace Dash
             
             SplitupGroupings(canSplitupDragGroup, docRoot);
 
+            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+                    () => docRoot.MoveToContainingCollection()));
             if (manipulationCompletedRoutedEventArgs != null)
             {
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => docRoot.MoveToContainingCollection()));
                 manipulationCompletedRoutedEventArgs.Handled = true;
             }
         }
 
         void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
         {
-            if (docRoot?.ParentCollection == null)
+            if (docRoot?.ParentCollection == null || docRoot?.ViewModel?.DocumentController == null)
                 return;
             var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
@@ -475,7 +475,7 @@ namespace Dash
         
         private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
         {
-            if (parentCollection == null)
+            if (parentCollection == null || docViewModel == null)
                 return;
             var groupsList = GetGroupsList(parentCollection);
 
@@ -537,7 +537,7 @@ namespace Dash
             return groupsList;
         }
 
-        DocumentController GetGroupForDocument(DocumentController dragDocument)
+        public DocumentController GetGroupForDocument(DocumentController dragDocument)
         {
             var docView = _element.GetFirstAncestorOfType<DocumentView>();
             var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
@@ -629,8 +629,8 @@ namespace Dash
                                 var solid = (GetViewModelFromDocument(otherGroupMember)?.BackgroundBrush as SolidColorBrush)?.Color;
                                 var brush = solid != Colors.Transparent ? new SolidColorBrush((Windows.UI.Color)solid) :
                                       new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
-                                foreach (var d in dragDocumentList)
-                                    GetViewModelFromDocument(d).BackgroundBrush = brush;
+                                foreach (var dvm in dragDocumentList.Select((d) => GetViewModelFromDocument(d)).Where((dvm) => dvm != null))
+                                    dvm.BackgroundBrush = brush;
                                 return newList;
                             }
                             else
@@ -639,8 +639,8 @@ namespace Dash
                                 groupList.AddRange(dragDocumentList);
                                 var newList = otherGroups.ToList();
                                 newList.Remove(dragGroupDocument);
-                                foreach (var d in dragDocumentList)
-                                    GetViewModelFromDocument(d).BackgroundBrush = GetViewModelFromDocument(otherGroupMember).BackgroundBrush;
+                                foreach (var dvm in dragDocumentList.Select((d) => GetViewModelFromDocument(d)).Where((dvm)=>dvm != null))
+                                    dvm.BackgroundBrush = GetViewModelFromDocument(otherGroupMember).BackgroundBrush;
                                 return newList;
                             }
                         }

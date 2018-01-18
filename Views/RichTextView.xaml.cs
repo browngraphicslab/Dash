@@ -96,6 +96,26 @@ namespace Dash
             _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
 
             xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+            xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
+            {
+                var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                if (freeform == null)
+                {
+                    return;
+                }
+
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if(docView== null)
+                {
+                    return ;
+                }
+
+                if (freeform.TagNote(xRichEditBox.Document.Selection.Text, docView))
+                {
+                    //var start = xRichEditBox.Document.Selection.StartPosition;
+                    //xRichEditBox.Document.Selection.SetRange(start, start);
+                }
+            };
 
             // store a clone of character format after initialization as default format
             xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
@@ -161,10 +181,6 @@ namespace Dash
                     selectedText.CharacterFormat = charFormatting;
                     xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
-            }
-            if (Scroll.Visibility == Visibility.Visible)
-            {
-                Debug.WriteLine("Sc" + Scroll.ActualHeight);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
@@ -526,8 +542,8 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-            if (parent != null)
-                parent.MoveToContainingCollection();
+            //if (parent != null)
+            //    parent.MoveToContainingCollection();
             if (_rightPressed)
             {
                 var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);

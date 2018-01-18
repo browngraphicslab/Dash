@@ -14,6 +14,7 @@ namespace Dash
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
+        public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
         public static KeyController PrimaryKeyKey = new KeyController(DashConstants.KeyStore.PrimaryKeyKey);
         public static KeyController ThisKey = new KeyController(DashConstants.KeyStore.ThisKey);
         public static KeyController PrototypeKey = new KeyController(DashConstants.KeyStore.PrototypeKey);

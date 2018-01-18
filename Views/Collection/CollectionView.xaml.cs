@@ -186,6 +186,40 @@ namespace Dash
             newCollection.Click += MenuFlyoutItemNewCollection_Click;
             ParentDocument.MenuFlyout.Items.Add(newCollection);
 
+            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
+
+            void EnterTagMode(object sender, RoutedEventArgs e)
+            {
+                tagMode.Click -= EnterTagMode;
+                tagMode.Click += ExitTagMode;
+
+                tagMode.Text = "Exit Tag Mode";
+
+                var view = CurrentView as CollectionFreeformView;
+                if (view != null)
+                {
+                    view.TagMode = true;
+                }
+            }
+
+            void ExitTagMode(object sender, RoutedEventArgs e)
+            {
+                tagMode.Click -= ExitTagMode;
+                tagMode.Click += EnterTagMode;
+
+                tagMode.Text = "Tag Notes";
+            ;
+                var view = CurrentView as CollectionFreeformView;
+                if (view != null)
+                {
+                    view.TagMode = false;
+                }
+            }
+
+
+            tagMode.Click += EnterTagMode;
+            ParentDocument.MenuFlyout.Items.Add(tagMode);
+
             // add another horizontal separator
             ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
 

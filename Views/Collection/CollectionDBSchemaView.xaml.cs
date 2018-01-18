@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
+using Windows.ApplicationModel.DataTransfer;
 using DashShared.Models;
 using Windows.UI.Xaml.Controls;
 
@@ -444,15 +445,31 @@ namespace Dash
 
         private void XRecordsView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
+            //if (vm != null)
+            //{
+            //    var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            //    // TODO parent doc is the data doc we might want to set this on the layout instead
+            //    // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
+            //    // TODO assumes a data doc
+            //    vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            //}
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
+            if (vm == null) vm = e.RemovedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm != null)
             {
-                var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                List<CollectionDBSchemaRecordViewModel> recordVMs =
+                    xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
+                List<DocumentController> selectedDocs = new List<DocumentController>();
+                if (recordVMs.Count > 0)
+                    selectedDocs = recordVMs
+                        .Select(viewmodel => GetLayoutFromDataDocAndSetDefaultLayout(viewmodel.Document)).ToList();
                 // TODO parent doc is the data doc we might want to set this on the layout instead
                 // TODO would have to change the on drop method on the basecollectionviewmodel drop method though since that
                 // TODO assumes a data doc
-                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+                vm.ParentDoc.SetField(KeyStore.SelectedSchemaRow, new ListController<DocumentController>(selectedDocs), true);
             }
+
         }
 
         // TODO lsm wrote this here it's a hack we should definitely remove this
@@ -474,6 +491,20 @@ namespace Dash
             }
 
             return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
+        }
+        private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        {
+            List<CollectionDBSchemaRecordViewModel> recordVMs =
+                xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in recordVMs)
+            {
+                docControllerList.Add(vm.Document);
+                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            }
+            args.Data.Properties.Add("DocumentControllerList", docControllerList);
+            args.Data.Properties.Add("View", true);
+            args.Data.RequestedOperation = DataPackageOperation.Link;
         }
     }
 }
