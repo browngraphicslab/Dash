@@ -28,6 +28,7 @@ namespace Dash
         void AddDocument(DocumentController document, Context context);
         void RemoveDocuments(List<DocumentController> documents);
         void RemoveDocument(DocumentController document);
+        
 
         void SetSelected(FrameworkElement setter, bool isSelected);
         void SetLowestSelected(FrameworkElement setter, bool isLowestSelected);

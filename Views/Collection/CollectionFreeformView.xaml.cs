@@ -33,6 +33,7 @@ using Windows.System;
 using Windows.UI.Core;
 using DashShared.Models;
 using Flurl.Util;
+using NewControls.Geometry;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -49,7 +50,6 @@ namespace Dash
         public const float MinScale = 0.25f;
 
         #endregion
-
 
         #region LinkingVariables
 
@@ -97,6 +97,15 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
+        {
+            if (args.VirtualKey == VirtualKey.Back)
+            {
+                ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
+            }
         }
 
         public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
@@ -156,6 +165,10 @@ namespace Dash
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
+
+            xOuterGrid.PointerPressed += OnPointerPressed;
+            xOuterGrid.PointerMoved += OnPointerMoved;
+            xOuterGrid.PointerReleased += OnPointerReleased;
 
             if (InkController != null)
             {
@@ -979,7 +992,6 @@ namespace Dash
 
         #endregion
 
-
         #region PointerChrome
 
         /// <summary>
@@ -1081,21 +1093,28 @@ namespace Dash
                 var droppedField = _currReference.FieldReference;
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
 
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
-                                     droppedSrcDoc.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()
+                                         ?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
+                                     droppedSrcDoc
+                                         .GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
                                      CollectionView.CollectionViewType.Schema.ToString();
                 
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
                 cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
 
+
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
-                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null)
+                        .GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey,
+                        new TextController(field), true);
                 }
 
 
@@ -1104,13 +1123,144 @@ namespace Dash
                 for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
                     if (itemsPanelCanvas.Children[i] is ContentPresenter)
                     {
-                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
-                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
+                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)
+                            ?.Content as CollectionView;
+                        EndDrag(
+                            new IOReference(
+                                new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey),
+                                false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
                     }
             }
             CancelDrag(e.Pointer);
         }
+
+        #region Marquee Select
+
+        private Rectangle _marquee;
+        private bool _multiSelect;
+        private Point _marqueeAnchor;
+        private bool _isSelecting;
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
+                MarqueeSelectDocs(marqueeRect);
+                _multiSelect = false;
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+       
+            xOuterGrid.ReleasePointerCapture(e.Pointer);
+            Debug.WriteLine("number selected: " + ViewModel.SelectionGroup.Count());
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
+
+            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
+            
+
+            var pos = currentPoint.Position;
+            var dX = pos.X - _marqueeAnchor.X;
+            var dY = pos.Y - _marqueeAnchor.Y;
+
+            //Height and width depend on the difference in position of the current point and the anchor (initial point)
+            double newWidth = (dX > 0) ? dX : -dX;
+            double newHeight = (dY > 0) ? dY : -dY;
+
+            //Anchor point should also be moved if dX or dY are moved
+            var newAnchor = _marqueeAnchor;
+            if(dX < 0) newAnchor.X += dX;
+            if (dY < 0) newAnchor.Y += dY;
+
+
+            if (newWidth > 5 && newHeight > 5 && _marquee == null)
+            {
+                _marquee = new Rectangle()
+                {
+                    Stroke = new SolidColorBrush(Colors.Gray),
+                    StrokeThickness = 1.5 / Zoom,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    CompositeMode = ElementCompositeMode.SourceOver
+                };
+                SelectionCanvas.Children.Add(_marquee);
+            }
+
+            if (_marquee == null) return;
+
+            //Adjust the marquee rectangle
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+
+            args.Handled = true;
+            
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                _isSelecting = true;
+            }
+        }
+
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+            var selectedDocs = new List<DocumentView>();
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                IEnumerable<DocumentViewModel> docs =
+                    xItemsControl.Items.OfType<DocumentViewModel>();
+                foreach (var docvm in docs)
+                {
+                    var doc = docvm.DocumentController;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    if (double.IsNaN(width)) width = 0;
+                    var height = doc.GetHeightField().Data;
+                    if (double.IsNaN(height)) height = 0;
+                    var rect = new Rect(position, new Size(width, height));
+                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                    {
+                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                        if (documentView != null)
+                            selectedDocs.Add(
+                                documentView);
+                    }
+                }
+            }
+            foreach (var docView in selectedDocs)
+            {
+                Select(docView);
+                //AddToPayload(docView);
+            }
+            //Makes the collectionview's selection mode "Multiple" if documents were selected.
+            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            {
+                var parentView = this.GetFirstAncestorOfType<CollectionView>();
+                parentView.MakeSelectionModeMultiple();
+            }
+        }
+
+        #endregion
 
         #region Flyout
         #endregion
@@ -1153,6 +1303,11 @@ namespace Dash
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
+
+            SelectionCanvas.Children.Clear();
+            DeselectAll();
+
+            _isSelecting = false;
 
             RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
@@ -1232,101 +1387,55 @@ namespace Dash
                 _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
-                    foreach (var pair in _payload)
-                    {
-                        Deselect(pair.Key);
-                    }
-                    _payload = new Dictionary<DocumentView, DocumentController>();
+                    DeselectAll();
                 }
             }
         }
 
 
+
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+
+        private List<DocumentView> _documentViews = new List<DocumentView>();
+
 
         private bool _isToggleOn;
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
-            _payload = new Dictionary<DocumentView, DocumentController>();
             foreach (var docView in DocumentViews)
-            {
                 if (_isToggleOn)
-                {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-                }
                 else
-                {
                     Deselect(docView);
-                    _payload.Remove(docView);
-                }
-            }
         }
 
         public void DeselectAll()
         {
-            foreach (var docView in DocumentViews)
+            foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
             {
                 Deselect(docView);
-                _payload.Remove(docView);
             }
+            ViewModel.SelectionGroup.Clear();
         }
 
         private void Deselect(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
-            docView.CanDrag = false;
-            docView.ManipulationMode = ManipulationModes.All;
-            docView.DragStarting -= DocView_OnDragStarting;
+            ViewModel.SelectionGroup.Remove(docView.ViewModel);
+            docView.ToggleMultiSelected(false);
+            
         }
 
         public void Select(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
-            docView.CanDrag = true;
-            docView.ManipulationMode = ManipulationModes.None;
-            docView.DragStarting += DocView_OnDragStarting;
-        }
-
-        public void AddToPayload(DocumentView docView)
-        {
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-        }
-
-        // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
-        // TODO there are better hooks to use
-        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!IsSelectionEnabled) return;
-
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
-            if (docView.CanDrag)
-            {
-                Deselect(docView);
-                _payload.Remove(docView);
-            }
-            else
-            {
-                Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-            }
-            e.Handled = true;
+            ViewModel.SelectionGroup.Add(docView.ViewModel);
+            docView.ToggleMultiSelected(true);
         }
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
             Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
-
-            //if (ItemsCarrier.Instance.StartingCollection == null)
-            //    return;
-            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            //foreach (var view in _payload.Keys.ToList())
-            //    _documentViews.Remove(view);
-
-            //_payload = new Dictionary<DocumentView, DocumentController>();
-            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
 
@@ -1341,7 +1450,14 @@ namespace Dash
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in ViewModel.SelectionGroup)
+            {
+                docControllerList.Add(vm.DocumentController);
+            }
+            e.Data.Properties.Add("DocumentControllerList", docControllerList);
+            e.Data.Properties.Add("View", true);
+            e.Data.RequestedOperation = DataPackageOperation.Link;
         }
         #endregion
 
@@ -1349,8 +1465,9 @@ namespace Dash
 
         public InkController InkController;
         public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
         private bool loadingPermanentTextbox;
-
         public double Zoom { get { return ManipulationControls.ElementScale; } }
         private TextBox previewTextbox { get; set; }
 
@@ -1528,7 +1645,6 @@ namespace Dash
             if (sender is DocumentView documentView)
             {
                 OnDocumentViewLoaded?.Invoke(this, documentView);
-                documentView.OuterGrid.Tapped += DocumentView_Tapped;
                 DocumentViews.Add(documentView);
 
                 if (loadingPermanentTextbox)
