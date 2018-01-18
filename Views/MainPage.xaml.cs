@@ -317,12 +317,6 @@ namespace Dash
             //DBTest.DBDoc.AddChild(docModel);
         }
 
-        private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xMainDocView.Width = e.NewSize.Width;
-            xMainDocView.Height = e.NewSize.Height;
-        }
-
         public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
             var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
