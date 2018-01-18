@@ -1008,6 +1008,8 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
             ViewModel?.SetHasTitle(isLowestSelected);
+
+            OperatorEllipse.Visibility = isLowestSelected ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #endregion
@@ -1176,6 +1178,12 @@ namespace Dash
             var data = new DataPackage() { };
             data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
             Clipboard.SetContent(data);
+        }
+
+        private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
+            args.AllowedOperations = DataPackageOperation.Link;
         }
     }
 }

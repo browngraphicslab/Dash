@@ -167,6 +167,7 @@ namespace Dash
         /// <param name="e"></param>
         void StartNewLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
+
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry) el.DataContext).Key as KeyController;
