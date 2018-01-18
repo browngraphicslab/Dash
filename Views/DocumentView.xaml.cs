@@ -134,7 +134,6 @@ namespace Dash
                 xShadowHost.Children.Remove(_localContext.View);
                 _localContext.View = null;
                 GC.Collect();
-                Debug.WriteLine("Destroyed Child");
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
             }
 
@@ -159,9 +158,6 @@ namespace Dash
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
                     Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
                     xContextTitle.Content = context.Title;
-
-
-                    Debug.WriteLine("Created Child");
                 }
                 else if (!_localContext.View.Source.Equals(source))
                 {

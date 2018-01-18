@@ -182,10 +182,6 @@ namespace Dash
                     xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
             }
-            if (Scroll.Visibility == Visibility.Visible)
-            {
-                Debug.WriteLine("Sc" + Scroll.ActualHeight);
-            }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
