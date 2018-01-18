@@ -74,6 +74,9 @@ namespace Dash
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
             UpdateTimelinePosition();
+
+            LocalContextVisible = true;
+            ShowLocalContext(true);
         }
 
         private void UpdateTimelinePosition()
@@ -116,6 +119,8 @@ namespace Dash
                 xWebHolder.Children.Remove(_localContext.View);
                 _localContext.View = null;
                 GC.Collect();
+
+                xLowerLine.Visibility = Visibility.Collapsed;
             }
 
             if (showContext)
@@ -139,18 +144,26 @@ namespace Dash
                 {
                     _localContext.View.Source = source;
                 }
+
+                xLowerLine.Visibility = Visibility.Visible;
             }
         }
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            LocalContextVisible = !LocalContextVisible;
-            ShowLocalContext(LocalContextVisible);
+            //LocalContextVisible = !LocalContextVisible;
+            
+            _localContextVisible = !_localContextVisible;
+            ShowLocalContext(_localContextVisible);
         }
 
         private void DocumentPreviewSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
+            if(_localContext.View != null)
+            {
+                Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
+
+            }
             Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);
 
         }

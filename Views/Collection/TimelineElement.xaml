@@ -9,18 +9,49 @@
     d:DesignWidth="50" d:DesignHeight="400" d:DataContext="{d:DesignInstance local:TimelineElementViewModel}">
 
     <Grid Background="Transparent" Tapped="TimelineElement_OnTapped">
-        <StackPanel>
-            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen"/>
-            <Rectangle Width="3" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"></Rectangle>
-            <Canvas x:Name="xWebHolder" Margin="15,0,0,0">
-                <local:DocumentView x:Name="xDocumentPreview"
-                    DataContext="{Binding DocumentViewModel}" Width="{StaticResource TimelineElementWidth}"
+        <StackPanel x:Name="xUpperDisplay" Margin="0,-90,0,0" Visibility="Visible">
+
+            <Canvas x:Name="xWebHolderTop" Margin="0,-35,0,0">
+                <local:DocumentView x:Name="xDocumentPreview" Margin="30,0,0,0" Width="100"
+                    DataContext="{Binding DocumentViewModel}" 
                     Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" SizeChanged="DocumentPreviewSizeChanged">
+
+                </local:DocumentView>
+            </Canvas>
+            <Rectangle Width="2" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
+
+            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen"/>
+        </StackPanel>
+        <StackPanel>
+            <Rectangle Name="xLowerLine" Width="2" Fill="LightGray" Visibility="Collapsed" RadiusY="2" RadiusX="2" Height="80" Margin="0, 25, 1, 5"></Rectangle>
+            <Canvas x:Name="xWebHolder" Margin="15,-20,0,0"/>
+        </StackPanel>
+
+<!--
+        <StackPanel x:Name="xUpperDisplay" Margin="0,-90,0,0" Visibility="Collapsed">
+            
+            <Canvas x:Name="xWebHolderTop" Margin="-30,-35,0,0">
+                <local:DocumentView x:Name="xDocumentPreviewTop"
+                    DataContext="{Binding DocumentViewModel}" Width="020"
+                    Visibility="Visible" SizeChanged="DocumentPreviewSizeChanged">
                     
                 </local:DocumentView>
             </Canvas>
+            <Rectangle Width="2" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
+
+            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen" Tapped="Ellipse_Tapped"/>
         </StackPanel>
+        <StackPanel x:Name="xLowerDisplay" Visibility="Visible">
+            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen" Tapped="Ellipse_Tapped"/>
+            <Rectangle Width="3" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
+            <Canvas x:Name="xWebHolder" Margin="15,0,0,0">
+                <local:DocumentView x:Name="xDocumentPreview"
+                    DataContext="{Binding DocumentViewModel}" Width="{StaticResource TimelineElementWidth}"
+                    Visibility="Visible" SizeChanged="DocumentPreviewSizeChanged">
 
-
+                </local:DocumentView>
+            </Canvas>
+        </StackPanel>
+        -->
     </Grid>
 </UserControl>
