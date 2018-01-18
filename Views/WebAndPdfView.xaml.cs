@@ -57,6 +57,7 @@ namespace Dash
             {
                 try
                 {
+                    Debug.WriteLine($"WEBPDF SOURCE: {Source}");
                     if (Source != null && Source.Equals(value)) return;
                     _source = value;
                     OnPropertyChanged();

@@ -1,4 +1,4 @@
-﻿using Dash.Views.Document_Menu;
+﻿using DashShared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,13 +13,10 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -94,6 +91,7 @@ namespace Dash
 
             AddBorderRegionHandlers();
 
+
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
 
@@ -111,13 +109,29 @@ namespace Dash
             }
         }
 
-        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            if (f1.HasFlag(CoreVirtualKeyStates.Down))
+            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            if (f1State.HasFlag(CoreVirtualKeyStates.Down))
             {
                 _f1Down = true;
                 if (_ptrIn) ShowLocalContext(true);
+            }
+
+            if (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift))
+            {
+                if (e.VirtualKey.Equals(VirtualKey.Enter))
+                {
+                    HandleShiftEnter();
+                }
             }
         }
 
@@ -1176,6 +1190,16 @@ namespace Dash
             var data = new DataPackage() { };
             data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
             Clipboard.SetContent(data);
+        }
+
+        public void HandleShiftEnter()
+        {
+            if (ViewModel.IsSelected == false) return;
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var docCanvas = this.GetFirstAncestorOfType<Canvas>();
+            if (collection == null) return;
+            var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+            collection.LoadNewActiveTextBox("", where, true);
         }
     }
 }
