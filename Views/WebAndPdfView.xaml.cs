@@ -55,9 +55,17 @@ namespace Dash
             get => _source;
             set
             {
-                if (Source != null && Source.Equals(value)) return;
-                _source = value;
-                OnPropertyChanged();
+                try
+                {
+                    if (Source != null && Source.Equals(value)) return;
+                    _source = value;
+                    OnPropertyChanged();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 
@@ -69,7 +77,15 @@ namespace Dash
 
         public WebAndPdfView(Uri source) : this()
         {
-            Source = source;
+            try
+            {
+                Source = source;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private void WebAndPdfView_Loaded(object sender, RoutedEventArgs e)

@@ -348,7 +348,7 @@ namespace Dash
 
         private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xMainTreeView.Width = Math.Abs(xMainTreeView.Width) < .0001 ? 300 : 0;
+            xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
