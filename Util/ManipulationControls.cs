@@ -852,7 +852,7 @@ namespace Dash
             if (!_processManipulation) return;
             e.Handled = true;
 
-            if (e.KeyModifiers.HasFlag(VirtualKey.Control))
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
 
                 //Get mousepoint in canvas space 
