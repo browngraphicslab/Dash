@@ -36,12 +36,13 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="300" x:Name="TreeMenuColumn" />
+            <ColumnDefinition Width="Auto" x:Name="TreeMenuColumn" />
             <ColumnDefinition MinWidth="50" Width="*"/>
         </Grid.ColumnDefinitions>
         <!--<my:GridSplitter />-->
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"></local:CollectionTreeView>
+        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0" Width="300">
+        </local:CollectionTreeView>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">

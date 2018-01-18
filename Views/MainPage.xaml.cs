@@ -340,8 +340,6 @@ namespace Dash
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-
-
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
@@ -350,7 +348,7 @@ namespace Dash
 
         private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            TreeMenuColumn.Width = new GridLength(300 - TreeMenuColumn.Width.Value);
+            xMainTreeView.Width = Math.Abs(xMainTreeView.Width) < .0001 ? 300 : 0;
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
