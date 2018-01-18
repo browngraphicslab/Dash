@@ -182,10 +182,6 @@ namespace Dash
                     xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
             }
-            if (Scroll.Visibility == Visibility.Visible)
-            {
-                Debug.WriteLine("Sc" + Scroll.ActualHeight);
-            }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
@@ -546,8 +542,8 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-            if (parent != null)
-                parent.MoveToContainingCollection();
+            //if (parent != null)
+            //    parent.MoveToContainingCollection();
             if (_rightPressed)
             {
                 var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);

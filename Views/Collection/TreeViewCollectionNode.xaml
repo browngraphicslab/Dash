@@ -10,14 +10,14 @@
     d:DesignWidth="400"
     x:Name="XControl">
 
-    <Grid Background="DarkGray">
+    <Grid Background="Transparent" HorizontalAlignment="Center">
        <ListView x:Name="xListView"
                  ItemsSource="{Binding DocumentViewModels}"
                  SelectionMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-                    <Setter Property="Padding" Value="20,0,0,0"></Setter>
+                    <Setter Property="Padding" Value="5,0,25,0"></Setter>
                 </Style>
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>

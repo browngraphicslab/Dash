@@ -11,7 +11,6 @@
     d:DesignWidth="400"
     d:DesignHeight="400"
     xmlns:localConverters="using:Dash.Converters"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     AllowDrop="True" DragOver="DocumentView_OnDragOver"
     DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
     PointerPressed="DocumentView_OnPointerPressed"

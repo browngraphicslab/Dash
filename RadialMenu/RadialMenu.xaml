@@ -182,7 +182,8 @@
                  Height="{Binding Diameter}"
                  StrokeThickness="{Binding OuterArcThickness}"
                  Fill="{Binding InnerNormalBrush}"
-                 Stroke="{Binding OuterDisabledBrush}" />
+                 Stroke="{Binding OuterDisabledBrush}" 
+                 PointerPressed="BackgroundEllipse_OnPointerPressed"/>
         
         <components:CenterButton x:Name="CenterButton"
                 Canvas.ZIndex="100"

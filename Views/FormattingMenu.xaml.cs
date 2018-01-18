@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -66,7 +67,7 @@ namespace Dash
 
 
         #region set up ComboBoxes
-        
+
         /// <summary>
         /// Add fonts to the format options flyout (under Fonts)
         /// </summary>
@@ -121,6 +122,9 @@ namespace Dash
                 FontFamilyNames.Add(new FontFamily(font));
 
             }
+
+            var currentFontStyle = xRichEditBox.Document.Selection.CharacterFormat.Name;
+            xFontFamilyComboBox.SelectedIndex = FontNames.IndexOf(currentFontStyle);
         }
 
 
@@ -139,6 +143,7 @@ namespace Dash
                 10,
                 10.5,
                 11,
+                11.25,
                 11.5,
                 12,
                 14,
@@ -160,6 +165,9 @@ namespace Dash
             {
                 xFontSizeComboBox.Items.Add(num);
             }
+
+            var currentFontSize = xRichEditBox.Document.Selection.CharacterFormat.Size;
+            xFontSizeComboBox.SelectedIndex = sizes.IndexOf(currentFontSize);
         }
 
         #endregion
