@@ -59,7 +59,7 @@ namespace Dash
         private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
-        private Point _rightPos;
+        private Point _rightDragLastPosition, _rightDragStartPosition;
 
 
         // for manipulation movement
@@ -507,7 +507,7 @@ namespace Dash
                 var pointerPosition = MainPage.Instance
                     .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
                         .CoreWindow.GetForCurrentThread().PointerPosition);
-                _rightPos = pointerPosition;
+                _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
                 this.CapturePointer(e.Pointer);
                 parent.ManipulationControls.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
@@ -525,8 +525,8 @@ namespace Dash
         {
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-            var translation = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
-            _rightPos = pointerPosition;
+            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
+            _rightDragLastPosition = pointerPosition;
             parent.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
@@ -546,12 +546,13 @@ namespace Dash
             //    parent.MoveToContainingCollection();
             if (_rightPressed)
             {
-                var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
+                var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
                 var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
+                else
+                    parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
                 var dvm = parent.ViewModel;
-                parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
                 parent.DocumentView_PointerExited(null, null);
                 parent.DocumentView_ManipulationCompleted(null, null);
 
