@@ -12,13 +12,14 @@
     SizeChanged="CollectionTimelineView_OnSizeChanged" d:DataContext="{d:DesignInstance local:BaseCollectionViewModel}">
 
     <Grid>
-        
+        <Grid.Resources>
+            <Color x:Key="timelineColor">#CC333333</Color>
+            <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
+        </Grid.Resources>
         <!--background lines-->
-        <Rectangle x:Name="xHorizontalLine" Height="3" Fill="LightGray" Margin="25, 0"></Rectangle>
-        <Rectangle x:Name="xVerticalLineLeft" Height="35" Width="5"  Fill="LightGray" HorizontalAlignment="Left" Margin="25, 0"></Rectangle>
-        <Rectangle x:Name="xVerticalLineRight" Height="35" Width="5" Fill="LightGray" HorizontalAlignment="Right" Margin="25, 0"></Rectangle>
-        
-        
+        <Rectangle x:Name="xHorizontalLine" Height="3" Fill="{StaticResource timelineBrush}" Margin="25, 0"></Rectangle>
+        <Rectangle x:Name="xVerticalLineLeft" Height="35" Width="3"  Fill="{StaticResource timelineBrush}" HorizontalAlignment="Left" Margin="25, 0"></Rectangle>
+        <Rectangle x:Name="xVerticalLineRight" Height="35" Width="3" Fill="{StaticResource timelineBrush}" HorizontalAlignment="Right" Margin="25, 0"></Rectangle>
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{x:Bind _contextList}"   

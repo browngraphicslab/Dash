@@ -29,10 +29,14 @@ namespace Dash
         public TimelineElementViewModel ViewModel { get; private set; }
         public CollectionTimelineView ParentTimeline { get; private set; }
 
-        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
+        private static double _webViewActualHeight = 160;
+        private static double _webViewActualWidth =  250;
+        private static double _webViewScaleFactor = .3;
+
+        private readonly ContextWebView _localContext = new ContextWebView(null, _webViewScaleFactor, _webViewActualWidth/_webViewScaleFactor, _webViewActualHeight/_webViewScaleFactor);
 
         private bool _localContextVisible;
-        private double _ellipseSize = 25;
+        private double _ellipseSize = 18;
 
         private bool LocalContextVisible
         {

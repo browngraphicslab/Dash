@@ -10,11 +10,11 @@
 
     <Grid Background="Transparent" Tapped="TimelineElement_OnTapped">
         <StackPanel>
-            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="LightGray"/>
-            <Rectangle Width="3" Fill="LightGray" RadiusY="2" RadiusX="2" Height="150" Margin="0, 5, 0, 0" Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"></Rectangle>
-            <Canvas x:Name="xWebHolder">
+            <Ellipse Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen"/>
+            <Rectangle Width="3" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"></Rectangle>
+            <Canvas x:Name="xWebHolder" Margin="15,0,0,0">
                 <local:DocumentView x:Name="xDocumentPreview"
-                    DataContext="{Binding DocumentViewModel}"
+                    DataContext="{Binding DocumentViewModel}" Width="{StaticResource TimelineElementWidth}"
                     Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" SizeChanged="DocumentPreviewSizeChanged">
                     
                 </local:DocumentView>
