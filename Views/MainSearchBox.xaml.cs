@@ -54,7 +54,7 @@ namespace Dash
                     //Search(sender, sender.Text.ToLower());
                 (sender.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
-                var vms = LocalSearch(text);
+                var vms = GetSpecialSearchCriteria(text) != null ? SpecialSearch(GetSpecialSearchCriteria(text)) : LocalSearch(text);
                 var first = vms.Take(75).ToArray();
                 Debug.WriteLine("Search Results: "+first.Length);
                 foreach (var searchResultViewModel in first) 
@@ -69,13 +69,77 @@ namespace Dash
             }
         }
 
+        private IEnumerable<SearchResultViewModel> SpecialSearch(SpecialSearchCriteria criteria)
+        {
+            if (criteria.SearchCategory == "type")
+            {
+                return HandleTypeSearch(criteria);
+            }
+            return GenericSpecialSearch(criteria);
+        }
+
+        private IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
+        {
+            var documentTree = DocumentTree.MainPageTree;
+            List<DocumentController> docControllers = new List<DocumentController>();
+            foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
+            {
+                foreach (var kvp in documentController.EnumFields())
+                {
+                    if (kvp.Key.Name.ToLower().Contains(criteria.SearchCategory))
+                    {
+                        var stringSearch = kvp.Value.SearchForString(criteria.SearchText);
+                        if (stringSearch.StringFound)
+                        {
+                            docControllers.Add(documentController);
+                        }
+                    }
+                }
+            }
+            foreach (var docController in docControllers)
+            {
+                yield return CreateSearchResult(documentTree, docController, (docController.GetField(KeyStore.SourecUriKey) as ImageController)?.Data?.AbsoluteUri ?? "", docController.Title);
+            }
+        }
+
+        private IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
+        {
+            var documentTree = DocumentTree.MainPageTree;
+            List<DocumentController> docControllers = new List<DocumentController>();
+            foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
+            {
+                if (documentController.DocumentType.Type.ToLower().Contains(criteria.SearchText))
+                {
+                    docControllers.Add(documentController);
+                }
+            }
+            foreach (var docController in docControllers)
+            {
+                yield return CreateSearchResult(documentTree, docController, (docController.GetField(KeyStore.SourecUriKey) as ImageController)?.Data?.AbsoluteUri ?? "", docController.Title);
+            }
+        }
+
+        private SpecialSearchCriteria GetSpecialSearchCriteria (string searchText)
+        {
+            searchText = searchText.Replace(" ", "");
+            var split = searchText.Split(':');
+            if (split.Count() == 2)
+            {
+                return new SpecialSearchCriteria()
+                {
+                    SearchCategory = split[0],
+                    SearchText = split[1]
+                };
+            }
+            return null;
+        }
 
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             // Set sender.Text. You can use args.SelectedItem to build your text string.
             if (args.SelectedItem is SearchResultViewModel resultVM)
             {
-                sender.Text = resultVM.Title;
+
             }
         }
 
@@ -84,10 +148,19 @@ namespace Dash
         {
             if (args.ChosenSuggestion != null)
             {
-                // User selected an item from the suggestion list, take an action on it here.
+                sender.Text = _currentSearch;
+                if (args.ChosenSuggestion is SearchResultViewModel resultVM)
+                {
+                    if (resultVM?.DocumentCollection != null)
+                    {
+                        MainPage.Instance.SetCurrentWorkspace(resultVM.DocumentCollection);
+                    }
+                    MainPage.Instance.NavigateToDocumentInWorkspace(resultVM.ViewDocument);
+                }
             }
             else
             {
+                sender.Text = _currentSearch;
                 // Use args.QueryText to determine what to do.
             }
         }
@@ -152,16 +225,8 @@ namespace Dash
                 {
                     var bottomText = (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
                     var title = string.IsNullOrEmpty(documentController.Title) ? lastTopText : documentController.Title;
-                    string preTitle = "";
 
-                    var documentNode = documentTree[documentController.Id];
-                    if (documentNode?.Parents?.FirstOrDefault() != null)
-                    {
-                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
-                            documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
-                    }
-
-                    var vm = new SearchResultViewModel(preTitle + title, bottomText ?? "", documentController.Id);
+                    var vm = CreateSearchResult(documentTree, documentController, bottomText, title);
 
                     if (!countToResults.ContainsKey(foundCount))
                     {
@@ -174,6 +239,28 @@ namespace Dash
             //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
         }
 
+        private SearchResultViewModel CreateSearchResult(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText)
+        {
+            string preTitle = "";
+
+            var documentNode = documentTree[dataDocumentController.Id];
+            if (documentNode?.Parents?.FirstOrDefault() != null)
+            {
+                preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
+                               documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
+            }
+
+            var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id, documentNode?.ViewDocument ?? dataDocumentController, documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
+            return vm;
+        }
+
+        private class SpecialSearchCriteria
+        {
+            public string SearchText { get; set; }
+            public string SearchCategory { get; set; }
+        }
+
+        /*
         /// <summary>
         /// the method in which we actually process the search and perform the db query
         /// </summary>
@@ -241,6 +328,6 @@ namespace Dash
                 //return docController.
                 return doc.Fields.Any(i => SearchKeyFieldIdPair(i, searchString) != null);
             };
-        }
+        }*/
     }
 }

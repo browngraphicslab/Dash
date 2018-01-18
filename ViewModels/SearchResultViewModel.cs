@@ -9,16 +9,20 @@ namespace Dash
     public class SearchResultViewModel
     {
 
-        public SearchResultViewModel(string title, string contextualText, string id)
+        public SearchResultViewModel(string title, string contextualText, string id, DocumentController viewDoc, DocumentController documentCollectionController)
         {
             ContextualText = contextualText;
             Title = title;
             Id = id;
+            ViewDocument = viewDoc;
+            DocumentCollection = documentCollectionController;
         }
 
         public string Title { get; private set; }
         public string Id { get; private set; }
         public string ContextualText { get; private set; }
+        public DocumentController ViewDocument { get; }
+        public DocumentController DocumentCollection { get; }
 
     }
 }
