@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -17,7 +19,6 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
@@ -1146,5 +1147,137 @@ namespace Dash
             data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
             Clipboard.SetContent(data);
         }
+
+        
+        #region Quizlet Export
+        private static readonly HttpClient _client = new HttpClient();
+        private string _quizletStatus;
+        private string _authenticationUrl;
+
+        private List<(string term, string definition, string image)> GetQuizletData()
+        {
+            return new List<(string term, string definition, string image)>
+            {
+                ("dog", "chien", "https://i.redd.it/230olh2isqa01.jpg"),
+                ("cow", "vache", String.Empty),
+                ("cat", "chat", "https://i.redd.it/mr4sitxbdta01.jpg")
+            };
+        }
+
+        private Task<HttpResponseMessage> MakeTokenRequest(string code)
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "Host", "api.quizlet.com" },
+                { "Authorization", "Basic Y1Q0cTJocmpNNDpnd0dwdzJId0FVQTdyWWtDaFRkaGdG" },
+                {"Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"},
+                {"grant_type", $"authorization_code&code={code}" }
+            };
+            var content = new FormUrlEncodedContent(values);
+            return _client.PostAsync("https://api.quizlet.com/oauth/token", content);
+        }
+
+        private Task<HttpResponseMessage> MakeImageRequest(List<(string term, string definition, string image)> setData)
+        {
+            var imageForm = new MultipartFormDataContent();
+            imageForm.Add(new StringContent("whitespace"), "1");
+
+            foreach (var triplet in setData)
+            {
+                if(!String.IsNullOrEmpty(triplet.image)) imageForm.Add(new StringContent("imageData[]"), triplet.image);
+            }
+
+            return _client.PostAsync("https://api.quizlet.com/2.0/images", imageForm); //Create the set
+        }
+
+        private Task<HttpResponseMessage> MakeSetRequest(List<(string term, string definition, string image)> setData)
+        {
+            var newSetForm = new MultipartFormDataContent();
+            newSetForm.Add(new StringContent("title"), "Dash Demo Set");
+
+
+            foreach (var triplet in setData)
+            {
+                newSetForm.Add(new StringContent("terms[]"), triplet.term);
+                newSetForm.Add(new StringContent("definitions[]"), triplet.definition);
+                newSetForm.Add(new StringContent("images[]"), triplet.image);
+            }
+
+            newSetForm.Add(new StringContent("lang_terms"), "en");
+            newSetForm.Add(new StringContent("lang_definitions"), "fr");
+
+            return  _client.PostAsync("https://api.quizlet.com/2.0/sets", newSetForm); //Create the set
+
+        }
+
+        public async void ExportQuizlet(string code, string state)
+        {
+            if (_quizletStatus != state)
+            {
+                return;
+            }
+             
+            // Get the list of term-definition-image tuples
+            var setData = GetQuizletData();
+
+            // Using the code, make a request for a Quizlet authentication token
+            var tokenResponse = await MakeTokenRequest(code);
+            var tokenJson = tokenResponse.Content.ReadAsStringAsync().Result;
+            var token = "ACCESS_TOKEN"; //TODO: get token from tokenJSON string
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token); //Set token header authorization
+
+            // Upload images and get the image IDs 
+            var imageResponse = await MakeImageRequest(setData);
+            var imageJson = imageResponse.Content.ReadAsStringAsync().Result;
+            var imageIds = new List<string>() { "FAKE_IMAGE_ID", "FAKE_IMAGE_ID2" }; //TODO: get imageIds from  imageJSON string
+
+
+            //Update the data to refer to image IDs rather than URI
+            for (int i = 0, j = 0; i < setData.Count(); i++)
+            {
+                var oldTriplet = setData[i];
+                var newImageId = String.IsNullOrEmpty(oldTriplet.image) || j >= imageIds.Count() ? String.Empty: imageIds[j++];
+                setData[i] = (oldTriplet.term, oldTriplet.definition, newImageId);
+            }
+
+            // Make the request to create a set using the terms
+            var setResponse = await MakeSetRequest(setData);
+            var newSetJson = setResponse.Content.ReadAsStringAsync().Result;
+
+            Debug.WriteLine(newSetJson);
+        }
+
+
+        private async void QuizletExport_Click(object sender, RoutedEventArgs e)
+        {
+            // Redirect user to authorize the client
+            _quizletStatus = "RANDOM_ID"; //TODO: Generate some random hash
+            _authenticationUrl = $"https://quizlet.com/authorize?response_type=code&client_id=cT4q2hrjM4&scope=write_set&state={_quizletStatus}";
+            var current = BrowserView.Current;
+
+            BrowserView.CurrentTabChanged -= BrowserView_CurrentTabChanged;
+            BrowserView.CurrentTabChanged += BrowserView_CurrentTabChanged;
+
+            BrowserView.OpenTab(_authenticationUrl);
+
+
+        }
+
+        private void BrowserView_CurrentTabChanged(object sender, BrowserView e)
+        {
+            if (_authenticationUrl == e.Url) return;
+
+            var redirectUrl = "https://quizlet.com/browngfx";
+
+            if (e.Url.Contains(redirectUrl))
+            {
+                var uri = new Uri(e.Url);
+                var query = HttpUtility.ParseQueryString(uri.Query);
+                BrowserView.CurrentTabChanged -= BrowserView_CurrentTabChanged;
+            }
+        }
+        #endregion
+
     }
 }
