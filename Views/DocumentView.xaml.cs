@@ -1132,7 +1132,7 @@ namespace Dash
             OpenLayout();
         }
 
-        private void MenuFlyoutItemAdd_Click(object sender, RoutedEventArgs e)
+        private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
             KeyValueViewDocument();
         }
@@ -1158,14 +1158,6 @@ namespace Dash
         internal void hideDraggerButton()
         {
             DraggerButton.Visibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// Hides the title display for the KeyValuePane
-        /// </summary>
-        internal void hideTitleDisplay()
-        {
-            xTitleBorder.Visibility = Visibility.Collapsed;
         }
         #endregion
 
@@ -1194,7 +1186,7 @@ namespace Dash
 
         public void HandleShiftEnter()
         {
-            if (ViewModel.IsSelected == false) return;
+            if (ViewModel.IsLowestSelected == false) return;
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;

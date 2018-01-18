@@ -178,7 +178,9 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
+                    new PointController(
+                        new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 50, 
+                        where?.Y ?? oldPosition.Data.Y)),
                         true);
             }
 
