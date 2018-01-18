@@ -542,8 +542,8 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-            if (parent != null)
-                parent.MoveToContainingCollection();
+            //if (parent != null)
+            //    parent.MoveToContainingCollection();
             if (_rightPressed)
             {
                 var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);

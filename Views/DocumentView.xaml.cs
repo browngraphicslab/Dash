@@ -125,7 +125,8 @@ namespace Dash
 
         public void ShowLocalContext(bool showContext)
         {
-
+            if (ViewModel == null)
+                return;
             ViewModel.ShowLocalContext = showContext;
 
             if (!showContext && _localContext.View != null)
@@ -403,7 +404,7 @@ namespace Dash
 
         public void ToFront()
         {
-            if (ParentCollection == null || ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
                 return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -460,7 +461,7 @@ namespace Dash
             }
 
             ToFront();
-            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true) return;
 
             // TODO this causes groups to show up, and needs to be moved
             ManipulationControls.ManipulationCompleted(null, false);
@@ -1035,30 +1036,45 @@ namespace Dash
 
         public void MoveToContainingCollection()
         {
-           var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null)
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            if (collection == null ||ViewModel == null)
                 return;
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
             var y = pointerPosition2.Y - Window.Current.Bounds.Y;
             var pos = new Point(x, y);
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<CollectionView>();
-            
-            foreach (var nestedCollection in topCollection)
+
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>();
+
+            foreach (var nestedDocument in topCollection)
+            {
+                CollectionView nestedCollection = null;
+                if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                    nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
                 if (nestedCollection != null)
                 {
                     if (nestedCollection.GetAncestors().ToList().Contains(this))
                         continue;
-                    if (!nestedCollection.Equals(collection) )
+                    if (!nestedCollection.Equals(collection))
                     {
                         var where = nestedCollection.CurrentView is CollectionFreeformView ?
                             Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                             new Point();
-                        nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                        collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        if (nestedCollection.CurrentView is CollectionPageView && ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString?.StartsWith("#") == true)
+                        {
+                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                            this.DeleteDocument();
+                            return;
+                        }
+                        else
+                        {
+                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        }
                     }
                     break;
                 }
+            }
         }
 
         #region Context menu click handlers
@@ -1122,7 +1138,7 @@ namespace Dash
 
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ViewModel.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+            ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
         }
 
         private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
