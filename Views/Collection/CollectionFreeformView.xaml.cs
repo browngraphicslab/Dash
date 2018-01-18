@@ -71,7 +71,7 @@ namespace Dash
         public ManipulationControls ManipulationControls;
 
         public bool TagMode { get; set; }
-        public string TagKey { get; set; } = "Name";
+        public KeyController TagKey { get; set; }
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -125,7 +125,7 @@ namespace Dash
             {
                 // remove old events
                 if (ViewModel?.DocumentViewModels != null)
-                        ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
 
                 // add new events
                 ViewModel = vm;
@@ -264,13 +264,13 @@ namespace Dash
             //    type = fmController.TypeInfo;
             //}
             var docView1 = GetDocView(referencedDoc);
-          
-                if (!docView1.ViewModel.KeysToFrameworkElements.ContainsKey(referencedFieldKey))
-                {
-                    _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
-                    return;
-                }
-            
+
+            if (!docView1.ViewModel.KeysToFrameworkElements.ContainsKey(referencedFieldKey))
+            {
+                _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
+                return;
+            }
+
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
             var docView2 = GetDocView(referencingDoc);
             if (!docView2.ViewModel.KeysToFrameworkElements.ContainsKey(referencingFieldKey))
@@ -305,9 +305,9 @@ namespace Dash
                 CompositeMode = ElementCompositeMode.SourceOver,
                 referencingDocument = referencingDoc,
                 referencingKey = referencingFieldKey,
-                referencedDocument= referencedDoc,
+                referencedDocument = referencedDoc,
                 referencedKey = referencedFieldKey
-        };
+            };
             Canvas.SetZIndex(link, -1);
             var converter = new BezierConverter(frameworkElement1, frameworkElement2, itemsPanelCanvas);
             converter.Pos2 = new Point(0, 0);
@@ -595,7 +595,7 @@ namespace Dash
         {
             _connectionLine = new UserCreatedLink
             {
-           
+
                 //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
                 IsHitTestVisible = false,
                 StrokeThickness = 5,
@@ -721,7 +721,7 @@ namespace Dash
                 inputController.GetField(KeyStore.UserLinksKey) as
                     ListController<KeyController>;
             linksList.Add(inputReference.FieldReference.FieldKey);
-            
+
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -1045,13 +1045,65 @@ namespace Dash
 
             if (image != null)
             {
-                var id = UtilShared.GetDeterministicGuid(TagKey);
-                var key = ContentController<FieldModel>.HasController(id) ? ContentController<FieldModel>.GetController<KeyController>(id) : new KeyController(id, TagKey);
-
-                image.SetField(key, new TextController(tagValue), true);
+                image.SetField(TagKey, new TextController(tagValue), true);
                 return true;
             }
             return false;
+        }
+
+        public void ShowTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Visible;
+            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
+            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
+            Debug.WriteLine(mousePos);
+            mousePos = Util.PointTransformFromVisual(mousePos, Window.Current.Content, xOuterGrid);
+            TagKeyBox.RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
+        }
+
+        public void HideTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var names = keys.Where(k => !k.Name.StartsWith("_"));
+                TagKeyBox.ItemsSource = names;
+            }
+        }
+
+        private void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            sender.Text = ((KeyController)args.SelectedItem).Name;
+        }
+
+        private void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                TagKey = (KeyController)args.ChosenSuggestion;
+            }
+            else
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
+
+                if (key == null)
+                {
+                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                }
+                else
+                {
+                    TagKey = key;
+                }
+            }
+            TagMode = true;
+
+            HideTagKeyBox();
         }
 
         #endregion
@@ -1100,7 +1152,7 @@ namespace Dash
                                          .GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
                                          ?.Data ??
                                      CollectionView.CollectionViewType.Schema.ToString();
-                
+
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
                 cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
@@ -1155,7 +1207,7 @@ namespace Dash
                 _isSelecting = false;
                 e.Handled = true;
             }
-       
+
             xOuterGrid.ReleasePointerCapture(e.Pointer);
             Debug.WriteLine("number selected: " + ViewModel.SelectionGroup.Count());
         }
@@ -1166,7 +1218,7 @@ namespace Dash
             if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
 
             if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
-            
+
 
             var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
@@ -1178,7 +1230,7 @@ namespace Dash
 
             //Anchor point should also be moved if dX or dY are moved
             var newAnchor = _marqueeAnchor;
-            if(dX < 0) newAnchor.X += dX;
+            if (dX < 0) newAnchor.X += dX;
             if (dY < 0) newAnchor.Y += dY;
 
 
@@ -1203,7 +1255,7 @@ namespace Dash
             _marquee.Height = newHeight;
 
             args.Handled = true;
-            
+
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
@@ -1423,7 +1475,7 @@ namespace Dash
         {
             ViewModel.SelectionGroup.Remove(docView.ViewModel);
             docView.ToggleMultiSelected(false);
-            
+
         }
 
         public void Select(DocumentView docView)
@@ -1533,7 +1585,7 @@ namespace Dash
             }
         }
 
-        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
+        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
         {
             if (!loadingPermanentTextbox)
             {
@@ -1575,7 +1627,7 @@ namespace Dash
                     shiftState && capState)
                 {
                     character = key.ToString().ToLower();
-                } 
+                }
                 else
                 {
                     character = key.ToString();
@@ -1589,7 +1641,8 @@ namespace Dash
                 if ((shiftState != false || capState != false) &&
                     (!shiftState || !capState))
                 {
-                    switch ((virtualKeyCode - 48)) {
+                    switch ((virtualKeyCode - 48))
+                    {
                         case 1: character = "!"; break;
                         case 2: character = "@"; break;
                         case 3: character = "#"; break;
@@ -1609,7 +1662,8 @@ namespace Dash
             {
                 var shifted = ((shiftState != false || capState != false) &&
                     (!shiftState || !capState));
-                switch (virtualKeyCode) {
+                switch (virtualKeyCode)
+                {
                     case 186: character = shifted ? ":" : ";"; break;
                     case 187: character = shifted ? "=" : "+"; break;
                     case 188: character = shifted ? "<" : ","; break;
@@ -1620,7 +1674,7 @@ namespace Dash
                     case 219: character = shifted ? "{" : "["; break;
                     case 220: character = shifted ? "|" : "\\"; break;
                     case 221: character = shifted ? "}" : "]"; break;
-                    case 222: character = shifted ? "\"" : "'";  break;
+                    case 222: character = shifted ? "\"" : "'"; break;
                 }
 
             }
@@ -1676,5 +1730,6 @@ namespace Dash
         }
 
         #endregion
+
     }
 }
