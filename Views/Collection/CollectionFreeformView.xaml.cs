@@ -71,7 +71,7 @@ namespace Dash
         public ManipulationControls ManipulationControls;
 
         public bool TagMode { get; set; }
-        public string TagKey { get; set; } = "Name";
+        public KeyController TagKey { get; set; }
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -97,6 +97,13 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+            KeyDown += (sender, args) =>
+            {
+                if (args.Key == VirtualKey.Escape)
+                {
+                    HideTagKeyBox();
+                }
+            };
         }
 
         public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
@@ -1033,13 +1040,65 @@ namespace Dash
 
             if (image != null)
             {
-                var id = UtilShared.GetDeterministicGuid(TagKey);
-                var key = ContentController<FieldModel>.HasController(id) ? ContentController<FieldModel>.GetController<KeyController>(id) : new KeyController(id, TagKey);
-
-                image.SetField(key, new TextController(tagValue), true);
+                image.SetField(TagKey, new TextController(tagValue), true);
                 return true;
             }
             return false;
+        }
+
+        public void ShowTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Visible;
+            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
+            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
+            Debug.WriteLine(mousePos);
+            mousePos = Util.PointTransformFromVisual(mousePos, Window.Current.Content, xOuterGrid);
+            TagKeyBox.RenderTransform = new TranslateTransform {X = mousePos.X, Y = mousePos.Y};
+        }
+
+        public void HideTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var names = keys.Where(k => !k.Name.StartsWith("_"));
+                TagKeyBox.ItemsSource = names;
+            }
+        }
+
+        private void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            sender.Text = ((KeyController) args.SelectedItem).Name;
+        }
+
+        private void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                TagKey = (KeyController) args.ChosenSuggestion;
+            }
+            else
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
+
+                if (key == null)
+                {
+                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                }
+                else
+                {
+                    TagKey = key;
+                }
+            }
+            TagMode = true;
+
+            HideTagKeyBox();
         }
 
         #endregion
@@ -1523,5 +1582,6 @@ namespace Dash
         }
 
         #endregion
+
     }
 }

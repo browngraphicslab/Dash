@@ -58,5 +58,7 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
+        <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen" QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"></AutoSuggestBox>
+
     </Grid>
 </local:SelectionElement>
