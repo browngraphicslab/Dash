@@ -1209,7 +1209,6 @@ namespace Dash
             }
 
             xOuterGrid.ReleasePointerCapture(e.Pointer);
-            Debug.WriteLine("number selected: " + ViewModel.SelectionGroup.Count());
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)

@@ -40,7 +40,7 @@ namespace Dash
 
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField().Data.Y)
+                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument(null).GetField(KeyStore.TitleKey) != null);
 
                 output = firstDoc?.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);

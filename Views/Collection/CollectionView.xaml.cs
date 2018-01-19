@@ -223,7 +223,7 @@ namespace Dash
             ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
+            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
             ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
 
             var freeform = new MenuFlyoutItem() { Text = "Freeform" };
@@ -249,6 +249,12 @@ namespace Dash
             var timeline = new MenuFlyoutItem() { Text = "Timeline" };
             timeline.Click += MenuFlyoutItemTimeline_Click;
             viewCollectionAs.Items.Add(timeline);
+
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
+            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+            ParentDocument.MenuFlyout.Items.Add(viewCollectionPreview);
         }
 
         /// <summary>

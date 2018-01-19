@@ -790,6 +790,11 @@ namespace Dash
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
+        private void ShowPreviewDocument()
+        {
+            ParentCollection.ViewModel.AddDocument(ParentCollection.ParentDocument.ViewModel.DocumentController.GetPreviewDocument(), null);
+        }
+
         private void KeyValueViewDocument()
         {
             ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
@@ -1147,6 +1152,12 @@ namespace Dash
         {
             KeyValueViewDocument();
         }
+
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e)
+        {
+            ShowPreviewDocument();
+        }
+
 
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
         {
