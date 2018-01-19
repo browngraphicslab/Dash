@@ -72,9 +72,6 @@ namespace Dash
 
             DataContextChanged += DocumentView_DataContextChanged;
 
-            // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -739,6 +736,13 @@ namespace Dash
 
 
                 ViewModel.SetHasTitle(this.IsLowestSelected);
+                
+                if (!ViewModel.Undecorated  && ManipulationControls == null)
+                {
+                    // add manipulation code
+                    ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+                    ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+                }
             }
         }
 
@@ -1230,7 +1234,7 @@ namespace Dash
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
+            args.Data.Properties["Operator Document"] = ViewModel.DocumentController.GetDataDocument(null);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
         }
     }

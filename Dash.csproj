@@ -156,6 +156,7 @@
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
@@ -325,6 +326,9 @@
     </Compile>
     <Compile Include="Views\Operators\ExtractSentencesOperatorView.xaml.cs">
       <DependentUpon>ExtractSentencesOperatorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operators\OperatorInputEntry.xaml.cs">
+      <DependentUpon>OperatorInputEntry.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -837,6 +841,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\MeltOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Operators\OperatorInputEntry.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

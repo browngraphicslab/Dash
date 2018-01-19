@@ -36,14 +36,7 @@
                 </ListView.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
-                            <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0"
-                                     Drop="UIElement_OnDrop" DragOver="UIElement_OnDragOver"
-                                     PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
-                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted" 
-                                     Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
-                                <TextBlock Grid.Column="1"  Margin="10,0,0,0" VerticalAlignment="Top" Foreground="{ThemeResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" />
-                        </StackPanel>
+                        <local:OperatorInputEntry OperatorFieldReference="{Binding ElementName=OpView, Path=DataContext}"></local:OperatorInputEntry>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
@@ -64,8 +57,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,5,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left" Foreground="{ThemeResource MainText}"/>
-                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
-                                     PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted">
+                            <Ellipse x:Name="OutputEllipse" Style="{StaticResource xOutputLinkHandle}" CanDrag="True" DragStarting="OutputEllipse_OnDragStarting">
                                 <ToolTipService.ToolTip>
                                     <local:FieldPreview Loading="FieldPreview_OnLoading"></local:FieldPreview>
                                 </ToolTipService.ToolTip>
