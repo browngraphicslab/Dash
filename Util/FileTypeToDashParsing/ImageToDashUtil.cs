@@ -22,12 +22,15 @@ namespace Dash
 
             var imgSize = await GetImageSize(localFile);
 
+            var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
+
             // create a backing document for the image
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
                 [KeyStore.WidthFieldKey] = new NumberController(imgSize.Width),
-                [KeyStore.HeightFieldKey] = new NumberController(imgSize.Height)
+                [KeyStore.HeightFieldKey] = new NumberController(imgSize.Height),
+                [KeyStore.TitleKey] = new TextController(title)
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
 

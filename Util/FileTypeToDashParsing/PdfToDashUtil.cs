@@ -29,12 +29,15 @@ namespace Dash
         {
             var localFile = await CopyFileToLocal(fileData);
             var pdfText = await GetPdfText(localFile);
+            var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
+
 
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
-                [KeyStore.DocumentTextKey] = new ListController<TextController>(pdfText)
+                [KeyStore.DocumentTextKey] = new TextController(pdfText),
+                [KeyStore.TitleKey] = new TextController(title)
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
 
@@ -42,9 +45,9 @@ namespace Dash
             return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
         }
 
-        private async Task<List<TextController>> GetPdfText(IStorageFile localFile)
+        private async Task<string> GetPdfText(IStorageFile localFile)
         {
-            var pageTextList = new List<TextController>();
+            var outputText = string.Empty;
 
             var pdf = await PdfDocument.LoadFromFileAsync(localFile);
             for (uint pageIndex = 0; pageIndex < pdf.PageCount; pageIndex++)
@@ -56,11 +59,11 @@ namespace Dash
                     var decoder = await BitmapDecoder.CreateAsync(stream);
                     Debug.Assert(ocrEngine != null, "ocrEngine should never be null but if it is we need to cleanly fail");
                     var result = await ocrEngine.RecognizeAsync(await decoder.GetSoftwareBitmapAsync());
-                    pageTextList.Add(new TextController(result.Text));
+                    outputText += $"\n {result.Text}";
                 }
             }
 
-            return pageTextList;
+            return outputText;
         }
 
         private static async Task<StorageFile> CopyFileToLocal(FileData fileData)

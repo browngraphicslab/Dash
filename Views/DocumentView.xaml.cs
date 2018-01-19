@@ -72,6 +72,9 @@ namespace Dash
 
             DataContextChanged += DocumentView_DataContextChanged;
 
+            // add manipulation code
+            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -736,13 +739,6 @@ namespace Dash
 
 
                 ViewModel.SetHasTitle(this.IsLowestSelected);
-                
-                if (!ViewModel.Undecorated  && ManipulationControls == null)
-                {
-                    // add manipulation code
-                    ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-                    ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
-                }
             }
         }
 
@@ -935,7 +931,7 @@ namespace Dash
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isTitleVisible ?? isBorderOn
+            xTitleIcon.Foreground = (isTitleVisible ?? isBorderOn) && !ViewModel.Undecorated
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
         }
@@ -1234,7 +1230,7 @@ namespace Dash
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties["Operator Document"] = ViewModel.DocumentController.GetDataDocument(null);
+            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
         }
     }
