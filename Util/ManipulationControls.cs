@@ -397,19 +397,24 @@ namespace Dash
 
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
+            Snap(false); //Always snap if done manipulating the "border"
             ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
+            {
+                if(_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
+            }
         } 
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
-            Snap(false);
-            
+            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
             
