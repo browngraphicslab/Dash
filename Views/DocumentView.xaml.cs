@@ -1287,6 +1287,10 @@ namespace Dash
         {
             var imageForm = new MultipartFormDataContent();
 
+            var listOfDocumentControllers = ViewModel.DocumentController.GetDataDocument(null)
+                .GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+
+
             for (int i = 0; i < setData.Count; i++)
             {
                 var triplet = setData[i];
@@ -1295,6 +1299,7 @@ namespace Dash
                     //string url = triplet.image;
                     var imgUri = ViewModel.DocumentController.GetDataDocument(null).GetField<ImageController>(KeyStore.DataKey).Data.ToString();
 
+                    if (imgUri == null) break;
 
                     //get the part after file:///
                     if (imgUri.StartsWith(@"file:///")) imgUri = imgUri.Substring(8);

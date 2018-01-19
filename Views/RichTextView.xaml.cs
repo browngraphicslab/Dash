@@ -509,7 +509,7 @@ namespace Dash
                         .CoreWindow.GetForCurrentThread().PointerPosition);
                 _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
                 this.CapturePointer(e.Pointer);
-                parent.ManipulationControls.ElementOnManipulationStarted(null, null);
+                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
 
             }
