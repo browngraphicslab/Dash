@@ -148,6 +148,9 @@ namespace Dash
                     if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
+            
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
@@ -1025,7 +1028,8 @@ namespace Dash
                 return false;
             }
 
-            var groupDoc = docView.ManipulationControls.GetGroupForDocument(docView.ViewModel.DocumentController);
+            var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
+            
             ListController<DocumentController> group =
                 groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
             if (groupDoc == null || group == null)
