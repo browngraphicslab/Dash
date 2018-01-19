@@ -108,7 +108,7 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
 
 
@@ -184,7 +184,7 @@ namespace Dash
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                Debug.WriteLine(exception);
             }
             e.Handled = true;
         }

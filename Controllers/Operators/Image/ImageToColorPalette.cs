@@ -1,0 +1,73 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using Windows.UI.Xaml.Media.Imaging;
+using Accord.Imaging.ColorReduction;
+using DashShared;
+using Microsoft.Toolkit.Uwp.Helpers;
+
+namespace Dash
+{
+    public class ImageToColorPalette : OperatorController
+    {
+        public ImageToColorPalette(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        {
+        }
+
+        public ImageToColorPalette() : base(new OperatorModel(OperatorType.ImageToColorPalette))
+        {
+        }
+
+        //Input keys
+        public static readonly KeyController ImageKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "Input Image");
+
+        //Output keys
+        public static readonly KeyController PaletteKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
+
+        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        {
+            [ImageKey] = new IOInfo(TypeInfo.Image, true),
+        };
+
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        {
+            [PaletteKey] = TypeInfo.Number,
+        };
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        {
+
+            var inputImage = inputs[ImageKey] as ImageController;
+            var bitmapImage = new BitmapImage(inputImage.ImageSource);
+            var writeBitmap = new WriteableBitmap(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+            var stream = inputImage.ImageSource.IsFile ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream() : inputImage.ImageSource.GetHttpStreamAsync().Result;
+            writeBitmap.SetSource(stream);
+            var bitmap = (Bitmap)writeBitmap;
+
+
+            var quantizer = new ColorImageQuantizer(new MedianCutQuantizer());
+            var colors = quantizer.CalculatePalette(bitmap, 50);
+            
+
+            outputs[PaletteKey] = new NumberController(1);
+        }
+
+
+
+        public override FieldModelController<OperatorModel> Copy()
+        {
+            return new ImageToColorPalette();
+        }
+
+        public override bool SetValue(object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetValue(Context context)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

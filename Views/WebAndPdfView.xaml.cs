@@ -64,7 +64,7 @@ namespace Dash
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
                     throw;
                 }
             }
@@ -84,7 +84,7 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }

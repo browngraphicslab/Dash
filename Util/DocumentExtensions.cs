@@ -143,7 +143,7 @@ namespace Dash
             {
                 docContext = GetViewCopy(doc, where);
                 activeLayout = docContext.GetActiveLayout();
-                activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where== null ? new Point() : (Point)where), true);
+                activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
                 activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data), true);
                 activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data), true);
 
@@ -153,7 +153,7 @@ namespace Dash
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                    new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
                         true);
             }
             return newDoc;
@@ -179,7 +179,7 @@ namespace Dash
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointController(
-                        new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 50, 
+                        new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 70, 
                         where?.Y ?? oldPosition.Data.Y)),
                         true);
             }

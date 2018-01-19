@@ -99,7 +99,7 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
         }
 
