@@ -177,6 +177,7 @@ namespace Dash
         public override void Init()
         {
             LoadFields();
+            DocumentType = DocumentType;
         }
 
         public void LoadFields()
@@ -277,7 +278,18 @@ namespace Dash
         public DocumentType DocumentType
         {
             get => DocumentModel.DocumentType;
-            set => DocumentModel.DocumentType = value;
+            set
+            {
+                DocumentModel.DocumentType = value;
+                //Dear future coder,
+                //
+                //I knew you'd eventually find this line, probably because I set 'enforceTypeCheck' to false.
+                //Before you change it, remember that Types Really Only Lessen Loads in the short term.
+                //
+                //Enjoy your day,
+                //-Tyler
+                this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
+            }
         }
 
         public DocumentModel DocumentModel => Model as DocumentModel;

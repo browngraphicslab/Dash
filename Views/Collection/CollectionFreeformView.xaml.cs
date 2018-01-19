@@ -148,6 +148,9 @@ namespace Dash
                     if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
+            
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
@@ -1025,7 +1028,8 @@ namespace Dash
                 return false;
             }
 
-            var groupDoc = docView.ManipulationControls.GetGroupForDocument(docView.ViewModel.DocumentController);
+            var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
+            
             ListController<DocumentController> group =
                 groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
             if (groupDoc == null || group == null)
@@ -1209,7 +1213,6 @@ namespace Dash
             }
 
             xOuterGrid.ReleasePointerCapture(e.Pointer);
-            Debug.WriteLine("number selected: " + ViewModel.SelectionGroup.Count());
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
@@ -1348,7 +1351,10 @@ namespace Dash
             if (InkController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
-                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                if (XInkCanvas != null)
+                {
+                    XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                }
             }
         }
 
@@ -1363,7 +1369,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            SelectionCanvas.Children.Clear();
+            SelectionCanvas?.Children?.Clear();
             DeselectAll();
 
             _isSelecting = false;
@@ -1387,14 +1393,17 @@ namespace Dash
         public void RenderPreviewTextbox(Point where)
         {
             previewTextBuffer = "";
-            Canvas.SetLeft(previewTextbox, @where.X);
-            Canvas.SetTop(previewTextbox, @where.Y);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.Visibility = Visibility.Visible;
-            previewTextbox.Text = string.Empty;
-            previewTextbox.Focus(FocusState.Programmatic);
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            if (previewTextbox != null)
+            {
+                Canvas.SetLeft(previewTextbox, @where.X);
+                Canvas.SetTop(previewTextbox, @where.Y);
+                previewTextbox.Visibility = Visibility.Collapsed;
+                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Text = string.Empty;
+                previewTextbox.Focus(FocusState.Programmatic);
+                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+                previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            }
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -1685,7 +1694,6 @@ namespace Dash
                 }
 
             }
-            Debug.WriteLine("code=" + virtualKeyCode);
             //Take care of numpad numbers
             if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
             {

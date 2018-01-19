@@ -50,6 +50,54 @@ namespace Dash
             }
         }
 
+        public class GroupNote : NoteDocument
+        {
+            public override DocumentController CreatePrototypeLayout()
+            {
+                throw new NotImplementedException();
+            }
+            public static string APISignature = "Group Docs Data API";
+
+            public override DocumentController CreatePrototype()
+            {
+                var fields = new Dictionary<KeyController, FieldControllerBase>()
+                {
+                    [KeyStore.CollectionKey] = new ListController<DocumentController>(),
+                    [KeyStore.GroupingKey] = new ListController<DocumentController>(),
+                    [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
+                };
+                var protoDoc = new DocumentController(fields, Type, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [CollectionTitleOperatorController.CollectionDocsKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.CollectionKey),
+                    [KeyStore.OperatorKey] = new GroupTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
+            }
+
+            public static DocumentType DocumentType = new DocumentType("C664AA5E-B9D3-4FC0-851C-D44DB5E6D5B5", "Grouping Doc");
+            public DocumentController DataDocument { get; set; }
+            
+            public GroupNote(List<DocumentController> collectedDocuments = null) : base(DocumentType)
+            {
+                _prototypeID = "9DB5D3F7-FEA3-4DAE-B7AE-60E1D0157C36";
+
+                DataDocument = GetDocumentPrototype().MakeDelegate();
+                DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
+                var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
+                DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+
+                Document = DataDocument;
+            }
+        }
+
         public class CollectionNote : NoteDocument
         {
             public static string APISignature = "Collected Docs Note Data API";

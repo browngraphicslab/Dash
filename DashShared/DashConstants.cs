@@ -150,9 +150,9 @@ namespace DashShared
             public static KeyModel ThisKey = new KeyModel("47B14309-D900-47C9-8D93-0777AD733496", "_This");
             public static KeyModel PrototypeKey = new KeyModel("866A6CC9-0B8D-49A3-B45F-D7954631A682", "_Prototype");
             public static KeyModel DelegatesKey = new KeyModel("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "_Delegates");
-            public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "_Width");
-            public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "_Height");
-            public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "_Data");
+            public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
+            public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "Height");
+            public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
             public static KeyModel SourceUriKey = new KeyModel("26594498-FF15-438D-A577-2C8506F4ECEF", "SourceUriKeys");
             public static KeyModel DocumentHtmlKey = new KeyModel("50EB2B65-D111-4D61-9DB2-04123CAAB616", "Document Html Text");
             public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text");
@@ -168,13 +168,13 @@ namespace DashShared
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
             public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "_Parsed Fields");
             public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "WebContext");
-            public static KeyModel NeighboringDocumentsKey = new KeyModel("65084356-0CCE-4B06-B080-06F6C4C5B057", "Neighboring Documents");
             public static KeyModel LastWorkspaceKey = new KeyModel("66F05DB2-2F68-4E37-985D-36303A1AF4E4", "_Last Workspace");
             public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
             public static KeyModel ActualWidthKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualWidth");
-            public static KeyModel ActualHeightKey = new KeyModel("79FAD6CD-6C67-4BA5-A669-69F60038438A", "_ActualHeight");
+            public static KeyModel ActualHeightKey = new KeyModel("79FAD6CD-6C67-4BA5-A669-69F60038438A", "_ActualHeight"); 
+            public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
         }
 
         public static class TypeStore

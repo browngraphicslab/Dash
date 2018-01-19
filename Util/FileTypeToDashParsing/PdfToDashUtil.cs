@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -18,7 +19,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Microsoft.Toolkit.Uwp;
 using Microsoft.Toolkit.Uwp.Helpers;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -26,6 +26,44 @@ namespace Dash
     {
 
         public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        {
+            var localFile = await CopyFileToLocal(fileData);
+            var pdfText = await GetPdfText(localFile);
+
+            // create a backing document for the pdf
+            var fields = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
+                [KeyStore.DocumentTextKey] = new ListController<TextController>(pdfText)
+            };
+            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
+
+            // return a new pdf box
+            return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+        }
+
+        private async Task<List<TextController>> GetPdfText(IStorageFile localFile)
+        {
+            var pageTextList = new List<TextController>();
+
+            var pdf = await PdfDocument.LoadFromFileAsync(localFile);
+            for (uint pageIndex = 0; pageIndex < pdf.PageCount; pageIndex++)
+            {
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await pdf.GetPage(pageIndex).RenderToStreamAsync(stream);
+                    var ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages();
+                    var decoder = await BitmapDecoder.CreateAsync(stream);
+                    Debug.Assert(ocrEngine != null, "ocrEngine should never be null but if it is we need to cleanly fail");
+                    var result = await ocrEngine.RecognizeAsync(await decoder.GetSoftwareBitmapAsync());
+                    pageTextList.Add(new TextController(result.Text));
+                }
+            }
+
+            return pageTextList;
+        }
+
+        private static async Task<StorageFile> CopyFileToLocal(FileData fileData)
         {
             // store the file locally
             var localFolder = ApplicationData.Current.LocalFolder;
@@ -43,16 +81,7 @@ namespace Dash
             {
                 await fileData.FileUri.GetHttpStreamToStorageFileAsync(localFile);
             }
-
-            // create a backing document for the pdf
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path))
-            };
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-            // return a new pdf box
-            return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+            return localFile;
         }
     }
 }

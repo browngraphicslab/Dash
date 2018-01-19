@@ -166,6 +166,9 @@ namespace Dash
                 case OperatorType.CollectionTitle:
                     controller = new CollectionTitleOperatorController(model);
                     break;
+                case OperatorType.GroupTitle:
+                    controller = new GroupTitleOperatorController(model);
+                    break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
@@ -230,10 +233,13 @@ namespace Dash
                     controller = new ExtractKeywordsOperatorController(model);
                     break;
                 case OperatorType.ImageRecognition:
-                    controller = new ImageRecognitionOperatorFieldModelController(model);
+                    controller = new ImageToCognitiveServices(model);
                     break;
                 case OperatorType.ExecuteHtmlJavaScript:
                     controller = new ExecuteHtmlJavaScriptController(model);
+                    break;
+                case OperatorType.ImageToColorPalette:
+                    controller = new ImageToColorPalette(model);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

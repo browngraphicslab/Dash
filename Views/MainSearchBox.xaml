@@ -9,13 +9,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid CanDrag="True">
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         Name="xAutoSuggestBox"
-                        >
+                        GotFocus="XAutoSuggestBox_OnGotFocus">
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <StackPanel Orientation="Vertical" Margin="10,10,10,15">
@@ -25,6 +25,5 @@
                 </DataTemplate>
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
-
     </Grid>
 </UserControl>

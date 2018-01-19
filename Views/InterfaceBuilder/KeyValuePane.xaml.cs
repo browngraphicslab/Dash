@@ -61,7 +61,6 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView?.hideDraggerButton();
-            docView?.hideTitleDisplay();
         }
 
         public void DisableInteraction()

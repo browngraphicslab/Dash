@@ -57,13 +57,14 @@ namespace Dash
             {
                 try
                 {
+                    Debug.WriteLine($"WEBPDF SOURCE: {Source}");
                     if (Source != null && Source.Equals(value)) return;
                     _source = value;
                     OnPropertyChanged();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
                     throw;
                 }
             }
@@ -83,7 +84,7 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }

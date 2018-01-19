@@ -59,7 +59,7 @@
         <!--records list-->
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
-                  SelectionMode="Multiple"
+                  SelectionMode="Extended"
                   Background="#CCDDDDDD"
                   CanDragItems="True"
                   Height="100"

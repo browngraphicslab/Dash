@@ -57,6 +57,8 @@ namespace DashShared
         ExtractKeywords,
         ImageRecognition,
         RichTextTitle,
-        CollectionTitle
+        CollectionTitle,
+        ImageToColorPalette,
+        GroupTitle
     }
 }

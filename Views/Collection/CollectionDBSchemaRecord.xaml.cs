@@ -24,15 +24,12 @@ namespace Dash
 {
     public sealed partial class CollectionDBSchemaRecord : UserControl
     {
-        static int count = 0;
 
         private PointerPoint _downPt;
 
 
         public CollectionDBSchemaRecord()
         {
-            count++;
-            Debug.WriteLine("Created " + count);
             this.InitializeComponent();
         }
         

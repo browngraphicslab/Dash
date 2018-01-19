@@ -802,10 +802,15 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
 
             if (shiftState && !e.Key.Equals(VirtualKey.Shift))
+            {
                 if (e.Key.Equals(VirtualKey.Enter))
                 {
-                    handleShiftEnter();
+                    this.GetFirstAncestorOfType<DocumentView>().HandleShiftEnter();
+                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+
                 }
+            }
             if (tabState)
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -835,26 +840,6 @@ namespace Dash
             {
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 parent.ViewModel.DocumentController.CaptureNeighboringContext();
-            }
-        }
-
-        private void handleShiftEnter()
-        {
-            string text;
-            xRichEditBox.Document.GetText(TextGetOptions.None, out text);
-            var length = text.Length;
-            if (xRichEditBox.Document.Selection.StartPosition == length - 1)
-            {
-                var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                var collection2 = this.GetFirstAncestorOfType<Canvas>();
-                if (collection != null)
-                {
-                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                    var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
-                    collection.LoadNewActiveTextBox("", where2, true);
-                }
             }
         }
 

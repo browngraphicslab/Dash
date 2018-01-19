@@ -88,6 +88,39 @@ namespace Dash
             Util.ForceBindHeightToParentDocumentHeight(this);
         }
 
+        public DocumentViewModel GetDocumentViewModel(DocumentController document)
+        {
+            foreach (var dv in ViewModel.DocumentViewModels)
+            {
+                if (dv.DocumentController.Equals(document))
+                    return dv;
+            }
+            return null;
+        }
+
+        public DocumentController GetDocumentGroup(DocumentController document)
+        {
+            var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+
+            if (groupsList == null) return null;
+            foreach (var g in groupsList.TypedData)
+            {
+                if (g.Equals(document))
+                {
+                    return null;
+                }
+                else
+                {
+                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(document)).Count() > 0)
+                    {
+                        return g;
+                    }
+                }
+            }
+            return null;
+        }
+
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -223,7 +256,7 @@ namespace Dash
             ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View collection as" };
+            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
             ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
 
             var freeform = new MenuFlyoutItem() { Text = "Freeform" };
@@ -249,6 +282,12 @@ namespace Dash
             var timeline = new MenuFlyoutItem() { Text = "Timeline" };
             timeline.Click += MenuFlyoutItemTimeline_Click;
             viewCollectionAs.Items.Add(timeline);
+
+
+            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+            var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
+            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+            ParentDocument.MenuFlyout.Items.Add(viewCollectionPreview);
         }
 
         /// <summary>

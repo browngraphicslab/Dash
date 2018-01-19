@@ -413,7 +413,7 @@ namespace Dash
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception);
+                    Debug.WriteLine(exception);
                 }
             }
             else if (e.DataView.Contains(StandardDataFormats.Html))
