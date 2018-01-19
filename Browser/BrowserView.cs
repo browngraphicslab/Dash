@@ -92,7 +92,9 @@ namespace Dash
 
         private static void SocketClosed(IWebSocket sender, WebSocketClosedEventArgs args)
         {
-            
+            _initted = false;
+            _socket = null;
+            _dataMessageWriter = null;
         }
 
         private static async void MessageRecieved(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
@@ -111,6 +113,7 @@ namespace Dash
                 _initted = false;
                 _socket = null;
                 _dataMessageWriter = null;
+                _ready = false;
                 Debug.WriteLine("connection to server failed");
                 Debug.WriteLine("communication will be cut until connection resumes");
                 //throw new Exception("connection to server failed");
@@ -205,6 +208,11 @@ namespace Dash
             }
             catch (Exception e)
             {
+                _initted = false;
+                _socket = null;
+                _dataMessageWriter = null;
+                _ready = false;
+
                 throw new Exception("Exception caught during writing to server data writer.  Reason: " + e.Message);
             }
         }

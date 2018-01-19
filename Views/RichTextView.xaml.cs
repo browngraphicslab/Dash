@@ -59,7 +59,7 @@ namespace Dash
         private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
-        private Point _rightPos;
+        private Point _rightDragLastPosition, _rightDragStartPosition;
 
 
         // for manipulation movement
@@ -96,6 +96,26 @@ namespace Dash
             _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
 
             xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+            xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
+            {
+                var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                if (freeform == null)
+                {
+                    return;
+                }
+
+                var docView = this.GetFirstAncestorOfType<DocumentView>();
+                if(docView== null)
+                {
+                    return ;
+                }
+
+                if (freeform.TagNote(xRichEditBox.Document.Selection.Text, docView))
+                {
+                    //var start = xRichEditBox.Document.Selection.StartPosition;
+                    //xRichEditBox.Document.Selection.SetRange(start, start);
+                }
+            };
 
             // store a clone of character format after initialization as default format
             xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
@@ -161,10 +181,6 @@ namespace Dash
                     selectedText.CharacterFormat = charFormatting;
                     xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
                 }
-            }
-            if (Scroll.Visibility == Visibility.Visible)
-            {
-                Debug.WriteLine("Sc" + Scroll.ActualHeight);
             }
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
@@ -491,7 +507,7 @@ namespace Dash
                 var pointerPosition = MainPage.Instance
                     .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
                         .CoreWindow.GetForCurrentThread().PointerPosition);
-                _rightPos = pointerPosition;
+                _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
                 this.CapturePointer(e.Pointer);
                 parent.ManipulationControls.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
@@ -509,8 +525,8 @@ namespace Dash
         {
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-            var translation = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
-            _rightPos = pointerPosition;
+            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
+            _rightDragLastPosition = pointerPosition;
             parent.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
@@ -526,16 +542,17 @@ namespace Dash
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-            if (parent != null)
-                parent.MoveToContainingCollection();
+            //if (parent != null)
+            //    parent.MoveToContainingCollection();
             if (_rightPressed)
             {
-                var delta = new Point(pointerPosition.X - _rightPos.X, pointerPosition.Y - _rightPos.Y);
+                var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
                 var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
+                else
+                    parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
                 var dvm = parent.ViewModel;
-                parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
                 parent.DocumentView_PointerExited(null, null);
                 parent.DocumentView_ManipulationCompleted(null, null);
 
@@ -785,10 +802,15 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
 
             if (shiftState && !e.Key.Equals(VirtualKey.Shift))
+            {
                 if (e.Key.Equals(VirtualKey.Enter))
                 {
-                    handleShiftEnter();
+                    this.GetFirstAncestorOfType<DocumentView>().HandleShiftEnter();
+                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+
                 }
+            }
             if (tabState)
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -818,26 +840,6 @@ namespace Dash
             {
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
                 parent.ViewModel.DocumentController.CaptureNeighboringContext();
-            }
-        }
-
-        private void handleShiftEnter()
-        {
-            string text;
-            xRichEditBox.Document.GetText(TextGetOptions.None, out text);
-            var length = text.Length;
-            if (xRichEditBox.Document.Selection.StartPosition == length - 1)
-            {
-                var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                var collection2 = this.GetFirstAncestorOfType<Canvas>();
-                if (collection != null)
-                {
-                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-                    var where2 = this.TransformToVisual(collection2).TransformPoint(new Point(0, ActualHeight + 1));
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, "", size: new Size(400, 32)).Document;
-                    collection.LoadNewActiveTextBox("", where2, true);
-                }
             }
         }
 

@@ -31,7 +31,9 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using DashShared.Models;
 using Flurl.Util;
+using NewControls.Geometry;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -48,7 +50,6 @@ namespace Dash
         public const float MinScale = 0.25f;
 
         #endregion
-
 
         #region LinkingVariables
 
@@ -68,6 +69,9 @@ namespace Dash
 
 
         public ManipulationControls ManipulationControls;
+
+        public bool TagMode { get; set; }
+        public KeyController TagKey { get; set; }
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -93,6 +97,15 @@ namespace Dash
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
+        {
+            if (args.VirtualKey == VirtualKey.Back)
+            {
+                ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
+            }
         }
 
         public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
@@ -112,7 +125,7 @@ namespace Dash
             {
                 // remove old events
                 if (ViewModel?.DocumentViewModels != null)
-                        ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
 
                 // add new events
                 ViewModel = vm;
@@ -132,9 +145,12 @@ namespace Dash
             {
                 var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
                 foreach (var doc in this.GetDescendantsOfType<DocumentView>())
-                    if (doc.GetFirstAncestorOfType<DocumentView>().Equals(parentDoc))
+                    if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
+            
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
@@ -152,6 +168,10 @@ namespace Dash
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
+
+            xOuterGrid.PointerPressed += OnPointerPressed;
+            xOuterGrid.PointerMoved += OnPointerMoved;
+            xOuterGrid.PointerReleased += OnPointerReleased;
 
             if (InkController != null)
             {
@@ -247,13 +267,13 @@ namespace Dash
             //    type = fmController.TypeInfo;
             //}
             var docView1 = GetDocView(referencedDoc);
-          
-                if (!docView1.ViewModel.KeysToFrameworkElements.ContainsKey(referencedFieldKey))
-                {
-                    _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
-                    return;
-                }
-            
+
+            if (!docView1.ViewModel.KeysToFrameworkElements.ContainsKey(referencedFieldKey))
+            {
+                _linksToRetry.Add(new Tuple<FieldReference, DocumentFieldReference>(startReference, endReference));
+                return;
+            }
+
             var frameworkElement1 = docView1.ViewModel.KeysToFrameworkElements[referencedFieldKey];
             var docView2 = GetDocView(referencingDoc);
             if (!docView2.ViewModel.KeysToFrameworkElements.ContainsKey(referencingFieldKey))
@@ -288,9 +308,9 @@ namespace Dash
                 CompositeMode = ElementCompositeMode.SourceOver,
                 referencingDocument = referencingDoc,
                 referencingKey = referencingFieldKey,
-                referencedDocument= referencedDoc,
+                referencedDocument = referencedDoc,
                 referencedKey = referencedFieldKey
-        };
+            };
             Canvas.SetZIndex(link, -1);
             var converter = new BezierConverter(frameworkElement1, frameworkElement2, itemsPanelCanvas);
             converter.Pos2 = new Point(0, 0);
@@ -578,7 +598,7 @@ namespace Dash
         {
             _connectionLine = new UserCreatedLink
             {
-           
+
                 //TODO: made this hit test invisible because it was getting in the way of ink (which can do [almost] all the same stuff). sry :/
                 IsHitTestVisible = false,
                 StrokeThickness = 5,
@@ -704,7 +724,7 @@ namespace Dash
                 inputController.GetField(KeyStore.UserLinksKey) as
                     ListController<KeyController>;
             linksList.Add(inputReference.FieldReference.FieldKey);
-            
+
 
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -975,7 +995,6 @@ namespace Dash
 
         #endregion
 
-
         #region PointerChrome
 
         /// <summary>
@@ -996,6 +1015,99 @@ namespace Dash
         private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        #endregion
+
+        #region Tagging
+
+        public bool TagNote(string tagValue, DocumentView docView)
+        {
+            if (!TagMode)
+            {
+                return false;
+            }
+
+            var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
+            
+            ListController<DocumentController> group =
+                groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            if (groupDoc == null || group == null)
+            {
+                return false;
+            }
+
+            DocumentController image = null;
+            foreach (var documentController in group.TypedData)
+            {
+                if (documentController.DocumentType.Equals(ImageBox.DocumentType))
+                {
+                    image = documentController.GetDataDocument(null);
+                    break;
+                }
+            }
+
+            if (image != null)
+            {
+                image.SetField(TagKey, new TextController(tagValue), true);
+                return true;
+            }
+            return false;
+        }
+
+        public void ShowTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Visible;
+            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
+            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
+            Debug.WriteLine(mousePos);
+            mousePos = Util.PointTransformFromVisual(mousePos, Window.Current.Content, xOuterGrid);
+            TagKeyBox.RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
+        }
+
+        public void HideTagKeyBox()
+        {
+            TagKeyBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var names = keys.Where(k => !k.Name.StartsWith("_"));
+                TagKeyBox.ItemsSource = names;
+            }
+        }
+
+        private void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            sender.Text = ((KeyController)args.SelectedItem).Name;
+        }
+
+        private void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            if (args.ChosenSuggestion != null)
+            {
+                TagKey = (KeyController)args.ChosenSuggestion;
+            }
+            else
+            {
+                var keys = ContentController<FieldModel>.GetControllers<KeyController>();
+                var key = keys.FirstOrDefault(k => k.Name == args.QueryText);
+
+                if (key == null)
+                {
+                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                }
+                else
+                {
+                    TagKey = key;
+                }
+            }
+            TagMode = true;
+
+            HideTagKeyBox();
         }
 
         #endregion
@@ -1037,21 +1149,28 @@ namespace Dash
                 var droppedField = _currReference.FieldReference;
                 var droppedSrcDoc = droppedField.GetDocumentController(null);
 
-                var sourceViewType = droppedSrcDoc.GetActiveLayout()?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
-                                     droppedSrcDoc.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ??
+                var sourceViewType = droppedSrcDoc.GetActiveLayout()
+                                         ?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
+                                     droppedSrcDoc
+                                         .GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)
+                                         ?.Data ??
                                      CollectionView.CollectionViewType.Schema.ToString();
-                
+
                 var where = this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position);
                 var cnote = new CollectionNote(this.itemsPanelCanvas.RenderTransform.Inverse.TransformPoint(e.GetCurrentPoint(this).Position), (CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), sourceViewType));
                 cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new DocumentReferenceController(droppedSrcDoc.GetDataDocument(null).GetId(), droppedField.FieldKey), true);
+
 
                 ViewModel.AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
 
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
-                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null)
+                        .GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
+                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey,
+                        new TextController(field), true);
                 }
 
 
@@ -1060,13 +1179,143 @@ namespace Dash
                 for (int i = itemsPanelCanvas.Children.Count - 1; i >= 0; i--)
                     if (itemsPanelCanvas.Children[i] is ContentPresenter)
                     {
-                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)?.Content as CollectionView;
-                        EndDrag(new IOReference(new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey), false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
+                        var cview = ((itemsPanelCanvas.Children[i] as ContentPresenter).Content as DocumentViewModel)
+                            ?.Content as CollectionView;
+                        EndDrag(
+                            new IOReference(
+                                new DocumentFieldReference(cnote.Document.GetId(), cview.ViewModel.CollectionKey),
+                                false, TypeInfo.List, e, cview.ConnectionEllipseInput, cview.ParentDocument), false);
                         break;
                     }
             }
             CancelDrag(e.Pointer);
         }
+
+        #region Marquee Select
+
+        private Rectangle _marquee;
+        private bool _multiSelect;
+        private Point _marqueeAnchor;
+        private bool _isSelecting;
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
+                MarqueeSelectDocs(marqueeRect);
+                _multiSelect = false;
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+
+            xOuterGrid.ReleasePointerCapture(e.Pointer);
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
+
+            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
+
+
+            var pos = currentPoint.Position;
+            var dX = pos.X - _marqueeAnchor.X;
+            var dY = pos.Y - _marqueeAnchor.Y;
+
+            //Height and width depend on the difference in position of the current point and the anchor (initial point)
+            double newWidth = (dX > 0) ? dX : -dX;
+            double newHeight = (dY > 0) ? dY : -dY;
+
+            //Anchor point should also be moved if dX or dY are moved
+            var newAnchor = _marqueeAnchor;
+            if (dX < 0) newAnchor.X += dX;
+            if (dY < 0) newAnchor.Y += dY;
+
+
+            if (newWidth > 5 && newHeight > 5 && _marquee == null)
+            {
+                _marquee = new Rectangle()
+                {
+                    Stroke = new SolidColorBrush(Colors.Gray),
+                    StrokeThickness = 1.5 / Zoom,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    CompositeMode = ElementCompositeMode.SourceOver
+                };
+                SelectionCanvas.Children.Add(_marquee);
+            }
+
+            if (_marquee == null) return;
+
+            //Adjust the marquee rectangle
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+
+            args.Handled = true;
+
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                _isSelecting = true;
+            }
+        }
+
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+            var selectedDocs = new List<DocumentView>();
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                IEnumerable<DocumentViewModel> docs =
+                    xItemsControl.Items.OfType<DocumentViewModel>();
+                foreach (var docvm in docs)
+                {
+                    var doc = docvm.DocumentController;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    if (double.IsNaN(width)) width = 0;
+                    var height = doc.GetHeightField().Data;
+                    if (double.IsNaN(height)) height = 0;
+                    var rect = new Rect(position, new Size(width, height));
+                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                    {
+                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                        if (documentView != null)
+                            selectedDocs.Add(
+                                documentView);
+                    }
+                }
+            }
+            foreach (var docView in selectedDocs)
+            {
+                Select(docView);
+                //AddToPayload(docView);
+            }
+            //Makes the collectionview's selection mode "Multiple" if documents were selected.
+            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            {
+                var parentView = this.GetFirstAncestorOfType<CollectionView>();
+                parentView.MakeSelectionModeMultiple();
+            }
+        }
+
+        #endregion
 
         #region Flyout
         #endregion
@@ -1075,6 +1324,13 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            if (e.DataView.Properties.ContainsKey("Operator Output"))
+            {
+                DocumentFieldReference docRef = (DocumentFieldReference) e.DataView.Properties["Operator Output"];
+                var where = e.GetPosition(this);
+                var db = new DataBox(docRef.GetReferenceController(), where.X, where.Y).Document;
+                ViewModel.AddDocument(db, null);
+            }
             Debug.WriteLine("drop event from collection");
             ViewModel.CollectionViewOnDrop(sender, e);
         }
@@ -1095,7 +1351,10 @@ namespace Dash
             if (InkController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
-                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                if (XInkCanvas != null)
+                {
+                    XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                }
             }
         }
 
@@ -1109,6 +1368,11 @@ namespace Dash
         private async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
+
+            SelectionCanvas?.Children?.Clear();
+            DeselectAll();
+
+            _isSelecting = false;
 
             RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
 
@@ -1129,14 +1393,17 @@ namespace Dash
         public void RenderPreviewTextbox(Point where)
         {
             previewTextBuffer = "";
-            Canvas.SetLeft(previewTextbox, @where.X);
-            Canvas.SetTop(previewTextbox, @where.Y);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.Visibility = Visibility.Visible;
-            previewTextbox.Text = string.Empty;
-            previewTextbox.Focus(FocusState.Programmatic);
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            if (previewTextbox != null)
+            {
+                Canvas.SetLeft(previewTextbox, @where.X);
+                Canvas.SetTop(previewTextbox, @where.Y);
+                previewTextbox.Visibility = Visibility.Collapsed;
+                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Text = string.Empty;
+                previewTextbox.Focus(FocusState.Programmatic);
+                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+                previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            }
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -1188,101 +1455,55 @@ namespace Dash
                 _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
-                    foreach (var pair in _payload)
-                    {
-                        Deselect(pair.Key);
-                    }
-                    _payload = new Dictionary<DocumentView, DocumentController>();
+                    DeselectAll();
                 }
             }
         }
 
 
+
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+
+        private List<DocumentView> _documentViews = new List<DocumentView>();
+
 
         private bool _isToggleOn;
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
-            _payload = new Dictionary<DocumentView, DocumentController>();
             foreach (var docView in DocumentViews)
-            {
                 if (_isToggleOn)
-                {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-                }
                 else
-                {
                     Deselect(docView);
-                    _payload.Remove(docView);
-                }
-            }
         }
 
         public void DeselectAll()
         {
-            foreach (var docView in DocumentViews)
+            foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
             {
                 Deselect(docView);
-                _payload.Remove(docView);
             }
+            ViewModel.SelectionGroup.Clear();
         }
 
         private void Deselect(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
-            docView.CanDrag = false;
-            docView.ManipulationMode = ManipulationModes.All;
-            docView.DragStarting -= DocView_OnDragStarting;
+            ViewModel.SelectionGroup.Remove(docView.ViewModel);
+            docView.ToggleMultiSelected(false);
+
         }
 
         public void Select(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
-            docView.CanDrag = true;
-            docView.ManipulationMode = ManipulationModes.None;
-            docView.DragStarting += DocView_OnDragStarting;
-        }
-
-        public void AddToPayload(DocumentView docView)
-        {
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-        }
-
-        // TODO why are we customizing DocumentView through the collection free form view. Doesn't make any sense
-        // TODO there are better hooks to use
-        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!IsSelectionEnabled) return;
-
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
-            if (docView.CanDrag)
-            {
-                Deselect(docView);
-                _payload.Remove(docView);
-            }
-            else
-            {
-                Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-            }
-            e.Handled = true;
+            ViewModel.SelectionGroup.Add(docView.ViewModel);
+            docView.ToggleMultiSelected(true);
         }
 
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
             Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
-
-            //if (ItemsCarrier.Instance.StartingCollection == null)
-            //    return;
-            //ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
-            //foreach (var view in _payload.Keys.ToList())
-            //    _documentViews.Remove(view);
-
-            //_payload = new Dictionary<DocumentView, DocumentController>();
-            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
 
@@ -1297,7 +1518,14 @@ namespace Dash
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            var docControllerList = new List<DocumentController>();
+            foreach (var vm in ViewModel.SelectionGroup)
+            {
+                docControllerList.Add(vm.DocumentController);
+            }
+            e.Data.Properties.Add("DocumentControllerList", docControllerList);
+            e.Data.Properties.Add("View", true);
+            e.Data.RequestedOperation = DataPackageOperation.Link;
         }
         #endregion
 
@@ -1305,8 +1533,9 @@ namespace Dash
 
         public InkController InkController;
         public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
         private bool loadingPermanentTextbox;
-
         public double Zoom { get { return ManipulationControls.ElementScale; } }
         private TextBox previewTextbox { get; set; }
 
@@ -1372,7 +1601,7 @@ namespace Dash
             }
         }
 
-        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer=false)
+        public void LoadNewActiveTextBox(string text, Point where, bool resetBuffer = false)
         {
             if (!loadingPermanentTextbox)
             {
@@ -1414,7 +1643,7 @@ namespace Dash
                     shiftState && capState)
                 {
                     character = key.ToString().ToLower();
-                } 
+                }
                 else
                 {
                     character = key.ToString();
@@ -1425,8 +1654,46 @@ namespace Dash
             if (virtualKeyCode >= 48 && virtualKeyCode <= 57)
             {
                 character = (virtualKeyCode - 48).ToString();
+                if ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState))
+                {
+                    switch ((virtualKeyCode - 48))
+                    {
+                        case 1: character = "!"; break;
+                        case 2: character = "@"; break;
+                        case 3: character = "#"; break;
+                        case 4: character = "$"; break;
+                        case 5: character = "%"; break;
+                        case 6: character = "^"; break;
+                        case 7: character = "&"; break;
+                        case 8: character = "*"; break;
+                        case 9: character = "("; break;
+                        case 0: character = ")"; break;
+                        default: break;
+                    }
+                }
             }
 
+            if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
+            {
+                var shifted = ((shiftState != false || capState != false) &&
+                    (!shiftState || !capState));
+                switch (virtualKeyCode)
+                {
+                    case 186: character = shifted ? ":" : ";"; break;
+                    case 187: character = shifted ? "=" : "+"; break;
+                    case 188: character = shifted ? "<" : ","; break;
+                    case 189: character = shifted ? "_" : "-"; break;
+                    case 190: character = shifted ? ">" : "."; break;
+                    case 191: character = shifted ? "?" : "/"; break;
+                    case 192: character = shifted ? "~" : "`"; break;
+                    case 219: character = shifted ? "{" : "["; break;
+                    case 220: character = shifted ? "|" : "\\"; break;
+                    case 221: character = shifted ? "}" : "]"; break;
+                    case 222: character = shifted ? "\"" : "'"; break;
+                }
+
+            }
             //Take care of numpad numbers
             if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
             {
@@ -1447,7 +1714,6 @@ namespace Dash
             if (sender is DocumentView documentView)
             {
                 OnDocumentViewLoaded?.Invoke(this, documentView);
-                documentView.OuterGrid.Tapped += DocumentView_Tapped;
                 DocumentViews.Add(documentView);
 
                 if (loadingPermanentTextbox)
@@ -1479,5 +1745,13 @@ namespace Dash
         }
 
         #endregion
+
+        private void CollectionFreeformView_OnDragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Output"))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+        }
     }
 }

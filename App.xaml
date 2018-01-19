@@ -756,6 +756,10 @@
             </Setter>
         </Style>
 
+        
+        <!--Collection Timeline View-->
+        <x:Double x:Key="TimelineElementWidth">250</x:Double>
+        
         <!-- Vertically scrolling Collection List View-->
         <Style x:Key="xVerticalCollectionListViewStyle" TargetType="ListView">
             <Setter Property="Background" Value="#FFE5E5E5"/>

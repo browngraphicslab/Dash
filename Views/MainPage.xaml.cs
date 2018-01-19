@@ -51,6 +51,10 @@ namespace Dash
         public static InkController InkController = new InkController();
         public BrowserView WebContext => BrowserView.Current;
 
+        public bool SearchVisible { get; private set; }
+
+
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -75,6 +79,8 @@ namespace Dash
 
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+
+            SearchVisible = false;
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -132,7 +138,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
 
-            
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -140,8 +146,13 @@ namespace Dash
             BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
-        public void SetCurrentWorkspace(DocumentController workspace)
+        public bool SetCurrentWorkspace(DocumentController workspace)
         {
+            //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
+            if (workspace.Equals(MainDocument))
+            {
+                return false;
+            }
             workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
@@ -149,6 +160,78 @@ namespace Dash
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            return true;
+        }
+
+        public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
+        {
+            RoutedEventHandler handler = null;
+            handler =
+                delegate(object sender, RoutedEventArgs args)
+                {
+                    xMainDocView.xContentPresenter.Loaded -= handler;
+
+
+                    var dvm = xMainDocView.DataContext as DocumentViewModel;
+                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+                    if (coll?.ViewModel?.DocumentViewModels != null)
+                    {
+                        foreach (var vm in coll.ViewModel.DocumentViewModels)
+                        {
+                            if (vm.DocumentController.Equals(document))
+                            {
+                                RoutedEventHandler finalHandler = null;
+                                finalHandler = delegate(object finalSender, RoutedEventArgs finalArgs)
+                                {
+                                    Debug.WriteLine("loaded");
+                                    NavigateToDocumentInWorkspace(document);
+                                    vm.Content.Loaded -= finalHandler;
+                                };
+
+                                vm.Content.Loaded += finalHandler;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (dvm?.Content != null)
+                        {
+                            if (coll == null)
+                            {
+                                RoutedEventHandler contentHandler = null;
+                                contentHandler = delegate(object contentSender, RoutedEventArgs contentArgs)
+                                {
+                                    dvm.Content.Loaded -= contentHandler;
+                                    if (!NavigateToDocumentInWorkspace(document))
+                                    {
+                                        handler(null, null);
+                                    }
+                                };
+                                dvm.Content.Loaded += contentHandler;
+                            }
+                            else
+                            {
+                                RoutedEventHandler contentHandler = null;
+                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
+                                {
+                                    coll.Loaded -= contentHandler;
+                                    if (!NavigateToDocumentInWorkspace(document))
+                                    {
+                                        handler(null, null);
+                                    }
+                                };
+                                coll.Loaded += contentHandler;
+                            }
+                        }
+
+                    }
+                };
+            xMainDocView.xContentPresenter.Loaded += handler;
+            if (!SetCurrentWorkspace(workspace))
+            {
+                xMainDocView.xContentPresenter.Loaded -= handler;
+            }
         }
 
         public bool NavigateToDocumentInWorkspace(DocumentController document)
@@ -156,12 +239,18 @@ namespace Dash
             var dvm = xMainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null)
+            {
                 return NavigateToDocument(coll, null, coll, document);
+            }
             return false;
         }
 
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
+            if (collection?.ViewModel?.DocumentViewModels == null)
+            {
+                return false;
+            }
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
@@ -170,8 +259,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.Width / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.Height / 2));
+                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
+                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -233,7 +322,7 @@ namespace Dash
             {
                 return;
             }
-            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true); 
+            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true);
             e.Handled = true;
         }
 
@@ -249,7 +338,7 @@ namespace Dash
             OperatorMenuFlyout = new Flyout
             {
                 Content = TabMenu.Instance,
-                
+
             };
 
             xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
@@ -269,7 +358,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas); 
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -290,7 +379,7 @@ namespace Dash
         /// <param name="menu"></param>
         public void SetOptionsMenu(OverlayMenu menu)
         {
-//            menu.CreateAndRunInstantiationAnimation(true);
+            //            menu.CreateAndRunInstantiationAnimation(true);
             //xMenuCanvas.Content = menu;
         }
 
@@ -311,19 +400,13 @@ namespace Dash
             //DBTest.DBDoc.AddChild(docModel);
         }
 
-        private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xMainDocView.Width = e.NewSize.Width;
-            xMainDocView.Height = e.NewSize.Height;
-        }
-
         public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
             var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
             // make sure elementToDisplay is never cut from screen 
             if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
             {
-                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50; 
+                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50;
             }
             if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
             {
@@ -334,7 +417,6 @@ namespace Dash
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
@@ -343,14 +425,23 @@ namespace Dash
 
         private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            TreeMenuColumn.Width = new GridLength(300 - TreeMenuColumn.Width.Value);
-            if (Math.Abs(TreeMenuColumn.Width.Value) < 0.0001)
+            xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
+        }
+
+        private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+            if (SearchVisible)
             {
-                CollapseButton.Text = ">";
+                SearchVisible = false;
+                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xTextBlock.Text = "\uE721";
             }
             else
             {
-                CollapseButton.Text = "<";
+                SearchVisible = true;
+                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xTextBlock.Text = "\uE8BB";
             }
         }
     }

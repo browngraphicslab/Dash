@@ -112,14 +112,14 @@ namespace Dash
             else web.Source = new Uri(textfieldModelController.Data);
             web.LoadCompleted += Web_LoadCompleted;
             grid.Children.Add(web);
-            //var overgrid = new Grid
-            //{
-            //    HorizontalAlignment = HorizontalAlignment.Stretch,
-            //    VerticalAlignment = VerticalAlignment.Stretch,
-            //    Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-            //    Name = "overgrid"
-            //};
-            //grid.Children.Add(overgrid);
+            var overgrid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
+                Name = "overgrid"
+            };
+            grid.Children.Add(overgrid);
             web.Tag = new Tuple<Point,Point>(new Point(), new Point()); // hack for allowing web page to be dragged with right mouse button
 
             if (html == null)

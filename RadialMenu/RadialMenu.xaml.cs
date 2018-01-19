@@ -757,5 +757,10 @@ namespace RadialMenuControl.UserControl
         {
             MenuOpenedOrClosed?.Invoke(b);
         }
+
+        private void BackgroundEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }

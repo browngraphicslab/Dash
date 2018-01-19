@@ -78,7 +78,7 @@ namespace Dash
 
             Metadata = new TimelineMetadata
             {
-                LeftRightMargin = 50
+                LeftRightMargin = 160
             };
         }
 
@@ -99,7 +99,7 @@ namespace Dash
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
             }
         }
 

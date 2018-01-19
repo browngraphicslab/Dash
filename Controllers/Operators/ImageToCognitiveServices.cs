@@ -12,14 +12,14 @@ namespace Dash.Controllers.Operators
     /// <summary>
     /// OperatorFieldModelController for an image recognition operator
     /// </summary>
-    public class ImageRecognitionOperatorFieldModelController : OperatorController
+    public class ImageToCognitiveServices : OperatorController
     {
-        public ImageRecognitionOperatorFieldModelController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        public ImageToCognitiveServices(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public ImageRecognitionOperatorFieldModelController() : base(new OperatorModel(OperatorType.ImageRecognition))
+        public ImageToCognitiveServices() : base(new OperatorModel(OperatorType.ImageRecognition))
         {
         }
 
@@ -75,7 +75,7 @@ namespace Dash.Controllers.Operators
         /// <returns>A copy of this operator.</returns>
         public override FieldModelController<OperatorModel> Copy()
         {
-            return new ImageRecognitionOperatorFieldModelController(OperatorFieldModel);
+            return new ImageToCognitiveServices(OperatorFieldModel);
         }
         public override object GetValue(Context context)
         {

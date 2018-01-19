@@ -177,6 +177,7 @@ namespace Dash
         public override void Init()
         {
             LoadFields();
+            DocumentType = DocumentType;
         }
 
         public void LoadFields()
@@ -277,7 +278,18 @@ namespace Dash
         public DocumentType DocumentType
         {
             get => DocumentModel.DocumentType;
-            set => DocumentModel.DocumentType = value;
+            set
+            {
+                DocumentModel.DocumentType = value;
+                //Dear future coder,
+                //
+                //I knew you'd eventually find this line, probably because I set 'enforceTypeCheck' to false.
+                //Before you change it, remember that Types Really Only Lessen Loads in the short term.
+                //
+                //Enjoy your day,
+                //-Tyler
+                this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
+            }
         }
 
         public DocumentModel DocumentModel => Model as DocumentModel;
@@ -297,7 +309,7 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
-        public DocumentController GetDataDocument(Context context)
+        public DocumentController GetDataDocument(Context context = null)
         {
             return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
         }
@@ -1285,6 +1297,10 @@ namespace Dash
             if (DocumentType.Equals(BackgroundBox.DocumentType))
             {
                 return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
+            if (DocumentType.Equals(DataBox.DocumentType))
+            {
+                return DataBox.MakeView(this, context, isInterfaceBuilder);//TODO add keysToFrameworkElementsIn
             }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -159,6 +160,12 @@ namespace Dash
             //    Debug.WriteLine("Not a group");
             //}
             //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+        }
+
+        private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.Data.Properties["Operator Document"] = (DataContext as DocumentViewModel).DocumentController.GetDataDocument(null);
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
     }
 }

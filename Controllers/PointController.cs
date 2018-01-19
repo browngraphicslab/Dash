@@ -10,6 +10,9 @@ namespace Dash
 {
     public class PointController : FieldModelController<PointModel>
     {
+
+        public PointController() : this(0, 0) { }
+
         public PointController(Point data) :base(new PointModel(data) ) { }
         public PointController(double x, double y) : base(new PointModel(x, y)) { }
 

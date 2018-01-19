@@ -19,7 +19,7 @@ namespace Dash
         }
 
         //Input keys
-        public static readonly KeyController RichTextKey = new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
+        public static readonly KeyController RichTextKey = NoteDocuments.RichTextNote.RTFieldKey;// new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
 
         //Output keys
         public static readonly KeyController ComputedTitle = new KeyController("94E01AAF-DD88-4130-9EE5-18D7B8B2674C", "Computed Title");
