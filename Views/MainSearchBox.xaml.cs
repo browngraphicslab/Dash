@@ -42,6 +42,7 @@ namespace Dash
                 ExecuteSearch(sender);
 
             }
+            _currentSearch = sender.Text.ToLower(); ;
         }
 
         private void ExecuteSearch(AutoSuggestBox searchBox)
@@ -55,7 +56,6 @@ namespace Dash
             //Debug.WriteLine("Task canceled");
             //_tokenSource = new CancellationTokenSource();
             var text = searchBox.Text.ToLower();
-            _currentSearch = text;
             //Task.Factory.StartNew(async () =>
             //{
             //Search(sender, sender.Text.ToLower());
@@ -374,9 +374,29 @@ namespace Dash
             }
         }
 
-        private void XAutoSuggestBox_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        /// <summary>
+        /// returns the current document controllers for the data documents of the search results
+        /// </summary>
+        /// <param name="maxSearchResultSize"></param>
+        /// <param name="filterFunc"></param>
+        /// <returns></returns>
+        public IEnumerable<DocumentController> GetDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
         {
+            IEnumerable<SearchResultViewModel> vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
+            return vms.Select(i => i.ViewDocument.GetDataDocument());
+        }
 
+        /// <summary>
+        /// returns to you the search view models for the current search
+        /// </summary>
+        /// <param name="maxSearchResultSize"></param>
+        /// <param name="filterFunc"></param>
+        /// <returns></returns>
+        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
+        {
+            var text = _currentSearch;
+            IEnumerable<SearchResultViewModel> vms = filterFunc == null ? SearchByParts(text) : SearchByParts(text).Where(filterFunc);
+            return vms.Take(maxSearchResultSize);
         }
 
         /*
