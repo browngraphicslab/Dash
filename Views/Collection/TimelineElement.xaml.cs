@@ -38,6 +38,8 @@ namespace Dash
         private bool _localContextVisible;
         private double _ellipseSize = 18;
 
+        private int _displayState = 0;
+
         private bool LocalContextVisible
         {
             get => _localContextVisible;
@@ -137,11 +139,15 @@ namespace Dash
             if (!showContext && _localContext.View != null)
             {
                 // TODO hide the context
-                xWebHolder.Children.Remove(_localContext.View);
+                xDocHolder.Children.Remove(_localContext.View);
                 _localContext.View = null;
                 GC.Collect();
 
                 xLowerLine.Visibility = Visibility.Collapsed;
+                xUpperLine.Visibility = Visibility.Visible;
+                Thickness margin = xWebHolderTop.Margin;
+                margin.Top = -125;
+                xWebHolderTop.Margin = margin;
             }
 
             if (showContext)
@@ -157,7 +163,7 @@ namespace Dash
                         Height = _localContext.Height,
                         RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
                     };
-                    xWebHolder.Children.Add(_localContext.View);
+                    xDocHolder.Children.Add(_localContext.View);
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth / 2 - EllipseSize / 2);
                     if (xDocumentPreview != null) Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
                 }
@@ -167,15 +173,55 @@ namespace Dash
                 }
 
                 xLowerLine.Visibility = Visibility.Visible;
+                xUpperLine.Visibility = Visibility.Collapsed;
+                Thickness margin = xWebHolderTop.Margin;
+                margin.Top = 20;
+                xWebHolderTop.Margin = margin;
             }
         }
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //LocalContextVisible = !LocalContextVisible;
-            
-            _localContextVisible = !_localContextVisible;
+            _displayState = (_displayState + 1) % 3;
+
+
+            if (_displayState == 0)
+            {
+                _localContextVisible = true;
+            }
+            else
+            {
+                _localContextVisible = false;
+            }
+
+            bool displayAll = true;
+            if (_displayState == 2)
+            {
+                displayAll = false;
+            }
+            DisplayAll(displayAll);
+
+            //_localContextVisible = !_localContextVisible;
             ShowLocalContext(_localContextVisible);
+            
+        }
+
+        private void DisplayAll(bool display)
+        {
+            if(display)
+            {
+                xDisplay.Visibility = Visibility.Visible;
+                Thickness margin = xEllipse.Margin;
+                margin.Top = -200;
+                xEllipse.Margin = margin;
+            } else
+            {
+                xDisplay.Visibility = Visibility.Collapsed;
+                Thickness margin = xEllipse.Margin;
+                margin.Top = 0;
+                xEllipse.Margin = margin;
+            }
         }
 
         private void DocumentPreviewSizeChanged(object sender, SizeChangedEventArgs e)

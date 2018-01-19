@@ -9,27 +9,32 @@
     d:DesignWidth="50" d:DesignHeight="400" d:DataContext="{d:DesignInstance local:TimelineElementViewModel}">
 
     <Grid Background="Transparent" Tapped="TimelineElement_OnTapped">
-        <Grid x:Name="xUpperDisplay" Margin="0,-95,0,0" Visibility="Visible" Height="315">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="50"></RowDefinition>
-                <RowDefinition Height="45"></RowDefinition>
-                <RowDefinition Height="20"></RowDefinition>
-                <RowDefinition Height="100"></RowDefinition>
-                <RowDefinition Height="100"></RowDefinition>
+        <Grid Name="xDisplay">
+            <Grid x:Name="xUpperDisplay" Margin="0,-95,0,0" Visibility="Visible" Height="315">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50"></RowDefinition>
+                    <RowDefinition Height="45"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
 
-            </Grid.RowDefinitions>
-            <Canvas Grid.Row="0" x:Name="xWebHolderTop" Margin="0,-35,0,0">
-                <local:DocumentView x:Name="xDocumentPreview" Margin="30,0,0,0" Width="80" Height="80"
+                </Grid.RowDefinitions>
+
+                <Rectangle Name="xUpperLine" Grid.Row="1" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
+
+                <Rectangle Grid.Row="3" Name="xLowerLine" Width="1" Fill="LightGray" Visibility="Collapsed" RadiusY="2" RadiusX="2" Height="80" Margin="0, 10, 1, 5"></Rectangle>
+                <Canvas Grid.Row="4" x:Name="xDocHolder" Margin="15,-70,0,0"/>
+            </Grid>
+            <Canvas x:Name="xWebHolderTop" Margin="0,-125,0,0">
+                <local:DocumentView x:Name="xDocumentPreview" Margin="10,0,0,0" Width="100" Height="70"
                     DataContext="{Binding DocumentViewModel}" 
                     Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" SizeChanged="DocumentPreviewSizeChanged">
-
                 </local:DocumentView>
             </Canvas>
-            <Rectangle Grid.Row="1" Width="2" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
-
-            <Ellipse Grid.Row="2" Width="{x:Bind EllipseSize}" Height="{x:Bind EllipseSize}" Fill="DarkGreen"/>
-            <Rectangle Grid.Row="3" Name="xLowerLine" Width="2" Fill="LightGray" Visibility="Collapsed" RadiusY="2" RadiusX="2" Height="80" Margin="0, 10, 1, 5"></Rectangle>
-            <Canvas Grid.Row="4" x:Name="xWebHolder" Margin="15,-70,0,0"/>
         </Grid>
+        
+        <Ellipse Name="xEllipse" Grid.Row="2" Width="18" Height="18" Margin="0,-200,0,0" Fill="DarkGreen"/>
+
+        
     </Grid>
 </UserControl>
