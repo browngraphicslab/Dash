@@ -69,22 +69,32 @@ namespace Dash
             }
         }
 
-        KeyController CaptionKey = KeyStore.CaptionKey;
+        KeyController CaptionKey = null;
         public void SetHackText(KeyController key)
         {
             CaptionKey = key;
             xDocContainer.Children.Remove(xDocTitle);
-            xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 30, Visibility = xDocTitle.Visibility };
+            xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 0, Visibility = xDocTitle.Visibility };
             Grid.SetRow(xDocTitle, 1);
             xDocContainer.Children.Add(xDocTitle);
-            var captionBinding = new FieldBinding<FieldControllerBase>()
+            if (key != null)
             {
-                Mode = BindingMode.TwoWay,
-                Document = CurPage.DocumentController.GetDataDocument(null),
-                Key = CaptionKey,
-                Converter = new ObjectToStringConverter()
-            };
-            xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                var captionBinding = new FieldBinding<FieldControllerBase>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Key = CaptionKey,
+                    Converter = new ObjectToStringConverter()
+                };
+                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                xDocTitle.Height = 30;
+                xDocCaptionRow.Height = new GridLength(30);
+            }
+            else
+            {
+                xDocTitle.Height = 0;
+                xDocCaptionRow.Height = new GridLength(0);
+            }
         }
 
         public DocumentViewModel CurPage
