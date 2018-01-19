@@ -9,16 +9,13 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CanDrag="True" DragStarting="XAutoSuggestBox_OnDragStarting">
+    <Grid CanDrag="True">
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         Name="xAutoSuggestBox"
-                        CanDrag="True"
-                        DragStarting="XAutoSuggestBox_OnDragStarting"
-                        GotFocus="XAutoSuggestBox_OnGotFocus"
-                        >
+                        GotFocus="XAutoSuggestBox_OnGotFocus">
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
                     <StackPanel Orientation="Vertical" Margin="10,10,10,15">
