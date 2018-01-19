@@ -72,7 +72,7 @@ namespace Dash
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
                     [CollectionTitleOperatorController.CollectionDocsKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.CollectionKey),
-                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController("GROUP: ")
+                    [KeyStore.OperatorKey] = new GroupTitleOperatorController()
                 }, DocumentType.DefaultType);
 
                 protoDoc.SetField(KeyStore.TitleKey,

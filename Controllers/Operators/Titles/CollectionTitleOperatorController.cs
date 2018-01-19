@@ -13,12 +13,11 @@ namespace Dash
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        private string _prefix = "";
-        public CollectionTitleOperatorController(string prefix = "COLLECTION: ") : base(new OperatorModel(OperatorType.CollectionTitle))
+        public CollectionTitleOperatorController() : base(new OperatorModel(OperatorType.CollectionTitle))
         {
-            _prefix = prefix;
         }
 
+        protected virtual string Prefix() { return "COLLECTION: ";  }
 
         //Input keys
         public static readonly KeyController CollectionDocsKey = new KeyController("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2", "Collection Docs");
@@ -48,7 +47,7 @@ namespace Dash
             }
 
 
-            outputs[ComputedTitle] = new TextController(_prefix + ((output ?? new TextController("Untitled")).Data));
+            outputs[ComputedTitle] = new TextController(Prefix() + ((output ?? new TextController("Untitled")).Data));
         }
 
         public override FieldModelController<OperatorModel> Copy()
@@ -64,6 +63,22 @@ namespace Dash
         public override object GetValue(Context context)
         {
             throw new NotImplementedException();
+        }
+
+    }
+    public class GroupTitleOperatorController : CollectionTitleOperatorController
+    {
+
+        protected override string Prefix() { return "GROUP: "; }
+        public GroupTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        {
+        }
+        public GroupTitleOperatorController() : base(new OperatorModel(OperatorType.GroupTitle))
+        {
+        }
+        public override FieldModelController<OperatorModel> Copy()
+        {
+            return new GroupTitleOperatorController();
         }
 
     }
