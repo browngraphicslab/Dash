@@ -9,12 +9,15 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid CanDrag="True" DragStarting="XAutoSuggestBox_OnDragStarting">
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         Name="xAutoSuggestBox"
+                        CanDrag="True"
+                        DragStarting="XAutoSuggestBox_OnDragStarting"
+                        GotFocus="XAutoSuggestBox_OnGotFocus"
                         >
             <AutoSuggestBox.ItemTemplate>
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
@@ -25,6 +28,5 @@
                 </DataTemplate>
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
-
     </Grid>
 </UserControl>

@@ -173,7 +173,8 @@ namespace DashShared
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
             public static KeyModel ActualWidthKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualWidth");
-            public static KeyModel ActualHeightKey = new KeyModel("79FAD6CD-6C67-4BA5-A669-69F60038438A", "_ActualHeight");
+            public static KeyModel ActualHeightKey = new KeyModel("79FAD6CD-6C67-4BA5-A669-69F60038438A", "_ActualHeight"); 
+            public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
         }
 
         public static class TypeStore

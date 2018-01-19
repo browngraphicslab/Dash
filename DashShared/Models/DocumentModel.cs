@@ -24,7 +24,6 @@ namespace DashShared
         /// The type of this document.
         /// </summary>
         public DocumentType DocumentType;
-        private DocumentType type;
 
         public DocumentModel() : base(null)
         {
