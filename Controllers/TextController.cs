@@ -73,13 +73,18 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             int maxStringSize = 125;
-            var lowerData = Data.ToLower();
-            if (lowerData.Contains(searchString))
+            int textDecrementForContext = 15;
+
+            if (Data != null)
             {
-                var index = lowerData.IndexOf(searchString);
-                index = Math.Max(0, index - ((maxStringSize-searchString.Length)/2));
-                var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
-                return new StringSearchModel(substring);
+                var lowerData = Data.ToLower();
+                if (lowerData.Contains(searchString))
+                {
+                    var index = lowerData.IndexOf(searchString);
+                    index = Math.Max(0, index - textDecrementForContext);
+                    var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
+                    return new StringSearchModel(substring);
+                }
             }
             return StringSearchModel.False;
         }

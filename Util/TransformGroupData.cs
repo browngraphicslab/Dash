@@ -10,14 +10,12 @@ namespace Dash
     public struct TransformGroupData
     {
         public Point Translate { get; private set; }
-        public Point ScaleCenter { get; private set; }
         public Point ScaleAmount { get; private set; }
 
 
-        public TransformGroupData(Point translate, Point scaleCenter, Point scaleAmount)
+        public TransformGroupData(Point translate, Point scaleAmount)
         {
             Translate = translate;
-            ScaleCenter = scaleCenter;
             ScaleAmount = scaleAmount;
         }
     }

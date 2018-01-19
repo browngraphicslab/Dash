@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using NewControls.Geometry;
 using static Dash.NoteDocuments;
+using Point = Windows.Foundation.Point;
 
 namespace Dash
 {
@@ -202,7 +203,7 @@ namespace Dash
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, new Point(0, 0), currentScaleAmount);
+            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
 
             currrentDoc.ViewModel.Width = newBoundingBox.Width;
             currrentDoc.ViewModel.Height = newBoundingBox.Height;
@@ -411,46 +412,17 @@ namespace Dash
             
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            
+            _grouping = GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
 
-            SplitupGroupings(canSplitupDragGroup, docRoot);
-
+            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+                    () => docRoot.MoveToContainingCollection()));
             if (manipulationCompletedRoutedEventArgs != null)
             {
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => docRoot.MoveToContainingCollection()));
                 manipulationCompletedRoutedEventArgs.Handled = true;
             }
         }
-
-        void SplitupGroupings(bool canSplitupDragGroup, DocumentView docRoot)
-        {
-            if (docRoot?.ParentCollection == null)
-                return;
-            var groupToSplit = GetGroupForDocument(docRoot.ViewModel.DocumentController);
-            if (groupToSplit != null && canSplitupDragGroup)
-            {
-                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-
-                var groupsList = docRoot.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                groupsList.Remove(groupToSplit);
-
-                foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
-                {
-                    if (dv != null)
-                        SetupGroupings(dv, docRoot.ParentCollection);
-                }
-
-                foreach (var dv in docsToReassign.TypedData.Select((d) => GetViewModelFromDocument(d)))
-                {
-                    if (dv != null && GetGroupForDocument(dv.DocumentController) == null && 
-                        !dv.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
-                        dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
-                }
-            }
-            else
-                SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-        }
-
+        public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null && _isManipulating)
@@ -465,11 +437,11 @@ namespace Dash
                 e.Handled = true;
                 return;
             }
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
             docRoot?.ToFront();
             
-             SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-
+            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
+            
             _isManipulating = true;
             _processManipulation = true;
 
@@ -478,186 +450,16 @@ namespace Dash
                 e.Handled = true;
         }
 
-        private void SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
+        public Windows.UI.Color ColorConvert(string colorStr)
         {
-            if (parentCollection == null)
-                return;
-            var groupsList = GetGroupsList(parentCollection);
+            colorStr = colorStr.Replace("#", string.Empty);
 
-            DocumentController dragGroupDocument;
-            var dragDocumentList = GetDragGroupInfo(docViewModel, out dragGroupDocument);
+            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
+            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
+            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
+            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
 
-            if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
-            {
-                var groups = AddConnected(dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
-
-                DocumentController newDragGroupDocument;
-                _grouping = GetDragGroupInfo(docViewModel, out newDragGroupDocument).Select((gd) => GetViewModelFromDocument(gd)).ToList();
-            }
-        }
-
-        List<DocumentController> GetDragGroupInfo(DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
-        {
-            dragGroupDocument = GetGroupForDocument(docViewModel.DocumentController);
-            var dragDocumentList = dragGroupDocument?.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null)?.TypedData;
-            if (dragDocumentList == null)
-            {
-                dragGroupDocument = docViewModel.DocumentController;
-                dragDocumentList = new List<DocumentController>(new DocumentController[] { dragGroupDocument });
-            }
-            return dragDocumentList;
-        }
-
-        ListController<DocumentController> GetGroupsList(CollectionView collectionView)
-        {
-            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-            if ((groupsList == null || groupsList.Count == 0) && collectionView.ViewModel.DocumentViewModels.Count > 0)
-            {
-                groupsList = new ListController<DocumentController>(collectionView.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
-                collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
-            }
-            var addedItems = new List<DocumentController>();
-            foreach (var d in collectionView.ViewModel.DocumentViewModels)
-                if (GetGroupForDocument(d.DocumentController) == null && !groupsList.Data.Contains(d.DocumentController))
-                {
-                    addedItems.Add(d.DocumentController);
-                }
-
-            var removedGroups = new List<DocumentController>();
-            var docsInCollection = collectionView.ViewModel.DocumentViewModels.Select((dv) => dv.DocumentController);
-            foreach (var g in groupsList.TypedData)
-            {
-                var groupDocs = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if (!docsInCollection.Contains((g)) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)) == null))
-                {
-                    removedGroups.Add(g);
-                }
-            }
-            var newGroupsList = new List<DocumentController>(groupsList.TypedData);
-            newGroupsList.AddRange(addedItems);
-            newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
-            groupsList = new ListController<DocumentController>(newGroupsList);
-            collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
-            return groupsList;
-        }
-
-        DocumentController GetGroupForDocument(DocumentController dragDocument)
-        {
-            var docView = _element.GetFirstAncestorOfType<DocumentView>();
-            var groupsList = docView.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-
-            if (groupsList == null) return null;
-            foreach (var g in groupsList.TypedData)
-            {
-                if (g.Equals(dragDocument))
-                {
-                    return null;
-                }
-                else
-                {
-                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(dragDocument)).Count() > 0)
-                    {
-                        return g;
-                    }
-                }
-            }
-            return null;
-        }
-
-        public DocumentViewModel GetViewModelFromDocument(DocumentController doc)
-        {
-            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
-            foreach (var dv in parentCollection.ViewModel.DocumentViewModels)
-            {
-                if (dv.DocumentController.Equals(doc))
-                    return dv;
-            }
-            return null;
-        }
-
-        public List<DocumentController>  GetGroupDocumentsList(DocumentController doc, bool onlyGroups = false)
-        {
-            var groupList = _element.GetFirstAncestorOfType<DocumentView>().ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-
-            foreach (var g in groupList.TypedData)
-            if (g.Equals(doc)) {
-                if (GetViewModelFromDocument(g) != null)
-                {
-                    return new List<DocumentController>(new DocumentController[] { g });
-                }
-                else
-                {
-                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                    if (cfield != null)
-                    {
-                        return cfield.Data.Select((cd) => cd as DocumentController).ToList();
-                    }
-                }
-            }
-            return null;
-        }
-
-        public List<DocumentController> AddConnected(List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, IEnumerable<DocumentController> otherGroups)
-        {
-            foreach (var dragDocument in dragDocumentList)
-            {
-                var dragDocumentView = GetViewModelFromDocument(dragDocument);
-                if (dragDocumentView == null)
-                    continue;
-                var dragDocumentBounds = dragDocumentView.GroupingBounds;
-                foreach (var otherGroup in otherGroups)
-                {
-                    var otherGroupMembers = GetGroupDocumentsList(otherGroup);
-                    if (otherGroupMembers == null)
-                        continue;
-                    foreach (var otherGroupMember in otherGroupMembers)
-                    {
-                        var otherDocView = GetViewModelFromDocument(otherGroupMember);
-                        if (otherDocView == null)
-                            continue;
-                        var otherGroupMemberBounds = otherDocView.GroupingBounds;
-                        otherGroupMemberBounds.Intersect(dragDocumentBounds);
-
-                        if (otherGroupMemberBounds != Rect.Empty)
-                        {
-                            var group = GetGroupForDocument(otherGroupMember);
-                            if (group == null) {
-                                dragDocumentList.Add(otherGroupMember);
-                                var newList = otherGroups.ToList();
-                                var newGroup = new DocumentController();
-                                newGroup.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(dragDocumentList), true);
-                                newList.Add(newGroup);
-                                newList.Remove(otherGroup);
-                                newList.Remove(dragGroupDocument);
-                                var r = new Random();
-                                var solid = (GetViewModelFromDocument(otherGroupMember)?.BackgroundBrush as SolidColorBrush)?.Color;
-                                var brush = solid != Colors.Transparent ? new SolidColorBrush((Windows.UI.Color)solid) :
-                                      new SolidColorBrush(Windows.UI.Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)));
-                                foreach (var d in dragDocumentList)
-                                    GetViewModelFromDocument(d).BackgroundBrush = brush;
-                                return newList;
-                            }
-                            else
-                            {
-                                var groupList = group.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                                groupList.AddRange(dragDocumentList);
-                                var newList = otherGroups.ToList();
-                                newList.Remove(dragGroupDocument);
-                                foreach (var d in dragDocumentList)
-                                    GetViewModelFromDocument(d).BackgroundBrush = GetViewModelFromDocument(otherGroupMember).BackgroundBrush;
-                                return newList;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            var sameList = otherGroups.ToList();
-            sameList.Add(dragGroupDocument);
-            return sameList;
+            return Windows.UI.Color.FromArgb(a, r, g, b);
         }
 
         public void AddAllAndHandle()
@@ -847,7 +649,7 @@ namespace Dash
             if (!_processManipulation) return;
             e.Handled = true;
 
-            if ((e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
 
                 //Get mousepoint in canvas space 
@@ -860,21 +662,18 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(),
-                        point.Position, new Point(scaleAmount, scaleAmount)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount)));
             }
             else
             {
                 var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
                 if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0), new Point(1, 1)));
                 }
                 else
                 {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount),
-                        new Point(), new Point(1, 1)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount), new Point(1, 1)));
                 }
 
             }
@@ -918,7 +717,7 @@ namespace Dash
                 else
                     trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, new Point(r.Left + r.Width / 2, r.Top), scaleAmt));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt));
             }
         }
 
@@ -944,8 +743,7 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
-                    e.Position, new Point(scaleFactor, scaleFactor));
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y), new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();

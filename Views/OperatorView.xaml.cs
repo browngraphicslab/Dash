@@ -31,7 +31,7 @@ namespace Dash
         private bool _isCompound;
         private IOReference _currOutputRef;
         private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return _keysToFrameworkElements;  } }
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return _keysToFrameworkElements; } }
         private DocumentView documentView;
 
         /// <summary>
@@ -56,17 +56,17 @@ namespace Dash
             set => xOpContentPresenter.Content = value;
         }
 
-        
+
 
         public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
             this.InitializeComponent();
             _keysToFrameworkElements = keysToFrameworkElements;
             this.Loaded += OperatorView_Loaded;
-            
+
         }
 
-     
+
 
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -167,13 +167,14 @@ namespace Dash
         /// <param name="e"></param>
         void StartNewLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
+            return;
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
-            var outputKey = ((DictionaryEntry) el.DataContext).Key as KeyController;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
 
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey].Type;
             if (xOpContentPresenter.Content is CompoundOperatorEditor)
-                if (view == ((CompoundOperatorEditor) xOpContentPresenter.Content).xFreeFormEditor)
+                if (view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor)
                     isOutput = !isOutput;
             var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, type, e, el,
                 this.GetFirstAncestorOfType<DocumentView>());
@@ -188,7 +189,7 @@ namespace Dash
         /// <param name="e"></param>
         private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            StartNewLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
+            //StartNewLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
 
         /// <summary>
@@ -198,7 +199,7 @@ namespace Dash
         /// <param name="e"></param>
         private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            StartNewLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
+            //StartNewLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
 
         /// <summary>
@@ -206,7 +207,7 @@ namespace Dash
         /// </summary>
         private void Ellipse_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            e.Complete();
+            //e.Complete();
         }
 
         /// <summary>
@@ -216,20 +217,21 @@ namespace Dash
         /// <param name="e"></param>
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
+            return;
             // get the id of the document this operator is on
             var docRef = DataContext as DocumentFieldReference;
             var docId = docRef.DocumentId;
 
             // get the keycontroller for where the end of this link was dropped
             var el = sender as FrameworkElement;
-            var linkedKey = ((DictionaryEntry) el.DataContext).Key as KeyController;
+            var linkedKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
 
             // get the type of the key which was linked <see OperatorType>
             var type = isOutput ? _operator.Outputs[linkedKey] : _operator.Inputs[linkedKey].Type;
 
             var isCompound = false;
             if (xOpContentPresenter.Content is CompoundOperatorEditor)
-                if (isCompound = view == ((CompoundOperatorEditor) xOpContentPresenter.Content).xFreeFormEditor)
+                if (isCompound = view == ((CompoundOperatorEditor)xOpContentPresenter.Content).xFreeFormEditor)
                     isOutput = !isOutput;
 
             // create a new ioref representing the entire action
@@ -242,6 +244,7 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            return;
             var view = (xOpContentPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
             var ioref = view?.GetCurrentReference();
             if (ioref != null)
@@ -249,7 +252,7 @@ namespace Dash
                 view.CancelDrag(ioref.PointerArgs.Pointer);
                 StartNewLink(sender, ioref.PointerArgs, false, view);
                 view.EndDrag(ioref, true);
-                var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
+                var key = ((DictionaryEntry)(sender as FrameworkElement).DataContext).Key as KeyController;
                 (_operator as CompoundOperatorController).AddInputreference(key, ioref);
             }
             else
@@ -260,6 +263,7 @@ namespace Dash
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            return;
             EndDraggedLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
 
@@ -295,8 +299,8 @@ namespace Dash
 
             if (_isCompound)
             {
-                var expandItem = new MenuFlyoutItem {Text = "Expando"};
-                var contractItem = new MenuFlyoutItem {Text = "Contracto"};
+                var expandItem = new MenuFlyoutItem { Text = "Expando" };
+                var contractItem = new MenuFlyoutItem { Text = "Contracto" };
                 expandItem.Click += ExpandView;
                 contractItem.Click += ContractView;
                 _flyout.Items?.Add(expandItem);
@@ -335,8 +339,9 @@ namespace Dash
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
+            return;
             var el = sender as FrameworkElement;
-            var key = ((DictionaryEntry?) el?.DataContext)?.Key as KeyController;
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
             if (key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
 
             if (!_isCompound) return;
@@ -350,8 +355,9 @@ namespace Dash
 
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
+            return;
             var el = sender as FrameworkElement;
-            var key = ((DictionaryEntry?) el?.DataContext)?.Key as KeyController;
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
             if (key != null && _keysToFrameworkElements != null) _keysToFrameworkElements[key] = el;
 
             if (!_isCompound || _currOutputRef == null) return;
@@ -370,111 +376,14 @@ namespace Dash
             preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
         }
 
-        /// <summary>
-        /// Hack to allow for the user to drop headers onto operator inputs
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
+        private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) &
-                                   (e.DataView.RequestedOperation == DataPackageOperation.None
-                                       ? DataPackageOperation.Copy
-                                       : e.DataView.RequestedOperation);
-            e.DragUIOverride.IsContentVisible = true;
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Hack to allopw for user to drop header onto operator inputs
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UIElement_OnDrop(object sender, DragEventArgs e)
-        {
-            HandleHeaderDragOnEllipse(sender);
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Handle header being dragged onto operator inputs
-        /// </summary>
-        /// <param name="sender"></param>
-        private void HandleHeaderDragOnEllipse(object sender)
-        {
-            // if there is a header being dragged
-            var dm = CollectionDBSchemaHeader.DragModel;
-            if (dm != null)
-            {
-                // and the header has a field key
-                if (dm.FieldKey != null)
-                {
-                    // get the document containing the operator
-                    var refToOp = DataContext as FieldReference;
-                    var operatorDoc = refToOp?.GetDocumentController(null);
-
-                    // get the key from the sending ellipse
-                    var frameworkElement = sender as FrameworkElement;
-                    if (frameworkElement != null)
-                    {
-                        var key = ((DictionaryEntry) frameworkElement.DataContext).Key as KeyController;
-
-                        if (_operator.Inputs[key].Type == TypeInfo.Text)
-                        {
-                            // User selected an item from the suggestion list, take an action on it here.
-                            if (operatorDoc != null)
-                            {
-                                operatorDoc.SetField(key,
-                                    dm.FieldKey, true);
-                                return;
-                            }
-
-                        }
-                    }
-                }
-            }
-            if (KeyValuePane.DragModel != null)
-            {
-                var km = KeyValuePane.DragModel;
-                // and the header has a field key
-                if (KeyValuePane.DragModel.FieldKey != null)
-                {
-                    // get the document containing the operator
-                    var refToOp = DataContext as FieldReference;
-                    var operatorDoc = refToOp?.GetDocumentController(null);
-
-                    // get the key from the sending ellipse
-                    var frameworkElement = sender as FrameworkElement;
-                    if (frameworkElement != null)
-                    {
-                        var key = ((DictionaryEntry)frameworkElement.DataContext).Key as KeyController;
-
-                        if (_operator.Inputs[key].Type == TypeInfo.Text)
-                        {
-                            // User selected an item from the suggestion list, take an action on it here.
-                            if (operatorDoc != null)
-                            {
-                                operatorDoc.SetField(key, km.Document.GetDereferencedField(km.FieldKey.Key, null), true);
-                                return;
-                            }
-
-                        }
-                    }
-                }
-            }
-            return;
-        }
-
-        private void Ellipse_DragOver(object sender, DragEventArgs e)
-        {
-
-        }
-
-        private void Ellipse_Drop(object sender, DragEventArgs e)
-        {
-
+            args.AllowedOperations = DataPackageOperation.Copy;
+            var el = sender as FrameworkElement;
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            var docRef = DataContext as DocumentFieldReference;
+            var docId = docRef.DocumentId;
+            args.Data.Properties["Operator Output"] = new DocumentFieldReference(docId, key);
         }
     }
 }

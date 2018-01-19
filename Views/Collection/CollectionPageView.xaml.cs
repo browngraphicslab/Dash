@@ -69,6 +69,34 @@ namespace Dash
             }
         }
 
+        KeyController CaptionKey = null;
+        public void SetHackText(KeyController key)
+        {
+            CaptionKey = key;
+            xDocContainer.Children.Remove(xDocTitle);
+            xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 0, Visibility = xDocTitle.Visibility };
+            Grid.SetRow(xDocTitle, 1);
+            xDocContainer.Children.Add(xDocTitle);
+            if (key != null)
+            {
+                var captionBinding = new FieldBinding<FieldControllerBase>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Key = CaptionKey,
+                    Converter = new ObjectToStringConverter()
+                };
+                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                xDocTitle.Height = 30;
+                xDocCaptionRow.Height = new GridLength(30);
+            }
+            else
+            {
+                xDocTitle.Height = 0;
+                xDocCaptionRow.Height = new GridLength(0);
+            }
+        }
+
         public DocumentViewModel CurPage
         {
             get { return this.xDocView.DataContext as DocumentViewModel; }
@@ -81,9 +109,10 @@ namespace Dash
                 xPageNumContainer.Children.Remove(xPageNum);
                 xPageNum = new TextBlock();
 
+
                 var binding = new FieldBinding<TextController>()
                 {
-                    Mode = BindingMode.TwoWay,
+                    Mode = BindingMode.OneWay,
                     Document = value.DocumentController.GetDataDocument(null),
                     Key = KeyStore.TitleKey
                 };
@@ -97,8 +126,10 @@ namespace Dash
                 xPageNumContainer.Children.Add(xPageNum);
                 xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
 
+                SetHackText(CaptionKey);
+
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                if (ind >= 0)
+                if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)
                 {
                     var thumb = ViewModel.ThumbDocumentViewModels[ind];
                     foreach (var t in ViewModel.ThumbDocumentViewModels)
@@ -109,7 +140,7 @@ namespace Dash
                 if (cview != null)
                 {
                     cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;      
+                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
                 }
@@ -275,11 +306,24 @@ namespace Dash
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.PageDown)
-                NextButton_Click( sender,  e);
+            {
+                NextButton_Click(sender, e);
+                e.Handled = true;
+            }
             if (e.Key == Windows.System.VirtualKey.PageUp)
+            {
                 PrevButton_Click(sender, e);
-            e.Handled = true;
+                e.Handled = true;
+            }
         }
-        
+
+        private void xDocTitle_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+        }
+
+        private void xDocTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
     }
 }

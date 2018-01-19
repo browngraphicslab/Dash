@@ -19,7 +19,6 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
-            //SetLayoutForDocument(Document, Document);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
@@ -41,22 +40,12 @@ namespace Dash
             var border = new Border();
 
             var docView = new KeyValuePane() { TypeColumnWidth = new GridLength(0) };
-            docView.SetUpForDocumentBox(documentfieldModelController); 
+            docView.SetUpForDocumentBox(documentfieldModelController);
             border.Child = docView;
 
             //add to key to framework element dictionary
             if (keysToFrameworkElementsIn != null && refToData != null)
                 keysToFrameworkElementsIn[refToData.FieldKey] = border;
-
-            // bind the text height
-            //var docheightcontroller = getheightfield(doccontroller, context);
-            //if (docheightcontroller != null)
-            //bindheight(docView, docheightController);
-
-            // bind the text width
-            //var docwidthController = GetWidthField(docController, context);
-            //if (docwidthController != null)
-            //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

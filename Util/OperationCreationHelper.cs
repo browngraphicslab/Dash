@@ -33,7 +33,8 @@ namespace Dash
             AddOperator(() => new MeltOperatorController(), "Melt", rfmc => new MeltOperatorBox(rfmc));
             AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
-            AddOperator(() => new ImageRecognitionOperatorFieldModelController(), "ImageRecognition");
+            AddOperator(() => new ImageToCognitiveServices(), "ImageRecognition");
+            AddOperator(() => new ImageToColorPalette(), "Image To Palette");
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");
