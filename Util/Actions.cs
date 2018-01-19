@@ -144,7 +144,7 @@ namespace Dash
                 //var w = docController.GetWidthField().Data;
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
-            collectionViewModel.AddDocument(docController, null); 
+            collectionViewModel.AddDocument(docController, null);
         }
 
 
@@ -169,7 +169,7 @@ namespace Dash
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
             {
-                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                GroupTransform = new TransformGroupData(translate, new Point(1, 1))
             };
 
             if (opController != null)
@@ -208,7 +208,7 @@ namespace Dash
             picker.FileTypeFilter.Add(".jpeg");
             picker.FileTypeFilter.Add(".png");
             var results = await picker.PickMultipleFilesAsync();
-            FileDropHelper.HandleDropOnCollection(results, collectionView, where);
+            // TODO someone finish this method, sorry I had to remove deprecated code that added this to collections - LSM
         }
 
         #region Ink Commands

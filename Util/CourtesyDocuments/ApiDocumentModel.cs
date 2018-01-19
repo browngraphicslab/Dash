@@ -53,7 +53,6 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(400),
                 [KeyStore.PositionFieldKey] = new PointController(new Windows.Foundation.Point(0,0)),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
-                [KeyStore.ScaleCenterFieldKey] = new PointController(0, 0),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                 [KeyStore.CollectionKey] =

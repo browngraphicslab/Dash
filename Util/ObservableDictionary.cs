@@ -37,12 +37,9 @@ using System.Runtime.InteropServices;
 
 namespace Dash
 {
-    [Serializable]
     public class ObservableDictionary<TKey, TValue> :
         IDictionary<TKey, TValue>,
         IDictionary,
-        ISerializable,
-        IDeserializationCallback,
         INotifyCollectionChanged,
         INotifyPropertyChanged, IList<KeyValuePair<TKey, TValue>>, IList
     {
@@ -80,10 +77,6 @@ namespace Dash
 
         #region protected
 
-        protected ObservableDictionary(SerializationInfo info, StreamingContext context)
-        {
-            _siInfo = info;
-        }
 
         #endregion protected
 
@@ -599,33 +592,12 @@ namespace Dash
 
         #region ISerializable
 
-        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            if (info == null)
-            {
-                throw new ArgumentNullException("info");
-            }
 
-            Collection<DictionaryEntry> entries = new Collection<DictionaryEntry>();
-            foreach (DictionaryEntry entry in _keyedEntryCollection)
-                entries.Add(entry);
-            info.AddValue("entries", entries);
-        }
 
         #endregion ISerializable
 
         #region IDeserializationCallback
 
-        public virtual void OnDeserialization(object sender)
-        {
-            if (_siInfo != null)
-            {
-                Collection<DictionaryEntry> entries = (Collection<DictionaryEntry>)
-                    _siInfo.GetValue("entries", typeof(Collection<DictionaryEntry>));
-                foreach (DictionaryEntry entry in entries)
-                    AddEntry((TKey)entry.Key, (TValue)entry.Value);
-            }
-        }
 
         public int Add(object value)
         {
@@ -735,7 +707,6 @@ namespace Dash
 
         #region Enumerator
 
-        [Serializable, StructLayout(LayoutKind.Sequential)]
         public struct Enumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>, IDisposable, IDictionaryEnumerator, IEnumerator
         {
             #region constructors
@@ -894,9 +865,6 @@ namespace Dash
         private Dictionary<TKey, TValue> _dictionaryCache = new Dictionary<TKey, TValue>();
         private int _dictionaryCacheVersion = 0;
         private int _version = 0;
-
-        [NonSerialized]
-        private SerializationInfo _siInfo = null;
 
         #endregion fields
     }

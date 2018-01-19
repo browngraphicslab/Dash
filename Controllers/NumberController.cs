@@ -11,6 +11,11 @@ namespace Dash
 {
     public class NumberController : FieldModelController<NumberModel>
     {
+        public NumberController() : this(0)
+        {
+            
+        }
+
         public NumberController(double data = 0) : base(new NumberModel(data))
         {
         }

@@ -53,94 +53,6 @@ namespace Dash
 
     public static class FileDropHelper
     {
-        public static async void HandleDropOnDocument(object sender, DragEventArgs e)
-        {
-            var docView = sender as DocumentView;
-            if (!e.DataView.Contains(StandardDataFormats.StorageItems) || docView == null) return;
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                var doc = docView.ViewModel.DocumentController;
-                var dropPoint = e.GetPosition(docView);
-                foreach (var item in items)
-                {
-                    var layoutDoc = await AddFileAsField(doc, dropPoint, item);
-                    if (layoutDoc != null)
-                        dropPoint.Y += layoutDoc.GetHeightField().Data;
-                }
-            }
-        }
-
-        private static async Task<DocumentController> AddFileAsField(DocumentController doc, Point dropPoint,
-            IStorageItem item)
-        {
-            var storageFile = item as StorageFile;
-            var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
-            var layout = doc.GetActiveLayout();
-            var activeLayout =
-                layout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
-            if (storageFile.IsOfType(StorageItemTypes.Folder))
-            {
-                //Add collection of new documents?
-            }
-            else if (storageFile.IsOfType(StorageItemTypes.File))
-            {
-                object data = null;
-                TypeInfo t;
-                switch (storageFile.FileType.ToLower())
-                {
-                    case ".jpg":
-                    case ".jpeg":
-                    case ".png":
-                        t = TypeInfo.Image;
-                        //Todo: needs to be fixed bc the images wont display if you use the system uri (i.e. storageFile.Path)
-                        var localFolder = ApplicationData.Current.LocalFolder;
-                        var file = await localFolder.CreateFileAsync(storageFile.DisplayName + storageFile.FileType,
-                            CreationCollisionOption.ReplaceExisting);
-                        await storageFile.CopyAndReplaceAsync(file);
-                        data = new Uri(file.Path);
-                        break;
-                    case ".txt":
-                        t = TypeInfo.Text;
-                        data = await FileIO.ReadTextAsync(storageFile);
-                        break;
-                    case ".json":
-                        t = TypeInfo.Document;
-                        data = await FileIO.ReadTextAsync(storageFile);
-                        break;
-                    case ".rtf":
-                        t = TypeInfo.RichText;
-                        data = await FileIO.ReadTextAsync(storageFile);
-                        break;
-                    default:
-                        t = TypeInfo.Text;
-                        try
-                        {
-                            data = await FileIO.ReadTextAsync(storageFile);
-                            //TODO maybe parse drag from browser url?
-                            //var str = data.ToString().ToLower();
-                            //if (str.Contains("https://") && (str.Contains(".jpg") || str.Contains(".png")))
-                            //{
-                            //    var imageUrl = str.Remove(0, 24).Replace("\r", string.Empty).Replace("\n", string.Empty);
-                            //    data = new Uri(imageUrl, UriKind.Absolute);
-                            //    t = TypeInfo.Image;
-                            //}
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine("could not import field from file " + storageFile.Name +
-                                            " due to exception: " + ex);
-                        }
-                        break;
-                }
-                if (data != null)
-                {
-                    var layoutDoc = AddFieldFromData(data, doc, key, dropPoint, t, activeLayout);
-                    return layoutDoc;
-                }
-            }
-            return null;
-        }
 
         public static DocumentController CreateFieldLayoutDocumentFromReference(ReferenceController reference,
             double x = 0, double y = 0, double w = 200, double h = 200, TypeInfo listType = TypeInfo.None)
@@ -374,27 +286,6 @@ namespace Dash
                 }
             }
             e.Handled = true;
-        }
-
-        // TODO remove this method
-        public static async void HandleDropOnCollection(IEnumerable<StorageFile> files, ICollectionView collection,
-            Point dropPoint)
-        {
-            foreach (var storageFile in files)
-            {
-                var fields = new Dictionary<KeyController, FieldControllerBase>
-                {
-                    [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
-                };
-                var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
-                var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey)).Document;
-                doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document, false,
-                    true);
-                await AddFileAsField(doc, new Point(0, tb.GetHeightField().Data), storageFile);
-                collection.ViewModel.AddDocument(doc, null);
-                dropPoint.X += 20;
-                dropPoint.Y += 20;
-            }
         }
     }
 }

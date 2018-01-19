@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dash.Converters
 {
-    class StringToEnumConverter<TEnum> : SafeDataToXamlConverter<string, TEnum> where TEnum : struct, IComparable, IFormattable, IConvertible
+    class StringToEnumConverter<TEnum> : SafeDataToXamlConverter<string, TEnum> where TEnum : struct, IComparable, IFormattable
 
     {
         public override TEnum ConvertDataToXaml(string data, object parameter = null)

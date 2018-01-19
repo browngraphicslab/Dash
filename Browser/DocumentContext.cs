@@ -13,13 +13,24 @@ namespace Dash
         public string Url { get; set; }
         public string Title { get; set; }
         public double ViewDuration { get; set; }
+        public long CreationTimeTicks { get; set; }
 
+        public DateTime CreationTimeStamp => new DateTime(CreationTimeTicks);
 
         public override bool Equals(object obj)
         {
-            return (obj as DocumentContext)?.Url == Url &&
-                   (obj as DocumentContext)?.Scroll.Equals(Scroll) == true &&
-                   (obj as DocumentContext)?.Title == Title;
+            if (obj is DocumentContext dc)
+            {
+                return dc.Url == Url &&
+                       dc.Scroll == Scroll &&
+                       dc.Title == Title;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

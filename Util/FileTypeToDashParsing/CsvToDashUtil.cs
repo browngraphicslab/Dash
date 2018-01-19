@@ -16,6 +16,7 @@ using Dash.Controllers.Operators;
 using DashShared;
 using Flurl.Util;
 using Microsoft.Toolkit.Uwp;
+using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json.Linq;
 using static Dash.NoteDocuments;
 

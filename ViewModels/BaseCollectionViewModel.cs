@@ -63,7 +63,6 @@ namespace Dash
         }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-        public ObservableCollection<DocumentViewModel> GroupingViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         // used to keep track of groups of the currently selected items in a collection
@@ -336,7 +335,7 @@ namespace Dash
                     // using this as a setter for the transform massive hack - LM
                     var _ = new DocumentViewModel(opController)
                     {
-                        GroupTransform = new TransformGroupData(where, new Point(), new Point(1, 1))
+                        GroupTransform = new TransformGroupData(where, new Point(1, 1))
                     };
                     AddDocument(opController, null);
                 }
@@ -414,7 +413,7 @@ namespace Dash
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(exception);
+                    Debug.WriteLine(exception);
                 }
             }
             else if (e.DataView.Contains(StandardDataFormats.Html))
