@@ -37,11 +37,11 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
-                            <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" 
-                                     DragOver="Ellipse_DragOver"
+                            <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0"
+                                     Drop="UIElement_OnDrop" DragOver="UIElement_OnDragOver"
                                      PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
-                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted" DragEnter="UIElement_OnDragEnter" 
-                                     Drop="UIElement_OnDrop"  Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
+                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted" 
+                                     Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
                                 <TextBlock Grid.Column="1"  Margin="10,0,0,0" VerticalAlignment="Top" Foreground="{ThemeResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" />
                         </StackPanel>
                     </DataTemplate>

@@ -42,7 +42,6 @@
             
         <!--column values-->
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
-                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting" 
                   IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick" Tapped="xKeyValueListView_Tapped"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="3" Margin="0" ScrollViewer.IsVerticalRailEnabled="True">
             
@@ -79,7 +78,7 @@
                         <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                         </ScrollViewer>
-                        <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0" PointerPressed="KeyDragPointerPressed" FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;"/>
+                        <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0" PointerPressed="KeyDragPointerPressed" DragStarting="Icon_OnDragStarting" FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

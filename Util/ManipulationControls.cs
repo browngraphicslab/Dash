@@ -524,7 +524,7 @@ namespace Dash
             foreach (var g in groupsList.TypedData)
             {
                 var groupDocs = g.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if (!docsInCollection.Contains((g)) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)) == null))
+                if (!docsInCollection.Contains(g) && (groupDocs == null || groupDocs.TypedData.Where((gd) => docsInCollection.Contains(gd)).Count() != groupDocs.Count))
                 {
                     removedGroups.Add(g);
                 }
@@ -621,7 +621,7 @@ namespace Dash
                             if (group == null) {
                                 dragDocumentList.Add(otherGroupMember);
                                 var newList = otherGroups.ToList();
-                                var newGroup = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 500, 300, dragDocumentList);
+                                var newGroup = new GroupNote(dragDocumentList);
                                 newList.Add(newGroup.DataDocument);
                                 newList.Remove(otherGroup);
                                 newList.Remove(dragGroupDocument);

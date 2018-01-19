@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using DashShared.Models;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -482,7 +483,8 @@ namespace Dash
             if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true) return;
 
             // TODO this causes groups to show up, and needs to be moved
-            ManipulationControls.ManipulationCompleted(null, false);
+            if (this.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                ManipulationControls.ManipulationCompleted(null, false);
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -1008,6 +1010,8 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
             ViewModel?.SetHasTitle(isLowestSelected);
+
+            OperatorEllipse.Visibility = isLowestSelected ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #endregion
@@ -1079,9 +1083,16 @@ namespace Dash
                         var where = nestedCollection.CurrentView is CollectionFreeformView ?
                             Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                             new Point();
-                        if (nestedCollection.CurrentView is CollectionPageView && ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString?.StartsWith("#") == true)
+                        var keyString = ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+                        if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
-                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                            var key = keyString.Substring(1);
+                            foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
+                                if (k.Name == key)
+                                {
+                                    (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
+                                    (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                                }
                             this.DeleteDocument();
                             return;
                         }
@@ -1176,6 +1187,12 @@ namespace Dash
             var data = new DataPackage() { };
             data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
             Clipboard.SetContent(data);
+        }
+
+        private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
         }
     }
 }

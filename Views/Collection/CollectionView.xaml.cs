@@ -196,10 +196,7 @@ namespace Dash
                 tagMode.Text = "Exit Tag Mode";
 
                 var view = CurrentView as CollectionFreeformView;
-                if (view != null)
-                {
-                    view.TagMode = true;
-                }
+                view?.ShowTagKeyBox();
             }
 
             void ExitTagMode(object sender, RoutedEventArgs e)
@@ -212,8 +209,10 @@ namespace Dash
                 var view = CurrentView as CollectionFreeformView;
                 if (view != null)
                 {
+                    view.HideTagKeyBox();
                     view.TagMode = false;
                 }
+                
             }
 
 
