@@ -548,8 +548,8 @@ namespace Dash
             }
 
             TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
-            if (_grouping == null || _grouping.Count < 2)
-                Snap(true);
+            Snap(true);
+
             e.Handled = true;
         }
 
