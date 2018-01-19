@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using Windows.Graphics.Imaging;
 using Windows.UI.Xaml.Media.Imaging;
 using Accord.Imaging.ColorReduction;
 using DashShared;
@@ -35,19 +36,22 @@ namespace Dash
             [PaletteKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override async void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
 
             var inputImage = inputs[ImageKey] as ImageController;
-            var bitmapImage = new BitmapImage(inputImage.ImageSource);
-            var writeBitmap = new WriteableBitmap(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+
             var stream = inputImage.ImageSource.IsFile ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream() : inputImage.ImageSource.GetHttpStreamAsync().Result;
-            writeBitmap.SetSource(stream);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var writeBitmap = new WriteableBitmap(Convert.ToInt32(decoder.PixelWidth), Convert.ToInt32(decoder.PixelHeight));
+            stream.Seek(0);
+            stream = inputImage.ImageSource.IsFile ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream() : inputImage.ImageSource.GetHttpStreamAsync().Result;
+            await writeBitmap.SetSourceAsync(stream);
             var bitmap = (Bitmap)writeBitmap;
 
 
             var quantizer = new ColorImageQuantizer(new MedianCutQuantizer());
-            var colors = quantizer.CalculatePalette(bitmap, 50);
+            var colors = quantizer.CalculatePalette(bitmap, 5);
             
 
             outputs[PaletteKey] = new NumberController(1);

@@ -166,6 +166,9 @@ namespace Dash
                 case OperatorType.CollectionTitle:
                     controller = new CollectionTitleOperatorController(model);
                     break;
+                case OperatorType.GroupTitle:
+                    controller = new GroupTitleOperatorController(model);
+                    break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
