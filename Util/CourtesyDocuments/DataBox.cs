@@ -24,7 +24,7 @@ namespace Dash
             var fieldControllerBase = (refToData as ReferenceController)?.GetDocumentController(null);
             if (fieldControllerBase != null)
             {
-                Document.SetField(KeyStore.DocumentContextKey, fieldControllerBase, true)
+                Document.SetField(KeyStore.DocumentContextKey, fieldControllerBase, true);
             }
         }
 
