@@ -1,23 +1,12 @@
-﻿using System;
+﻿using DashShared.Models;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using DashShared;
-using DashShared.Models;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,6 +25,12 @@ namespace Dash
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
+
+            if (sender.Text.Equals("Dash.SearchResultViewModel"))
+            {
+                sender.Text = _currentSearch;
+                return;
+            }
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
@@ -44,40 +39,112 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                //_tokenSource?.Cancel();
-                //Debug.WriteLine("Task canceled");
-                //_tokenSource = new CancellationTokenSource();
-                var text = sender.Text.ToLower();
-                _currentSearch = text;
-                //Task.Factory.StartNew(async () =>
-                //{
-                    //Search(sender, sender.Text.ToLower());
-                (sender.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
-
-                var vms = GetSpecialSearchCriteria(text) != null ? SpecialSearch(GetSpecialSearchCriteria(text)) : LocalSearch(text);
-                var first = vms.Take(75).ToArray();
-                Debug.WriteLine("Search Results: "+first.Length);
-                foreach (var searchResultViewModel in first) 
-                {
-                    (sender.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
-                }
-                    
-                //}, _tokenSource.Token);
-
-                
+                ExecuteSearch(sender);
 
             }
         }
 
+        private void ExecuteSearch(AutoSuggestBox searchBox)
+        {
+            if (searchBox == null)
+            {
+                return;
+            }
+
+            //_tokenSource?.Cancel();
+            //Debug.WriteLine("Task canceled");
+            //_tokenSource = new CancellationTokenSource();
+            var text = searchBox.Text.ToLower();
+            _currentSearch = text;
+            //Task.Factory.StartNew(async () =>
+            //{
+            //Search(sender, sender.Text.ToLower());
+            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
+
+            var maxSearchResultSize = 75;
+
+            var vms = SearchByParts(text);
+
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+            }
+
+            //}, _tokenSource.Token);
+
+        }
+
+        /// <summary>
+        /// returns a list of result view models based upon a textual search that looks at all the parts of the input text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private List<SearchResultViewModel> SearchByParts(string text)
+        {
+            List<SearchResultViewModel> mainList = null;
+            foreach (var searchPart in text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var criteria = GetSpecialSearchCriteria(searchPart);
+                var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
+                mainList = mainList ?? searchResult;
+                if (criteria == null)
+                {
+                    var temp = mainList;
+                    mainList = searchResult;
+                    searchResult = temp;
+                }
+                foreach (var existingVm in mainList.ToArray())
+                {
+                    var valid = false;
+                    foreach (var vm in searchResult)
+                    {
+                        if (existingVm.ViewDocument.Equals(vm.ViewDocument))
+                        {
+                            valid = true;
+                            break;
+                        }
+                    }
+                    if (!valid)
+                    {
+                        mainList.Remove(existingVm);
+                    }
+                }
+            }
+            return mainList ?? new List<SearchResultViewModel>();
+        }
+
+        /// <summary>
+        /// Supposed to handle all searches that are for key-value specified searches.   currenly just returns the generic special search.
+        /// If more search capabilities are desired, probably should put them in here.
+        /// </summary>
+        /// <param name="criteria"></param>
+        /// <returns></returns>
         private IEnumerable<SearchResultViewModel> SpecialSearch(SpecialSearchCriteria criteria)
         {
-            if (criteria.SearchCategory == "type")
+            if (criteria.SearchCategory == "type" && false)
             {
                 return HandleTypeSearch(criteria);
+            }
+            if (criteria.SearchCategory == "in")
+            {
+                return CollectionMembershipSearch(criteria);
             }
             return GenericSpecialSearch(criteria);
         }
 
+        private IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
+        {
+            var tree = DocumentTree.MainPageTree;
+            return LocalSearch("").Where(vm => vm?.DocumentCollection != null && (GetTitleOfCollection(tree, vm.DocumentCollection) ?? "").ToLower().Contains(criteria.SearchText));
+        }
+
+        /// <summary>
+        /// Get the search results for a part of search trying to specify keys/value pairs
+        /// </summary>
+        /// <param name="criteria"></param>
+        /// <returns></returns>
         private IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
         {
             var documentTree = DocumentTree.MainPageTree;
@@ -98,10 +165,32 @@ namespace Dash
             }
             foreach (var docController in docControllers)
             {
-                yield return CreateSearchResult(documentTree, docController, (docController.GetField(KeyStore.SourecUriKey) as ImageController)?.Data?.AbsoluteUri ?? "", docController.Title);
+                var title = docController.Title;
+                
+                if (documentTree[docController.Id] != null && documentTree[docController.Id].DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey) != null)
+                {
+                    title = GetTitleOfCollection(documentTree,docController) ?? "?" ;
+                }
+                var url = docController.GetLongestViewedContextUrl();
+                url = url == null ? "" : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
+                yield return CreateSearchResult(documentTree, docController, url ?? docController.DocumentType.Type, title);
             }
         }
 
+        private string GetTitleOfCollection(DocumentTree tree, DocumentController collection)
+        {
+            if (tree == null || collection == null)
+            {
+                return null;
+            }
+            return tree[collection.Id]?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
+        }
+
+        /// <summary>
+        /// More direct search for types.  not currently used since we put the type of documents in their fields
+        /// </summary>
+        /// <param name="criteria"></param>
+        /// <returns></returns>
         private IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
         {
             var documentTree = DocumentTree.MainPageTree;
@@ -115,10 +204,18 @@ namespace Dash
             }
             foreach (var docController in docControllers)
             {
-                yield return CreateSearchResult(documentTree, docController, (docController.GetField(KeyStore.SourecUriKey) as ImageController)?.Data?.AbsoluteUri ?? "", docController.Title);
+                var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey, null);
+                var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
+                yield return CreateSearchResult(documentTree, docController, imageUrl, docController.Title);
             }
         }
 
+
+        /// <summary>
+        /// returns the criteria object for kvp special search specification, null if not a request for a special search
+        /// </summary>
+        /// <param name="searchText"></param>
+        /// <returns></returns>
         private SpecialSearchCriteria GetSpecialSearchCriteria (string searchText)
         {
             searchText = searchText.Replace(" ", "");
@@ -144,7 +241,7 @@ namespace Dash
         }
 
 
-        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null)
             {
@@ -153,7 +250,11 @@ namespace Dash
                 {
                     if (resultVM?.DocumentCollection != null)
                     {
-                        MainPage.Instance.SetCurrentWorkspace(resultVM.DocumentCollection);
+                        var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                        if (!currentWorkspace.GetDataDocument().Equals(resultVM.DocumentCollection.GetDataDocument()))
+                        {
+                            MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVM.DocumentCollection, resultVM.ViewDocument);
+                        }
                     }
                     MainPage.Instance.NavigateToDocumentInWorkspace(resultVM.ViewDocument);
                 }
@@ -177,12 +278,6 @@ namespace Dash
             var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
             foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
             {
-                if (searchString != _currentSearch)
-                {
-                    Debug.WriteLine("ended early-------------------------");
-                    return new List<SearchResultViewModel>();
-                }
-
                 int foundCount = 0;
                 string lastTopText = "";
                 StringSearchModel lastKeySearch = null;
@@ -239,6 +334,14 @@ namespace Dash
             //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
         }
 
+        /// <summary>
+        /// creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
+        /// </summary>
+        /// <param name="documentTree"></param>
+        /// <param name="dataDocumentController"></param>
+        /// <param name="bottomText"></param>
+        /// <param name="titleText"></param>
+        /// <returns></returns>
         private SearchResultViewModel CreateSearchResult(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText)
         {
             string preTitle = "";
@@ -254,10 +357,26 @@ namespace Dash
             return vm;
         }
 
+        /// <summary>
+        /// this criteria simple tells us which key and value pair to look at
+        /// </summary>
         private class SpecialSearchCriteria
         {
             public string SearchText { get; set; }
             public string SearchCategory { get; set; }
+        }
+
+        private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_currentSearch))
+            {
+                ExecuteSearch(sender as AutoSuggestBox);
+            }
+        }
+
+        private void XAutoSuggestBox_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+
         }
 
         /*
