@@ -376,5 +376,14 @@ namespace Dash
             preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
         }
 
+        private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            args.AllowedOperations = DataPackageOperation.Copy;
+            var el = sender as FrameworkElement;
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            var docRef = DataContext as DocumentFieldReference;
+            var docId = docRef.DocumentId;
+            args.Data.Properties["Operator Output"] = new DocumentFieldReference(docId, key);
+        }
     }
 }
