@@ -376,44 +376,5 @@ namespace Dash
             preview.DocId = (DataContext as DocumentFieldReference)?.DocumentId;
         }
 
-        private void UIElement_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
-            {
-                DocumentController refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
-                KeyController refKey = null;
-                if (e.DataView.Properties.ContainsKey("Operator Key"))
-                {
-                    refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                }
-                var opDoc = (DataContext as FieldReference).GetDocumentController(null);
-                var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
-            }
-        }
-
-        private void UIElement_OnDragOver(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey("Operator Document") && e.DataView.Properties.ContainsKey("Operator Key"))
-            {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
-                var refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                var opField = (DataContext as FieldReference).DereferenceToRoot<OperatorController>(null);
-                var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                var fieldType = refDoc.GetDereferencedField(refKey, null).TypeInfo;
-                var inputType = opField.Inputs[key].Type;
-                if (inputType.HasFlag(fieldType))
-                {
-                    e.AcceptedOperation = DataPackageOperation.Link;
-                }
-                else
-                {
-                    e.AcceptedOperation = DataPackageOperation.None;
-                }
-            }
-            e.Handled = true;
-        }
     }
 }
