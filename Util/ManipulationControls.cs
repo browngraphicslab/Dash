@@ -548,7 +548,7 @@ namespace Dash
             }
 
             TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
-            Snap(true);
+            if (_grouping == null || _grouping.Count < 2) Snap(true);
             e.Handled = true;
         }
 
@@ -566,7 +566,8 @@ namespace Dash
 
             TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
             DetectShake(sender, e);
-            Snap(true);
+
+            if (_grouping == null || _grouping.Count < 2) Snap(true);
             e.Handled = true;
         }
 
