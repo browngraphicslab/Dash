@@ -1341,7 +1341,10 @@ namespace Dash
             if (InkController != null)
             {
                 InkHostCanvas.IsHitTestVisible = isSelected;
-                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                if (XInkCanvas != null)
+                {
+                    XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+                }
             }
         }
 
@@ -1356,7 +1359,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            SelectionCanvas.Children.Clear();
+            SelectionCanvas?.Children?.Clear();
             DeselectAll();
 
             _isSelecting = false;
@@ -1380,14 +1383,17 @@ namespace Dash
         public void RenderPreviewTextbox(Point where)
         {
             previewTextBuffer = "";
-            Canvas.SetLeft(previewTextbox, @where.X);
-            Canvas.SetTop(previewTextbox, @where.Y);
-            previewTextbox.Visibility = Visibility.Collapsed;
-            previewTextbox.Visibility = Visibility.Visible;
-            previewTextbox.Text = string.Empty;
-            previewTextbox.Focus(FocusState.Programmatic);
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
-            previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            if (previewTextbox != null)
+            {
+                Canvas.SetLeft(previewTextbox, @where.X);
+                Canvas.SetTop(previewTextbox, @where.Y);
+                previewTextbox.Visibility = Visibility.Collapsed;
+                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Text = string.Empty;
+                previewTextbox.Focus(FocusState.Programmatic);
+                previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+                previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+            }
         }
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

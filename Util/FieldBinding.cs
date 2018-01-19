@@ -21,7 +21,7 @@ namespace Dash
         DereferenceOneLevel
     };
 
-    public class FieldBinding<T> where T : FieldControllerBase, new()
+    public class FieldBinding<T, U> where T : FieldControllerBase where U : FieldControllerBase, new()
     {
         public BindingMode Mode;
         public DocumentController Document;
@@ -110,7 +110,7 @@ namespace Dash
 
             if (field == null)
             {
-                T f = new T();
+                U f = new U();
                 if (!f.SetValue(fieldData))
                 {
                     return false;
@@ -125,13 +125,15 @@ namespace Dash
         }
     }
 
+    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase { }
+
     public static class BindingExtension
     {
         private static Dictionary<UIElement, Dictionary<DependencyProperty,
             Action>> _bindingMap =
             new Dictionary<UIElement, Dictionary<DependencyProperty, Action>>();
 
-        public static void AddFieldBinding<T, U>(this T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase, new()
+        public static void AddFieldBinding<T, U, V>(this T element, DependencyProperty property, FieldBinding<U, V> binding) where T : FrameworkElement where U : FieldControllerBase where V : FieldControllerBase, new()
         {
             TryRemoveOldBinding(element, property);
             switch (binding.Mode)
@@ -175,12 +177,12 @@ namespace Dash
             _bindingMap[element][property] = removeBinding;
         }
 
-        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase, new()
+        private static void AddOneTimeBinding<T, U, V>(T element, DependencyProperty property, FieldBinding<U, V> binding) where T : FrameworkElement where U : FieldControllerBase where V : FieldControllerBase, new()
         {
             binding.ConvertToXaml(element, property, binding.Context);
         }
 
-        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldControllerBase, new()
+        private static void AddOneWayBinding<T, U, V>(T element, DependencyProperty property, FieldBinding<U, V> binding) where T : FrameworkElement where U : FieldControllerBase where V : FieldControllerBase, new()
         {
             FieldControllerBase.FieldUpdatedHandler handler =
                 (sender, args, context) =>
@@ -229,8 +231,8 @@ namespace Dash
             AddRemoveBindingAction(element, property, RemoveBinding);
         }
 
-        private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
-            where T : FrameworkElement where U : FieldControllerBase, new()
+        private static void AddTwoWayBinding<T, U, V>(T element, DependencyProperty property, FieldBinding<U, V> binding)
+            where T : FrameworkElement where U : FieldControllerBase where V : FieldControllerBase, new()
         {
             bool updateUI = true;
             FieldControllerBase.FieldUpdatedHandler handler =

@@ -57,6 +57,21 @@ namespace Dash
             set => SetProperty(ref _showLocalContext, value);
         }
 
+        /// <summary>
+        /// this sucks
+        /// </summary>
+        public double ActualHeight
+        {
+            get { return _actualHeight; }
+        }
+
+        /// <summary>
+        /// this too
+        /// </summary>
+        public double ActualWidth
+        {
+            get { return _actualWidth; }
+        }
 
         public struct WidthAndMenuOpenWrapper
         {

@@ -45,6 +45,7 @@ namespace Dash
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
         public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
         public static KeyController ActualHeightKey = new KeyController(DashConstants.KeyStore.ActualHeightKey);
+        public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
 
         /// <summary>
         /// Key for collection data

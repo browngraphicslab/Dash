@@ -41,7 +41,7 @@ namespace Dash
                 ? _documentControllerDataContext
                     .GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null)
                 : _documentControllerDataContext;
-        
+
         public KeyValuePane()
         {
             MainView.CoreWindow.PointerPressed -= CoreWindow_PointerPressed;
@@ -68,7 +68,7 @@ namespace Dash
         {
             xKeyValueListView.CanDragItems = false;
             xKeyValueListView.SelectionMode = ListViewSelectionMode.None;
-            SetHeaderVisibility(DashShared.Visibility.Collapsed); 
+            SetHeaderVisibility(DashShared.Visibility.Collapsed);
         }
 
         public void SetHeaderVisibility(Visibility vis)
@@ -112,7 +112,8 @@ namespace Dash
                         ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
                             new BoundController(keyFieldPair.Value, _documentControllerDataContext),
                             keys.Contains(keyFieldPair.Key), TypeColumnWidth));
-            } else
+            }
+            else
             {
 
             }
@@ -122,7 +123,7 @@ namespace Dash
         {
             // if a field has been replaced or updated then set it's source to be the new element
             // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
             if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
                 UpdateListItemSourceElement(dargs.Reference.FieldKey, dargs.NewValue);
             else SetListItemSourceToCurrentDataContext();
@@ -135,7 +136,7 @@ namespace Dash
             for (var i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, RealDataContext), keys.Contains(fieldKey),TypeColumnWidth);
+                        new BoundController(fieldValue, RealDataContext), keys.Contains(fieldKey), TypeColumnWidth);
         }
 
         private void FocusOn(TextBox tb)
@@ -144,20 +145,6 @@ namespace Dash
             tb.SelectAll();
         }
 
-
-        private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var item = e.Items.FirstOrDefault();
-
-            // item type has to be the same as ListItemSource item type
-            if (item is KeyFieldContainer)
-            {
-                var container = item as KeyFieldContainer;
-                e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(DragPropertyKey,
-                    new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
-            }
-        }
 
         private void AddButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -245,7 +232,7 @@ namespace Dash
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
-               
+
             }
             else
             {
@@ -253,7 +240,7 @@ namespace Dash
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 // set type selection box to text by default
                 xTypeComboBox.SelectedIndex = 2;
-                
+
             }
         }
 
@@ -265,7 +252,7 @@ namespace Dash
                 return;
             }
             var primaryKeys =
-                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>( KeyStore.PrimaryKeyKey, null);
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
             if (primaryKeys == null)
             {
                 _documentControllerDataContext.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(kf.Key), false);
@@ -287,8 +274,8 @@ namespace Dash
                 return;
             }
             var primaryKeys =
-                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>( KeyStore.PrimaryKeyKey, null);
-            if(primaryKeys != null)
+                _documentControllerDataContext.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
+            if (primaryKeys != null)
             {
                 if (primaryKeys.TypedData.Contains(kf.Key))
                 {
@@ -313,7 +300,7 @@ namespace Dash
 
         private void xTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var item = (TypeInfo) xTypeComboBox.SelectedItem;
+            var item = (TypeInfo)xTypeComboBox.SelectedItem;
 
             if (item == TypeInfo.Image)
             {
@@ -332,7 +319,7 @@ namespace Dash
             }
             else
             {
-               // xNewValueField.IsEnabled = false;
+                // xNewValueField.IsEnabled = false;
             }
         }
 
@@ -343,7 +330,7 @@ namespace Dash
         {
             var value = xNewValueField.Text;
 
-            if (value != "" && (TypeInfo) xTypeComboBox.SelectedItem == TypeInfo.Image)
+            if (value != "" && (TypeInfo)xTypeComboBox.SelectedItem == TypeInfo.Image)
             {
                 Uri outUri;
                 if (Uri.TryCreate(value, UriKind.Absolute, out outUri))
@@ -388,7 +375,7 @@ namespace Dash
             var p = Util.PointTransformFromVisual(posInKVPane, containerGrid);
 
             _tb = new TextBox();
-            
+
             _tb.MaxHeight = _tb.MaxWidth = 500;
             var srcText = "";
             //set the editing textbox's initial value appropriately 
@@ -421,7 +408,8 @@ namespace Dash
                     _selectedKV.Key, new Context(_documentControllerDataContext));
                 _documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
                 RemoveEditingTextBox();
-            } else
+            }
+            else
                 _lastTbText = _tb.Text;
         }
 
@@ -456,7 +444,7 @@ namespace Dash
                     var field = _documentControllerDataContext.GetDereferencedField<FieldControllerBase>(
                         _selectedKV.Key, new Context(_documentControllerDataContext));
                     _documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, field);
-                    RemoveEditingTextBox(); 
+                    RemoveEditingTextBox();
                 }
             };
         }
@@ -489,7 +477,7 @@ namespace Dash
         {
             if (e.Key == VirtualKey.Enter)
             {
-                var type = (TypeInfo) xTypeComboBox.SelectedItem;
+                var type = (TypeInfo)xTypeComboBox.SelectedItem;
                 if (xNewKeyField.Text != "" && type != TypeInfo.None &&
                     (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document))
                 {
@@ -535,25 +523,32 @@ namespace Dash
             };
             IgnoreE = e.GetCurrentPoint(this);
             DragModel = header;
-            var c = (sender as UIElement).GetFirstAncestorOfType<ContentPresenter>();
-            c.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+            ((UIElement) sender).StartDragAsync(e.GetCurrentPoint(sender as UIElement));
             e.Handled = true;
         }
         static void CoreWindow_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
         {
             if (IgnoreE?.FrameId != args.CurrentPoint.FrameId)
-                DragModel =  null;
+                DragModel = null;
         }
 
         private void xCloseButton_Click(object sender, RoutedEventArgs e)
         {
-            
+
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.DeleteDocument();
+        }
+
+        private void Icon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            KeyFieldContainer container = (KeyFieldContainer) ((FrameworkElement)sender).DataContext;
+            args.Data.RequestedOperation = DataPackageOperation.Link;
+            args.Data.Properties["Operator Document"] = _documentControllerDataContext;
+            args.Data.Properties["Operator Key"] = container.Key;
         }
     }
 }

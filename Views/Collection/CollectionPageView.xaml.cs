@@ -77,27 +77,14 @@ namespace Dash
             xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 30, Visibility = xDocTitle.Visibility };
             Grid.SetRow(xDocTitle, 1);
             xDocContainer.Children.Add(xDocTitle);
-            if (key.Equals(NoteDocuments.RichTextNote.RTFieldKey))
+            var captionBinding = new FieldBinding<FieldControllerBase>()
             {
-                var captionBinding = new FieldBinding<RichTextController>()
-                {
-                    Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
-                    Key = CaptionKey,
-                    Converter = new ObjectToStringConverter()
-                };
-                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
-            }
-            else
-            {
-                var captionBinding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
-                    Key = CaptionKey
-                };
-                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
-            }
+                Mode = BindingMode.TwoWay,
+                Document = CurPage.DocumentController.GetDataDocument(null),
+                Key = CaptionKey,
+                Converter = new ObjectToStringConverter()
+            };
+            xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
         }
 
         public DocumentViewModel CurPage
@@ -132,7 +119,7 @@ namespace Dash
                 SetHackText(CaptionKey);
 
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                if (ind >= 0&& ViewModel.ThumbDocumentViewModels.Count > ind)
+                if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)
                 {
                     var thumb = ViewModel.ThumbDocumentViewModels[ind];
                     foreach (var t in ViewModel.ThumbDocumentViewModels)
@@ -143,7 +130,7 @@ namespace Dash
                 if (cview != null)
                 {
                     cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;      
+                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
                 }
@@ -312,7 +299,7 @@ namespace Dash
             {
                 NextButton_Click(sender, e);
                 e.Handled = true;
-            } 
+            }
             if (e.Key == Windows.System.VirtualKey.PageUp)
             {
                 PrevButton_Click(sender, e);

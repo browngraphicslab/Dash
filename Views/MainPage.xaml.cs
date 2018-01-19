@@ -146,8 +146,13 @@ namespace Dash
             BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
-        public void SetCurrentWorkspace(DocumentController workspace)
+        public bool SetCurrentWorkspace(DocumentController workspace)
         {
+            //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
+            if (workspace.Equals(MainDocument))
+            {
+                return false;
+            }
             workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
@@ -155,6 +160,78 @@ namespace Dash
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            return true;
+        }
+
+        public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
+        {
+            RoutedEventHandler handler = null;
+            handler =
+                delegate(object sender, RoutedEventArgs args)
+                {
+                    xMainDocView.xContentPresenter.Loaded -= handler;
+
+
+                    var dvm = xMainDocView.DataContext as DocumentViewModel;
+                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+                    if (coll?.ViewModel?.DocumentViewModels != null)
+                    {
+                        foreach (var vm in coll.ViewModel.DocumentViewModels)
+                        {
+                            if (vm.DocumentController.Equals(document))
+                            {
+                                RoutedEventHandler finalHandler = null;
+                                finalHandler = delegate(object finalSender, RoutedEventArgs finalArgs)
+                                {
+                                    Debug.WriteLine("loaded");
+                                    NavigateToDocumentInWorkspace(document);
+                                    vm.Content.Loaded -= finalHandler;
+                                };
+
+                                vm.Content.Loaded += finalHandler;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (dvm?.Content != null)
+                        {
+                            if (coll == null)
+                            {
+                                RoutedEventHandler contentHandler = null;
+                                contentHandler = delegate(object contentSender, RoutedEventArgs contentArgs)
+                                {
+                                    dvm.Content.Loaded -= contentHandler;
+                                    if (!NavigateToDocumentInWorkspace(document))
+                                    {
+                                        handler(null, null);
+                                    }
+                                };
+                                dvm.Content.Loaded += contentHandler;
+                            }
+                            else
+                            {
+                                RoutedEventHandler contentHandler = null;
+                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
+                                {
+                                    coll.Loaded -= contentHandler;
+                                    if (!NavigateToDocumentInWorkspace(document))
+                                    {
+                                        handler(null, null);
+                                    }
+                                };
+                                coll.Loaded += contentHandler;
+                            }
+                        }
+
+                    }
+                };
+            xMainDocView.xContentPresenter.Loaded += handler;
+            if (!SetCurrentWorkspace(workspace))
+            {
+                xMainDocView.xContentPresenter.Loaded -= handler;
+            }
         }
 
         public bool NavigateToDocumentInWorkspace(DocumentController document)
@@ -162,12 +239,18 @@ namespace Dash
             var dvm = xMainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null)
+            {
                 return NavigateToDocument(coll, null, coll, document);
+            }
             return false;
         }
 
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
+            if (collection?.ViewModel?.DocumentViewModels == null)
+            {
+                return false;
+            }
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
@@ -176,8 +259,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.Width / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.Height / 2));
+                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
+                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
