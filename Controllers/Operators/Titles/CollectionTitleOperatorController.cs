@@ -13,9 +13,10 @@ namespace Dash
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-
-        public CollectionTitleOperatorController() : base(new OperatorModel(OperatorType.CollectionTitle))
+        private string _prefix = "";
+        public CollectionTitleOperatorController(string prefix = "COLLECTION: ") : base(new OperatorModel(OperatorType.CollectionTitle))
         {
+            _prefix = prefix;
         }
 
 
@@ -47,7 +48,7 @@ namespace Dash
             }
 
 
-            outputs[ComputedTitle] = output ?? new TextController("Untitled Collection");
+            outputs[ComputedTitle] = new TextController(_prefix + ((output ?? new TextController("Untitled")).Data));
         }
 
         public override FieldModelController<OperatorModel> Copy()
