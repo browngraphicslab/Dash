@@ -1687,7 +1687,6 @@ namespace Dash
                 }
 
             }
-            Debug.WriteLine("code=" + virtualKeyCode);
             //Take care of numpad numbers
             if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
             {

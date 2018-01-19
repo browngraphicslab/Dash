@@ -29,7 +29,7 @@
         <!--grid wrapping the headers for formatting-->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="62" />
+                <ColumnDefinition Width="30" />
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Column="1" 
@@ -59,7 +59,7 @@
         <!--records list-->
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
-                  SelectionMode="Multiple"
+                  SelectionMode="Extended"
                   Background="#CCDDDDDD"
                   CanDragItems="True"
                   Height="100"

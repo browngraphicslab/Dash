@@ -792,7 +792,7 @@ namespace Dash
 
         private void ShowPreviewDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ParentCollection.ParentDocument.ViewModel.DocumentController.GetPreviewDocument(), null);
+            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetPreviewDocument(), null);
         }
 
         private void KeyValueViewDocument()
@@ -1106,12 +1106,25 @@ namespace Dash
                         if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
                             var key = keyString.Substring(1);
+                            bool found = false;
                             foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
+                            {
                                 if (k.Name == key)
                                 {
                                     (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
                                     (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                                    found = true;
                                 }
+                            }
+
+                            if (!found)
+                            {
+                                var k = new KeyController(UtilShared.GenerateNewId(), key);
+                                (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
+                                (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
+                            }
+
+
                             this.DeleteDocument();
                             return;
                         }
