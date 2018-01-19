@@ -117,6 +117,7 @@ namespace Dash
             RemoveViewModelEvents(ViewModel);
             TimelineElement.LastX = 0;
             TimelineElement.LastY = 0;
+            TimelineElement.LastDisplayedPosition = 0;
             Unloaded -= CollectionTimelineView_Unloaded;
         }
 

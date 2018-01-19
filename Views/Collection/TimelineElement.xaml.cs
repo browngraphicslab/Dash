@@ -75,14 +75,17 @@ namespace Dash
         {
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
+
+            //DisplayBelow(true);
+
             UpdateTimelinePosition();
 
             LocalContextVisible = true;
-            ShowLocalContext(true);
         }
 
         public static double LastX = 0;
         public static double LastY = 0;
+        public static double LastDisplayedPosition= 0;
 
         private double _minGap = 30;
         private double _maxGap = 300;
@@ -111,6 +114,21 @@ namespace Dash
 
             LastX = x;
             LastY = y;
+
+            if(LastDisplayedPosition == 0 || (x - LastDisplayedPosition) > 200)
+            {
+                LastDisplayedPosition = x;
+                _displayState = 0;
+            } else
+            {
+                _displayState = 0;
+                UpdateView();
+                _displayState = 1;
+                //DisplayBelow(false);
+            }
+            UpdateView();
+
+            //DisplayAll(true);
         }
 
         private double CalculateYPosition(TimelineElementViewModel context, TimelineMetadata metadata)
@@ -134,7 +152,7 @@ namespace Dash
             ViewModel = vm;
         }
 
-        public void ShowLocalContext(bool showContext)
+        public void DisplayBelow(bool showContext)
         {
             if (!showContext && _localContext.View != null)
             {
@@ -146,8 +164,13 @@ namespace Dash
                 xLowerLine.Visibility = Visibility.Collapsed;
                 xUpperLine.Visibility = Visibility.Visible;
                 Thickness margin = xWebHolderTop.Margin;
-                margin.Top = -125;
+                margin.Top = -40;
                 xWebHolderTop.Margin = margin;
+                xDocumentPreview.Width = 80;
+                xDocumentPreview.Height = 30;
+                Thickness margin2 = xDocGrid.Margin;
+                margin.Left = -40;
+                xDocGrid.Margin = margin;
             }
 
             if (showContext)
@@ -175,8 +198,13 @@ namespace Dash
                 xLowerLine.Visibility = Visibility.Visible;
                 xUpperLine.Visibility = Visibility.Collapsed;
                 Thickness margin = xWebHolderTop.Margin;
-                margin.Top = 20;
+                margin.Top = 40;
                 xWebHolderTop.Margin = margin;
+                xDocumentPreview.Width = 250;
+                xDocumentPreview.Height = 160;
+                Thickness margin2 = xDocGrid.Margin;
+                margin.Left = -120;
+                xDocGrid.Margin = margin;
             }
         }
 
@@ -185,14 +213,16 @@ namespace Dash
             //LocalContextVisible = !LocalContextVisible;
             _displayState = (_displayState + 1) % 3;
 
+            UpdateView();
+            
+        }
 
+        private void UpdateView()
+        {
+            var displayBelow = false;
             if (_displayState == 0)
             {
-                _localContextVisible = true;
-            }
-            else
-            {
-                _localContextVisible = false;
+                displayBelow = true;
             }
 
             bool displayAll = true;
@@ -203,8 +233,7 @@ namespace Dash
             DisplayAll(displayAll);
 
             //_localContextVisible = !_localContextVisible;
-            ShowLocalContext(_localContextVisible);
-            
+            DisplayBelow(displayBelow);
         }
 
         private void DisplayAll(bool display)
