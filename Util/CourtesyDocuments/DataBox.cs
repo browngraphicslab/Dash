@@ -40,13 +40,15 @@ namespace Dash
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
             if (data is TextController)
             {
+                return TextingBox.MakeView(documentController, context);
             }
             else if (data is ImageController)
             {
+                return ImageBox.MakeView(documentController, context);
             }
             else if (data is ListController<DocumentController>)
             {
-
+                return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
             }
             return new Grid();
         }

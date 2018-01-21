@@ -213,6 +213,17 @@ namespace Dash
                             }
                             throw new NotImplementedException();
                         }
+                        else if (pair.Value is PointController)
+                        {
+                            var fmContA = pair.Value as PointController;
+                            var fmContB =
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as PointController;
+                            if (!fmContA.Data.Equals(fmContB.Data))
+                            {
+                                equal = false;
+                                break;
+                            }
+                        }
                         else
                         {
                             throw new NotImplementedException();
