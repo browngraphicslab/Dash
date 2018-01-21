@@ -1,6 +1,5 @@
 ﻿using Dash.Controllers.Operators;
 using DashShared;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,23 +7,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Data.Pdf;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views.Document_Menu;
 using static Dash.NoteDocuments;
-using System.Text.RegularExpressions;
 
 namespace Dash
 {
@@ -471,7 +466,7 @@ namespace Dash
                         var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
-                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, 300, 300, related).Document;
+                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, collectedDocuments: related).Document;
                     htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     foreach (var str in strings)
@@ -524,36 +519,7 @@ namespace Dash
                 AddDocument(t.Document, null);
             }
 
-            // collection dynamic previews
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(CollectionView.CollectionPreviewDragKey))
-            {
-                // the collection view which should control the new doc
-                var sendingView = e.DataView.Properties[CollectionView.CollectionPreviewDragKey] as CollectionView;
-
-                // the doc controlling the new doc
-                var sendingDoc = sendingView?.ParentDocument.ViewModel.DocumentController;
-                // get the data part out of it
-                sendingDoc = sendingDoc?.GetDataDocument(null);
-
-                //var previewDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), new DocumentType());
-                //previewDoc.SetField(KeyStore.ActiveLayoutKey, 
-                //    new DocumentReferenceFieldController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), true);
-
-                //AddDocument(previewDoc, null);
-
-                if (sendingDoc != null)
-                {
-                    var previewDoc =
-                        new PreviewDocument(
-                            new DocumentReferenceController(sendingDoc.GetId(), KeyStore.SelectedSchemaRow), where);
-                    AddDocument(new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.ActiveLayoutKey] = previewDoc.Document,
-                        [KeyStore.TitleKey] = new TextController("Preview Document")
-                    }, new DocumentType()), null);
-                }
-            }
-
+            // TODO remove this and all references to TreeMenuNode
             if (e.DataView != null && e.DataView.Properties.ContainsKey(TreeMenuNode.TreeNodeDragKey))
             {
                 var draggedLayout = e.DataView.Properties[TreeMenuNode.TreeNodeDragKey] as DocumentController;
@@ -596,6 +562,25 @@ namespace Dash
                 }
             }
 
+
+            // if the user drags the entire collection of documents from the search bar
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
+            {
+                // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+                var docs = e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<DocumentController>;
+                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.ToList());
+                AddDocument(cnote.Document, null);
+            }
+
+            // if the user drags a single document from the search bar
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchResultDragKey))
+            {
+                // the drag contains the view document which we just display an alias of
+                var doc = e.DataView.Properties[MainSearchBox.SearchResultDragKey] as DocumentController;
+                var docAlias = doc.GetViewCopy(where);
+                AddDocument(docAlias, null);
+            }
+
             // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
@@ -625,7 +610,7 @@ namespace Dash
             if (CollectionDBSchemaHeader.DragModel != null)
                 e.AcceptedOperation = DataPackageOperation.Copy;
             else 
-                e.AcceptedOperation |= (DataPackageOperation.Copy | DataPackageOperation.Move | DataPackageOperation.Link) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
+                e.AcceptedOperation = e.DataView.RequestedOperation;
             
             e.DragUIOverride.IsContentVisible = true;
 

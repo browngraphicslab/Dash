@@ -89,7 +89,7 @@ namespace Dash
 
 
 
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 200, rowDocs);
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: rowDocs);
 
             return cnote.Document;
         }

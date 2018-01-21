@@ -58,9 +58,10 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            if (((ImageModel) Model).Data.AbsoluteUri.ToLower().Contains(searchString))
+            var data = (Model as ImageModel)?.Data;
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString)))
             {
-                return new StringSearchModel(Data.AbsoluteUri);
+                return new StringSearchModel(data.AbsoluteUri);
             }
             return StringSearchModel.False;
         }
