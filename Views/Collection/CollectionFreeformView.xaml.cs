@@ -1327,7 +1327,7 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey("Operator Output"))
             {
                 DocumentFieldReference docRef = (DocumentFieldReference) e.DataView.Properties["Operator Output"];
-                var where = e.GetPosition(this);
+                var where = e.GetPosition(this.GetFirstDescendantOfType<ContentPresenter>());
                 var db = new DataBox(docRef.GetReferenceController(), where.X, where.Y).Document;
                 ViewModel.AddDocument(db, null);
             }
