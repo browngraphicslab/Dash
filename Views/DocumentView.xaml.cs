@@ -1233,17 +1233,23 @@ namespace Dash
 
         private List<(string term, string definition, string image)> GetQuizletData()
         {
-            return new List<(string term, string definition, string image)>
+            var listOfDocumentControllers = ViewModel.DocumentController.GetDataDocument(null)
+                .GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+
+
+            var data = new List<(string term, string definition, string image)>();
+            foreach (var controller in listOfDocumentControllers.TypedData)
             {
-                ("dog", "chien", "https://i.redd.it/230olh2isqa01.jpg"),
-                ("cow", "vache", String.Empty),
-                ("cat", "chat", "https://i.redd.it/mr4sitxbdta01.jpg")
+                if (controller.DocumentType.Equals(ImageBox.DocumentType))
+                {
+                    var doc = controller.GetDataDocument();
+                    var dataDoc = doc.GetDataDocument();
+                    var imgUri = dataDoc.GetDataDocument(null).GetField<ImageController>(KeyStore.DataKey).Data.ToString();
+                    
+                }
+            }
 
-                //("dog", "chien", "C:\\Users\\avd\\Desktop\\helm.png"),
-                //("cat", "chat", "C:\\Users\\avd\\Desktop\\pan.png"),
-
-                //TODO: test to see if this high resolution img breaks https://i.redd.it/ycddzi8bsca01.jpg
-            };
+            return data;
         }
 
         private Task<HttpResponseMessage> MakeTokenRequest(string code)
@@ -1287,17 +1293,13 @@ namespace Dash
         {
             var imageForm = new MultipartFormDataContent();
 
-            var listOfDocumentControllers = ViewModel.DocumentController.GetDataDocument(null)
-                .GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
-
-
             for (int i = 0; i < setData.Count; i++)
             {
                 var triplet = setData[i];
                 if (!String.IsNullOrEmpty(triplet.image))
                 {
-                    //string url = triplet.image;
-                    var imgUri = ViewModel.DocumentController.GetDataDocument(null).GetField<ImageController>(KeyStore.DataKey).Data.ToString();
+                    string imgUri = triplet.image;
+                    //var imgUri = ViewModel.DocumentController.GetDataDocument(null).GetField<ImageController>(KeyStore.DataKey).Data.ToString();
 
                     if (imgUri == null) break;
 
@@ -1340,6 +1342,9 @@ namespace Dash
 
         public async void ExportToQuizlet(List<(string term, string definition, string image)> setData, string setTitle, string langTerm="en", string langDef="en")
         {
+
+            if (!setData.Any()) return;
+
             var token = "GnRF3QpEcnbE5cBNxjBep9ysxvTspXerfcpfSKQw";
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token); //Set token header authorization
 
@@ -1389,7 +1394,7 @@ namespace Dash
             var setData = GetQuizletData();
 
             
-            var setTitle = "Dash Test 3";
+            var setTitle = "Dash Test 4";
 
             ExportToQuizlet(setData, setTitle);
         }
