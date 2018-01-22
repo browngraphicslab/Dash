@@ -16,6 +16,7 @@ namespace Dash
             return xaml == Visibility.Visible;
         }
     }
+
     public class BoolToNumberConverter : SafeDataToXamlConverter<bool, double>
     {
         public override double ConvertDataToXaml(bool data, object parameter = null)

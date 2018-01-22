@@ -29,7 +29,7 @@
                 <Grid Name="xDocGrid" BorderBrush="LightGray" BorderThickness="1" Background="White" Opacity=".9" Margin="-120,0,0,0">
                     <local:DocumentView x:Name="xDocumentPreview" Width="150" Height="30"
                     DataContext="{Binding DocumentViewModel}" 
-                    Visibility="{x:Bind LocalContextVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" SizeChanged="DocumentPreviewSizeChanged">
+                    Visibility="{x:Bind LocalContextVisible}" SizeChanged="DocumentPreviewSizeChanged">
                     </local:DocumentView>
                 </Grid>
                 

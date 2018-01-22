@@ -190,7 +190,7 @@ namespace Dash
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth / 2 - EllipseSize / 2);
                     if (xDocumentPreview != null) Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
                 }
-                else if (!_localContext.View.Source.Equals(source))
+                else if (_localContext.View.Source != null && !_localContext.View.Source.Equals(source))
                 {
                     _localContext.View.Source = source;
                 }
@@ -255,12 +255,21 @@ namespace Dash
 
         private void DocumentPreviewSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if(_localContext.View != null)
-            {
-                Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
 
+            try
+            {
+                if(_localContext.View != null)
+                {
+                    Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
+
+                }
+                Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);
             }
-            Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);
+            catch (Exception exception)
+            {
+                Debug.WriteLine(exception);
+                throw;
+            }
 
         }
 
