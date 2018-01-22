@@ -63,6 +63,7 @@
         <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentHighlightBackgroundColor}" />
         <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
+        <SolidColorBrush x:Key="FieldHandleColor" Color="{StaticResource ActivationColor}"/>
         <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
         <SolidColorBrush x:Key="SelectionHandleColor" Color="{StaticResource ActivationColor}"/>
         <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
@@ -646,6 +647,16 @@
             <Setter Property="Stroke" Value="Transparent"></Setter>
             <Setter Property="AllowDrop" Value="True"/>
         </Style>
+
+        <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
+            <Setter Property="Fill" Value="{StaticResource FieldHandleColor}" />
+            <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
+            <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+            <Setter Property="ManipulationMode" Value="All"></Setter>
+            <Setter Property="Stroke" Value="Transparent"></Setter>
+            <Setter Property="AllowDrop" Value="True"/>
+        </Style>
+
         <Style TargetType="Ellipse" x:Key="xInputLinkHandle">
             <Setter Property="Fill" Value="{StaticResource InputHandleColor}" />
             <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>

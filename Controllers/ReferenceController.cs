@@ -70,28 +70,11 @@ namespace Dash
         /// </summary>
         public ReferenceModel ReferenceFieldModel => Model as ReferenceModel;
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText((tb) => BindTextOrSetOnce(tb, context));
-        }
-
         public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
         }
-        
-        //public ListController<DocumentController> ListController<DocumentController> => DereferenceToRoot<ListController<DocumentController>>(null);
 
-        private void BindTextOrSetOnce(TextBlock textBlock, Context context)
-        {
-            Binding textBinding = new Binding
-            {
-                Source = this,
-                Converter = new ObjectToStringConverter(context),
-                Mode = BindingMode.OneWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-        }
 
         public override object GetValue(Context context)
         {

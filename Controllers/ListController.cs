@@ -207,10 +207,6 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView(Context context)
         {
-            //return GetTableCellViewOfScrollableText(delegate (TextBlock block)
-            //{
-            //    block.Text = "[" + string.Join(", ", TypedData) + "]";
-            //});
             return GetTableCellViewForCollectionAndLists("📜", delegate (TextBlock block)
             {
                 block.Text = string.Format("{0} object(s)", TypedData.Count());           //TODO make a factory and specify what objects it contains ,,,, 

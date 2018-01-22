@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash.Converters
+namespace Dash
 {
-    public class StringToDoubleConverter : SafeDataToXamlConverter<double, string>
+    public class DoubleToStringConverter : SafeDataToXamlConverter<double, string>
     {
-        double _minValue = double.NaN, _maxValue = double.NaN;
-        public StringToDoubleConverter(double minValue = double.NaN, double maxValue = double.NaN)
+        private readonly double _minValue;
+        private readonly double _maxValue;
+
+        public DoubleToStringConverter(double minValue = double.NaN, double maxValue = double.NaN)
         {
             _minValue = minValue;
             _maxValue = maxValue;
@@ -17,7 +19,7 @@ namespace Dash.Converters
 
         public override string ConvertDataToXaml(double data, object parameter = null)
         {
-            return data.ToString();
+            return Clamp(data).ToString();
         }
 
         public override double ConvertXamlToData(string xaml, object parameter = null)
@@ -26,9 +28,11 @@ namespace Dash.Converters
             {
                 outputValue = 0;
             }
-            return clamp(outputValue);
+            return Clamp(outputValue);
         }
-        private double clamp(double n)
+
+
+        private double Clamp(double n)
         {
             if (!double.IsNaN(_minValue) && n < _minValue)
                 return _minValue;

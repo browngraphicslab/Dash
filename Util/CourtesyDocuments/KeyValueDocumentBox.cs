@@ -25,27 +25,18 @@ namespace Dash
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
-
-            ReferenceController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out refToData);
-
-            if (fieldModelController is ImageController)
-                return ImageBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            if (fieldModelController is TextController)
-                return TextingBox.MakeView(docController, context, keysToFrameworkElementsIn, isInterfaceBuilderLayout);
-            var documentfieldModelController = fieldModelController as DocumentController ?? 
-                                         docController.GetField(KeyStore.DocumentContextKey) as DocumentController; // use DocumentContext if no explicit reference
+            var documentfieldModelController = docController.GetDataDocument(context);
             Debug.Assert(documentfieldModelController != null);
 
             var border = new Border();
 
-            var docView = new KeyValuePane() { TypeColumnWidth = new GridLength(0) };
-            docView.SetUpForDocumentBox(documentfieldModelController);
-            border.Child = docView;
+            var keyValuePane = new KeyValuePane
+            {
+                TypeColumnWidth = new GridLength(0),
+                DataContext = documentfieldModelController
+            };
+            border.Child = keyValuePane;
 
-            //add to key to framework element dictionary
-            if (keysToFrameworkElementsIn != null && refToData != null)
-                keysToFrameworkElementsIn[refToData.FieldKey] = border;
 
             if (isInterfaceBuilderLayout)
             {

@@ -13,6 +13,7 @@ using DashShared;
 using TextWrapping = DashShared.TextWrapping;
 using System.Collections.Generic;
 using System.Linq;
+using Dash.Controllers;
 using DashShared.Models;
 using static Dash.DocumentController;
 
@@ -98,17 +99,15 @@ namespace Dash
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
-            var referenceToText = GetTextReference(docController);
-            var val = referenceToText?.GetValue(context);
+            var textController = docController.GetField(KeyStore.DataKey);
             // create the textblock
-            EditableTextBlock tb = new EditableTextBlock
+            var tb = new EditableTextBlock
             {
-                TargetFieldReference = referenceToText,
+                TargetFieldController = textController,
                 TargetDocContext = context
             };
             SetupBindings(tb, docController, context);
 
-            if (keysToFrameworkElementsIn != null && referenceToText != null) keysToFrameworkElementsIn[referenceToText?.FieldKey] = tb;
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
         }
 
@@ -116,35 +115,38 @@ namespace Dash
 
         protected static void SetupTextBinding(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var binding = new FieldBinding<TextController>()
+            var binding = new FieldBinding<FieldControllerBase>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                GetConverter = GetFieldConverter,
+                GetConverter = GetFieldtoStringConverter,
                 FallbackValue = "<null>"
             };
             element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
-        protected static IValueConverter GetFieldConverter(FieldControllerBase Controller)
+        public static IValueConverter GetFieldtoStringConverter(FieldControllerBase controller)
         {
-            if (Controller is DocumentController)
+            if (controller is DocumentController)
             {
                 return new DocumentControllerToStringConverter();
             }
-            else if (Controller is ListController<DocumentController>)
+            else if (controller is ListController<DocumentController>)
             {
                 return new DocumentCollectionToStringConverter();
             }
-            else if (Controller is NumberController)
+
+            else if (controller is NumberController)
             {
-                return new StringToDoubleConverter();
-            }
-            else if (Controller is ReferenceController)
+                return new DoubleToStringConverter();
+            } else if (controller is PointController)
             {
-                return null;
+                return new PointToStringConverter();
+            } else if (controller is ImageController)
+            {
+                return new UriToStringConverter();
             }
 
             return new ObjectToStringConverter(null);
@@ -205,12 +207,6 @@ namespace Dash
 
 
         #region GettersAndSetters
-
-
-        private static ReferenceController GetTextReference(DocumentController docController)
-        {
-            return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
 
         private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)
         {

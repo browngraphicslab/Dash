@@ -131,6 +131,10 @@ namespace Dash
             {
                 if (e.VirtualKey.Equals(VirtualKey.Enter))
                 {
+                    // don't shift enter on key value documents
+                    if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                        ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
                     HandleShiftEnter();
                 }
             }
@@ -934,6 +938,9 @@ namespace Dash
             xTitleIcon.Foreground = (isTitleVisible ?? isBorderOn) && !ViewModel.Undecorated
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
+
+
+            OperatorEllipse.Visibility = isBorderOn ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
@@ -1028,8 +1035,6 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
             ViewModel?.SetHasTitle(isLowestSelected);
-
-            OperatorEllipse.Visibility = isLowestSelected ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #endregion
@@ -1232,6 +1237,7 @@ namespace Dash
         {
             args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
+            args.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 }

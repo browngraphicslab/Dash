@@ -321,21 +321,6 @@ namespace Dash
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
 
-            if (KeyValuePane.DragModel != null)
-            {
-                if (KeyValuePane.DragModel.FieldKey.Key.Equals(KeyStore.HtmlTextKey))
-                {
-                    var opController = ExecuteHtmlJavaScriptController.CreateController(new DocumentReferenceController(KeyValuePane.DragModel.Document.GetId(), KeyValuePane.DragModel.FieldKey.Key));
-
-                    // using this as a setter for the transform massive hack - LM
-                    var _ = new DocumentViewModel(opController)
-                    {
-                        GroupTransform = new TransformGroupData(where, new Point(1, 1))
-                    };
-                    AddDocument(opController, null);
-                }
-            }
-            KeyValuePane.DragModel = null;
             if (e.DataView != null &&
                   (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
             {
@@ -568,7 +553,7 @@ namespace Dash
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var docs = e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<DocumentController>;
-                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.ToList());
+                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }
 
@@ -578,6 +563,15 @@ namespace Dash
                 // the drag contains the view document which we just display an alias of
                 var doc = e.DataView.Properties[MainSearchBox.SearchResultDragKey] as DocumentController;
                 var docAlias = doc.GetViewCopy(where);
+                AddDocument(docAlias, null);
+            }
+            
+            // if the user drags a single document from the search bar
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                // the drag contains the view document which we just display the key value pane of
+                var doc = e.DataView.Properties["Operator Document"] as DocumentController;
+                var docAlias = doc.GetKeyValueAlias(where);
                 AddDocument(docAlias, null);
             }
 
@@ -596,21 +590,22 @@ namespace Dash
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
 
-            //var sourceIsRadialMenu = e.DataView.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey);
-            //if (sourceIsRadialMenu)
-            //{
-            //   e.DragUIOverride.Clear();
-            //    e.DragUIOverride.Caption = e.DataView.Properties.Title;
-            //    e.DragUIOverride.IsContentVisible = false;
-            //    e.DragUIOverride.IsGlyphVisible = false;
-            //} 
+            // accept move, then copy, and finally accept whatever they requested (for now)
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+            {
+                e.AcceptedOperation = DataPackageOperation.Move;
+            }
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }  else 
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation;
+            }
 
-            // accessing e.DataView generates a catastrophic exception if it hasn't been set in a StartDragging method.  
-            // This happens with the CollectionDBSchemaHeader.
+            // special case for schema view... should be removed
             if (CollectionDBSchemaHeader.DragModel != null)
                 e.AcceptedOperation = DataPackageOperation.Copy;
-            else 
-                e.AcceptedOperation = e.DataView.RequestedOperation;
             
             e.DragUIOverride.IsContentVisible = true;
 

@@ -11,12 +11,13 @@ namespace Dash
 {
     public class ObjectToStringConverter : SafeDataToXamlConverter<object, string>
     {
-        private Context _context;
+        private readonly Context _context;
 
         public ObjectToStringConverter(Context context)
         {
             _context = context;
         }
+
         public ObjectToStringConverter()
         {
             _context = null;
