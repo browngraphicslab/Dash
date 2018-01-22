@@ -100,45 +100,11 @@ namespace Dash
             var tb = new TextingBox(this);
             tb.Document.SetField(TextingBox.FontSizeKey, new NumberController(11), true);
             tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(1), true);
-            //tb.Document.SetField(KeyStore.HeightFieldKey, new NumberController(25), true); 
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(Double.NaN);
             tb.Document.SetWidth(Double.NaN);
             return tb.makeView(tb.Document, context);
-        }
-
-        /// <summary>
-        ///     Helper method for generating a table cell view in <see cref="GetTableCellView" /> for textboxes which may have to
-        ///     scroll
-        /// </summary>
-        /// <param name="bindTextOrSetOnce">
-        ///     A method which will create a binding on the passed in textbox, or set the text of the
-        ///     textbox to some initial value
-        /// </param>
-        protected FrameworkElement GetTableCellViewOfScrollableText(Action<TextBlock> bindTextOrSetOnce)
-        {
-            var textBlock = new TextBlock
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                TextAlignment = TextAlignment.Center,
-                TextWrapping = Windows.UI.Xaml.TextWrapping.NoWrap,
-                FontSize = 11
-            };
-            bindTextOrSetOnce(textBlock);
-
-
-            var scrollViewer = new ScrollViewer
-            {
-                HorizontalScrollMode = ScrollMode.Enabled,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollMode = ScrollMode.Disabled,
-                Content = textBlock
-            };
-
-            return scrollViewer;
         }
 
         public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder = false)

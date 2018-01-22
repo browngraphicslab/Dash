@@ -58,7 +58,7 @@ namespace Dash
                     }
                     return null;
                 });
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 300, collection.Where((c)=> c != null).ToList()).Document;
+                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: collection.Where((c)=> c != null).ToList()).Document;
                 
                 args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
             }
@@ -128,7 +128,7 @@ namespace Dash
                         Mode = BindingMode.TwoWay,
                         Document = ParentDocument,
                         Key = DBFilterOperatorController.AvgResultKey,
-                        Converter = new StringToDoubleConverter(),
+                        Converter = new DoubleToStringConverter(),
                         Context = new Context(ParentDocument)
                     });
                 }

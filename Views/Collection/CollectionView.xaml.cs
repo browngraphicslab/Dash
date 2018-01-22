@@ -37,8 +37,6 @@ namespace Dash
 
         public SelectionElement CurrentView { get; set; }
 
-        private OverlayMenu _collectionMenu;
-
         public CollectionViewModel ViewModel
         {
             get => DataContext as CollectionViewModel;
@@ -59,12 +57,6 @@ namespace Dash
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
-
-        /// <summary>
-        /// Used as the key to identify when a drag even has started on the preview button
-        /// </summary>
-        public static string CollectionPreviewDragKey = "CE1ACD38-FB99-4018-A9B5-0430C9089B14";
-
 
         public enum CollectionViewType
         {
@@ -136,12 +128,8 @@ namespace Dash
             CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
             ParentDocument.StyleCollection(this);
 
-            if (_collectionMenu == null)
-            {
-                MakeMenu();
+            UpdateContextMenu();
 
-                UpdateContextMenu();
-            }
 
             // set the top-level viewtype to be freeform by default
             if (ParentDocument == MainPage.Instance.MainDocView)
@@ -550,7 +538,6 @@ namespace Dash
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
-            _collectionMenu.GoToDocumentMenu();
 
             if (CurrentView is CollectionFreeformView)
             {
@@ -569,14 +556,12 @@ namespace Dash
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
             ViewModel.CanDragItems = true;
-            _collectionMenu.BackToCollectionMenu();
         }
 
         private void MakeSelectionModeNone()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             ViewModel.CanDragItems = false;
-            _collectionMenu.BackToCollectionMenu();
 
             if (CurrentView is CollectionFreeformView)
             {
@@ -596,55 +581,6 @@ namespace Dash
 
         public MenuButton ViewModes;
 
-        private void MakeMenu()
-        {
-            var collectionButtons = new List<MenuButton>
-            {
-                new MenuButton(Symbol.TouchPointer, "Select", MakeSelectionModeMultiple)
-                {
-                    RotateOnTap = true
-                },
-                //toggle grid/list/freeform view buttons 
-                (ViewModes = new MenuButton(
-                    new List<Symbol> { Symbol.ViewAll, Symbol.BrowsePhotos, Symbol.Folder, Symbol.Admin, Symbol.View},
-                    new List<Action> { SetGridView, SetBrowseView, SetDBView, SetSchemaView, SetFreeformView})),
-                new MenuButton(Symbol.Camera, "ScrCap", ScreenCap)
-
-
-            };
-
-            // Create preview button with special properties so the user can drag off of it
-            var previewButton = new MenuButton(Symbol.Preview, "Preview", null);
-            var previewButtonView = previewButton.View;
-            previewButtonView.CanDrag = true;
-            previewButton.ManipulationMode = ManipulationModes.All;
-            previewButton.ManipulationDelta += (s, e) => e.Handled = true;
-            previewButton.ManipulationStarted += (s, e) => e.Handled = true;
-            previewButtonView.DragStarting += (s, e) =>
-            {
-                e.Data.RequestedOperation = DataPackageOperation.Link;
-                e.Data.Properties.Add(CollectionPreviewDragKey, this);
-            };
-            previewButtonView.DropCompleted += PreviewButtonView_DropCompleted;
-            collectionButtons.Add(previewButton);
-
-            var documentButtons = new List<MenuButton>
-            {
-                new MenuButton(Symbol.Back, "Back", MakeSelectionModeNone)
-                {
-                    RotateOnTap = true
-                },
-                new MenuButton(Symbol.Edit, "Interface", null),
-                new MenuButton(Symbol.SelectAll, "All", SelectAllItems),
-                new MenuButton(Symbol.Delete, "Delete", DeleteSelection),
-            };
-
-
-            _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
-
-            // taking out the collection menu now that we have the context menu
-            _collectionMenu.Visibility = Visibility.Collapsed;
-        }
 
         private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
@@ -679,12 +615,6 @@ namespace Dash
             // if we're the lowest selected then open the menu
             if (isLowestSelected)
             {
-            }
-
-            // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && ParentDocument?.IsMainCollection == false)
-            {
-
             }
         }
 

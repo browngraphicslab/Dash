@@ -109,7 +109,7 @@ namespace Dash
                 Document = docController,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                Converter = new StringToDoubleConverter(1)
+                Converter = new DoubleToStringConverter(1)
             };
             xFontSizeTextBox.AddFieldBinding(TextBox.TextProperty, fontSizeBinding);
         }

@@ -41,7 +41,8 @@ namespace Dash
         {
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
-                DocumentController refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+                // we pass a view document, so we get the data document
+                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
@@ -56,6 +57,8 @@ namespace Dash
                     SuggestBox.Visibility = Visibility.Visible;
                     SuggestBox.Focus(FocusState.Programmatic);
                 }
+
+                e.Handled = true;
             }
         }
 

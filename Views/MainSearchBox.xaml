@@ -9,16 +9,37 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid CanDrag="True">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Border Background="Transparent"
+                DragStarting="XCollDragIcon_OnDragStarting"
+                CanDrag="True">
+            <TextBlock x:Name="xCollDragIcon" 
+                       FontFamily="{StaticResource FontAwesome}" 
+                       Foreground="{StaticResource TitleText}" 
+                       FontSize="15" 
+                       Text="{StaticResource CollectionIcon}" 
+                       HorizontalAlignment="Stretch"
+                       Height="32"
+            />
+        </Border>
+
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         TextChanged="AutoSuggestBox_TextChanged"
                         SuggestionChosen="AutoSuggestBox_SuggestionChosen"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
                         Name="xAutoSuggestBox"
-                        GotFocus="XAutoSuggestBox_OnGotFocus">
+                        GotFocus="XAutoSuggestBox_OnGotFocus"
+                        Grid.Column="1"
+                        Width="300"
+                        >
             <AutoSuggestBox.ItemTemplate>
+                
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <StackPanel Orientation="Vertical" Margin="10,10,10,15">
+                    <StackPanel Orientation="Vertical" Margin="10,10,10,15" DragStarting="SearchResult_OnDragStarting" CanDrag="True">
                         <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
                         <TextBlock Text="{Binding ContextualText}"></TextBlock>
                     </StackPanel>

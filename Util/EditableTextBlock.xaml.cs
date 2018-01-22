@@ -27,8 +27,8 @@ namespace Dash
 
         public string Text
         {
-            get { return GetValue(TextProperty)?.ToString(); }
-            set { SetValue(TextProperty, value); }
+            get => GetValue(TextProperty)?.ToString();
+            set => SetValue(TextProperty, value);
         }
 
         public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
@@ -36,8 +36,8 @@ namespace Dash
 
         public TextAlignment TextAlignment
         {
-            get { return (TextAlignment)GetValue(TextAlignmentProperty); }
-            set { SetValue(TextAlignmentProperty, value); }
+            get => (TextAlignment)GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
         }
 
         #endregion
@@ -54,15 +54,15 @@ namespace Dash
             }
         }
 
-        public Grid TextBackground {  get { return xBackground; } }
+        public Grid TextBackground => xBackground;
 
         private bool Not(bool b)
         {
             return b != true;
         }
 
-        public ReferenceController TargetFieldReference = null;
-        public Context TargetDocContext = null;
+        public FieldControllerBase TargetFieldController { get; set; }
+        public Context TargetDocContext { get; set; }
 
         public EditableTextBlock()
         {
@@ -111,7 +111,7 @@ namespace Dash
 
         private string GetExpression()
         {
-            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
+            return TargetFieldController?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
         }
 
         private void SetExpression(string expression)

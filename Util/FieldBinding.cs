@@ -53,7 +53,11 @@ namespace Dash
                 var field = Document.GetDereferencedField<T>(Key, context);
                 if (field != null)
                 {
-                    var converter = GetConverter != null ? GetConverter(field) : Converter;
+                    var converter = Converter;
+                    if (GetConverter != null)
+                    {
+                        converter = GetConverter(field);
+                    }
                     var fieldData = field.GetValue(context);
                     var xamlData = converter == null || fieldData == null
                         ? fieldData

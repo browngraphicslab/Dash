@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -16,6 +17,9 @@ namespace Dash
     {
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
+
+        public const string SearchResultDragKey = "Search Result";
+        public const string SearchCollectionDragKey = "Search Collection";
 
         public MainSearchBox()
         {
@@ -52,13 +56,7 @@ namespace Dash
                 return;
             }
 
-            //_tokenSource?.Cancel();
-            //Debug.WriteLine("Task canceled");
-            //_tokenSource = new CancellationTokenSource();
             var text = searchBox.Text.ToLower();
-            //Task.Factory.StartNew(async () =>
-            //{
-            //Search(sender, sender.Text.ToLower());
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
             var maxSearchResultSize = 75;
@@ -71,9 +69,6 @@ namespace Dash
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
-
-            //}, _tokenSource.Token);
-
         }
 
         /// <summary>
@@ -375,15 +370,15 @@ namespace Dash
         }
 
         /// <summary>
-        /// returns the current document controllers for the data documents of the search results
+        /// Gets the specified number of view documents for the current search
         /// </summary>
-        /// <param name="maxSearchResultSize"></param>
-        /// <param name="filterFunc"></param>
+        /// <param name="maxSearchResultSize">The maximum number of results to return</param>
+        /// <param name="filterFunc">A filtering function to filter the type of view models returned</param>
         /// <returns></returns>
-        public IEnumerable<DocumentController> GetDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
+        public IEnumerable<DocumentController> GetViewDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
         {
-            IEnumerable<SearchResultViewModel> vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
-            return vms.Select(i => i.ViewDocument.GetDataDocument());
+            var vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
+            return vms.Select(i => i.ViewDocument);
         }
 
         /// <summary>
@@ -392,81 +387,40 @@ namespace Dash
         /// <param name="maxSearchResultSize"></param>
         /// <param name="filterFunc"></param>
         /// <returns></returns>
-        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
+        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize, Func<SearchResultViewModel, bool> filterFunc = null)
         {
             var text = _currentSearch;
-            IEnumerable<SearchResultViewModel> vms = filterFunc == null ? SearchByParts(text) : SearchByParts(text).Where(filterFunc);
+            var vms = filterFunc == null ? SearchByParts(text) : SearchByParts(text).Where(filterFunc);
             return vms.Take(maxSearchResultSize);
         }
 
-        /*
         /// <summary>
-        /// the method in which we actually process the search and perform the db query
+        /// Called when we drag the entire search collection
         /// </summary>
-        /// <param name="searchString"></param>
-        /// <returns></returns>
-        private void Search(AutoSuggestBox sender, string searchString)
+        private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            for (var i = 0; i < 10; i++)
-            {
-                //results.Add(new SearchResultViewModel("Title" + i, "id " + i));
-            }
+            // get all the view docs for the search and set the key for the drag to a static const
+            args.Data.Properties[SearchCollectionDragKey] = GetViewDocumentsForCurrentSearch();
 
-            RESTClient.Instance.Fields.GetDocumentsByQuery(new SearchQuery(GetQueryFunc(searchString)),
-                async (RestRequestReturnArgs args) =>
-                {
-                    var results = new ObservableCollection<SearchResultViewModel>(args.ReturnedObjects.OfType<DocumentModel>().Select(DocumentToSearchResult));
-                    sender.ItemsSource = results;
-                }, null);
+            // set the allowed operations
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Copy;
+
         }
 
-        private SearchResultViewModel DocumentToSearchResult(DocumentModel doc)
+        /// <summary>
+        /// Called when we drag a single result from search
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            if (doc == null)
-            {
-                return null;
-            }
-            return new SearchResultViewModel((ContentController<FieldModel>.GetController<DocumentController>(doc.Id)?.GetField(KeyStore.TitleKey) as TextController)?.Data ?? "", doc.Id, doc.Id);
+            // get the sender's view docs and set the key for the drag to a static const
+            args.Data.Properties[SearchResultDragKey] = ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument;
+
+            // set the allowed operations
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Copy;
         }
-
-        private bool TextFieldContains(TextController field, string searchString)
-        {
-            if (field == null)
-            {
-                return false;
-            }
-            return field.Data.ToLower().Contains(searchString);
-        }
-
-
-        private bool KeyContains(KeyController key, string searchString)
-        {
-            if (key == null)
-            {
-                return false;
-            }
-            return key.Name.ToLower().Contains(searchString);
-        }
-
-        private bool SearchKeyFieldIdPair(KeyValuePair<string, string> keyFieldPair, string searchString)
-        {
-            return (ContentController<FieldModel>.GetController<FieldControllerBase>(keyFieldPair.Value).SearchForString(searchString)?.StringFound == true ||
-                ContentController<FieldModel>.GetController<FieldControllerBase>(keyFieldPair.Key).SearchForString(searchString)?.StringFound == true);
-        }
-
-        private Func<FieldModel, bool> GetQueryFunc(string searchString)
-        {
-            return(fieldModel) =>
-            {
-                if (!(fieldModel is DocumentModel))
-                {
-                    return false;
-                }
-                var doc = (DocumentModel) fieldModel;
-                //var docController = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
-                //return docController.
-                return doc.Fields.Any(i => SearchKeyFieldIdPair(i, searchString) != null);
-            };
-        }*/
     }
 }

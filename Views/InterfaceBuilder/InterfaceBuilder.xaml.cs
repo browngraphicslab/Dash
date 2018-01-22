@@ -72,7 +72,7 @@ namespace Dash
             var freeFormView = new SimpleCollectionViewModel(true);
             xDocumentPane.DataContext = freeFormView;
             freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
-            xKeyValuePane.SetDataContextToDocumentController(docController);
+            //xKeyValuePane.SetDataContextToDocumentController(docController); // TODO replace with just setting the DataContext to the docController with the fields you want to display
         }
         
         private void DocumentPaneOnDocumentViewLoaded(CollectionFreeformView collectionFreeformView, DocumentView documentView)
