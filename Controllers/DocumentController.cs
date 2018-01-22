@@ -514,13 +514,6 @@ namespace Dash
                         rtc.Data = new RichTextModel.RTD(textInput);
                     else return false;
                 }
-                else
-                {
-                    double num;
-                    if (double.TryParse(textInput, out num))
-                        SetField(key, new NumberController(num), true);
-                    else SetField(key, new TextController(textInput), true);
-                }
             }
             return true;
         }

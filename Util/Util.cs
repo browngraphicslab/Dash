@@ -500,40 +500,6 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-
-        /// <summary>
-        /// Converts a string to a field model controller
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static FieldControllerBase StringToFieldModelController(string expression)
-        {
-            // check for number field model controller
-            var num = IsNumeric(expression);
-            if (num.HasValue)
-                return new NumberController(num.Value);
-
-            string[] imageExtensions = {"jpg", "bmp", "gif", "png"}; //  etc
-
-            if (imageExtensions.Any(expression.EndsWith))
-                return new ImageController(new Uri(expression));
-            return new TextController(expression);
-        }
-
-
-        /// <summary>
-        ///     Returns the double represenation of the string if possible otherwise null
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static double? IsNumeric(string expression)
-        {
-            var isNum = double.TryParse(expression, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out double ret);
-            if (isNum)
-                return ret;
-            return null;
-        }
-
         public static DocumentController BlankDocWithPosition(Point pos)
         {
             return new Dash.BackgroundBox(pos.X, pos.Y, 200, 200).Document;

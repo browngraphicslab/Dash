@@ -173,6 +173,7 @@
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
     <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
+    <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\GroupManager.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />

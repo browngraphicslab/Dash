@@ -40,7 +40,6 @@
         <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
             <!--column values-->
             <ListView x:Name="xKeyValueListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                      IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick"
                       SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}"
                       Margin="0" ScrollViewer.IsVerticalRailEnabled="True">
 
@@ -119,11 +118,11 @@
                 <Grid HorizontalAlignment="Stretch" Width="270">
                     <StackPanel>
                         <Button Height="35" Margin="0,10,0,5" Background="SteelBlue" Foreground="White"
-                                HorizontalAlignment="Stretch" x:Name="xAddButton" Tapped="AddButton_Tapped" KeyUp="XAddButton_OnKeyUp">
+                                HorizontalAlignment="Stretch" x:Name="xAddButton" Tapped="AddField_Tapped" KeyUp="XAddButton_OnKeyUp">
                             ADD
                         </Button>
                         <Button Height="35" Margin="0,5,0,20" Background="SteelBlue" Foreground="White"
-                                HorizontalAlignment="Stretch" x:Name="xCancelButton" Tapped="CreateFieldPaneClose" KeyUp="XAddButton_OnKeyUp">
+                                HorizontalAlignment="Stretch" x:Name="xCancelButton" Tapped="CancelField_Tapped" KeyUp="XAddButton_OnKeyUp">
                             CANCEL
                         </Button>
                     </StackPanel>

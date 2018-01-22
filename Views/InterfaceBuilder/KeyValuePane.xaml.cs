@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -21,10 +22,18 @@ namespace Dash
     {
         public static readonly string DragPropertyKey = "key_value_pane_drag_key 1893741";
 
-        private bool _addKVPaneOpen = true;
+        private bool _addKVPaneOpen = true;   
+
+        /// <summary>
+        /// True if we are editing the key of the selected key value
+        /// </summary>
         private bool _editKey;
 
+        /// <summary>
+        /// The key value which we are currently editing
+        /// </summary>
         private KeyFieldContainer _selectedKV;
+
         private TextBox _tb;
 
         /// <summary>
@@ -138,7 +147,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void AddButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void AddField_Tapped(object sender, TappedRoutedEventArgs e)
         {
             AddKeyValuePair();
         }
@@ -238,7 +247,7 @@ namespace Dash
             xNewKeyField.Text = "";
             xNewValueField.Text = "";
             xTypeComboBox.SelectedIndex = 0;
-            ToggleAddKVPane();
+            ToggleAddKVPane(false);
             xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
 
@@ -248,10 +257,9 @@ namespace Dash
         /// <summary>
         ///     Toggles the bottom pane UI for adding new key-value pairs
         /// </summary>
-        private void ToggleAddKVPane()
+        private void ToggleAddKVPane(bool showAddMenu)
         {
-            _addKVPaneOpen = !_addKVPaneOpen;
-            if (_addKVPaneOpen)
+            if (!showAddMenu)
             {
                 xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -309,7 +317,7 @@ namespace Dash
                 return;
             }
 
-            // check to see if we're editing a key or a value
+            // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
             var posInKvPane = e.GetPosition(xOuterGrid);
             var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
             if (columnDefinitions == null)
@@ -318,73 +326,81 @@ namespace Dash
             }
             var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
             var keyColumnWidth = columnDefinitions[1].ActualWidth;
-            // make sure you can only edit the key or values; don't edit the type 
             if (posInKvPane.X > checkboxColumnWidth && posInKvPane.X < keyColumnWidth)
                 _editKey = true;
             else
                 _editKey = false;
 
-            //get position of mouse in screenspace 
-            var p = Util.PointTransformFromVisual(posInKvPane, xOuterGrid.GetFirstAncestorOfType<Grid>());
 
-            _tb = new TextBox();
+            // set the selectedKV pair, a bunch of textbox methods rely on this field being set
+            _selectedKV = (sender as FrameworkElement)?.DataContext as KeyFieldContainer;
+            if (_selectedKV == null) return;
 
-            _tb.MaxHeight = _tb.MaxWidth = 500;
-            var srcText = "";
-            if (_editKey)
+            // set the text for the textbox to the key name, or the field converted to a string
+            var srcText = _editKey ? _selectedKV.Key.Name : FieldConversion.ConvertFieldToString(_selectedKV.Controller.FieldModelController);
+            _tb = new TextBox
             {
-                //TODO srcText to the key
-            }
-            else
-            {
-                //TODO srcText to the value
-            }
-            _tb.AcceptsReturn = !srcText.Contains("\r"); // TODO make this a better heuristic
+                MaxHeight = 500,
+                MaxWidth = 500,
+                Text = srcText,
+                AcceptsReturn = false //!srcText.Contains("\r") // TODO make this a better heuristic
+            };
+            
             _tb.KeyDown += _tb_KeyDown;
+            _tb.LostFocus += _tb_LostFocus;
 
-            //add textbox graphically and set up events 
+            //add textbox graphically
+            var p = Util.PointTransformFromVisual(posInKvPane, xOuterGrid.GetFirstAncestorOfType<Grid>());
             Canvas.SetLeft(_tb, p.X);
             Canvas.SetTop(_tb, p.Y);
             MainPage.Instance.xCanvas.Children.Add(_tb);
+
+            
+            _tb.Focus(FocusState.Programmatic);
+
+        }
+
+        private void _tb_LostFocus(object sender, RoutedEventArgs e)
+        {
+            RemoveEditingTextBox();
         }
 
         private void _tb_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Enter && Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            var shiftState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var enterState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Enter).HasFlag(CoreVirtualKeyStates.Down);
+
+            Debug.WriteLine($"{enterState}, {shiftState}");
+            if (enterState && shiftState)
             {
                 var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
                     _selectedKV.Key, new Context(_dataContextDocument));
-                _dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
+                FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
+                //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
                 RemoveEditingTextBox();
             }
         }
 
-
         private void RemoveEditingTextBox()
         {
+            _tb.LostFocus -= _tb_LostFocus;
             _tb.KeyDown -= _tb_KeyDown;
+            _selectedKV = null;
+            _editKey = false;
             MainPage.Instance.xCanvas.Children.Remove(_tb);
             _tb = null;
         }
 
-        /// <summary>
-        ///     Identifies the row that is being modified currently
-        /// </summary>
-        private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            _selectedKV = e.ClickedItem as KeyFieldContainer;
-        }
-
         private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
         {
-            ToggleAddKVPane();
+            ToggleAddKVPane(true);
             // focus on the combo box by defalt
             xTypeComboBox.Focus(FocusState.Programmatic);
         }
 
-        private void CreateFieldPaneClose(object sender, TappedRoutedEventArgs e)
+        private void CancelField_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ToggleAddKVPane();
+            ToggleAddKVPane(false);
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)

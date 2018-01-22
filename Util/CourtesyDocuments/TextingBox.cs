@@ -121,35 +121,10 @@ namespace Dash
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                GetConverter = GetFieldtoStringConverter,
+                GetConverter = FieldConversion.GetFieldtoStringConverter,
                 FallbackValue = "<null>"
             };
             element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-        }
-
-        public static IValueConverter GetFieldtoStringConverter(FieldControllerBase controller)
-        {
-            if (controller is DocumentController)
-            {
-                return new DocumentControllerToStringConverter();
-            }
-            else if (controller is ListController<DocumentController>)
-            {
-                return new DocumentCollectionToStringConverter();
-            }
-
-            else if (controller is NumberController)
-            {
-                return new DoubleToStringConverter();
-            } else if (controller is PointController)
-            {
-                return new PointToStringConverter();
-            } else if (controller is ImageController)
-            {
-                return new UriToStringConverter();
-            }
-
-            return new ObjectToStringConverter(null);
         }
 
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)

@@ -10,7 +10,7 @@ namespace Dash
     /// </summary>
     /// <typeparam name="TData">The data type which is going to be converted into xaml</typeparam>
     /// <typeparam name="TXaml">The xaml type which is going to be converted into data</typeparam>
-    public abstract class SafeDataToXamlConverter<TData, TXaml> : IValueConverter 
+    public abstract class SafeDataToXamlConverter<TData, TXaml> : IValueConverter
     {
         /// <summary>
         ///     A method which is called by XAML and binding. You should use <see cref="ConvertDataToXaml" /> instead
