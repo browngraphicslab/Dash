@@ -451,7 +451,7 @@ namespace Dash
             _processManipulation = true;
 
             _numberOfTimesDirChanged = 0;
-            if (e != null && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
+            if (e != null) // && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
         }
 

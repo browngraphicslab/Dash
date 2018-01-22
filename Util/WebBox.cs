@@ -118,6 +118,7 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
                 Name = "overgrid"
+                ,IsHitTestVisible = false
             };
             grid.Children.Add(overgrid);
             web.Tag = new Tuple<Point,Point>(new Point(), new Point()); // hack for allowing web page to be dragged with right mouse button
@@ -235,7 +236,13 @@ namespace Dash
             if (parent == null)
                 return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-            if (e.Value == "2") // right mouse button == 2
+
+            if (e.Value == "0")
+            {
+                var docView = web.GetFirstAncestorOfType<DocumentView>();
+                docView?.ToFront();
+                web.Tag = new Tuple<Point, Point>(pointerPosition, new Point());
+            } else if (e.Value == "2") // right mouse button == 2
             {
                 var docView = web.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
@@ -251,7 +258,8 @@ namespace Dash
                 web.Tag = new Tuple<Point, Point>(new Point(), new Point());
                 if (Math.Sqrt((pointerPosition.X - down.X) * (pointerPosition.X - down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
                 {
-                    parent.RightTap();
+                    if (offset != new Point())
+                        parent.RightTap();
                     parent.OnTapped(null, null);
                 }
                 else
