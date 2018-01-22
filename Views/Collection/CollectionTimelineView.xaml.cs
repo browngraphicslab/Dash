@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI;
+using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -62,18 +63,32 @@ namespace Dash
 
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
 
+        public double CurrentXPosition { get; set; }
+
+        public List<double> DisplayedXPositions { get; private set; }
+
 
         public CollectionTimelineView()
         {
             this.InitializeComponent();
             _contextList = new ObservableCollection<TimelineElementViewModel>();
             DataContextChanged += OnDataContextChanged;
+
             Unloaded += CollectionTimelineView_Unloaded;
 
             Metadata = new TimelineMetadata
             {
                 LeftRightMargin = 160
             };
+
+            DisplayedXPositions = new List<double>();
+
+            Loaded += CollectionTimelineView_Loaded;
+        }
+
+        private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
+        {
+            CollectionTimelineView_OnSizeChanged(null, null);
         }
 
         public TimelineMetadata Metadata { get; }
@@ -100,12 +115,29 @@ namespace Dash
 
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            TimelineElement.LastX = 0;
-            TimelineElement.LastY = 0;
+            DisplayedXPositions = new List<double>();
+            SetTimelineFormatting();
+        }
 
+        private void SetTimelineFormatting()
+        {
+            xScrollViewer.Width = ActualWidth;
+            xScrollViewer.Height = ActualHeight - 80;
+            Canvas.SetTop(xItemsControl, 17 - ActualHeight / 2);
+
+            CurrentXPosition = 0;
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
             MetadataUpdated?.Invoke();
+
+            SetTimelineWidth(CurrentXPosition + 100);
+        }
+
+        private void SetTimelineWidth(double width)
+        {
+            xHorizontalLine.Width = width;
+            Canvas.SetLeft(xVerticalLineRight, width + 80);
+            xScrollViewCanvas.Width = width + 130;
         }
 
         #region ContextManagement
@@ -113,9 +145,7 @@ namespace Dash
         private void CollectionTimelineView_Unloaded(object sender, RoutedEventArgs e)
         {
             RemoveViewModelEvents(ViewModel);
-            TimelineElement.LastX = 0;
-            TimelineElement.LastY = 0;
-            TimelineElement.LastDisplayedPosition = 0;
+            CurrentXPosition = 0;
             Unloaded -= CollectionTimelineView_Unloaded;
         }
 

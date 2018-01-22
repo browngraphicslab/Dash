@@ -16,31 +16,43 @@
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
         </Grid.Resources>
+        
+        
         <!--background lines-->
-        <Rectangle x:Name="xHorizontalLine" Height="3" Fill="{StaticResource timelineBrush}" Margin="80, 0"></Rectangle>
-        <Rectangle x:Name="xVerticalLineLeft" Height="35" Width="3"  Fill="{StaticResource timelineBrush}" HorizontalAlignment="Left" Margin="80, 0"></Rectangle>
-        <Rectangle x:Name="xVerticalLineRight" Height="35" Width="3" Fill="{StaticResource timelineBrush}" HorizontalAlignment="Right" Margin="80, 0"></Rectangle>
-        <ItemsControl x:Name="xItemsControl"
+        <ScrollViewer Name="xScrollViewer" Width="1500" Margin="0,78,0,0" HorizontalAlignment="Left"  Height="910" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+            <Grid Margin="0,-250,0,0">
+                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80" Width="1800" Height="80">
+                    <Grid Name="xRectangleGrid">
+                        <Rectangle x:Name="xHorizontalLine" Height="3" Fill="Gray" Width="1300" Canvas.Left="80"></Rectangle>
+                        <Rectangle x:Name="xVerticalLineLeft" Height="35" Width="3" Canvas.Left="80" Canvas.Top="-15"  Fill="Gray" VerticalAlignment="Center" HorizontalAlignment="Left"></Rectangle>
+                        <Rectangle x:Name="xVerticalLineRight" Height="35" Width="3" Canvas.Left="1380" Canvas.Top="-15" Fill="Gray" HorizontalAlignment="Right"></Rectangle>
+                    </Grid>
+                    <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{x:Bind _contextList}"   
-                      IsHitTestVisible="{Binding IsSelected}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas x:Name="xCollectionCanvas"
+                      IsHitTestVisible="{Binding IsSelected}" Canvas.Top="20">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas x:Name="xCollectionCanvas"
                             x:FieldModifier="public"
                             Background="Transparent"
                             VerticalAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                     >
-                    </Canvas>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <local:TimelineElement></local:TimelineElement>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                                </Canvas>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:TimelineElement></local:TimelineElement>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Canvas>
+                
+            </Grid>
+            
+        </ScrollViewer>
 
     </Grid>
 </local:SelectionElement>
