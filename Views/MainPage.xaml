@@ -40,7 +40,6 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
@@ -58,5 +57,6 @@
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>
         </Canvas>
+        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"/>
     </Grid>
 </Page>
