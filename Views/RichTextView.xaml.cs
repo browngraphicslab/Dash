@@ -245,11 +245,15 @@ namespace Dash
                 if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                 {
                     var pt = point;
-                    pt.X -= 150;
-                    pt.Y -= 50;
+                    pt.X += 150;
+                    pt.Y += 50;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
                         theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                    MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
+                    var collection = this.GetFirstAncestorOfType<CollectionView>();
+                    if (collection != null)
+                    {
+                        Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                    }
                 }
                 else if (target.StartsWith("http"))
                 {
@@ -259,7 +263,11 @@ namespace Dash
                         var pt = point;
                         pt.X -= 150;
                         pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                        var collection = this.GetFirstAncestorOfType<CollectionView>();
+                        if (collection != null)
+                        {
+                            Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                        }
                     }
                     else
                     {
@@ -350,6 +358,10 @@ namespace Dash
             {
                 var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
                 theDoc = docCtrls.First();
+            }
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                theDoc = e.DataView.Properties["Operator Document"] as DocumentController;
             }
             var forceLocal = true;
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
