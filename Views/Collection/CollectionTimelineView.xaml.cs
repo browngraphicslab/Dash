@@ -85,8 +85,11 @@ namespace Dash
         {
             try
             {
+                
+                
                 Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
                 Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
+                
                 MetadataUpdated?.Invoke();
             }
             catch (Exception e)
@@ -97,6 +100,9 @@ namespace Dash
 
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            TimelineElement.LastX = 0;
+            TimelineElement.LastY = 0;
+
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
             MetadataUpdated?.Invoke();
