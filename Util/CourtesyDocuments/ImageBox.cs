@@ -96,7 +96,7 @@ namespace Dash
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Context = context,
                 Converter = UriToBitmapImageConverter.Instance
             };
