@@ -38,17 +38,19 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
-            if (data is TextController)
-            {
-                return TextingBox.MakeView(documentController, context);
-            }
-            else if (data is ImageController)
+
+
+            if (data is ImageController)
             {
                 return ImageBox.MakeView(documentController, context);
             }
             else if (data is ListController<DocumentController>)
             {
                 return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+            }
+            else
+            {
+                return TextingBox.MakeView(documentController, context);
             }
             return new Grid();
         }

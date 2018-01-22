@@ -59,7 +59,7 @@ namespace Dash
                     var decoder = await BitmapDecoder.CreateAsync(stream);
                     Debug.Assert(ocrEngine != null, "ocrEngine should never be null but if it is we need to cleanly fail");
                     var result = await ocrEngine.RecognizeAsync(await decoder.GetSoftwareBitmapAsync());
-                    outputText += $"{result.Text}\n ";
+                    outputText += $"{result.Text}\n";
                 }
             }
 

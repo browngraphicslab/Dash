@@ -96,6 +96,7 @@ namespace Dash
             }
         }
 
+        // TODO remove this
         public static FieldControllerBase StringToFieldModelController(string data)
         {
             // check for number field model controller
