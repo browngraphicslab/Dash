@@ -83,6 +83,7 @@ namespace Dash
             LocalContextVisible = true;
         }
 
+        public static double LastDisplayedPosition= 0;
 
         private double _minGap = 30;
         private double _maxGap = 300;
