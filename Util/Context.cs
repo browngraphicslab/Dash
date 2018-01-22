@@ -104,6 +104,8 @@ namespace Dash
 
         public void AddDocumentContext(DocumentController document)
         {
+            var proto = document.GetAllPrototypes().First();
+            DocContextList.RemoveWhere(dc => dc.IsDelegateOf(proto.Id) && !dc.IsDelegateOf(document.Id));
             _documentContextList.Add(document);
         }
 
