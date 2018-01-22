@@ -509,7 +509,7 @@ namespace Dash
                         .CoreWindow.GetForCurrentThread().PointerPosition);
                 _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
                 this.CapturePointer(e.Pointer);
-                parent.ManipulationControls.ElementOnManipulationStarted(null, null);
+                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
 
             }
@@ -524,6 +524,8 @@ namespace Dash
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var parent = this.GetFirstAncestorOfType<DocumentView>();
+            if (parent.ManipulationControls == null)
+                return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             _rightDragLastPosition = pointerPosition;
@@ -554,7 +556,7 @@ namespace Dash
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
                 else
-                    parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
+                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
                 var dvm = parent.ViewModel;
                 parent.DocumentView_PointerExited(null, null);
                 parent.DocumentView_ManipulationCompleted(null, null);

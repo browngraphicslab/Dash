@@ -249,23 +249,25 @@ namespace Dash
                 docView?.ToFront();
                 //var rt = parent.RenderTransform.TransformPoint(new Point());
                 var rt = new Point();
-                web.Tag = new Tuple<Point,bool, Point>( pointerPosition, true, pointerPosition);
-                parent.ManipulationControls.ElementOnManipulationStarted(null, null);
+                web.Tag = new Tuple<Point, bool, Point>(pointerPosition, true, pointerPosition);
+                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
                 parent.DocumentView_PointerEntered(null, null);
             }
             else if (e.Value == "move" && right)
             {
-               // parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X-offset.X, Y = pointerPosition.Y-offset.Y };
                 var translation = new Point(pointerPosition.X - last.X, pointerPosition.Y - last.Y);
                 last = pointerPosition;
-                parent.ManipulationControls.TranslateAndScale(new
-                    ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                        translation,
-                        1.0f), parent.ManipulationControls._grouping);
+                if (parent.ManipulationControls != null)
+                {
+                    parent.ManipulationControls.TranslateAndScale(new
+                        ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
+                            translation,
+                            1.0f), parent.ManipulationControls._grouping);
 
-                //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-                if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                    parent.ManipulationControls.Snap(true);
+                    //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
+                    if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
+                        parent.ManipulationControls.Snap(true);
+                }
                 web.Tag = new Tuple<Point, bool, Point>(down, right, last);
             }
             else if (e.Value == "move")
@@ -284,7 +286,7 @@ namespace Dash
                 else
                 {
                     parent.OnTapped(null, null);
-                    parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
+                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
                 }
 
                 parent.DocumentView_PointerExited(null, null);

@@ -1400,9 +1400,9 @@ namespace Dash
                 previewTextbox.Visibility = Visibility.Collapsed;
                 previewTextbox.Visibility = Visibility.Visible;
                 previewTextbox.Text = string.Empty;
-                previewTextbox.Focus(FocusState.Programmatic);
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
                 previewTextbox.LostFocus += PreviewTextbox_LostFocus;
+                previewTextbox.Focus(FocusState.Pointer);
             }
         }
 
