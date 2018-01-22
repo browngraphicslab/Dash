@@ -12,24 +12,25 @@ namespace Dash
 {
     public class Context
     {
-        private readonly HashSet<DocumentController> _documentContextList;
+        private readonly LinkedList<DocumentController> _documentContextList;
 
         private readonly Dictionary<FieldReference, FieldControllerBase> _data;
 
-        public HashSet<DocumentController> DocContextList => _documentContextList;
+        public LinkedList<DocumentController> DocContextList => _documentContextList;
 
         /// <summary>
         /// Create a new context with no initial values
         /// </summary>
         public Context()
         {
-            _documentContextList = new HashSet<DocumentController>();
+            _documentContextList = new LinkedList<DocumentController>();
             _data = new Dictionary<FieldReference, FieldControllerBase>();
         }
 
         public Context(DocumentController initialContext)
         {
-            _documentContextList = new HashSet<DocumentController>{initialContext};
+            _documentContextList = new LinkedList<DocumentController>();
+            _documentContextList.AddLast(initialContext);
             _data = new Dictionary<FieldReference, FieldControllerBase>();
         }
 
@@ -37,12 +38,12 @@ namespace Dash
         {
             if (copyFrom == null)
             {
-                _documentContextList = new HashSet<DocumentController>();
+                _documentContextList = new LinkedList<DocumentController>();
                 _data = new Dictionary<FieldReference, FieldControllerBase>();
             }
             else
             {
-                _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
+                _documentContextList = new LinkedList<DocumentController>(copyFrom._documentContextList);
                 _data = new Dictionary<FieldReference, FieldControllerBase>(copyFrom._data);
             }
         }
@@ -69,7 +70,7 @@ namespace Dash
         /// </summary>
         /// <param name="docSet"></param>
         /// <returns></returns>
-        public bool IsCompatibleWith(HashSet<DocumentController> docSet)
+        public bool IsCompatibleWith(LinkedList<DocumentController> docSet)
         {
             var docSetList = new List<DocumentController>(docSet);
             for (int i = 0; i < docSetList.Count; i++)
@@ -104,9 +105,7 @@ namespace Dash
 
         public void AddDocumentContext(DocumentController document)
         {
-            var proto = document.GetAllPrototypes().First();
-            DocContextList.RemoveWhere(dc => dc.IsDelegateOf(proto.Id) && !dc.IsDelegateOf(document.Id));
-            _documentContextList.Add(document);
+            _documentContextList.AddFirst(document);
         }
 
         //public void AddData(ReferenceFieldModelController reference, FieldControllerBase data)
