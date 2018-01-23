@@ -69,11 +69,13 @@ namespace Dash
                 var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
                 if (e.DataView.Properties.ContainsKey("Operator Key")) //There is a specified key, so check if it's the right type
                 {
+                    // the key we're dragging from
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
                     var el = sender as FrameworkElement;
+                    // the key we're dropping on
                     var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                    var fieldType = refDoc.GetDereferencedField(refKey, null).TypeInfo;
+                    var fieldType = new DocumentReferenceController(refDoc.Id, refKey).DereferenceToRoot(null).TypeInfo;
                     var inputType = opField.Inputs[key].Type;
                     e.AcceptedOperation = inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
