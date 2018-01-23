@@ -247,7 +247,7 @@ namespace Dash
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
                     {
-                        var temp = mainList;
+                        var temp = mainList; //if there is no criteria, swap the order of lists so that this is the primary vm provider
                         mainList = searchResult;
                         searchResult = temp;
                     }
@@ -268,7 +268,7 @@ namespace Dash
                         }
                     }
                 }
-                return mainList ?? new List<SearchResultViewModel>();
+                return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
             }
 
             /// <summary>
@@ -292,7 +292,23 @@ namespace Dash
 
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
-                return null;
+                var tree = DocumentTree.MainPageTree;
+                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null);
+                var map = new Dictionary<DocumentNode, SearchResultViewModel>();
+                foreach (var vm in localSearch)
+                {
+                    foreach(var peer in tree[vm.ViewDocument.Id].GroupPeers)
+                    {
+                        map[peer] = vm;
+                    }
+                }
+
+                return localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));
+            }
+
+            private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)
+            {
+                return CreateSearchResult(tree,node.DataDocument, "Found near: "+foundVm.Title, node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data);
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
