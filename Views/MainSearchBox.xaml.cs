@@ -271,7 +271,14 @@ namespace Dash
 
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
-                return null;
+                var tree = DocumentTree.MainPageTree;
+                var localSearch = LocalSearch(criteria.SearchText);
+                return localSearch.Where(vm => tree[vm?.ViewDocument?.Id] != null).SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree));
+            }
+
+            private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree)
+            {
+                return CreateSearchResult(tree,node.DataDocument, "Found near: "+criteria.SearchText, node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data);
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)

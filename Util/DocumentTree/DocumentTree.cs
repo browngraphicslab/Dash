@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,8 +37,9 @@ namespace Dash
 
         public DocumentNode this[string id]
         {
-            get { return _controllerIdMap.ContainsKey(id) ? _controllerIdMap[id] : null; }
+            get { return  id != null && _controllerIdMap.ContainsKey(id) ? _controllerIdMap[id] : null; }
         }
+
 
         private void MakeControllerIdMap()
         {
@@ -51,7 +53,7 @@ namespace Dash
 
         private DocumentNode CreateNode(DocumentController document)
         {
-            var node = new DocumentNode(document);
+            var node = new DocumentNode(document, this);
             if (_nodes.ContainsKey(node.Id))
             {
                 return _nodes[node.Id];
@@ -69,15 +71,42 @@ namespace Dash
             _parsed.Add(node);
             var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
             //childDocuments.AddRange(node.ViewDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null) ?? new List<DocumentController>());
-            var childNodes = new List<DocumentNode>(childDocuments.Count);
+
+            var childPossibleGroups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
+            var childGroups = childPossibleGroups.Where(doc => doc.GetDataDocument().GetField(KeyStore.GroupingKey) != null); //treats individuals NOT as groups of size 1
+
+            var childNodes = new Dictionary<string,DocumentNode>(childDocuments.Count);
+
+            //create document nodes and add child-parent relationships
             foreach (var childDoc in childDocuments)
             {
                 var childNode = CreateNode(childDoc);
                 node.AddChild(childNode);
-                childNodes.Add(childNode);
+                childNodes.Add(childDoc.Id, childNode);
             }
-            childNodes = childNodes.Where(i => !_parsed.Contains(i)).ToList();
-            foreach (var childNode in childNodes)
+
+            //create groups
+            foreach (var group in childGroups)
+            {
+                var groupData = group.GetDataDocument();
+                var groupNode = CreateNode(groupData);
+                foreach(var groupChild in groupData.GetField<ListController<DocumentController>>(KeyStore.GroupingKey).TypedData)
+                {
+                    if (childNodes.ContainsKey(groupChild.Id))
+                    {
+                        childNodes[groupChild.Id].AddParentGroup(groupNode);
+                    }
+                    if (childNodes.ContainsKey(groupChild.GetDataDocument().Id))
+                    {
+                        childNodes[groupChild.GetDataDocument().Id].AddParentGroup(groupNode);
+                    }
+                }
+            }
+
+
+            //recuresively parse
+            var toParse = childNodes.Values.Where(i => !_parsed.Contains(i)).ToList();
+            foreach (var childNode in toParse)
             {
                 Parse(childNode);
             }
