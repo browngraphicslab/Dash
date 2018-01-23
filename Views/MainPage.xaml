@@ -43,7 +43,7 @@
         <local:DocumentView x:Name="xMainDocView" Grid.Column="1" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
-                <local:MainSearchBox x:Name="xMainSearchBox" Width="300"></local:MainSearchBox>
+                <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
             </Grid>
             <Button Name="xSearchButton" Tapped="xSearchButton_Tapped">
                 <TextBlock x:Name="xTextBlock" Text="&#xE721;" FontFamily="Segoe MDL2 Assets">

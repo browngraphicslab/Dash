@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {
@@ -84,6 +85,16 @@ namespace Dash
 
             return GetId().GetHashCode();
 
+        }
+
+        static public KeyController LookupKeyByName(string name)
+        {
+            foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
+            {
+                if (k.Name == name)
+                    return k;
+            }
+            return null;
         }
 
         public override FieldModelController<KeyModel> Copy()

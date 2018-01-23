@@ -1,4 +1,5 @@
 ﻿using Dash.Converters;
+using DashShared.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -59,6 +61,11 @@ namespace Dash
                     args.Handled = args.Cancel = true;
                 }
             }
+            else if (args.FocusState == FocusState.Keyboard)
+            {
+                //if (this.GetDescendantsOfType<RichEditBox>().Contains(args.OldFocusedElement))
+                    args.Handled = args.Cancel = true;
+            }
         }
 
         private void CollectionPageView_GotFocus(object sender, RoutedEventArgs e)
@@ -92,30 +99,74 @@ namespace Dash
         }
 
         KeyController CaptionKey = null;
-        public void SetHackText(KeyController key)
+        KeyController DisplayKey = null;
+        string DisplayString = "";
+        public void SetHackText(KeyController newKey, string keyasgn)
         {
-            CaptionKey = key;
-            xDocContainer.Children.Remove(xDocTitle);
-            xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 0, Visibility = xDocTitle.Visibility };
-            Grid.SetRow(xDocTitle, 1);
-            xDocContainer.Children.Add(xDocTitle);
-            if (key != null)
+            if (CaptionKey == null)
+                SetHackText(newKey, null,  keyasgn);
+            else SetHackText(CaptionKey, newKey, keyasgn);
+        }
+        public void SetHackText(KeyController captionKey, KeyController documentKey, string keyasgn)
+        {
+            if (captionKey != null)
             {
-                var captionBinding = new FieldBinding<FieldControllerBase>()
+                CaptionKey = captionKey;
+                xDocContainer.Children.Remove(xDocTitle);
+                xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 0, Visibility = xDocTitle.Visibility };
+                Grid.SetRow(xDocTitle, 1);
+                xDocContainer.Children.Add(xDocTitle);
+                if (captionKey != null)
                 {
-                    Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
-                    Key = CaptionKey,
-                    Converter = new ObjectToStringConverter()
-                };
-                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
-                xDocTitle.Height = 30;
-                xDocCaptionRow.Height = new GridLength(30);
+                    var captionBinding = new FieldBinding<FieldControllerBase>()
+                    {
+                        Mode = BindingMode.TwoWay,
+                        Document = CurPage.DocumentController.GetDataDocument(null),
+                        Key = CaptionKey,
+                        Converter = new ObjectToStringConverter()
+                    };
+                    xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                    xDocTitle.Height = 30;
+                    xDocCaptionRow.Height = new GridLength(30);
+                }
+                else
+                {
+                    xDocTitle.Height = 0;
+                    xDocCaptionRow.Height = new GridLength(0);
+                }
             }
-            else
+            if (documentKey != null)
             {
-                xDocTitle.Height = 0;
-                xDocCaptionRow.Height = new GridLength(0);
+                DisplayString = keyasgn;
+                DisplayKey = documentKey;
+                var data = CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey);
+                if (data == null && !string.IsNullOrEmpty(DisplayString))
+                {
+                    var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
+                    var replacedString = DisplayString;
+                    foreach (var keyToReplace in keysToReplace)
+                    {
+                        var k = KeyController.LookupKeyByName(keyToReplace.ToString().Substring(1));
+                        if (k != null) { 
+                            var value = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<TextController>(k, null)?.Data;
+                            if (value != null)
+                                replacedString = replacedString.Replace(keyToReplace.ToString(), value);
+                        }
+                    }
+                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString)?.GetViewCopy(new Point());
+                    if (img != null)
+                    {
+                        img.GetWidthField().NumberFieldModel.Data = double.NaN;
+                        img.GetHeightField().NumberFieldModel.Data = double.NaN;
+                    }
+                    data = img;
+                }
+                if (data != null)
+                {
+                    CurPage.DocumentController.GetDataDocument(null).SetField(DisplayKey, data, true);
+                    var db = new DataBox(CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
+                    xDocView.DataContext = new DocumentViewModel(db.Document);
+                }
             }
         }
 
@@ -148,7 +199,7 @@ namespace Dash
                 xPageNumContainer.Children.Add(xPageNum);
                 xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
 
-                SetHackText(CaptionKey);
+                SetHackText(CaptionKey, DisplayKey, DisplayString);
 
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)

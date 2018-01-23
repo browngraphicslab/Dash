@@ -71,6 +71,23 @@ namespace Dash
             }
         }
 
+
+        public DocumentController SearchForFirstMatchingDocument(string text)
+        {
+            var maxSearchResultSize = 75;
+
+            var vms = SearchByParts(text.ToLower());
+
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                return searchResultViewModel.ViewDocument;
+            }
+            return null;
+
+        }
+
         /// <summary>
         /// returns a list of result view models based upon a textual search that looks at all the parts of the input text
         /// </summary>
