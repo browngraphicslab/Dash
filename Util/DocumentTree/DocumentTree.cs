@@ -27,13 +27,7 @@ namespace Dash
         /// <summary>
         /// returns a new instance of DocumentTree with the main page as the start of the parse
         /// </summary>
-        public static DocumentTree MainPageTree
-        {
-            get
-            {
-                return new DocumentTree(MainPage.Instance.MainDocument);
-            }
-        }
+        public static DocumentTree MainPageTree => new DocumentTree(MainPage.Instance.MainDocument);
 
         public DocumentNode this[string id]
         {
@@ -81,6 +75,7 @@ namespace Dash
             foreach (var childDoc in childDocuments)
             {
                 var childNode = CreateNode(childDoc);
+                Debug.Assert(childNode != null);
                 node.AddChild(childNode);
                 childNodes.Add(childDoc.Id, childNode);
             }

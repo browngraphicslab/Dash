@@ -577,8 +577,7 @@ namespace Dash
                 if (e.DataView.Properties.ContainsKey("Operator Key")) 
                 {
                     var refKey = (KeyController) e.DataView.Properties["Operator Key"];
-                    var field = new DocumentFieldReference(refDoc.Id, refKey).DereferenceToRoot(null);
-                    var doc = new DataBox(field, where.X, where.Y).Document;
+                    var doc = new DataBox(new DocumentReferenceController(refDoc.Id, refKey), where.X, where.Y).Document;
                     AddDocument(doc, null);
                 }
                 else

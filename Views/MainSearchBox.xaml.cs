@@ -201,12 +201,22 @@ namespace Dash
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts,
                 DocumentController collectionDocument)
             {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
                 return SearchOverCollection(string.Join(' ', searchParts), collectionDocument);
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null)
             {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
                 return SearchByParts(searchString)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
@@ -214,6 +224,11 @@ namespace Dash
             public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
                 List<DocumentController> collectionDocuments = null)
             {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
                 return SearchByParts(searchString)
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument));
             }
@@ -318,6 +333,7 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
             {
                 var documentTree = DocumentTree.MainPageTree;
+
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
