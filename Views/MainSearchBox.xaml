@@ -14,7 +14,8 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Border Background="Transparent"
+        <Border x:Name="xCollectionDragBorder"
+                Background="Transparent"
                 DragStarting="XCollDragIcon_OnDragStarting"
                 CanDrag="True">
             <TextBlock x:Name="xCollDragIcon" 
@@ -23,6 +24,7 @@
                        FontSize="15" 
                        Text="{StaticResource CollectionIcon}" 
                        HorizontalAlignment="Stretch"
+                       VerticalAlignment="Center"
                        Height="32"
             />
         </Border>
@@ -35,11 +37,13 @@
                         GotFocus="XAutoSuggestBox_OnGotFocus"
                         Grid.Column="1"
                         Width="300"
+                        Height="32"
+                        VerticalAlignment="Center"
                         >
             <AutoSuggestBox.ItemTemplate>
                 
                 <DataTemplate x:DataType="dash:SearchResultViewModel">
-                    <StackPanel Orientation="Vertical" Margin="10,10,10,15" DragStarting="SearchResult_OnDragStarting" CanDrag="True">
+                    <StackPanel Orientation="Vertical" Margin="10,10,10,15" >
                         <TextBlock Text="{Binding Title}" FontWeight="Medium"></TextBlock>
                         <TextBlock Text="{Binding ContextualText}"></TextBlock>
                     </StackPanel>

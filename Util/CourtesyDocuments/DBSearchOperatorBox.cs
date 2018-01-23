@@ -52,9 +52,9 @@ namespace Dash
             returnBox.TextChanged += ((sender, e) =>
             {
                 //DBTest.ResetCycleDetection();
-                if (opDoc != null)
-                    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.ReturnDocKey,
-                        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
+                //if (opDoc != null)
+                //    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.ReturnDocKey,
+                //        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
             var searchBox = new Windows.UI.Xaml.Controls.TextBox();
             searchBox.Style = Application.Current.Resources["xSearchTextBox"] as Style;
@@ -65,16 +65,16 @@ namespace Dash
             searchBox.TextChanged += ((sender, e) =>
             {
                 //DBTest.ResetCycleDetection();
-                if (opDoc != null)
-                    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.FieldPatternKey,
-                        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
+                //if (opDoc != null)
+                //    opDoc.SetField(Controllers.Operators.DBSearchOperatorController.FieldPatternKey,
+                //        new TextController((sender as Windows.UI.Xaml.Controls.TextBox).Text), false);
             });
 
-            var scopeDoc = new TextingBox(opDoc.GetField(Controllers.Operators.DBSearchOperatorController.SearchForDocKey));
+            //var scopeDoc = new TextingBox(opDoc.GetField(Controllers.Operators.DBSearchOperatorController.SearchForDocKey));
 
             stack.Children.Add(searchBox);
             stack.Children.Add(returnBox);
-            stack.Children.Add(scopeDoc.makeView(scopeDoc.Document, context));
+            //stack.Children.Add(scopeDoc.makeView(scopeDoc.Document, context));
             stack.HorizontalAlignment = HorizontalAlignment.Stretch;
             stack.VerticalAlignment = VerticalAlignment.Top;
             opView.OperatorContent = stack;

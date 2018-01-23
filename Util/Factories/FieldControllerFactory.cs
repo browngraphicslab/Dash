@@ -206,7 +206,7 @@ namespace Dash
                     controller = new DivideOperatorController(model);
                     break;
                 case OperatorType.Search:
-                    controller = new DBSearchOperatorController(model as DBSearchOperatorFieldModel);
+                    controller = new SearchOperatorController(model);
                     break;
                 case OperatorType.Api:
                     controller = new ApiOperatorController(model);
