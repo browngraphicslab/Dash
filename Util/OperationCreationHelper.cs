@@ -35,6 +35,7 @@ namespace Dash
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
             AddOperator(() => new ImageToCognitiveServices(), "ImageRecognition");
             AddOperator(() => new ImageToColorPalette(), "Image To Palette");
+            AddOperator(() => new SearchOperatorController(), "Search", rfmc => new SearchOperatorBox(rfmc));
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");

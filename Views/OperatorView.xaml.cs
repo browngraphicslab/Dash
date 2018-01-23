@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Controllers.Operators;
 using Dash.Views;
-using static Dash.Controllers.Operators.DBSearchOperatorController;
 using System.Collections.Specialized;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;

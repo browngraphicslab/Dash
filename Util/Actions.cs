@@ -22,7 +22,6 @@ using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
-using static Dash.Controllers.Operators.DBSearchOperatorController;
 using static Dash.NoteDocuments;
 using Dash.Views.Document_Menu;
 

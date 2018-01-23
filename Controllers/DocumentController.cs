@@ -1216,6 +1216,10 @@ namespace Dash
             {
                 return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
+            {
+                return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
             if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
             {
                 return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
