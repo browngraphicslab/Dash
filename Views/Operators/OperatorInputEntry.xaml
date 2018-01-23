@@ -12,10 +12,10 @@
     <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
         <Ellipse x:Name="xHandle" Style="{StaticResource xInputLinkHandle}"
                                      Drop="InputLinkHandle_OnDrop" DragOver="InputLinkHandle_OnDragOver"
-                                     Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
+                                     Fill="{Binding Value.Type, Mode=TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
         <Grid>
             <TextBlock x:Name="xFieldLabel" Margin="5,0,0,0" MaxWidth="100" TextWrapping="Wrap"  VerticalAlignment="Top" 
-                       Foreground="{ThemeResource MainText}" Text="{Binding Key.Name, Mode=OneWay}" 
+                       Foreground="{ThemeResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" 
                        DoubleTapped="UIElement_OnDoubleTapped"/>
             <AutoSuggestBox x:Name="SuggestBox" SuggestionChosen="AutoSuggestBox_OnSuggestionChosen" 
                             TextChanged="AutoSuggestBox_OnTextChanged" 

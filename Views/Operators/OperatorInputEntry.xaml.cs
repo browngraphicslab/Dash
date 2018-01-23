@@ -36,6 +36,35 @@ namespace Dash
         public OperatorInputEntry()
         {
             this.InitializeComponent();
+            DataContextChanged += OperatorInputEntry_DataContextChanged;
+        }
+
+        private void OperatorInputEntry_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+
+            var key = ((DictionaryEntry?)xHandle.DataContext)?.Key as KeyController;
+            
+            var opDoc = OperatorFieldReference?.GetDocumentController(null);
+            if (opDoc == null)
+            {
+                ToggleInputUI(false);
+                return;
+            }
+
+            var inputRef = opDoc.GetField(key);
+            if (inputRef != null)
+            {
+                ToggleInputUI(true);
+            }
+        }
+        
+
+        private void ToggleInputUI(bool hasInput)
+        {
+            if (hasInput)
+                xFieldLabel.Foreground = new SolidColorBrush(Colors.Red);
+            else
+                xFieldLabel.Foreground = new SolidColorBrush(Colors.Black);
         }
 
         /// <summary>
@@ -45,25 +74,25 @@ namespace Dash
         /// <param name="e"></param>
         private void InputLinkHandle_OnDrop(object sender, DragEventArgs e)
         {
-            
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
-                xHandle.Opacity = .75;
-                xFieldLabel.Foreground = new SolidColorBrush(Colors.Red);
-                // we pass a view document, so we get the data document
-                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
+                // we pass a view document, so we get the data document, this is the doc we dragged from
+                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();         
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
                 _refDoc = refDoc;
+
+                // if the drag event is associated with a key then set the input using the key
                 if (e.DataView.Properties.ContainsKey("Operator Key"))
                 {
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
-                    xFieldLabel.Text = refKey.Name;
+                    ToggleInputUI(true); // assume setting key works so show input ui
                 }
                 else
                 {
+                    // user can manually input a key
                     SuggestBox.Visibility = Visibility.Visible;
                     SuggestBox.Focus(FocusState.Programmatic);
                 }
@@ -129,11 +158,15 @@ namespace Dash
                 return;
             }
             var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
+
+            // respond to user choosing a suggestion by clicking
             if (args.ChosenSuggestion != null)
             {
                 OperatorFieldReference.GetDocumentController(null).SetField(key,
                     new DocumentReferenceController(_refDoc.Id, (KeyController)args.ChosenSuggestion), true);
+
             }
+            // respond to user only inputting text
             else
             {
                 KeyController refKey = _refDoc.EnumDisplayableFields()
