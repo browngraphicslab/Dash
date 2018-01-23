@@ -468,7 +468,6 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-
             if (!ViewModel.Undecorated)
             {
                 // add manipulation code
@@ -1109,24 +1108,15 @@ namespace Dash
                         if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
                             var key = keyString.Substring(1);
-                            bool found = false;
-                            foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
-                            {
-                                if (k.Name == key)
-                                {
-                                    (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                    (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                                    found = true;
-                                }
+                            var k = KeyController.LookupKeyByName(key);
+                            var keyasgn = "";
+                            if (k == null) {
+                                var splits = key.Split("=");
+                                keyasgn = splits.Length > 1 ? splits[1] : "";
+                                k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
                             }
-
-                            if (!found)
-                            {
-                                var k = new KeyController(UtilShared.GenerateNewId(), key);
-                                (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                            }
-
+                            (nestedCollection.CurrentView as CollectionPageView).SetHackText(k, keyasgn);
+                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
 
                             this.DeleteDocument();
                             return;
