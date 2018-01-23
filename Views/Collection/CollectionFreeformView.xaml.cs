@@ -1324,14 +1324,6 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey("Operator Output"))
-            {
-                DocumentFieldReference docRef = (DocumentFieldReference) e.DataView.Properties["Operator Output"];
-                var where = e.GetPosition(this.GetFirstDescendantOfType<ContentPresenter>());
-                var db = new DataBox(docRef.GetReferenceController(), where.X, where.Y).Document;
-                ViewModel.AddDocument(db, null);
-            }
-            Debug.WriteLine("drop event from collection");
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 
@@ -1746,12 +1738,6 @@ namespace Dash
 
         #endregion
 
-        private void CollectionFreeformView_OnDragOver(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey("Operator Output"))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            }
-        }
+
     }
 }

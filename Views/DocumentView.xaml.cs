@@ -501,11 +501,11 @@ namespace Dash
             }
 
             ToFront();
-            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true) return;
-
-            // TODO this causes groups to show up, and needs to be moved
-            if (this.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                ManipulationControls.ManipulationCompleted(null, false);
+            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+            {
+                ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
+                return;
+            }
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -828,8 +828,8 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
-            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            (ParentCollection?.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
+            ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void OpenLayout()

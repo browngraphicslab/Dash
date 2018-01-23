@@ -180,67 +180,53 @@ namespace Dash
             FieldControllerBase fmController = new TextController("something went wrong");
             var stringValue = xNewValueField.Text;
 
-            //_documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
-            //fmController = _documentControllerDataContext.GetField(key);
+            _dataContextDocument.ParseDocField(key, xNewValueField.Text);
+            fmController = _dataContextDocument.GetField(key);
 
-            // /*                                         // TODO the above doesn't take into account the type users selected, ex) choosing "Text" and inputing 5 will return a Number type field 
-            ///                                         // and can't create image fields ? 
-            switch (item)
+            if (fmController == null)
             {
-                case TypeInfo.Number:
-                    fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
-                    break;
-                case TypeInfo.Image:
-                    // TODO check to see if the uri is valid
-                    fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
-                    break;
-                case TypeInfo.Text:
-                    fmController = new TextController(xNewValueField.Text);
-                    break;
-                case TypeInfo.List:
-                    //TODO tfs: this can only create lists of docs(collections), not lists of other things
-                    fmController = new ListController<DocumentController>();
-                    break;
-                case TypeInfo.Document:
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.ActiveLayoutKey] = new FreeFormDocument(new List<DocumentController>()).Document
-                    };
-
-                    fmController = new DocumentController(fields, DocumentType.DefaultType);
-                    break;
-                case TypeInfo.None:
-                    break;
-                case TypeInfo.PointerReference:
-                    break;
-                case TypeInfo.DocumentReference:
-                    break;
-                case TypeInfo.Operator:
-                    break;
-                case TypeInfo.Point:
-                    fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
-                    break;
-                case TypeInfo.Ink:
-                    break;
-                case TypeInfo.RichText:
-                    break;
-                case TypeInfo.Rectangle:
-                    break;
-                case TypeInfo.Key:
-                    break;
-                case TypeInfo.Reference:
-                    break;
-                case TypeInfo.Any:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (item)
+                {
+                    case TypeInfo.Number:
+                        fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
+                        break;
+                    case TypeInfo.Image:
+                        // TODO check to see if the uri is valid
+                        fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
+                        break;
+                    case TypeInfo.Text:
+                        fmController = new TextController(xNewValueField.Text);
+                        break;
+                    case TypeInfo.List:
+                        //TODO tfs: this can only create lists of docs(collections), not lists of other things
+                        fmController = new ListController<DocumentController>();
+                        break;
+                    case TypeInfo.Point:
+                        fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
+                        break;
+                    case TypeInfo.None:
+                    case TypeInfo.Document:
+                    case TypeInfo.PointerReference:
+                    case TypeInfo.DocumentReference:
+                    case TypeInfo.Operator:
+                    case TypeInfo.Ink:
+                    case TypeInfo.RichText:
+                    case TypeInfo.Rectangle:
+                    case TypeInfo.Key:
+                    case TypeInfo.Reference:
+                    case TypeInfo.Any:
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                _dataContextDocument.SetField(key, fmController, true);
             }
+
+
             var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
                            ?.TypedData?.ToList() ?? new List<KeyController>();
 
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
-                keys.Contains(key), TypeColumnWidth));
-            _dataContextDocument.SetField(key, fmController, true);
+            //ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
+            //    keys.Contains(key), TypeColumnWidth));
 
             // TODO check if adding was succesful
             // reset the fields to the empty values
@@ -412,6 +398,7 @@ namespace Dash
         private void Icon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var container = (KeyFieldContainer) ((FrameworkElement) sender).DataContext;
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
             args.Data.RequestedOperation = DataPackageOperation.Link;
             args.Data.Properties["Operator Document"] = _dataContextDocument;
             args.Data.Properties["Operator Key"] = container.Key;

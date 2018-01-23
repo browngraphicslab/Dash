@@ -1,6 +1,7 @@
 ﻿using Dash.Controllers.Operators;
 using DashShared;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -550,6 +551,7 @@ namespace Dash
 
             // if the user drags the entire collection of documents from the search bar
             if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var docs = e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<DocumentController>;
@@ -565,15 +567,28 @@ namespace Dash
                 var docAlias = doc.GetViewCopy(where);
                 AddDocument(docAlias, null);
             }
-            
-            // if the user drags a single document from the search bar
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("Operator Document"))
+
+            // if the user drags a data document
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
-                // the drag contains the view document which we just display the key value pane of
-                var doc = e.DataView.Properties["Operator Document"] as DocumentController;
-                var docAlias = doc.GetKeyValueAlias(where);
-                AddDocument(docAlias, null);
+                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+
+                //There is a specified key, so check if it's the right type
+                if (e.DataView.Properties.ContainsKey("Operator Key")) 
+                {
+                    var refKey = (KeyController) e.DataView.Properties["Operator Key"];
+                    var field = new DocumentFieldReference(refDoc.Id, refKey).DereferenceToRoot(null);
+                    var doc = new DataBox(field, where.X, where.Y).Document;
+                    AddDocument(doc, null);
+                }
+                else
+                {
+                    var docAlias = refDoc.GetKeyValueAlias(where);
+                    AddDocument(docAlias, null);
+                }
             }
+
+            e.Handled = true;
 
             // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);

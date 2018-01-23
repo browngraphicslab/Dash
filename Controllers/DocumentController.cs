@@ -204,66 +204,6 @@ namespace Dash
             Init();
         }
 
-        /*
-        public static int threadCount = 0;
-        public static object l = new object();
-
-        public static async Task<DocumentController> CreateFromServer(DocumentModel docModel)
-        {
-
-            lock (l)
-            {
-                threadCount++;
-                Debug.WriteLine($"enter dc : {threadCount}");
-            }
-
-            var localDocController = ContentController<DocumentModel>.GetController<DocumentController>(docModel.Id);
-            if (localDocController != null)
-            {
-                return localDocController;
-            }
-
-            var fieldList = docModel.Fields.Values.ToArray();
-            var keyList = docModel.Fields.Keys.ToArray();
-
-            var fieldDict = new Dictionary<KeyController, Controller>();
-
-            for (var i = 0; i < docModel.Fields.Count(); i++)
-            {
-                var field = fieldList[i];
-                var key = keyList[i];
-
-                var keyController = new KeyController(key, sendToServer: false);
-
-                if (keyController.Equals(KeyStore.DelegatesKey))
-                    continue;
-                if (keyController.Equals(KeyStore.ThisKey))
-                    continue;
-                if (keyController.Equals(KeyStore.LayoutListKey))
-                    continue;
-
-                var fieldController = await Controller.CreateFromServer(field);
-
-                if (keyController.Equals(KeyStore.ActiveLayoutKey))
-                {
-                    var brk = 1;
-                }
-
-                fieldDict.Add(keyController, fieldController);
-            }
-
-            var type = docModelDto.DocumentType;
-            var id = docModelDto.Id;
-
-            lock (l)
-            {
-                threadCount--;
-                Debug.WriteLine($"exit dc : {threadCount}");
-            }
-
-            return new DocumentController(fieldDict, type, id, sendToServer: false);
-        }*/
-
         /// <summary>
         ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!
@@ -777,6 +717,9 @@ namespace Dash
         /// <returns></returns>
         public FieldControllerBase GetField(KeyController key, bool ignorePrototype = false)
         {
+            // TODO this should cause an operator to execute and return the proper value
+
+
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
 
@@ -1013,10 +956,12 @@ namespace Dash
 
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
+            // TODO this should cause an operator to execute and return the proper value
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 
+        // TODO this should cause an operator to execute and return the proper value
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
         {
             return GetDereferencedField(key, context) as T;

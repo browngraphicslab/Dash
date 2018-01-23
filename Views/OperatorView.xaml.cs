@@ -380,10 +380,9 @@ namespace Dash
         {
             args.AllowedOperations = DataPackageOperation.Copy;
             var el = sender as FrameworkElement;
-            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
             var docRef = DataContext as DocumentFieldReference;
-            var docId = docRef.DocumentId;
-            args.Data.Properties["Operator Output"] = new DocumentFieldReference(docId, key);
+            args.Data.Properties["Operator Document"] = docRef.GetDocumentController(null);
+            args.Data.Properties["Operator Key"] = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
         }
     }
 }
