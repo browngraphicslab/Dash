@@ -278,13 +278,22 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
                 var tree = DocumentTree.MainPageTree;
-                var localSearch = LocalSearch(criteria.SearchText);
-                return localSearch.Where(vm => tree[vm?.ViewDocument?.Id] != null).SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree));
+                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null);
+                var map = new Dictionary<DocumentNode, SearchResultViewModel>();
+                foreach (var vm in localSearch)
+                {
+                    foreach(var peer in tree[vm.ViewDocument.Id].GroupPeers)
+                    {
+                        map[peer] = vm;
+                    }
+                }
+
+                return localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));
             }
 
-            private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree)
+            private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)
             {
-                return CreateSearchResult(tree,node.DataDocument, "Found near: "+criteria.SearchText, node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data);
+                return CreateSearchResult(tree,node.DataDocument, "Found near: "+foundVm.Title, node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data);
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
