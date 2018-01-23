@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -27,7 +28,7 @@ namespace Dash
         public FieldReference OperatorFieldReference
         {
             get { return (FieldReference)GetValue(OperatorFieldReferenceProperty); }
-            set { SetValue(OperatorFieldReferenceProperty, value); }
+            set { xFieldLabel.Foreground = new SolidColorBrush(Colors.Red); SetValue(OperatorFieldReferenceProperty, value); }
         }
 
         private DocumentController _refDoc;
@@ -37,10 +38,18 @@ namespace Dash
             this.InitializeComponent();
         }
 
-        private void UIElement_OnDrop(object sender, DragEventArgs e)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void InputLinkHandle_OnDrop(object sender, DragEventArgs e)
         {
+            
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
+                xHandle.Opacity = .75;
+                xFieldLabel.Foreground = new SolidColorBrush(Colors.Red);
                 // we pass a view document, so we get the data document
                 var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
@@ -51,6 +60,7 @@ namespace Dash
                 {
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
+                    xFieldLabel.Text = refKey.Name;
                 }
                 else
                 {
@@ -62,7 +72,13 @@ namespace Dash
             }
         }
 
-        private void UIElement_OnDragOver(object sender, DragEventArgs e)
+        /// <summary>
+        /// When the pointer is hovering over the input handle. TODO: should also have this
+        /// when you're just hovering over the label as well, makes it easier on user / for touch
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void InputLinkHandle_OnDragOver(object sender, DragEventArgs e)
         {
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {

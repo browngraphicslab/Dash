@@ -136,6 +136,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Called when the DocumentView is selected via a click and drag multi-select.
+        /// Visually indicated that the document is selected within the canvas.
+        /// </summary>
+        /// <param name="isMultiSelected"></param>
         public void ToggleMultiSelected(bool isMultiSelected)
         {
             if (isMultiSelected == _multiSelected) return;
@@ -145,13 +150,12 @@ namespace Dash
             {
                 this.CanDrag = false;
                 this.DragStarting -= freeformView.DocView_OnDragStarting;
-                xFieldContainer.BorderThickness = new Thickness(0);
+                xFieldContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
             } else
             {
                 this.CanDrag = true;
                 this.DragStarting += freeformView.DocView_OnDragStarting;
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
-                xFieldContainer.BorderThickness = new Thickness(2);
             }
             _multiSelected = isMultiSelected;
         }
@@ -516,10 +520,10 @@ namespace Dash
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
+            xShadowHost.Opacity = 0;
+            xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
+            xDocumentBackground.Fill.Opacity = .8;
+            //DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             if (ParentCollection != null)
             {
