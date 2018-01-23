@@ -21,10 +21,12 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            var fieldControllerBase = (refToData as ReferenceController)?.GetDocumentController(null);
-            if (fieldControllerBase != null)
+
+            // try to apply a data document to the databox if the passed in refToData was actualyl a reference
+            var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
+            if (dataDoc != null)
             {
-                Document.SetField(KeyStore.DocumentContextKey, fieldControllerBase, true);
+                Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
             }
         }
 
@@ -47,6 +49,17 @@ namespace Dash
             else if (data is ListController<DocumentController>)
             {
                 return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+            } else if (data is DocumentController dc)
+            {
+                // hack to check if the dc is a view document
+                if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
+                {
+                    return dc.MakeViewUI(context, isInterfaceBuilderLayout);
+                }
+                else
+                {
+                    return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
+                }
             }
             else
             {
