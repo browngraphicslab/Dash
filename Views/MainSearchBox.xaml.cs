@@ -307,7 +307,7 @@ namespace Dash
                     }
                     else if (keySearch.StringFound)
                     {
-                        topText = "Name Of Key: "+keySearch.RelatedString;
+                        topText = "Name Of Key";// +keySearch.RelatedString;
                     }
 
                     if (keySearch.StringFound || fieldSearch.StringFound)
@@ -330,7 +330,7 @@ namespace Dash
 
                 if (foundCount > 0)
                 {
-                    var bottomText = (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
+                    var bottomText = (string.IsNullOrEmpty(lastTopText) ? "" : lastTopText + ":") + (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
                     var title = string.IsNullOrEmpty(documentController.Title) ? lastTopText : documentController.Title;
 
                     var vm = CreateSearchResult(documentTree, documentController, bottomText, title);
@@ -356,16 +356,16 @@ namespace Dash
         /// <returns></returns>
         private SearchResultViewModel CreateSearchResult(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText)
         {
-            string preTitle = "";
+            string postTitle = "";
 
             var documentNode = documentTree[dataDocumentController.Id];
             if (documentNode?.Parents?.FirstOrDefault() != null)
             {
-                preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
-                               documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
+                postTitle = " >  " + (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
+                               documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ;
             }
 
-            var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id, documentNode?.ViewDocument ?? dataDocumentController, documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
+            var vm = new SearchResultViewModel(titleText + postTitle, bottomText ?? "", dataDocumentController.Id, documentNode?.ViewDocument ?? dataDocumentController, documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
             return vm;
         }
 
