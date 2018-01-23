@@ -422,5 +422,17 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Copy;
         }
+
+        public void ShowCollectionDrag(bool show)
+        {
+            if (show)
+            {
+                xCollectionDragBorder.Visibility = Visibility.Visible;;
+            }
+            else
+            {
+                xCollectionDragBorder.Visibility = Visibility.Collapsed; ;
+            }
+        }
     }
 }

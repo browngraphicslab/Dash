@@ -28,7 +28,7 @@ using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -431,17 +431,17 @@ namespace Dash
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
 
-            if (SearchVisible)
+            if (xSearchBoxGrid.Visibility == Visibility.Visible)
             {
-                SearchVisible = false;
-                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xTextBlock.Text = "\uE721";
+                xSearchBoxGrid.Visibility = Visibility.Collapsed;
+                xShowHideSearchIcon.Text = "\uE721"; // magnifying glass in segoe
             }
             else
             {
                 SearchVisible = true;
-                xSearchBoxGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xTextBlock.Text = "\uE8BB";
+                xSearchBoxGrid.Visibility = Visibility.Visible;
+                xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
+                xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
     }
