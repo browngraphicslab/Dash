@@ -26,6 +26,9 @@ namespace Dash
         /// </summary>
         private DocumentController _operatorDoc;
 
+        private string _searchText;
+        private ListController<DocumentController> _inputCollection;
+
         public SearchOperatorView()
         {
             this.InitializeComponent();
@@ -35,7 +38,6 @@ namespace Dash
 
         private void SearchOperatorView_Loaded(object sender, RoutedEventArgs e)
         {
-            xSearchBox.ShowCollectionDrag(false);
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -53,17 +55,20 @@ namespace Dash
 
         private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
-            //XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            _searchText = tfmc.Data;
         }
 
         private void OnInputCollectionChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-            //_allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            _inputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
         }
 
+        private void TextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

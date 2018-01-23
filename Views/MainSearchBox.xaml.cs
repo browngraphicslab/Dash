@@ -210,6 +210,12 @@ namespace Dash
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
             }
+            public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
+                List<DocumentController> collectionDocuments = null)
+            {
+                return SearchByParts(searchString)
+                    .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument));
+            }
 
             /// <summary>
             /// returns a list of result view models based upon a textual search that looks at all the parts of the input text
