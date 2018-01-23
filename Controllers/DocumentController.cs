@@ -96,7 +96,7 @@ namespace Dash
         {
             get
             {
-                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                var titleController = GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
                 if (titleController != null)
                 {
                     return titleController.Data;
