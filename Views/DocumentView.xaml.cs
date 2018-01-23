@@ -123,16 +123,16 @@ namespace Dash
                 if (_ptrIn) ShowLocalContext(true);
             }
 
-            if (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift))
+            if (ViewModel.IsLowestSelected && 
+                (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                e.VirtualKey.Equals(VirtualKey.Enter))
             {
-                if (e.VirtualKey.Equals(VirtualKey.Enter))
-                {
-                    // don't shift enter on key value documents
-                    if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
-                        ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+                // don't shift enter on key value documents
+                if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                    ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                    return;
 
-                    HandleShiftEnter();
-                }
+                HandleShiftEnter();
             }
         }
 
@@ -926,24 +926,19 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Turn the selection border on or off based on isBorderOn, also toggles the title
-        /// icon visibility based on isBorderOn unless the user specifically overrides this
-        /// behavior with isTitleVisible
-        /// </summary>
-        private void ToggleSelectionBorder(bool isBorderOn, bool? isTitleVisible = null)
+        private void ToggleSelectionBorder(bool isBorderOn, bool isOtherChromeVisible = true)
         {
 
             // change the thickness of the border so that it's visible
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = (isTitleVisible ?? isBorderOn) && !ViewModel.Undecorated
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && !ViewModel.Undecorated
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
 
 
-            OperatorEllipse.Visibility = isBorderOn ? Visibility.Visible : Visibility.Collapsed;
+            OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
@@ -1220,10 +1215,36 @@ namespace Dash
         public void HandleShiftEnter()
         {
             if (ViewModel.IsLowestSelected == false) return;
+
+
+
+
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+
+
+
+            // special case for search operators
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+            {
+                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) is SearchOperatorController)
+                {
+                    var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
+
+                    operatorDoc.SetField(SearchOperatorController.InputCollection,
+                        new DocumentReferenceController(ViewModel.DocumentController.Id,
+                            SearchOperatorController.ResultsKey), true);
+
+                    // TODO connect output to input
+
+                    Actions.DisplayDocument(collection.ViewModel, operatorDoc, where);
+                    return;
+                }
+            }
+
+
             collection.LoadNewActiveTextBox("", where, true);
         }
 

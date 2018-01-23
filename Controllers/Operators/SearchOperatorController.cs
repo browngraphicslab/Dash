@@ -18,7 +18,7 @@ namespace Dash
         }
 
         //Input keys
-        public static readonly KeyController Text = new KeyController("69DDED67-894A-41F0-81B2-FF6A8357B0DA", "Search Text");
+        public static readonly KeyController TextKey = new KeyController("69DDED67-894A-41F0-81B2-FF6A8357B0DA", "Search Text");
         public static readonly KeyController InputCollection = new KeyController("4ECAFE47-0E2D-4A04-B24D-42C6668A4962", "Input");
 
         //Output keys
@@ -26,8 +26,8 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [Text] = new IOInfo(TypeInfo.Text, true),
-            [InputCollection] = new IOInfo(TypeInfo.List, true)
+            [TextKey] = new IOInfo(TypeInfo.Text, true),
+            [InputCollection] = new IOInfo(TypeInfo.List, false)
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -36,9 +36,9 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            var searchText = (inputs[Text] as TextController)?.Data;
-            var searchCollection = (inputs[InputCollection] as ListController<DocumentController>)?.TypedData;
-            var searchResultDocs = MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection).Select(srvm => srvm.ViewDocument);
+            var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
+            var searchCollection = inputs.ContainsKey(InputCollection) ? (inputs[InputCollection] as ListController<DocumentController>)?.TypedData : null;
+            var searchResultDocs = MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection)?.Select(srvm => srvm.ViewDocument) ?? new DocumentController[]{};
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 

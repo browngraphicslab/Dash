@@ -10,6 +10,12 @@
     d:DesignWidth="400">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <TextBox HorizontalAlignment="Stretch" VerticalAlignment="Center" TextChanged="TextBox_OnTextChanged"></TextBox>
-    </Grid>
+        <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
+                        QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        x:Name="xAutoSuggestBox"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+        />    
+            
+        </Grid>
 </UserControl>
