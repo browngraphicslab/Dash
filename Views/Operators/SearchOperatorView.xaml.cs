@@ -35,7 +35,6 @@ namespace Dash
 
         private void SearchOperatorView_Loaded(object sender, RoutedEventArgs e)
         {
-            xSearchBox.ShowCollectionDrag(false);
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -46,24 +45,29 @@ namespace Dash
             // get the document containing the operator
             _operatorDoc = refToOp?.GetDocumentController(null);
 
-            // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.InputCollection, OnInputCollectionChanged);
-            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.Text, OnTextFieldChanged);
+            // listen for when the input text is changed
+            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.TextKey, OnTextFieldChanged);
         }
 
+        /// <summary>
+        /// Update the text in the autosuggestbox when the input text changes
+        /// </summary>
         private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
-            //XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            if (xAutoSuggestBox.Text != tfmc.Data)
+            {
+                xAutoSuggestBox.Text = tfmc.Data;
+            }
         }
 
-        private void OnInputCollectionChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        /// <summary>
+        /// Update the input to the collection when the user types something in the autosuggest box
+        /// </summary>
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-            //_allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
+            _operatorDoc.SetField(SearchOperatorController.TextKey, new TextController(sender.Text), true);
         }
-
     }
 }

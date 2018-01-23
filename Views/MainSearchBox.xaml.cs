@@ -192,6 +192,7 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         /// public static class for encapsulating all the search code
         /// </summary>
@@ -200,15 +201,36 @@ namespace Dash
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts,
                 DocumentController collectionDocument)
             {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
                 return SearchOverCollection(string.Join(' ', searchParts), collectionDocument);
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null)
             {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
                 return SearchByParts(searchString)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
+            }
+            public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
+                List<DocumentController> collectionDocuments = null)
+            {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
+                return SearchByParts(searchString)
+                    .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument));
             }
 
             /// <summary>
@@ -226,7 +248,7 @@ namespace Dash
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
                     {
-                        var temp = mainList;
+                        var temp = mainList; //if there is no criteria, swap the order of lists so that this is the primary vm provider
                         mainList = searchResult;
                         searchResult = temp;
                     }
@@ -247,7 +269,7 @@ namespace Dash
                         }
                     }
                 }
-                return mainList ?? new List<SearchResultViewModel>();
+                return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
             }
 
             /// <summary>
@@ -271,7 +293,23 @@ namespace Dash
 
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
-                return null;
+                var tree = DocumentTree.MainPageTree;
+                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null);
+                var map = new Dictionary<DocumentNode, SearchResultViewModel>();
+                foreach (var vm in localSearch)
+                {
+                    foreach(var peer in tree[vm.ViewDocument.Id].GroupPeers)
+                    {
+                        map[peer] = vm;
+                    }
+                }
+
+                return localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));
+            }
+
+            private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)
+            {
+                return CreateSearchResult(tree,node.DataDocument, "Found near: "+foundVm.Title, node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null).Data);
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
@@ -295,6 +333,7 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
             {
                 var documentTree = DocumentTree.MainPageTree;
+
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
@@ -498,5 +537,6 @@ namespace Dash
                 public string SearchCategory { get; set; }
             }
         }
+
     }
 }
