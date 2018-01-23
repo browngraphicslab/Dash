@@ -46,64 +46,56 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
 
+            int numColors = 5;
+
             if (inputs.ContainsKey(FakeAsyncInput))
             {
                 var coll = inputs[FakeAsyncInput] as ListController<DocumentController>;
-                if (coll.Data.Count > 0)
+                if (coll.Data.Count > 0 && coll.Data.Count <= numColors)
                 {
                     outputs[PaletteKey] = coll;
                     return;
                 }
             }
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                CoreDispatcherPriority.Normal,
-                async () =>
+            UITask.RunTask(async () =>
+            {
+                var outputCollection = new List<FieldControllerBase>();
+                var inputImage = inputs[ImageKey] as ImageController;
+                var stream = inputImage.ImageSource.IsFile
+                    ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream()
+                    : await inputImage.ImageSource.GetHttpStreamAsync();
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+                var writeBitmap = new WriteableBitmap(Convert.ToInt32(decoder.PixelWidth),
+                    Convert.ToInt32(decoder.PixelHeight));
+                stream.Seek(0);
+                //stream = inputImage.ImageSource.IsFile ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream() : inputImage.ImageSource.GetHttpStreamAsync().Result;
+                await writeBitmap.SetSourceAsync(stream);
+                var bitmap = (Bitmap)writeBitmap;
+
+                var quantizer = new ColorImageQuantizer(new MedianCutQuantizer());
+                var colors = quantizer.CalculatePalette(bitmap, numColors);
+
+                foreach (var color in colors)
                 {
-                    var outputCollection = new List<FieldControllerBase>();
-                    var inputImage = inputs[ImageKey] as ImageController;
-                    var stream = inputImage.ImageSource.IsFile
-                        ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream()
-                        : await inputImage.ImageSource.GetHttpStreamAsync();
-                    var decoder = await BitmapDecoder.CreateAsync(stream);
-                    var writeBitmap = new WriteableBitmap(Convert.ToInt32(decoder.PixelWidth),
-                        Convert.ToInt32(decoder.PixelHeight));
-                    stream.Seek(0);
-                    //stream = inputImage.ImageSource.IsFile ? File.OpenRead(inputImage.ImageSource.LocalPath).AsRandomAccessStream() : inputImage.ImageSource.GetHttpStreamAsync().Result;
-                    await writeBitmap.SetSourceAsync(stream);
-                    var bitmap = (Bitmap)writeBitmap;
-
-                    var quantizer = new ColorImageQuantizer(new MedianCutQuantizer());
-                    var colors = quantizer.CalculatePalette(bitmap, 5);
-
-                    foreach (var color in colors)
+                    var bmp = new WriteableBitmap(128, 128);
+                    var bmpStream = bmp.PixelBuffer.AsStream();
+                    for (var x = 0; x < bmp.PixelWidth; x++)
                     {
-                        var bmp = new WriteableBitmap(128, 128);
-                        var bmpStream = bmp.PixelBuffer.AsStream();
-                        for (var x = 0; x < bmp.PixelWidth; x++)
+                        for (var y = 0; y < bmp.PixelHeight; y++)
                         {
-                            for (var y = 0; y < bmp.PixelHeight; y++)
-                            {
-                                bmpStream.WriteByte(color.B);
-                                bmpStream.WriteByte(color.G);
-                                bmpStream.WriteByte(color.R);
-                                bmpStream.WriteByte(color.A);
-                            }
+                            bmpStream.WriteByte(color.B);
+                            bmpStream.WriteByte(color.G);
+                            bmpStream.WriteByte(color.R);
+                            bmpStream.WriteByte(color.A);
                         }
-
-                        outputCollection.Add(await new ImageToDashUtil().ParseBitmapAsync(bmp));
                     }
 
-                    (inputs[FakeAsyncInput] as ListController<DocumentController>).Data = outputCollection;
-                });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    outputCollection.Add(await new ImageToDashUtil().ParseBitmapAsync(bmp));
+                }
 
-
-
-
-
-
+                (inputs[FakeAsyncInput] as ListController<DocumentController>).Data = outputCollection;
+            });
         }
 
 

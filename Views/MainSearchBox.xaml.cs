@@ -79,7 +79,15 @@ namespace Dash
             // Set sender.Text. You can use args.SelectedItem to build your text string.
             if (args.SelectedItem is SearchResultViewModel resultVM)
             {
-
+                if (resultVM?.DocumentCollection != null)
+                {
+                    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    if (!currentWorkspace.GetDataDocument().Equals(resultVM.DocumentCollection.GetDataDocument()))
+                    {
+                        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVM.DocumentCollection, resultVM.ViewDocument);
+                    }
+                }
+                MainPage.Instance.NavigateToDocumentInWorkspace(resultVM.ViewDocument);
             }
         }
 
@@ -172,19 +180,35 @@ namespace Dash
             args.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
+        public void ShowCollectionDrag(bool show)
+        {
+            if (show)
+            {
+                xCollectionDragBorder.Visibility = Visibility.Visible; ;
+            }
+            else
+            {
+                xCollectionDragBorder.Visibility = Visibility.Collapsed; ;
+            }
+        }
+
         /// <summary>
         /// public static class for encapsulating all the search code
         /// </summary>
         public static class SearchHelper
         {
-            public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts, DocumentController collectionDocument)
+            public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts,
+                DocumentController collectionDocument)
             {
                 return SearchOverCollection(string.Join(' ', searchParts), collectionDocument);
             }
 
-            public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString, DocumentController collectionDocument = null)
+            public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
+                DocumentController collectionDocument = null)
             {
-                return LocalSearch(searchString).Where(vm => collectionDocument == null || (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
+                return SearchByParts(searchString)
+                    .Where(vm => collectionDocument == null ||
+                                 (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
             }
 
             /// <summary>
@@ -195,7 +219,7 @@ namespace Dash
             private static List<SearchResultViewModel> SearchByParts(string text)
             {
                 List<SearchResultViewModel> mainList = null;
-                foreach (var searchPart in text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
                     var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
@@ -234,15 +258,20 @@ namespace Dash
             /// <returns></returns>
             private static IEnumerable<SearchResultViewModel> SpecialSearch(SpecialSearchCriteria criteria)
             {
-                if (criteria.SearchCategory == "type" && false)
-                {
-                    return HandleTypeSearch(criteria);
-                }
                 if (criteria.SearchCategory == "in")
                 {
                     return CollectionMembershipSearch(criteria);
                 }
+                if (criteria.SearchCategory == "near")
+                {
+                    return GroupMembershipSearch(criteria);
+                }
                 return GenericSpecialSearch(criteria);
+            }
+
+            private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
+            {
+                return null;
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
@@ -253,7 +282,9 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(string collectionNameToFind)
             {
                 var tree = DocumentTree.MainPageTree;
-                return LocalSearch("").Where(vm => vm?.DocumentCollection != null && (GetTitleOfCollection(tree, vm.DocumentCollection) ?? "").ToLower().Contains(collectionNameToFind));
+                return LocalSearch("").Where(vm => vm?.DocumentCollection != null &&
+                                                   (GetTitleOfCollection(tree, vm.DocumentCollection) ?? "").ToLower()
+                                                   .Contains(collectionNameToFind));
             }
 
             /// <summary>
@@ -283,13 +314,17 @@ namespace Dash
                 {
                     var title = docController.Title;
 
-                    if (documentTree[docController.Id] != null && documentTree[docController.Id].DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey) != null)
+                    if (documentTree[docController.Id] != null && documentTree[docController.Id].DataDocument
+                            .GetField<ListController<DocumentController>>(KeyStore.CollectionKey) != null)
                     {
                         title = GetTitleOfCollection(documentTree, docController) ?? "?";
                     }
                     var url = docController.GetLongestViewedContextUrl();
-                    url = url == null ? "" : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
-                    yield return CreateSearchResult(documentTree, docController, url ?? docController.DocumentType.Type, title);
+                    url = url == null
+                        ? ""
+                        : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
+                    yield return CreateSearchResult(documentTree, docController, url ?? docController.DocumentType.Type,
+                        title);
                 }
             }
 
@@ -299,7 +334,8 @@ namespace Dash
                 {
                     return null;
                 }
-                return tree[collection.Id]?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
+                return tree[collection.Id]?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)
+                    ?.Data;
             }
 
             /// <summary>
@@ -320,7 +356,8 @@ namespace Dash
                 }
                 foreach (var docController in docControllers)
                 {
-                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey, null);
+                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey,
+                        null);
                     var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
                     yield return CreateSearchResult(documentTree, docController, imageUrl, docController.Title);
                 }
@@ -385,9 +422,13 @@ namespace Dash
                             foundCount++;
 
                             //compare old search models to current one, trying to predict which would be better for the user to see
-                            var newIsBetter = lastFieldSearch == null || (lastFieldSearch.RelatedString?.Length ?? 0) < (fieldSearch.RelatedString?.Length ?? 0);
-                            newIsBetter |= (lastFieldSearch?.RelatedString?.ToCharArray()?.Take(50)?.Where(c => c == ' ')?.Count() ?? 0) <
-                                           (fieldSearch?.RelatedString?.ToCharArray()?.Take(50)?.Where(c => c == ' ')?.Count() ?? 0);
+                            var newIsBetter = lastFieldSearch == null ||
+                                              (lastFieldSearch.RelatedString?.Length ?? 0) <
+                                              (fieldSearch.RelatedString?.Length ?? 0);
+                            newIsBetter |= (lastFieldSearch?.RelatedString?.ToCharArray()?.Take(50)
+                                                ?.Where(c => c == ' ')?.Count() ?? 0) <
+                                           (fieldSearch?.RelatedString?.ToCharArray()?.Take(50)?.Where(c => c == ' ')
+                                                ?.Count() ?? 0);
 
                             if (newIsBetter)
                             {
@@ -400,8 +441,11 @@ namespace Dash
 
                     if (foundCount > 0)
                     {
-                        var bottomText = (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
-                        var title = string.IsNullOrEmpty(documentController.Title) ? lastTopText : documentController.Title;
+                        var bottomText = (lastFieldSearch?.RelatedString ?? lastKeySearch?.RelatedString)
+                            ?.Replace('\n', ' ').Replace('\t', ' ').Replace('\r', ' ');
+                        var title = string.IsNullOrEmpty(documentController.Title)
+                            ? lastTopText
+                            : documentController.Title;
 
                         var vm = CreateSearchResult(documentTree, documentController, bottomText, title);
 
@@ -424,18 +468,24 @@ namespace Dash
             /// <param name="bottomText"></param>
             /// <param name="titleText"></param>
             /// <returns></returns>
-            private static SearchResultViewModel CreateSearchResult(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText)
+            private static SearchResultViewModel CreateSearchResult(DocumentTree documentTree,
+                DocumentController dataDocumentController, string bottomText, string titleText)
             {
                 string preTitle = "";
 
                 var documentNode = documentTree[dataDocumentController.Id];
                 if (documentNode?.Parents?.FirstOrDefault() != null)
                 {
-                    preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) ? "?" :
-                                   documentNode.Parents.First().DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
+                    preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+                                   .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
+                                   ? "?"
+                                   : documentNode.Parents.First().DataDocument
+                                       .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
                 }
 
-                var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id, documentNode?.ViewDocument ?? dataDocumentController, documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
+                var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id,
+                    documentNode?.ViewDocument ?? dataDocumentController,
+                    documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
                 return vm;
             }
 

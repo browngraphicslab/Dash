@@ -122,6 +122,7 @@
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\Image\ImageToColorPalette.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
+    <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
@@ -165,6 +166,7 @@
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
@@ -321,6 +323,9 @@
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ImageNode.xaml.cs">
+      <DependentUpon>ImageNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
@@ -332,6 +337,9 @@
     </Compile>
     <Compile Include="Views\Operators\OperatorInputEntry.xaml.cs">
       <DependentUpon>OperatorInputEntry.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
+      <DependentUpon>SearchOperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -443,7 +451,6 @@
     <Compile Include="Controllers\InkController.cs" />
     <Compile Include="Models\InkModel.cs" />
     <Compile Include="Controllers\BaseListController.cs" />
-    <Compile Include="Controllers\Operators\DBSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
@@ -831,6 +838,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ImageNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\KeyValueSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -848,6 +859,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\OperatorInputEntry.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Operators\SearchOperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
