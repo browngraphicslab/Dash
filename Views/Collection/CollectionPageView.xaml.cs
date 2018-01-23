@@ -41,6 +41,28 @@ namespace Dash
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
+
+            this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
+            this.GotFocus += CollectionPageView_GotFocus;
+            this.LosingFocus += CollectionPageView_LosingFocus;
+        }
+
+        private void CollectionPageView_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+        {
+            if (args.FocusState == FocusState.Pointer)
+            {
+                if (this.GetFirstDescendantOfType<ScrollViewer>() == args.OldFocusedElement)
+                    args.Handled = args.Cancel = true;
+                if (this.GetFirstDescendantOfType<Microsoft.Toolkit.Uwp.UI.Controls.GridSplitter>() == args.OldFocusedElement)
+                {
+                    var xx = this.GetFirstDescendantOfType<Microsoft.Toolkit.Uwp.UI.Controls.GridSplitter>();
+                    args.Handled = args.Cancel = true;
+                }
+            }
+        }
+
+        private void CollectionPageView_GotFocus(object sender, RoutedEventArgs e)
+        {
         }
 
         public ObservableCollection<DocumentViewModel> PageDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -234,27 +256,6 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
             Focus(FocusState.Keyboard);
         }
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            // hack because Selecting in the listView is broken
-            var xx = VisualTreeHelper.FindElementsInHostCoordinates(e.GetPosition(MainPage.Instance), this);
-            foreach (var x in xx)
-                if (x is DocumentView && (x as DocumentView).ViewModel != null)
-                {
-                    var d = (x as DocumentView).ViewModel.DocumentController.GetDataDocument(null);
-                    foreach (var dv in ViewModel.ThumbDocumentViewModels)
-                        if (dv.DocumentController.GetDataDocument(null).Id.Equals(d.Id))
-                        {
-                            var ind = ViewModel.ThumbDocumentViewModels.IndexOf(dv);
-                            CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
-                        }
-                    break;
-                }
-            e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
-        }
 
         #endregion
 
@@ -305,25 +306,16 @@ namespace Dash
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.PageDown)
+            if (e.Key == Windows.System.VirtualKey.PageDown || e.Key == Windows.System.VirtualKey.Down)
             {
                 NextButton_Click(sender, e);
                 e.Handled = true;
             }
-            if (e.Key == Windows.System.VirtualKey.PageUp)
+            if (e.Key == Windows.System.VirtualKey.PageUp || e.Key == Windows.System.VirtualKey.Up)
             {
                 PrevButton_Click(sender, e);
                 e.Handled = true;
             }
-        }
-
-        private void xDocTitle_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-        }
-
-        private void xDocTitle_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 }

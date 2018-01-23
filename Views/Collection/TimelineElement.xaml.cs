@@ -83,8 +83,6 @@ namespace Dash
             LocalContextVisible = true;
         }
 
-        public static double LastX = 0;
-        public static double LastY = 0;
         public static double LastDisplayedPosition= 0;
 
         private double _minGap = 30;
@@ -95,14 +93,14 @@ namespace Dash
             var x = CalculateXPosition(ViewModel, ParentTimeline.Metadata);
             var y = CalculateYPosition(ViewModel, ParentTimeline.Metadata);
 
-            var gapDistance = x - LastX;
+            var gapDistance = x - ParentTimeline.CurrentXPosition;
             if (gapDistance < _minGap)
             {
-                x = LastX + _minGap;
+                x = ParentTimeline.CurrentXPosition + _minGap;
             }
             else if (gapDistance > _maxGap)
             {
-                x = LastX + _maxGap;
+                x = ParentTimeline.CurrentXPosition + _maxGap;
             }
 
 
@@ -112,23 +110,33 @@ namespace Dash
                 Y = y
             };
 
-            LastX = x;
-            LastY = y;
+            ParentTimeline.CurrentXPosition = x;
 
-            if(LastDisplayedPosition == 0 || (x - LastDisplayedPosition) > 200)
+            if(DisplayElement(x))
             {
                 LastDisplayedPosition = x;
                 _displayState = 0;
+                ParentTimeline.DisplayedXPositions.Add(x);
             } else
             {
                 _displayState = 0;
                 UpdateView();
                 _displayState = 1;
-                //DisplayBelow(false);
             }
             UpdateView();
 
-            //DisplayAll(true);
+        }
+
+        private bool DisplayElement(double x)
+        {
+            foreach(var pos in ParentTimeline.DisplayedXPositions)
+            {
+                if(Math.Abs(x - pos) < 200)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private double CalculateYPosition(TimelineElementViewModel context, TimelineMetadata metadata)

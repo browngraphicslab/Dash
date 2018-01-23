@@ -541,8 +541,9 @@ namespace Dash
         /// </summary>
         private void BorderManipulateDeltaMove(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-                (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) != CoreVirtualKeyStates.Down)
+            if (e.PointerDeviceType == PointerDeviceType.Mouse && 
+                !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
+                !Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;
             }
@@ -559,7 +560,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) && 
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;

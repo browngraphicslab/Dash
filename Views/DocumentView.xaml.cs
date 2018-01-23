@@ -71,10 +71,6 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
-
-            // add manipulation code
-            ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -472,6 +468,14 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
+
+            if (!ViewModel.Undecorated)
+            {
+                // add manipulation code
+                ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+                ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            }
+
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
