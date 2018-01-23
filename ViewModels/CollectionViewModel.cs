@@ -32,7 +32,11 @@ namespace Dash
                 {
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                    if (cargs == null)
+                    {
+                        return;
+                    }
+                    if (args.Action == DocumentController.FieldUpdatedAction.Update)
                     {
                         UpdateViewModels(cargs, copiedContext);
                     }

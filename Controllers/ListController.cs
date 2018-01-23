@@ -47,6 +47,16 @@ namespace Dash
 
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
+            var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+            if (dargs != null)
+            {
+                var fieldKey = dargs.Reference.FieldKey;
+                if (fieldKey.Equals(KeyStore.TitleKey) ||
+                    fieldKey.Equals(KeyStore.PositionFieldKey))
+                {
+                    OnFieldModelUpdated(null, context);
+                }
+            }
             //var keylist = (sender
             //    .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
             //        new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
