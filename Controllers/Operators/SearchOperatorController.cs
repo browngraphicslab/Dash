@@ -36,7 +36,10 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
-            // TODO write a search implementation
+            var searchText = (inputs[Text] as TextController)?.Data;
+            var searchCollection = (inputs[InputCollection] as ListController<DocumentController>)?.TypedData;
+            var searchResultDocs = MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection).Select(srvm => srvm.ViewDocument);
+            outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 
         public override bool SetValue(object value)

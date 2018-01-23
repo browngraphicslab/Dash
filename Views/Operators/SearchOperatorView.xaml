@@ -10,6 +10,6 @@
     d:DesignWidth="400">
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <local:MainSearchBox x:Name="xSearchBox"></local:MainSearchBox>
+        <TextBox HorizontalAlignment="Stretch" VerticalAlignment="Center" TextChanged="TextBox_OnTextChanged"></TextBox>
     </Grid>
 </UserControl>
