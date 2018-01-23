@@ -192,6 +192,7 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         /// public static class for encapsulating all the search code
         /// </summary>
@@ -520,5 +521,6 @@ namespace Dash
                 public string SearchCategory { get; set; }
             }
         }
+
     }
 }
