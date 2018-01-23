@@ -232,7 +232,7 @@ namespace Dash
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
                     {
-                        var temp = mainList;
+                        var temp = mainList; //if there is no criteria, swap the order of lists so that this is the primary vm provider
                         mainList = searchResult;
                         searchResult = temp;
                     }
@@ -253,7 +253,7 @@ namespace Dash
                         }
                     }
                 }
-                return mainList ?? new List<SearchResultViewModel>();
+                return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
             }
 
             /// <summary>
