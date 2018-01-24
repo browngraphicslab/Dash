@@ -417,15 +417,33 @@ namespace Dash
 
             _isManipulating = false;
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            
-            _grouping = GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+
+            var groupViews = GroupViews(_grouping);
+            var allViews =   (_element.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>()).ToList();
+
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => docRoot.MoveToContainingCollection()));
+                    () => {
+                        if (!docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
+                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                    }));
+
+
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
             }
+        }
+        public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
+        {
+            var collectionFreeFormChildren = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
+            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping.Contains(dv.ViewModel));
+           return groupings != null ? groupings.ToList() : new List<DocumentView>();
         }
         public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -443,10 +461,12 @@ namespace Dash
                 return;
             }
             var docRoot = ParentDocument;
-            docRoot?.ToFront();
             
             _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-            
+            var groupViews = GroupViews(_grouping);
+            foreach (var gv in groupViews)
+                gv.ToFront();
+
             _isManipulating = true;
             _processManipulation = true;
 
