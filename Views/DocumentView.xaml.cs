@@ -123,9 +123,9 @@ namespace Dash
                 if (_ptrIn) ShowLocalContext(true);
             }
 
-            if (ViewModel.IsLowestSelected && 
-                (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
-                e.VirtualKey.Equals(VirtualKey.Enter))
+            if (ViewModel != null && (ViewModel.IsLowestSelected && 
+                                      (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                                      e.VirtualKey.Equals(VirtualKey.Enter)))
             {
                 // don't shift enter on key value documents
                 if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
@@ -468,7 +468,7 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!ViewModel.Undecorated)
+            if (ViewModel != null && !ViewModel.Undecorated)
             {
                 // add manipulation code
                 ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
