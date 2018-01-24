@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using NewControls.Geometry;
 using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
+using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -420,23 +421,53 @@ namespace Dash
 
             var groupViews = GroupViews(_grouping);
             var allViews =   (_element.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>()).ToList();
-
+            
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
             var y = pointerPosition2.Y - Window.Current.Bounds.Y;
             var pos = new Point(x, y);
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
+            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                     () => {
-                        if (!docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
-                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                        docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews);
+                        GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                        if (parentCollection != null)
+                        {
+                            (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = true;
+                            Debug.WriteLine("ManipulationControls - SortByY - why does this mess up CollectionVIews?");
+                            SortByY(parentCollection.ViewModel.DocumentViewModels);
+                            (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = false;
+                        }
                     }));
 
-
+            
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
+            }
+        }
+        static void SortByY( ObservableCollection<DocumentViewModel> docViewModels)
+        {
+            var sl = new SortedList<double, List<DocumentViewModel>>();
+            foreach (var d in docViewModels)
+            {
+                var pos = d.DocumentController.GetPositionField()?.Data.Y ?? double.MaxValue;
+                if (sl.ContainsKey(pos))
+                {
+                    sl[pos].Add(d);
+                }
+                else
+                {
+                    sl.Add(pos, new List<DocumentViewModel>(new DocumentViewModel[] { d }));
+                }
+            }
+            docViewModels.Clear();
+            foreach (var s in sl)
+            {
+                foreach (var d in s.Value)
+                    docViewModels.Add(d);
             }
         }
         public List<DocumentView> GroupViews(List<DocumentViewModel> groups)

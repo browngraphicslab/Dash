@@ -933,7 +933,7 @@ namespace Dash
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && !ViewModel.Undecorated
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
 
@@ -1122,7 +1122,9 @@ namespace Dash
                                     Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                                     new Point();
                                 nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = true;
                                 collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = false;
 
                             }
                             return true;
