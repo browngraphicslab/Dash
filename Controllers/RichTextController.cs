@@ -91,6 +91,22 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public StringSearchModel SearchForStringInRichText(string searchString)
+        {
+            int maxStringSize = 125;
+            int textDecrementForContext = 15;
+
+            var lowerData = Data.RtfFormatString.ToLower();
+            if (lowerData.Contains(searchString))
+            {
+                var index = lowerData.IndexOf(searchString);
+                index = Math.Max(0, index - textDecrementForContext);
+                var substring = Data.RtfFormatString.Substring(index, Math.Min(maxStringSize, Data.RtfFormatString.Length - index));
+                return new StringSearchModel(substring);
+            }
+            return StringSearchModel.False;
+        }
+
         // bcz: just want the basic behavior of converting the field into a string.. no need to override.
         //public override FrameworkElement GetTableCellView(Context context)
         //{

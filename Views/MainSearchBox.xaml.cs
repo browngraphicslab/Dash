@@ -288,13 +288,30 @@ namespace Dash
                 {
                     return GroupMembershipSearch(criteria);
                 }
+                if (criteria.SearchCategory == "rtf" ||
+                    criteria.SearchCategory == "rt" ||
+                    criteria.SearchCategory == "richtext" ||
+                    criteria.SearchCategory == "richtextformat")
+                {
+                    return RichTextContains(criteria);
+                }
                 return GenericSpecialSearch(criteria);
+            }
+
+            private static IEnumerable<SearchResultViewModel> RichTextContains(SpecialSearchCriteria criteria)
+            {
+                var tree = DocumentTree.MainPageTree;
+                return LocalSearch("").Where(vm => tree[vm?.ViewDocument?.Id] != null &&
+                                                   (tree[vm.ViewDocument.Id].DataDocument.EnumFields(false)
+                                                       .Any(f => (f.Value is RichTextController) &&!
+                                                                 ((RichTextController) f.Value)
+                                                                 .SearchForStringInRichText(criteria.SearchText).StringFound)));
             }
 
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
                 var tree = DocumentTree.MainPageTree;
-                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null);
+                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null).ToArray();
                 var map = new Dictionary<DocumentNode, SearchResultViewModel>();
                 foreach (var vm in localSearch)
                 {
@@ -303,8 +320,9 @@ namespace Dash
                         map[peer] = vm;
                     }
                 }
+                var allPeers = localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).DistinctBy(i => i.Id).ToArray();
 
-                return localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));
+                return allPeers.Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));
             }
 
             private static SearchResultViewModel MakeAdjacentSearchResultViewModel(DocumentNode node, SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)

@@ -68,6 +68,7 @@ namespace Dash
 
             var childPossibleGroups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
             var childGroups = childPossibleGroups.Where(doc => doc.GetDataDocument().GetField(KeyStore.GroupingKey) != null); //treats individuals NOT as groups of size 1
+            var individualGroups = childPossibleGroups.Where(doc => doc.GetDataDocument().GetField(KeyStore.GroupingKey) == null);
 
             var childNodes = new Dictionary<string,DocumentNode>(childDocuments.Count);
 
@@ -98,6 +99,12 @@ namespace Dash
                 }
             }
 
+
+            foreach (var individual in individualGroups)
+            {
+                var groupNode = CreateNode(individual);
+                groupNode.AddParentGroup(groupNode);
+            }
 
             //recuresively parse
             var toParse = childNodes.Values.Where(i => !_parsed.Contains(i)).ToList();
