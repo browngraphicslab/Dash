@@ -38,11 +38,11 @@
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="50" Width="*"/>
-            <ColumnDefinition Width="11"/>
             <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="11"/>
+            <ColumnDefinition MinWidth="50" Width="*"/>
         </Grid.ColumnDefinitions>
-        <Grid x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition>
                     
@@ -73,7 +73,7 @@
                 </Grid>
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
-        <Grid Grid.Column="2">
+        <Grid >
             <Grid.RowDefinitions>
                 <RowDefinition Height="35"/>
                 <RowDefinition Height="*"/>
