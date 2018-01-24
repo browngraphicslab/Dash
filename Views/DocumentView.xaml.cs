@@ -933,7 +933,7 @@ namespace Dash
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && !ViewModel.Undecorated
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
 

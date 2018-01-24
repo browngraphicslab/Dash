@@ -436,7 +436,7 @@ namespace Dash
                         if (parentCollection != null)
                         {
                             (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = true;
-                            Debug.WriteLine("ManipulationControls - SortByY - why does this mess up CollectionVIews?")
+                            Debug.WriteLine("ManipulationControls - SortByY - why does this mess up CollectionVIews?");
                             SortByY(parentCollection.ViewModel.DocumentViewModels);
                             (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = false;
                         }
