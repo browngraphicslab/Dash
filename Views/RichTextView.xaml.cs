@@ -94,7 +94,7 @@ namespace Dash
 
             _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
 
-            xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+            //xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
             xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
             {
                 var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
@@ -886,6 +886,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                 }
             }
+
             if (!ctrlState && !altState)
             {
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
@@ -895,22 +896,20 @@ namespace Dash
 
         private void handleControlPressed(object sender, KeyRoutedEventArgs e)
         {
-            var selection = xRichEditBox.Document.Selection;
             if (e.Key.Equals(VirtualKey.B))
             {
-                _rtfHelper.Bold(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+                //xRichEditBox.Document.Selection.CharacterFormat.Bold = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.I))
             {
-                _rtfHelper.Italicize(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
-                e.Handled = true;
+                //xRichEditBox.Document.Selection.CharacterFormat.Italic = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.U))
             {
-                _rtfHelper.Underline(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+                //xRichEditBox.Document.Selection.CharacterFormat.Underline = xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None ? UnderlineType.Single : UnderlineType.None;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.F))
             {
@@ -930,6 +929,8 @@ namespace Dash
             {
                 OpenContextMenu(sender);
             }
+
+            e.Handled = true;
         }
 
         private void xRichEditBox_SelectionChanged_1(object sender, RoutedEventArgs e)
