@@ -92,6 +92,21 @@ namespace Dash
         }
 
         /// <summary>
+        /// Transforms rect in from-spcae to a rect in to-space
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="from"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
+        public static Rect RectTransformFromVisual(Rect rect, UIElement from, UIElement to = null)
+        {
+            if (to == null) to = Window.Current.Content;
+            var topLeftPoint = @from.TransformToVisual(to).TransformPoint(new Point(rect.Left, rect.Top));
+            var bottomRightPoint = @from.TransformToVisual(to).TransformPoint(new Point(rect.Right, rect.Bottom));
+            return new Rect(topLeftPoint, bottomRightPoint);
+        }
+
+        /// <summary>
         ///     Given a position relative to the MainPage, returns the transformed position corresponding
         ///     to the given collection's freeform view.
         /// </summary>
@@ -197,6 +212,17 @@ namespace Dash
                                 break;
                             }
                             throw new NotImplementedException();
+                        }
+                        else if (pair.Value is PointController)
+                        {
+                            var fmContA = pair.Value as PointController;
+                            var fmContB =
+                                enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as PointController;
+                            if (!fmContA.Data.Equals(fmContB.Data))
+                            {
+                                equal = false;
+                                break;
+                            }
                         }
                         else
                         {
@@ -472,40 +498,6 @@ namespace Dash
             rsquared = dblR * dblR;
             yintercept = meanY - sCo / ssX * meanX;
             slope = sCo / ssX;
-        }
-
-
-        /// <summary>
-        /// Converts a string to a field model controller
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static FieldControllerBase StringToFieldModelController(string expression)
-        {
-            // check for number field model controller
-            var num = IsNumeric(expression);
-            if (num.HasValue)
-                return new NumberController(num.Value);
-
-            string[] imageExtensions = {"jpg", "bmp", "gif", "png"}; //  etc
-
-            if (imageExtensions.Any(expression.EndsWith))
-                return new ImageController(new Uri(expression));
-            return new TextController(expression);
-        }
-
-
-        /// <summary>
-        ///     Returns the double represenation of the string if possible otherwise null
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static double? IsNumeric(string expression)
-        {
-            var isNum = double.TryParse(expression, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out double ret);
-            if (isNum)
-                return ret;
-            return null;
         }
 
         public static DocumentController BlankDocWithPosition(Point pos)

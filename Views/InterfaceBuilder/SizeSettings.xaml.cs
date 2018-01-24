@@ -33,7 +33,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Converter = new StringToDoubleConverter(0),
+                Converter = new DoubleToStringConverter(0),
                 Context = context
             };
             xHeightTextBox.AddFieldBinding(TextBox.TextProperty, binding);
@@ -47,7 +47,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Converter = new StringToDoubleConverter(0),
+                Converter = new DoubleToStringConverter(0),
                 Context = context
             };
             xWidthTextBox.AddFieldBinding(TextBox.TextProperty, binding);

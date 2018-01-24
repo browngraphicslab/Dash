@@ -93,7 +93,7 @@ namespace Dash
         public bool MenuOpen
         {
             get => _menuOpen;
-            set => SetProperty(ref _menuOpen, value);
+            set => SetProperty(ref _menuOpen, value); 
         }
 
         public IconTypeEnum IconType => iconType;
@@ -179,7 +179,7 @@ namespace Dash
         }
 
         private Rect _groupingBounds;
-
+        private Rect _bounds;
         public void UpdateActualSize(double actualwidth, double actualheight)
         {
             _actualWidth = actualwidth;
@@ -198,10 +198,20 @@ namespace Dash
                 Y = GroupTransform.Translate.Y
             }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
                 _actualHeight + 2 * GroupMargin));
+
+            _bounds = new TranslateTransform
+            {
+                X = GroupTransform.Translate.X,
+                Y = GroupTransform.Translate.Y
+            }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
         }
 
+        /// <summary>
+        /// Bounds that include the group margin
+        /// </summary>
         public Rect GroupingBounds => _groupingBounds;
 
+        public Rect Bounds => _bounds;
         public void TransformDelta(TransformGroupData delta)
         {
             var currentTranslate = GroupTransform.Translate;

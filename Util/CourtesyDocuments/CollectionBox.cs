@@ -18,6 +18,12 @@ namespace Dash
     {
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
+
+        /// <summary>
+        /// If the view type is unassigned this is the default view displayed to the user
+        /// </summary>
+        private static readonly string DefaultCollectionView = CollectionView.CollectionViewType.Grid.ToString();
+
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
@@ -59,18 +65,15 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
         {
+
+            // get a collection and collection view model from the data
             var data = docController.GetField(KeyStore.DataKey);
-
-            var opacity = (docController.GetDereferencedField(new KeyController("opacity", "opacity"), context) as NumberController)?.Data;
-
-            double opacityValue = opacity.HasValue ? (double)opacity : 1;
-
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
             var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
-            
 
-            var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController).Data;
+            // set the view type (i.e. list, grid, freeform)
+            var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? DefaultCollectionView;
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
             var view       = new CollectionView(collectionViewModel,  viewType);
 
@@ -84,15 +87,8 @@ namespace Dash
                     new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
             }
 
+            SetupBindings(view, docController, context);
 
-
-            //if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType &&
-            //    context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.HomePageType)
-            //{
-                SetupBindings(view, docController, context);
-            //}
-
-            view.Opacity = opacityValue;
             if (isInterfaceBuilderLayout)
             {
                 SelectableContainer container = new SelectableContainer(view, docController, dataDocument);

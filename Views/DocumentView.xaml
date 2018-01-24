@@ -114,9 +114,13 @@
 
             <!--The selection border-->
             <Border Name="xSelectionBorder"/>
-            
-            <Ellipse HorizontalAlignment="Right" x:Name="OperatorEllipse" VerticalAlignment="Top" Width="35" Height="35" Margin="0, 0, -50, 0" Fill="Goldenrod" Visibility="Collapsed"
-                     CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" />
+
+            <Border Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+                <Ellipse x:Name="OperatorEllipse"  Style="{StaticResource xFieldLinkHandle}"
+                         Visibility="Collapsed"
+                         CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" />
+            </Border>
+
             
             <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
         </Grid>

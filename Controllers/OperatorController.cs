@@ -64,16 +64,6 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Operator;
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
-        }
-
         public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();

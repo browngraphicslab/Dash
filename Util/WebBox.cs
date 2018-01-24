@@ -118,9 +118,10 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
                 Name = "overgrid"
+                ,IsHitTestVisible = false
             };
             grid.Children.Add(overgrid);
-            web.Tag = new Tuple<Point,Point>(new Point(), new Point()); // hack for allowing web page to be dragged with right mouse button
+            web.Tag = new Tuple<Point,bool,Point>(new Point(), false, new Point()); // hack for allowing web page to be dragged with right mouse button
 
             if (html == null)
                 SetupBindings(web, docController, context);
@@ -193,7 +194,6 @@ namespace Dash
                 })()"
             });
         }
-
         // document.getElementsByTagName('table')
         //tableToJson = function(table)
         //{
@@ -228,43 +228,75 @@ namespace Dash
         private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
         {
             var web = sender as WebView;
-            var down_and_offset = (Tuple<Point,Point>)web.Tag;
-            var down = down_and_offset.Item1;
-            var offset = down_and_offset.Item2;
+            var down_and_right_and_last = (Tuple<Point,bool, Point>)web.Tag;
+            var down = down_and_right_and_last.Item1;
+            var right = down_and_right_and_last.Item2;
+            var last = down_and_right_and_last.Item3;
             var parent = web.GetFirstAncestorOfType<DocumentView>();
             if (parent == null)
                 return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-            if (e.Value == "2") // right mouse button == 2
+
+            if (e.Value == "0")
+            {
+                parent.DocumentView_PointerEntered(null, null);
+                var docView = web.GetFirstAncestorOfType<DocumentView>();
+                docView?.ToFront();
+                web.Tag = new Tuple<Point, bool, Point>(new Point(), false, new Point());
+            } else if (e.Value == "2") // right mouse button == 2
             {
                 var docView = web.GetFirstAncestorOfType<DocumentView>();
                 docView?.ToFront();
-                var rt = parent.RenderTransform.TransformPoint(new Point());
-                web.Tag = new Tuple<Point,Point>( pointerPosition, new Point(pointerPosition.X - rt.X, pointerPosition.Y - rt.Y));
+                //var rt = parent.RenderTransform.TransformPoint(new Point());
+                var rt = new Point();
+                web.Tag = new Tuple<Point, bool, Point>(pointerPosition, true, pointerPosition);
+                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
+                parent.DocumentView_PointerEntered(null, null);
             }
-            else if (e.Value == "move" && offset != new Point())
+            else if (e.Value == "move" && right)
             {
-                parent.RenderTransform = new TranslateTransform() { X = pointerPosition.X-offset.X, Y = pointerPosition.Y-offset.Y };
+                var translation = new Point(pointerPosition.X - last.X, pointerPosition.Y - last.Y);
+                last = pointerPosition;
+                if (parent.ManipulationControls != null)
+                {
+                    parent.ManipulationControls.TranslateAndScale(new
+                        ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
+                            translation,
+                            1.0f), parent.ManipulationControls._grouping);
+
+                    //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
+                    if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
+                        parent.ManipulationControls.Snap(true);
+                }
+                web.Tag = new Tuple<Point, bool, Point>(down, right, last);
+            }
+            else if (e.Value == "move")
+            {
+                parent.DocumentView_PointerEntered(null, null);
             }
             else if (e.Value == "up")
             {
-                web.Tag = new Tuple<Point, Point>(new Point(), new Point());
+                web.Tag = new Tuple<Point, bool, Point>(new Point(), false, new Point());
                 if (Math.Sqrt((pointerPosition.X - down.X) * (pointerPosition.X - down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
                 {
-                    parent.RightTap();
+                    if (right)
+                        parent.RightTap();
                     parent.OnTapped(null, null);
                 }
                 else
                 {
-                    parent.MoveToContainingCollection();
+                    parent.OnTapped(null, null);
+                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
                 }
 
+                parent.DocumentView_PointerExited(null, null);
+                parent.DocumentView_ManipulationCompleted(null, null);
 
                 // web.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString()); " });
 
                 //web.InvokeScriptAsync("eval", new[] { "window.scrollTo(0, 572); " });
                 // web.InvokeScriptAsync("eval", new[] { "window.open('http://www.msn.com', window.name, '');" });
-            } 
+            }
         }
 
         private static void Web_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)

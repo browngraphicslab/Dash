@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI;
+using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -53,7 +55,7 @@ namespace Dash
 
     public sealed partial class CollectionTimelineView : SelectionElement, ICollectionView
     {
-        private readonly AdvancedCollectionView _contextList;
+        private readonly ObservableCollection<TimelineElementViewModel> _contextList;
 
         private readonly Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler> _docViewModelToHandler =
             new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
@@ -61,25 +63,32 @@ namespace Dash
 
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
 
+        public double CurrentXPosition { get; set; }
+
+        public List<double> DisplayedXPositions { get; private set; }
+
 
         public CollectionTimelineView()
         {
             this.InitializeComponent();
-            _contextList = new AdvancedCollectionView(new List<TimelineElementViewModel>(), true);
-            _contextList.SortDescriptions.Add(new SortDescription(SortDirection.Ascending,
-                Comparer<TimelineElementViewModel>.Create(
-                    (x, y) => x.DocumentContext.CreationTimeTicks > y.DocumentContext.CreationTimeTicks
-                        ? 1
-                        : x.DocumentContext.CreationTimeTicks < y.DocumentContext.CreationTimeTicks
-                            ? -1
-                            : 0)));
+            _contextList = new ObservableCollection<TimelineElementViewModel>();
             DataContextChanged += OnDataContextChanged;
+
             Unloaded += CollectionTimelineView_Unloaded;
 
             Metadata = new TimelineMetadata
             {
                 LeftRightMargin = 160
             };
+
+            DisplayedXPositions = new List<double>();
+
+            Loaded += CollectionTimelineView_Loaded;
+        }
+
+        private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
+        {
+            CollectionTimelineView_OnSizeChanged(null, null);
         }
 
         public TimelineMetadata Metadata { get; }
@@ -91,10 +100,11 @@ namespace Dash
         {
             try
             {
-                Metadata.MinTime = _contextList.Source.Cast<TimelineElementViewModel>()
-                    .Min(vm => vm.DocumentContext.CreationTimeTicks);
-                Metadata.MaxTime = _contextList.Source.Cast<TimelineElementViewModel>()
-                    .Max(vm => vm.DocumentContext.CreationTimeTicks);
+                
+                
+                Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
+                Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
+                
                 MetadataUpdated?.Invoke();
             }
             catch (Exception e)
@@ -105,9 +115,29 @@ namespace Dash
 
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            DisplayedXPositions = new List<double>();
+            SetTimelineFormatting();
+        }
+
+        private void SetTimelineFormatting()
+        {
+            xScrollViewer.Width = ActualWidth;
+            xScrollViewer.Height = ActualHeight - 80;
+            Canvas.SetTop(xItemsControl, 17 - ActualHeight / 2);
+
+            CurrentXPosition = 0;
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
             MetadataUpdated?.Invoke();
+
+            SetTimelineWidth(CurrentXPosition + 100);
+        }
+
+        private void SetTimelineWidth(double width)
+        {
+            xHorizontalLine.Width = width;
+            Canvas.SetLeft(xVerticalLineRight, width + 80);
+            xScrollViewCanvas.Width = width + 130;
         }
 
         #region ContextManagement
@@ -115,6 +145,7 @@ namespace Dash
         private void CollectionTimelineView_Unloaded(object sender, RoutedEventArgs e)
         {
             RemoveViewModelEvents(ViewModel);
+            CurrentXPosition = 0;
             Unloaded -= CollectionTimelineView_Unloaded;
         }
 
@@ -136,17 +167,14 @@ namespace Dash
 
         private void Initialize(ICollectionViewModel viewModel)
         {
-            using (_contextList.DeferRefresh())
+            foreach (var dvm in viewModel.DocumentViewModels)
             {
-                foreach (var dvm in viewModel.DocumentViewModels)
-                {
-                    var docContexts = GetWebContextFromDocViewModel(dvm).TypedData
-                        .Select(i => i.Data.CreateObject<DocumentContext>());
-                    foreach (var dc in docContexts)
-                        _contextList.Add(new TimelineElementViewModel(dc, dvm));
-                }
-                UpdateMetadataMinAndMax();
+                var docContexts = GetWebContextFromDocViewModel(dvm).TypedData
+                    .Select(i => i.Data.CreateObject<DocumentContext>());
+                foreach (var dc in docContexts)
+                    _contextList.Add(new TimelineElementViewModel(dc, dvm));
             }
+            UpdateMetadataMinAndMax();
         }
 
         private void AddViewModelEvents(ICollectionViewModel viewModel)
@@ -210,22 +238,16 @@ namespace Dash
                     switch (properArgs.ListAction)
                     {
                         case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                            using (_contextList.DeferRefresh())
-                            {
-                                foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                    .CreateObject<DocumentContext>()))
-                                    _contextList.Add(new TimelineElementViewModel(dc, vm));
-                                UpdateMetadataMinAndMax();
-                            }
+                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
+                                .CreateObject<DocumentContext>()))
+                                _contextList.Add(new TimelineElementViewModel(dc, vm));
+                            UpdateMetadataMinAndMax();
                             break;
                         case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                            using (_contextList.DeferRefresh())
-                            {
-                                foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                    .CreateObject<DocumentContext>()))
-                                    _contextList.Add(new TimelineElementViewModel(dc, vm));
-                                UpdateMetadataMinAndMax();
-                            }
+                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
+                                .CreateObject<DocumentContext>()))
+                                _contextList.Add(new TimelineElementViewModel(dc, vm));
+                            UpdateMetadataMinAndMax();
                             break;
                         case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                             throw new NotImplementedException();

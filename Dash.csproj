@@ -30,7 +30,7 @@
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
     <Optimize>false</Optimize>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>ExtendedDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -122,6 +122,7 @@
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\Image\ImageToColorPalette.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
+    <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
@@ -131,6 +132,8 @@
     <Compile Include="Controllers\Operators\CompoundOperatorController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
+    <Compile Include="Converters\PointToStringConverter.cs" />
+    <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
@@ -163,6 +166,7 @@
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
@@ -171,8 +175,10 @@
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
     <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
+    <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\GroupManager.cs" />
+    <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
@@ -318,6 +324,9 @@
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ImageNode.xaml.cs">
+      <DependentUpon>ImageNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
     </Compile>
@@ -329,6 +338,9 @@
     </Compile>
     <Compile Include="Views\Operators\OperatorInputEntry.xaml.cs">
       <DependentUpon>OperatorInputEntry.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
+      <DependentUpon>SearchOperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -440,12 +452,11 @@
     <Compile Include="Controllers\InkController.cs" />
     <Compile Include="Models\InkModel.cs" />
     <Compile Include="Controllers\BaseListController.cs" />
-    <Compile Include="Controllers\Operators\DBSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
-    <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
     </Compile>
@@ -828,6 +839,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\ImageNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\KeyValueSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -845,6 +860,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\OperatorInputEntry.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Operators\SearchOperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

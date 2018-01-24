@@ -163,22 +163,7 @@ namespace Dash.Converters
             return null;
         }
     }
-    public class DocumentFieldModelToStringConverter : SafeDataToXamlConverter<DocumentController, string>
-    {
-        public DocumentFieldModelToStringConverter()
-        {
-        }
 
-        public override string ConvertDataToXaml(DocumentController data, object parameter = null)
-        {
-            return new DocumentControllerToStringConverter().ConvertDataToXaml(data);
-        }
-
-        public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
-        {
-            return new DocumentControllerToStringConverter().ConvertXamlToData(xaml);
-        }
-    }
     public class DocumentViewModelToStringConverter : SafeDataToXamlConverter<DocumentViewModel, string>
     {
         private DocumentViewModel _vm;

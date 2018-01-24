@@ -21,10 +21,12 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            var fieldControllerBase = (refToData as ReferenceController)?.GetDocumentController(null);
-            if (fieldControllerBase != null)
+
+            // try to apply a data document to the databox if the passed in refToData was actualyl a reference
+            var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
+            if (dataDoc != null)
             {
-                Document.SetField(KeyStore.DocumentContextKey, fieldControllerBase, true);
+                Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
             }
         }
 
@@ -38,15 +40,31 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
-            if (data is TextController)
-            {
-            }
-            else if (data is ImageController)
-            {
-            }
-            else if (data is ListController<DocumentController>)
-            {
 
+
+            if (data is ImageController)
+            {
+                return ImageBox.MakeView(documentController, context);
+            }
+            else if (data is ListController<DocumentController> docList)
+            {
+                var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
+                return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+            } else if (data is DocumentController dc)
+            {
+                // hack to check if the dc is a view document
+                if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
+                {
+                    return dc.MakeViewUI(context, isInterfaceBuilderLayout);
+                }
+                else
+                {
+                    return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
+                }
+            }
+            else
+            {
+                return TextingBox.MakeView(documentController, context);
             }
             return new Grid();
         }

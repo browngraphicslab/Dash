@@ -8,5 +8,5 @@
     mc:Ignorable="d" >
 
     <!--image-->
-    <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache"/>
+    <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache"/>
 </UserControl>

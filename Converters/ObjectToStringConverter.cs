@@ -11,12 +11,13 @@ namespace Dash
 {
     public class ObjectToStringConverter : SafeDataToXamlConverter<object, string>
     {
-        private Context _context;
+        private readonly Context _context;
 
         public ObjectToStringConverter(Context context)
         {
             _context = context;
         }
+
         public ObjectToStringConverter()
         {
             _context = null;
@@ -24,26 +25,21 @@ namespace Dash
 
         public override string ConvertDataToXaml(object refField, object parameter = null)
         {
+
+            // convert references to a string representation
             var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) ?? refField;
 
-            if (fieldData is DocumentController)
-            {
-                return new DocumentControllerToStringConverter(_context).ConvertDataToXaml(fieldData as DocumentController);
-            }
-            if (fieldData is List<DocumentController>)
-            {
-                return new DocumentCollectionToStringConverter(_context).ConvertDataToXaml(fieldData as List<DocumentController>);
-            }
-
+            // convert ListControllers to a string representation
             var ilist = fieldData as IList;
             if (ilist != null)
             {
                 if (ilist.Count == 0)
                     return "<empty list>";
-                return "[" + String.Join(", ", ilist.Cast<object>().Select(o => o.ToString())) + "]";
+                return "[" + string.Join(", ", ilist.Cast<object>().Select(o => o.ToString())) + "]";
             }
 
-            return fieldData == null || fieldData is ReferenceController ? "<null>" : fieldData.ToString();
+            // use null as a fallback value if we have nothing better
+            return fieldData == null ? "<null>" : fieldData.ToString();
          }
 
         public override object ConvertXamlToData(string xaml, object parameter = null)

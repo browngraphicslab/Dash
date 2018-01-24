@@ -65,7 +65,7 @@ namespace Dash
             foreach (var header in headers)
             {
                 var key = new KeyController(DashShared.UtilShared.GenerateNewId(), header);
-                var field = Util.StringToFieldModelController(csv[header]).GetDefaultController();
+                var field = FieldConversion.StringToFieldModelController(csv[header]).GetDefaultController();
                 protoFieldDict.Add(key, field);
                 headerToFieldMap.Add(header, field);
                 headerToKeyMap.Add(header, key);
@@ -82,14 +82,14 @@ namespace Dash
                 var delgate = protoDoc.MakeDelegate();
                 foreach (var header in headers)
                 {
-                    delgate.SetField(headerToKeyMap[header], Util.StringToFieldModelController(csv[header]), true);
+                    delgate.SetField(headerToKeyMap[header], FieldConversion.StringToFieldModelController(csv[header]), true);
                 }
                 rowDocs.Add(delgate);
             } while (csv.Read());
 
 
 
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, 200, 200, rowDocs);
+            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: rowDocs);
 
             return cnote.Document;
         }

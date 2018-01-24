@@ -75,7 +75,6 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             DataContextChanged += DocumentView_DataContextChanged;
-
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
@@ -128,12 +127,16 @@ namespace Dash
                 if (_ptrIn) ShowLocalContext(true);
             }
 
-            if (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift))
+            if (ViewModel != null && (ViewModel.IsLowestSelected && 
+                                      (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                                      e.VirtualKey.Equals(VirtualKey.Enter)))
             {
-                if (e.VirtualKey.Equals(VirtualKey.Enter))
-                {
-                    HandleShiftEnter();
-                }
+                // don't shift enter on key value documents
+                if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                    ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                    return;
+
+                HandleShiftEnter();
             }
         }
 
@@ -432,7 +435,6 @@ namespace Dash
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
-            FileDropHelper.HandleDropOnDocument(this, e);
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
         }
 
@@ -470,6 +472,13 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
+            if (ViewModel != null && !ViewModel.Undecorated)
+            {
+                // add manipulation code
+                ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+                ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            }
+
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
@@ -495,11 +504,11 @@ namespace Dash
             }
 
             ToFront();
-            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true) return;
-
-            // TODO this causes groups to show up, and needs to be moved
-            if (this.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                ManipulationControls.ManipulationCompleted(null, false);
+            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true)
+            {
+                ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
+                return;
+            }
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -741,13 +750,6 @@ namespace Dash
 
 
                 ViewModel.SetHasTitle(this.IsLowestSelected);
-                
-                if (!ViewModel.Undecorated  && ManipulationControls == null)
-                {
-                    // add manipulation code
-                    ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-                    ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
-                }
             }
         }
 
@@ -829,8 +831,8 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
-            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            (ParentCollection?.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
+            ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void OpenLayout()
@@ -928,21 +930,19 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Turn the selection border on or off based on isBorderOn, also toggles the title
-        /// icon visibility based on isBorderOn unless the user specifically overrides this
-        /// behavior with isTitleVisible
-        /// </summary>
-        private void ToggleSelectionBorder(bool isBorderOn, bool? isTitleVisible = null)
+        private void ToggleSelectionBorder(bool isBorderOn, bool isOtherChromeVisible = true)
         {
 
             // change the thickness of the border so that it's visible
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isTitleVisible ?? isBorderOn
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && !ViewModel.Undecorated
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
+
+
+            OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
@@ -1037,8 +1037,6 @@ namespace Dash
         {
             ViewModel?.SetLowestSelected(this, isLowestSelected);
             ViewModel?.SetHasTitle(isLowestSelected);
-
-            OperatorEllipse.Visibility = isLowestSelected ? Visibility.Visible : Visibility.Collapsed;
         }
 
         #endregion
@@ -1114,24 +1112,15 @@ namespace Dash
                         if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
                             var key = keyString.Substring(1);
-                            bool found = false;
-                            foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
-                            {
-                                if (k.Name == key)
-                                {
-                                    (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                    (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                                    found = true;
-                                }
+                            var k = KeyController.LookupKeyByName(key);
+                            var keyasgn = "";
+                            if (k == null) {
+                                var splits = key.Split("=");
+                                keyasgn = splits.Length > 1 ? splits[1] : "";
+                                k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
                             }
-
-                            if (!found)
-                            {
-                                var k = new KeyController(UtilShared.GenerateNewId(), key);
-                                (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                            }
-
+                            (nestedCollection.CurrentView as CollectionPageView).SetHackText(k, keyasgn);
+                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
 
                             this.DeleteDocument();
                             return;
@@ -1440,17 +1429,44 @@ namespace Dash
         public void HandleShiftEnter()
         {
             if (ViewModel.IsLowestSelected == false) return;
+
+
+
+
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+
+
+
+            // special case for search operators
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+            {
+                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) is SearchOperatorController)
+                {
+                    var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
+
+                    operatorDoc.SetField(SearchOperatorController.InputCollection,
+                        new DocumentReferenceController(ViewModel.DocumentController.Id,
+                            SearchOperatorController.ResultsKey), true);
+
+                    // TODO connect output to input
+
+                    Actions.DisplayDocument(collection.ViewModel, operatorDoc, where);
+                    return;
+                }
+            }
+
+
             collection.LoadNewActiveTextBox("", where, true);
         }
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties["Operator Document"] = ViewModel.DocumentController.GetDataDocument(null);
+            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
+            args.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 }

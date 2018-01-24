@@ -35,13 +35,13 @@ namespace Dash
 
                 var parentCollection = parentDocument.ParentCollection;
                 List<DocumentViewModel> groupings = new List<DocumentViewModel>();
-                foreach (var dv in docsToReassign.TypedData.Select((d) => parentCollection.GetDocumentViewModel(d)))
+                foreach (var dv in docsToReassign.TypedData.Select(d => parentCollection.GetDocumentViewModel(d)).ToList())
                 {
                     if (dv != null)
                         groupings = SetupGroupings(dv, parentDocument.ParentCollection);
                 }
 
-                foreach (var dv in docsToReassign.TypedData.Select((d) => parentCollection.GetDocumentViewModel(d)))
+                foreach (var dv in docsToReassign.TypedData.Select((d) => parentCollection.GetDocumentViewModel(d)).ToList())
                 {
                     if (dv != null && parentDocument.ParentCollection.GetDocumentGroup(dv.DocumentController) == null &&
                         !dv.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))

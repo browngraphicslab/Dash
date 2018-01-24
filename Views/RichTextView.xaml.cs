@@ -245,11 +245,15 @@ namespace Dash
                 if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                 {
                     var pt = point;
-                    pt.X -= 150;
-                    pt.Y -= 50;
+                    pt.X += 150;
+                    pt.Y += 50;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
                         theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                    MainPage.Instance.DisplayDocument(theDoc.GetViewCopy(pt));
+                    var collection = this.GetFirstAncestorOfType<CollectionView>();
+                    if (collection != null)
+                    {
+                        Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                    }
                 }
                 else if (target.StartsWith("http"))
                 {
@@ -259,7 +263,11 @@ namespace Dash
                         var pt = point;
                         pt.X -= 150;
                         pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                        var collection = this.GetFirstAncestorOfType<CollectionView>();
+                        if (collection != null)
+                        {
+                            Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                        }
                     }
                     else
                     {
@@ -350,6 +358,10 @@ namespace Dash
             {
                 var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
                 theDoc = docCtrls.First();
+            }
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                theDoc = e.DataView.Properties["Operator Document"] as DocumentController;
             }
             var forceLocal = true;
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
@@ -524,6 +536,8 @@ namespace Dash
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var parent = this.GetFirstAncestorOfType<DocumentView>();
+            if (parent.ManipulationControls == null)
+                return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             _rightDragLastPosition = pointerPosition;
@@ -531,7 +545,10 @@ namespace Dash
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
                     1.0f), parent.ManipulationControls._grouping);
-            parent.ManipulationControls.Snap(true);
+
+            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
+            if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
+                parent.ManipulationControls.Snap(true);
         }
 
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -551,7 +568,7 @@ namespace Dash
                 if (dist < 100)
                     parent.OnTapped(sender, new TappedRoutedEventArgs());
                 else
-                    parent.ManipulationControls.ElementOnManipulationCompleted(null, null);
+                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
                 var dvm = parent.ViewModel;
                 parent.DocumentView_PointerExited(null, null);
                 parent.DocumentView_ManipulationCompleted(null, null);

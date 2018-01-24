@@ -22,7 +22,6 @@ using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
 using Dash.Controllers.Operators;
-using static Dash.Controllers.Operators.DBSearchOperatorController;
 using static Dash.NoteDocuments;
 using Dash.Views.Document_Menu;
 
@@ -208,7 +207,7 @@ namespace Dash
             picker.FileTypeFilter.Add(".jpeg");
             picker.FileTypeFilter.Add(".png");
             var results = await picker.PickMultipleFilesAsync();
-            FileDropHelper.HandleDropOnCollection(results, collectionView, where);
+            // TODO someone finish this method, sorry I had to remove deprecated code that added this to collections - LSM
         }
 
         #region Ink Commands

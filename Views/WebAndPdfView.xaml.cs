@@ -46,8 +46,6 @@ namespace Dash
 
     public sealed partial class WebAndPdfView : UserControl, INotifyPropertyChanged
     {
-
-
         private Uri _source;
 
         public Uri Source
@@ -57,8 +55,8 @@ namespace Dash
             {
                 try
                 {
-                    Debug.WriteLine($"WEBPDF SOURCE: {Source}");
-                    if (Source != null && Source.Equals(value)) return;
+                    if (Source != null && Source.Equals(value)|| value.AbsoluteUri.StartsWith("chrome-extension://")) return;
+                    Debug.WriteLine($"WEBPDF SOURCE: {value}");
                     _source = value;
                     OnPropertyChanged();
                 }
@@ -73,26 +71,17 @@ namespace Dash
         public WebAndPdfView()
         {
             this.InitializeComponent();
-            Loaded += WebAndPdfView_Loaded;
+            Loaded += (sender, args) =>
+            {
+                if (Source != null) xWebContent.Source = Source;
+            };
         }
 
         public WebAndPdfView(Uri source) : this()
         {
-            try
-            {
-                Source = source;
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
+            Source = source;
         }
 
-        private void WebAndPdfView_Loaded(object sender, RoutedEventArgs e)
-        {
-            xWebContent.Source = Source;
-        }
 
         private void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
         {

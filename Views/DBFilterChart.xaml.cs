@@ -70,7 +70,7 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     Document = OpDoc,
                     Key = DBFilterOperatorController.SelfAvgResultKey,
-                    Converter = new StringToDoubleConverter(),
+                    Converter = new DoubleToStringConverter(),
                     Context = new Context(OpDoc)
                 });
             }

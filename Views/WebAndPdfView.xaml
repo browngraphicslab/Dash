@@ -13,7 +13,8 @@
         <WebView x:Name="xWebContent"
             NavigationStarting="WebView_OnNavigationStarting"
             NavigationCompleted="WebView_OnNavigationCompleted"
-            UnviewableContentIdentified="WebView_OnUnviewableContentIdentified"/>
+            UnviewableContentIdentified="WebView_OnUnviewableContentIdentified"
+            />
         <local:PdfView x:Name="xPdfContent" Visibility="Collapsed"/>
         <ProgressRing x:Name="xProgressRing" 
                       HorizontalAlignment="Center" VerticalAlignment="Center" 

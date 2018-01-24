@@ -32,22 +32,6 @@ namespace Dash
         /// </summary>
         public PointModel PointFieldModel => Model as PointModel;
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            var textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(Data)),
-                Mode = BindingMode.OneWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-        }
-
         public override FieldControllerBase GetDefaultController()
         {
             return new PointController(0, 0);
