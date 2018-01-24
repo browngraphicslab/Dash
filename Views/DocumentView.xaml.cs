@@ -1122,7 +1122,9 @@ namespace Dash
                                     Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                                     new Point();
                                 nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = true;
                                 collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = false;
 
                             }
                             return true;
