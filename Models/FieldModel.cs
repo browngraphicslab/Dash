@@ -17,11 +17,7 @@ namespace Dash
 
             // Add Any Events
         }
-
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
+        
         /// <summary>
         /// Implemented by inheritors of this class. Builds the server-representation data transfer object
         /// representing this field. This includes two fields: the TypeInfo and Data field.
