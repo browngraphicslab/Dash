@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using NewControls.Geometry;
 using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
+using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -433,10 +434,37 @@ namespace Dash
                             GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
                     }));
 
-
+            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
+            if (parentCollection != null)
+            {
+                SortByY( parentCollection.ViewModel.DocumentViewModels);
+            }
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
+            }
+        }
+        static void SortByY( ObservableCollection<DocumentViewModel> docViewModels)
+        {
+           
+            var sl = new SortedList<double, List<DocumentViewModel>>();
+            foreach (var d in docViewModels)
+            {
+                var pos = d.DocumentController.GetPositionField()?.Data.Y ?? double.MaxValue;
+                if (sl.ContainsKey(pos))
+                {
+                    sl[pos].Add(d);
+                }
+                else
+                {
+                    sl.Add(pos, new List<DocumentViewModel>(new DocumentViewModel[] { d }));
+                }
+            }
+            docViewModels.Clear();
+            foreach (var s in sl)
+            {
+                foreach (var d in s.Value)
+                    docViewModels.Add(d);
             }
         }
         public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
