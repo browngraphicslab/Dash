@@ -1245,8 +1245,19 @@ namespace Dash
                     var doc = controller.GetDataDocument();
                     var dataDoc = doc.GetDataDocument();
                     var imgUri = dataDoc.GetDataDocument(null).GetField<ImageController>(KeyStore.DataKey).Data.ToString();
-                    
+
+                    var termKey = dataDoc.GetDataDocument(null).EnumFields(true).Where(kvp => kvp.Key.Name.Equals("term")).FirstOrDefault();
+                    var term = dataDoc.GetDataDocument(null).GetField<TextController>(termKey.Key).Data;
+                    //var term = String.Empty;
+
+                    var definitionKey = dataDoc.GetDataDocument(null).EnumFields(true).Where(kvp => kvp.Key.Name.Equals("definition")).FirstOrDefault();
+                    var definition = dataDoc.GetDataDocument(null).GetField<TextController>(definitionKey.Key).Data;
+
+                    data.Add((term, definition, imgUri));
+
                 }
+
+
             }
 
             return data;
