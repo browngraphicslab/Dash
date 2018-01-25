@@ -12,10 +12,42 @@
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find"
                         QuerySubmitted="AutoSuggestBox_QuerySubmitted"
+                        TextChanged="XAutoSuggestBox_OnTextChanged"
+                        SuggestionChosen="XAutoSuggestBox_OnSuggestionChosen"
                         x:Name="xAutoSuggestBox"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
-        />    
-            
-        </Grid>
+                        >
+            <AutoSuggestBox.ItemTemplate>
+
+                <DataTemplate x:DataType="local:SearchResultViewModel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="32" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Border
+                            Background="Transparent"
+                            CanDrag="True">
+                            <TextBlock x:Name="xCollDragIcon"
+                                       FontFamily="{StaticResource FontAwesome}"
+                                       Foreground="{StaticResource TitleText}"
+                                       FontSize="15"
+                                       Text="{StaticResource DocumentIcon}"
+                                       HorizontalAlignment="Stretch"
+                                       VerticalAlignment="Center"
+                                       Height="32"
+                                       Width="32" />
+                        </Border>
+                        <StackPanel Orientation="Vertical" Margin="10,10,10,15" Grid.Column="1">
+
+                            <TextBlock Text="{Binding Title}" FontWeight="Medium" />
+                            <TextBlock Text="{Binding ContextualText}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </AutoSuggestBox.ItemTemplate>
+        </AutoSuggestBox>
+
+    </Grid>
 </UserControl>
