@@ -133,6 +133,7 @@ namespace Dash
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
             }
         }
+        public bool SuspendGroups = false;
 
         private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -148,9 +149,12 @@ namespace Dash
                     if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
-            
-            foreach (var dvm in ViewModel.DocumentViewModels)
-                GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
+
+            if (!SuspendGroups)
+            {
+                foreach (var dvm in ViewModel.DocumentViewModels)
+                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
+            }
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
