@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Networking.Sockets;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Media.Imaging;
@@ -173,9 +175,17 @@ namespace Dash
             }
             else
             {
-                if (read.Contains("{") || read.Length > 100)
+                if (!string.IsNullOrWhiteSpace(_prevPartialString) && !read.EndsWith(']'))
                 {
-                    var array = (_prevPartialString + read).CreateObjectList<BrowserRequest>();
+                    _prevPartialString += read;
+                    if (_prevPartialString.Length > 25000000)
+                    {
+                        _prevPartialString = "";
+                    }
+                }
+                else if (read.Contains("{") || read.Length > 100)
+                {
+                    var array = (_prevPartialString + read).CreateObjectList<BrowserRequest>().ToArray();
                     if (array.Count() == 0)
                     {
                         _prevPartialString += read;
@@ -306,8 +316,14 @@ namespace Dash
 
         public void FireImageUpdated(string imageData)
         {
+            Debug.WriteLine("Browser view image changed, with image different: "+ imageData != _imageData);
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                Task.Run(SameImageTask);
+            }
             _imageData = imageData;
             ImageDataChanged?.Invoke(this, imageData);
+            
         }
 
         /// <summary>
@@ -364,7 +380,9 @@ namespace Dash
 
         public string GetUrlHash()
         {
-            return UtilShared.GetDeterministicGuid(_url);
+            var hash =  UtilShared.GetDeterministicGuid(_url);
+            Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
+            return hash;
         }
 
         public DocumentContext GetAsContext()
@@ -379,5 +397,56 @@ namespace Dash
                 ImageId = GetUrlHash()
             };
         }
+
+        private Action SameImageTask = new Action(async () =>
+        {
+            var hash = MainPage.Instance.WebContext.GetUrlHash();
+            if (MainPage.Instance.WebContext.ImageData == null || File.Exists(ApplicationData.Current.LocalFolder.Path + hash + ".jpg"))
+            {
+                return;
+            }
+
+
+
+            var prefix = "data:image/jpeg;base64,";
+
+            byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData.StartsWith(prefix)
+                ? MainPage.Instance.WebContext.ImageData.Substring(prefix.Length)
+                : MainPage.Instance.WebContext.ImageData);
+            MemoryStream memoryStream = new MemoryStream(byteBuffer);
+            memoryStream.Position = 0;
+
+            await UITask.RunTask(async () =>
+            {
+                BitmapImage originalBitmap = new BitmapImage();
+                await originalBitmap.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                memoryStream.Close();
+                memoryStream = null;
+
+                var height = originalBitmap.PixelHeight;
+                var width = originalBitmap.PixelWidth;
+
+                memoryStream = new MemoryStream(byteBuffer);
+
+                var bitmapImage = new WriteableBitmap(width, height);
+                await bitmapImage.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                memoryStream.Close();
+                memoryStream = null;
+                byteBuffer = null;
+
+                var util = new ImageToDashUtil();
+
+                try
+                {
+                    await util.ParseBitmapAsync(bitmapImage, hash);
+                }
+                catch (Exception e)
+                {
+                    
+                }
+            });
+        });
     }
 }

@@ -35,7 +35,7 @@ namespace Dash
         /// </summary>
         public async Task<DocumentController> ParseBitmapAsync(WriteableBitmap bitmap, string title = null)
         {
-            var localFile = await CopyBitmapToLocal(bitmap);
+            var localFile = await CopyBitmapToLocal(bitmap, title);
 
             return await CreateImageBoxFromLocalFile(localFile, title);
         }
@@ -43,9 +43,9 @@ namespace Dash
         /// <summary>
         /// Copy a bitmap to the local file system, returns a refernece to the file in the local filesystem
         /// </summary>
-        private async Task<StorageFile> CopyBitmapToLocal(WriteableBitmap bitmap)
+        private async Task<StorageFile> CopyBitmapToLocal(WriteableBitmap bitmap, string title = null)
         {
-            var localFile = await CreateUniqueLocalFile();
+            var localFile = string.IsNullOrEmpty(title) ? await CreateUniqueLocalFile() :  await CreateLocalFile(title);
 
             // open a stream to the local file
             using (var stream = await localFile.OpenAsync(FileAccessMode.ReadWrite))
@@ -91,6 +91,17 @@ namespace Dash
         {
             var localFolder = ApplicationData.Current.LocalFolder;
             var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
+            var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+            return localFile;
+        }
+
+        /// <summary>
+        /// Create a unique file in the local folder
+        /// </summary>
+        private static async Task<StorageFile> CreateLocalFile(string fileName)
+        {
+            var localFolder = ApplicationData.Current.LocalFolder;
+            var uniqueFilePath = fileName + ".jpg"; // somehow this works for all images... who knew
             var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
             return localFile;
         }
