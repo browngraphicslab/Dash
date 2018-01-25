@@ -4,6 +4,7 @@ function tabManager(sendRequestFunction) {
     var activeTabId = 0;
     var prevActiveTabScroll = {}
     var awaitingUpdateTimers = {}
+    var windowId = 1;
 
     /*
     var updateScroll = function(tabId, scroll) {
@@ -17,6 +18,7 @@ function tabManager(sendRequestFunction) {
 
     var updateTab = function (tabId) {
         var update = function (tab) {
+            windowId = tab.windowId;
             var finalUpdate = function (result) {
                 if (tab != null) {
                     var requestBody = {
@@ -53,7 +55,7 @@ function tabManager(sendRequestFunction) {
             sendRequestFunction(requestBody);
             console.log("sent screenshot");
         }
-        chrome.tabs.captureVisibleTab(imgUpdate);
+        chrome.tabs.captureVisibleTab(windowId, {quality: 2}, imgUpdate);
     }
 
     var updateScrollFromId = function (tabId) {
