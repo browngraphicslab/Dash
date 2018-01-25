@@ -14,6 +14,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,6 +33,11 @@ namespace Dash
         }
 
         private DocumentController _refDoc;
+
+        /// <summary>
+        /// The type of this input
+        /// </summary>
+        private TypeInfo _inputType; // TODO currently this only is initialized in dragevents someone else should make this initialized in other places (datacontext changed) if they want...
 
         public OperatorInputEntry()
         {
@@ -71,13 +78,17 @@ namespace Dash
                 {
                     // the key we're dragging from
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
+                    // the operator controller the input is going to
                     var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
                     var el = sender as FrameworkElement;
                     // the key we're dropping on
                     var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                    // the type of the field we're dragging
                     var fieldType = new DocumentReferenceController(refDoc.Id, refKey).DereferenceToRoot(null).TypeInfo;
-                    var inputType = opField.Inputs[key].Type;
-                    e.AcceptedOperation = inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
+                    // the type of the input we're dragging on
+                    _inputType = opField.Inputs[key].Type;
+                    // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
+                    e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
                 else //There's just a document, and a key needs to be chosen later, so accept for now
                 {
