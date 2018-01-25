@@ -757,7 +757,7 @@ namespace Dash
 
         public TypeInfo GetRootFieldType(KeyController key)
         {
-            var operatorController = GetField<OperatorController>(key);
+            var operatorController = GetField<OperatorController>(KeyStore.OperatorKey);
             if (operatorController != null && operatorController.Outputs.ContainsKey(key))
             {
                 return operatorController.Outputs[key];

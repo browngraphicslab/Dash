@@ -49,6 +49,8 @@ namespace Dash
     {
         private BitmapImage _bitmapImage;
 
+        public Uri Source;
+
         public WebAndPdfView(DocumentContext context)
         {
             InitializeComponent();

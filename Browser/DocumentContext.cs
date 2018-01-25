@@ -40,7 +40,8 @@ namespace Dash
         public BitmapImage GetImage()
         {
             // TODO this is such a hack if it stops working its might be cause we stopped saving all images with .jpg cause that was insane to begin with
-            return new BitmapImage(new Uri(ApplicationData.Current.LocalFolder.Path + ImageId + ".jpg"));
+            var uriSource = new Uri(ApplicationData.Current.LocalFolder.Path + ImageId + ".jpg");
+            return new BitmapImage(uriSource);
         }
 
         //public async Task<DocumentController> GetImage()

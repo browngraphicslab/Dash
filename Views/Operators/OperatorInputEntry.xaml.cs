@@ -94,7 +94,7 @@ namespace Dash
                     // the key we're dropping on
                     var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
                     // the type of the field we're dragging
-                    var fieldType = new DocumentReferenceController(refDoc.Id, refKey).DereferenceToRoot(null).TypeInfo;
+                    var fieldType = refDoc.GetRootFieldType(refKey);
                     // the type of the input we're dragging on
                     _inputType = opField.Inputs[key].Type;
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything

@@ -7,9 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:DocumentContext}">
 
     <Grid Background="LightGray">
-        <Image x:Name="xContextImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Loaded="XContextImage_OnLoaded"/>
+        <Image x:Name="xContextImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
     </Grid>
 </UserControl>
