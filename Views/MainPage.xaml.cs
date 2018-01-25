@@ -28,6 +28,7 @@ using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -341,7 +342,9 @@ namespace Dash
 
             };
 
-            xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
+            collectionViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu
             //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);

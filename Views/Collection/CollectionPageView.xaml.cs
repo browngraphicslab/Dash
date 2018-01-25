@@ -45,6 +45,7 @@ namespace Dash
             };
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
+            this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
         }
@@ -92,10 +93,21 @@ namespace Dash
                     var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                     thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
                     ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
-
-                    CurPage = PageDocumentViewModels.First();
                 }
+                //^ CurPage = PageDocumentViewModels.First();
             }
+        }
+
+
+        private void xThumbs_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (xThumbs.Items.Count > 0)
+                xThumbs.SelectedIndex = 0;
+        }
+        private void xThumbs_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (xThumbs.Items.Count > 0)
+                xThumbs.SelectedIndex = 0;
         }
 
         KeyController CaptionKey = null;
@@ -179,8 +191,8 @@ namespace Dash
 
                 // replace old layout of page name/id with a new one because
                 // fieldbinding's can't be removed yet
-                xPageNumContainer.Children.Remove(xPageNum);
-                xPageNum = new TextBlock();
+                //xPageNumContainer.Children.Remove(xPageNum);
+                //xPageNum = new TextBlock();
 
 
                 var binding = new FieldBinding<TextController>()
@@ -196,8 +208,8 @@ namespace Dash
                     value.Content.Loaded += Content_Loaded;
                 }
 
-                xPageNumContainer.Children.Add(xPageNum);
-                xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
+                //xPageNumContainer.Children.Add(xPageNum);
+                //xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
 
                 SetHackText(CaptionKey, DisplayKey, DisplayString);
 
@@ -296,9 +308,6 @@ namespace Dash
         {
             ViewModel.SetSelected(this, isSelected);
             ViewModel.UpdateDocumentsOnSelection(isSelected);
-            if (isSelected)
-                xSplitter.Opacity = 1;
-            else xSplitter.Opacity = 0;
         }
 
 
@@ -315,7 +324,8 @@ namespace Dash
             if (CurPage != null)
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                CurPage = PageDocumentViewModels[Math.Max(0, ind - 1)];
+                xThumbs.SelectedIndex = Math.Max(0, ind - 1);
+               // CurPage = PageDocumentViewModels[Math.Max(0, ind - 1)];
             }
         }
 
@@ -324,7 +334,8 @@ namespace Dash
             if (CurPage != null)
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
+                xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
+               // CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
             }
         }
 
@@ -338,6 +349,16 @@ namespace Dash
         {
             var ind = xThumbs.SelectedIndex;
             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+            if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
+            {
+                var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
+                if (x != null)
+                {
+
+                    x.Focus(FocusState.Keyboard);
+                    x.Focus(FocusState.Pointer);
+                }
+            }
         }
 
         private void xPageNum_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -357,6 +378,8 @@ namespace Dash
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Handled)
+                return;
             if (e.Key == Windows.System.VirtualKey.PageDown || e.Key == Windows.System.VirtualKey.Down)
             {
                 NextButton_Click(sender, e);
@@ -365,6 +388,25 @@ namespace Dash
             if (e.Key == Windows.System.VirtualKey.PageUp || e.Key == Windows.System.VirtualKey.Up)
             {
                 PrevButton_Click(sender, e);
+                e.Handled = true;
+            }
+        }
+
+        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            args.Cancel = true;
+        }
+
+        private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xThumbs.Focus(FocusState.Pointer);
+        }
+        private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            var focus = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (focus == null || focus.GetFirstAncestorOfType<CollectionPageView>() != this || xThumbs.GetDescendants().Contains(focus))
+            {
+                xThumbs.Focus(FocusState.Pointer);
                 e.Handled = true;
             }
         }

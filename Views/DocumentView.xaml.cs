@@ -936,7 +936,7 @@ namespace Dash
                     : new SolidColorBrush(Colors.Transparent);
 
 
-            OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible ? Visibility.Visible : Visibility.Collapsed;
+            OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
