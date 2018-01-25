@@ -840,27 +840,28 @@ namespace Dash
 
             var compValue = composite.Value;
 
-            canvas.RenderTransform = new MatrixTransform { Matrix = compValue };
+            SetFreeformTransform(new MatrixTransform { Matrix = compValue });
         }
+
+
+
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
-            var delta = transformationDelta.Translate;
+            Debug.Assert(itemsPanelCanvas != null);
 
-            //Create initial translate and scale transforms
-            //Translate is in screen space, scale is in canvas space
-            var translate = new TranslateTransform
+            // calculate the translate delta
+            var translateDelta = new TranslateTransform
             {
-                X = delta.X,
-                Y = delta.Y
+                X = transformationDelta.Translate.X,
+                Y = transformationDelta.Translate.Y
             };
 
-            var scale = new ScaleTransform
+            // calculate the scale delta
+            var scaleDelta = new ScaleTransform
             {
                 CenterX = 0,
                 CenterY = 0,
@@ -870,25 +871,19 @@ namespace Dash
 
             //Create initial composite transform
             var composite = new TransformGroup();
+            composite.Children.Add(itemsPanelCanvas.RenderTransform); // get the current transform
+            composite.Children.Add(scaleDelta); // add the new scaling
+            composite.Children.Add(translateDelta); // add the new translate
 
-            composite.Children.Add(canvas.RenderTransform);
-            composite.Children.Add(scale);
-            composite.Children.Add(translate);
-
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-
+            // clamp the y offset so that we can only scrollw down
             var compValue = composite.Value;
-
             if (compValue.OffsetY > 0)
             {
                 compValue.OffsetY = 0;
             }
 
             var matrix = new MatrixTransform { Matrix = compValue };
-
-            itemsPanelCanvas.RenderTransform = matrix;
-            InkHostCanvas.RenderTransform = matrix;
-            SetTransformOnBackground(compValue);
+            SetFreeformTransform(matrix);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
@@ -919,20 +914,26 @@ namespace Dash
             return currentScale;
         }
 
-        private void SetTransformOnBackground(Matrix transformMatrix)
+        private void SetFreeformTransform(MatrixTransform matrixTransform)
         {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(transformMatrix.M11, NumberOfBackgroundRows);
+            var matrix = matrixTransform.Matrix;
+
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
 
             if (_resourcesLoaded)
             {
                 _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)transformMatrix.M12,
-                    (float)transformMatrix.M21,
+                    (float)matrix.M12,
+                    (float)matrix.M21,
                     (float)aliasSafeScale,
-                    (float)transformMatrix.OffsetX,
-                    (float)transformMatrix.OffsetY);
+                    (float)matrix.OffsetX,
+                    (float)matrix.OffsetY);
                 xBackgroundCanvas.Invalidate();
             }
+
+
+            itemsPanelCanvas.RenderTransform = matrixTransform;
+            InkHostCanvas.RenderTransform = matrixTransform;
         }
 
         private void SetInitialTransformOnBackground()
@@ -947,7 +948,7 @@ namespace Dash
             };
 
             composite.Children.Add(scale);
-            SetTransformOnBackground(composite.Value);
+            SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
