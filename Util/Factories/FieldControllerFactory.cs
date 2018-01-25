@@ -241,6 +241,11 @@ namespace Dash
                 case OperatorType.ImageToColorPalette:
                     controller = new ImageToColorPalette(model);
                     break;
+                case OperatorType.CollectionMap:
+                    break;
+                case OperatorType.Quizlet:
+                    controller = new QuizletOperator(model);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

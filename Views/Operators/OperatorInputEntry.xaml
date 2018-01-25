@@ -11,7 +11,7 @@
 
     <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
         <Ellipse Style="{StaticResource xInputLinkHandle}"
-                                     Drop="UIElement_OnDrop" DragOver="UIElement_OnDragOver"
+                                     Drop="UIElement_OnDrop" DragEnter="UIElement_OnDragEnter"
                                      Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
         <Grid>
             <TextBlock Margin="10,0,0,0" VerticalAlignment="Top" Foreground="{ThemeResource MainText}" Text="{Binding Key.Name, Mode=TwoWay}" DoubleTapped="UIElement_OnDoubleTapped"/>

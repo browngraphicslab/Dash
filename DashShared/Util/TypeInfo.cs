@@ -59,6 +59,7 @@ namespace DashShared
         RichTextTitle,
         CollectionTitle,
         ImageToColorPalette,
-        GroupTitle
+        GroupTitle,
+        Quizlet
     }
 }
