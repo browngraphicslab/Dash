@@ -45,7 +45,6 @@ namespace Dash
             };
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
-            this.xDocContainer.AddHandler(PointerPressedEvent, new PointerEventHandler(xDocContainer_PointerPressed), true);
             this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
