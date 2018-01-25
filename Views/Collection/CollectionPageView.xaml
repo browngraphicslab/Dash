@@ -51,21 +51,22 @@
                     
                 </RowDefinition>
             </Grid.RowDefinitions>
-            <local:DocumentView x:Name="xDocView" Grid.Column="0" DataContext="{Binding CurPage}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <local:DocumentView x:Name="xDocView" Grid.Column="0" DataContext="{Binding CurPage}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <TextBox Name="xDocTitle" x:FieldModifier="public" Grid.Row="1" Width="200" Height="0" VerticalAlignment="Bottom"   HorizontalAlignment="Left" Visibility="Collapsed"></TextBox>
         </Grid>
-        <localMicrosoft:GridSplitter 
+        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
             x:Name="xSplitter"
-            Grid.Column="1" Width="11" Opacity="0" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
+            Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
-                <Grid>
+                <Grid GettingFocus="TextBlock_GettingFocus">
                     <TextBlock HorizontalAlignment="Center" 
                                    IsHitTestVisible="False"
                                    VerticalAlignment="Center"  
+                                    GettingFocus="TextBlock_GettingFocus"
                                     Text="&#xE784;"
                                    Foreground="Black" 
                                    FontFamily="Segoe MDL2 Assets">
@@ -82,14 +83,17 @@
 
             <ListView x:Name="xThumbs" 
                     Grid.Row="1" 
+                      Loaded="xThumbs_Loaded"
+                      DataContextChanged="xThumbs_DataContextChanged"
                     SelectionMode="Single"
-                    Background="Black" 
                     VerticalAlignment="Stretch" 
                     SelectionChanged="xThumbs_SelectionChanged" 
                     ItemsSource="{Binding ThumbDocumentViewModels}"
                     ScrollViewer.VerticalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                     ScrollViewer.IsVerticalRailEnabled="True"
+                      Tapped="xThumbs_Tapped"
+                      PointerPressed="xThumbs_PointerPressed"
                     ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
 
@@ -100,23 +104,17 @@
                         <ItemsStackPanel Orientation="Vertical" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Left" />
-                        <Setter Property="VerticalContentAlignment"   Value="Center" />
-                        <Setter Property="Margin" Value="0,0,0,0" />
-                        <Setter Property="Padding" Value="0,0,0,0" />
-                    </Style>
-                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <ListViewItem Background="{Binding IsSelected, Converter={StaticResource BoolToBrushConverter}}" IsHitTestVisible="False">
-                            <local:DocumentView />
-                        </ListViewItem>
+                        <local:DocumentView  IsHitTestVisible="False"/>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Grid x:Name="navBar" Grid.Row="0" Height="35" VerticalAlignment="Center">
+            <Grid Padding="0" Grid.Row="0" VerticalAlignment="Center" Height="35" x:Name="xPageNumContainer" Grid.Column="1" Background="LightGray"  Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xPageNumContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xPageNum_ManipulationStarted">
+                <TextBlock x:Name="xPageNum" Text="DragOut" HorizontalTextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            </Grid>
+
+            <!--Grid x:Name="navBar" Grid.Row="0" Height="35" VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="25"/>
                     <ColumnDefinition Width="*"/>
@@ -127,7 +125,7 @@
                     <TextBlock x:Name="xPageNum" Text="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 </Grid>
                 <Button x:Name="xNextButton" Grid.Column="2" VerticalContentAlignment="Center" RelativePanel.RightOf="xPageNumContainer"  VerticalAlignment="Stretch" Content=">>" Click="NextButton_Click"/>
-            </Grid>
+            </-->
         </Grid>
 
     </Grid>
