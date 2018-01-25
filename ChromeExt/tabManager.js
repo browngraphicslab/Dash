@@ -41,6 +41,21 @@ function tabManager(sendRequestFunction) {
     }
 
 
+    var sendTabScreenshot = function (tabId) {
+        console.log("taking screenshot");
+        var imgUpdate = function (imgResult) {
+            console.log(imgResult.substring(0, 50));
+            var requestBody = {
+                "$type": "Dash.SetTabImageBrowserRequest, Dash",
+                "tabId": tabId,
+                "data" : imgResult
+            }
+            sendRequestFunction(requestBody);
+            console.log("sent screenshot");
+        }
+        chrome.tabs.captureVisibleTab(imgUpdate);
+    }
+
     var updateScrollFromId = function (tabId) {
         if (!(tabId.toString() in prevActiveTabScroll)) {
             prevActiveTabScroll[tabId.toString()] = 0;
@@ -127,6 +142,8 @@ function tabManager(sendRequestFunction) {
         activeTabId = tabId;
         console.log("active tab set to: " + tabId);
         updateTab(tabId);
+        setTimeout(function() { sendTabScreenshot(tabId); }, 2000);
+
     }
 
     chrome.tabs.query({}, initTabsCallback);

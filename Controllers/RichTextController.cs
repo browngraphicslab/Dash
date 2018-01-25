@@ -86,6 +86,22 @@ namespace Dash
                 var index = lowerData.IndexOf(searchString);
                 index = Math.Max(0, index - textDecrementForContext);
                 var substring = Data.ReadableString.Substring(index, Math.Min(maxStringSize, Data.ReadableString.Length - index));
+                return new StringSearchModel(substring, true);
+            }
+            return StringSearchModel.False;
+        }
+
+        public StringSearchModel SearchForStringInRichText(string searchString)
+        {
+            int maxStringSize = 125;
+            int textDecrementForContext = 15;
+
+            var lowerData = Data.RtfFormatString.ToLower();
+            if (lowerData.Contains(searchString))
+            {
+                var index = lowerData.IndexOf(searchString);
+                index = Math.Max(0, index - textDecrementForContext);
+                var substring = Data.RtfFormatString.Substring(index, Math.Min(maxStringSize, Data.RtfFormatString.Length - index));
                 return new StringSearchModel(substring);
             }
             return StringSearchModel.False;

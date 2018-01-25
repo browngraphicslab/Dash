@@ -10,6 +10,7 @@ namespace Dash
     {
         public bool StringFound { get; private set; }
         public string RelatedString { get; private set; }
+        public bool IsUseFullRelatedString { get; private set; }
 
         /// <summary>
         /// probably shouldn't ever need to use this constructor
@@ -26,10 +27,12 @@ namespace Dash
         /// constructor to use when you have a true result
         /// </summary>
         /// <param name="relatedString"></param>
-        public StringSearchModel(string relatedString)
+        /// <param name="isUseFullRelatedString"></param>
+        public StringSearchModel(string relatedString, bool isUseFullRelatedString = false)
         {
             RelatedString = relatedString;
             StringFound = true;
+            IsUseFullRelatedString = isUseFullRelatedString;
         }
 
         private StringSearchModel() { }
