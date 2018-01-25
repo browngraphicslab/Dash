@@ -31,6 +31,7 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Xaml.Media.Animation;
 using DashShared.Models;
 using Flurl.Util;
 using NewControls.Geometry;
@@ -829,6 +830,8 @@ namespace Dash
         #region Manipulation
         public Rect ClipRect => xClippingRect.Rect;
 
+
+
         public void Move(TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
@@ -844,6 +847,72 @@ namespace Dash
         }
 
 
+        public void MoveAnimated(TranslateTransform translate)
+        {
+
+
+            if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+
+            var composite = new TransformGroup();
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+
+            var compValue = composite.Value;
+
+            SetFreeformTransformAnimated(new MatrixTransform { Matrix = compValue });
+        }
+
+        private void SetFreeformTransformAnimated(MatrixTransform matrixTransform)
+        {
+            var matrix = matrixTransform.Matrix;
+
+            var animationX = new DoubleAnimation()
+            {
+                From = 0,
+                To = matrix.M12,
+                Duration = TimeSpan.FromSeconds(5),
+            };
+
+
+            var animationY = new DoubleAnimation()
+            {
+                From = 0,
+                To = matrix.M21,
+                Duration = TimeSpan.FromSeconds(5),
+            };
+
+
+            Storyboard.SetTarget(animationX, itemsPanelCanvas);
+            Storyboard.SetTargetProperty(animationX, "(UIElement.RenderTransform).(Translate.X)");
+
+            Storyboard.SetTarget(animationY, itemsPanelCanvas);
+            Storyboard.SetTargetProperty(animationY, "(UIElement.RenderTransform).()");
+
+            var sb = new Storyboard();
+            sb.Children.Add(animationX);
+            sb.Children.Add(animationY);
+            sb.Begin();
+
+            /*
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)matrix.M12,
+                    (float)matrix.M21,
+                    (float)aliasSafeScale,
+                    (float)matrix.OffsetX,
+                    (float)matrix.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+            */
+
+
+            //itemsPanelCanvas.RenderTransform = matrixTransform;
+            //InkHostCanvas.RenderTransform = matrixTransform;
+        }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
