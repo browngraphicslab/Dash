@@ -501,7 +501,7 @@ namespace Dash
                             vm.ContextualText = "Found in Collection";
                             break;
                         default:
-                            vm.ContextualText = "Found: "+ vm.ContextualText;
+                            //vm.ContextualText = "Found: "+ vm.ContextualText;
                             break;
                     }
                     Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
