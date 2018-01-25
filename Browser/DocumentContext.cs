@@ -37,21 +37,27 @@ namespace Dash
             return base.GetHashCode();
         }
 
-        public async Task<DocumentController> GetImage()
+        public BitmapImage GetImage()
         {
-            var util = new ImageToDashUtil();
-            var path = ApplicationData.Current.LocalFolder.Path;
-            var uri = new Uri(path + ImageId + ".jpg");
-
-            var controller = await util.ParseFileAsync(new FileData()
-            {
-
-                File = await StorageFile.GetFileFromPathAsync(uri.AbsolutePath),
-                FileUri = uri,
-                Filetype = FileType.Image
-            });
-
-            return controller;
+            // TODO this is such a hack if it stops working its might be cause we stopped saving all images with .jpg cause that was insane to begin with
+            return new BitmapImage(new Uri(ApplicationData.Current.LocalFolder.Path + ImageId + ".jpg"));
         }
+
+        //public async Task<DocumentController> GetImage()
+        //{
+        //    var util = new ImageToDashUtil();
+        //    var path = ApplicationData.Current.LocalFolder.Path;
+        //    var uri = new Uri(path + ImageId + ".jpg");
+
+        //    var controller = await util.ParseFileAsync(new FileData()
+        //    {
+
+        //        File = await StorageFile.GetFileFromPathAsync(uri.AbsolutePath),
+        //        FileUri = uri,
+        //        Filetype = FileType.Image
+        //    });
+
+        //    return controller;
+        //}
     }
 }

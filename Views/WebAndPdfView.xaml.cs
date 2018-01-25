@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 using Microsoft.Toolkit.Uwp;
@@ -44,118 +45,19 @@ namespace Dash
         }
     }
 
-    public sealed partial class WebAndPdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class WebAndPdfView : UserControl
     {
-        private Uri _source;
+        private BitmapImage _bitmapImage;
 
-        public Uri Source
+        public WebAndPdfView(DocumentContext context)
         {
-            get => _source;
-            set
-            {
-                try
-                {
-                    if (Source != null && Source.Equals(value)|| value.AbsoluteUri.StartsWith("chrome-extension://")) return;
-                    Debug.WriteLine($"WEBPDF SOURCE: {value}");
-                    _source = value;
-                    OnPropertyChanged();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine(e);
-                    throw;
-                }
-            }
+            InitializeComponent();
+            _bitmapImage = context.GetImage();
         }
 
-        public WebAndPdfView()
+        private void XContextImage_OnLoaded(object sender, RoutedEventArgs e)
         {
-            this.InitializeComponent();
-            Loaded += (sender, args) =>
-            {
-                if (Source != null) xWebContent.Source = Source;
-            };
+            xContextImage.Source = _bitmapImage;
         }
-
-        public WebAndPdfView(Uri source) : this()
-        {
-            Source = source;
-        }
-
-
-        private void WebView_OnNavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
-        {
-            HidePdfDisplayWeb();
-            xProgressRing.IsActive = true;
-        }
-
-        private void WebView_OnNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
-        {
-            xProgressRing.IsActive = false;
-        }
-
-        private async void WebView_OnUnviewableContentIdentified(WebView sender, WebViewUnviewableContentIdentifiedEventArgs args)
-        {
-            // render pdfs
-            if (args.Uri.AbsoluteUri.ToLower().EndsWith(".pdf"))
-            {
-                Stream stream;
-                if (args.Uri.IsFile)
-                {
-                    stream = File.Open(args.Uri.LocalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                }
-                else
-                {
-                    stream = (await args.Uri.GetHttpStreamAsync()).AsStream();
-                }
-
-                Debug.Assert(stream.Length != 0);
-                DisplayPdfHideWeb(stream);
-            }
-        }
-
-        private void HidePdfDisplayWeb()
-        {
-            if (xPdfContent != null)
-            {
-                xPdfContent.Visibility = Visibility.Collapsed;
-                xPdfContent.Pdf.Unload(true);
-            }
-            if (xWebContent != null)
-            {
-                xWebContent.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void DisplayPdfHideWeb(Stream stream)
-        {
-            if (xPdfContent != null)
-            {
-                xPdfContent.Pdf.LoadDocument(stream);
-                xPdfContent.Visibility = Visibility.Visible;
-            }
-            if (xWebContent != null)
-            {
-                xWebContent.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void OuterGridOnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xWebContent.Width = xOuterGrid.ActualWidth;
-            xWebContent.Height = xOuterGrid.ActualHeight;
-            xPdfContent.Width = xOuterGrid.ActualWidth;
-            xPdfContent.Height = xOuterGrid.ActualHeight;
-
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
     }
 }

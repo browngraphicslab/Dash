@@ -188,19 +188,14 @@ namespace Dash
 
                 if (_localContext.View == null)
                 {
-                    _localContext.View = new WebAndPdfView(source)
+                    _localContext.View = new WebAndPdfView(ViewModel.DocumentContext)
                     {
-                        Width = _localContext.Width,
-                        Height = _localContext.Height,
-                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                        Width = _webViewActualWidth,
+                        Height = _webViewActualHeight,
                     };
                     xDocHolder.Children.Add(_localContext.View);
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth / 2 - EllipseSize / 2);
                     if (xDocumentPreview != null) Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
-                }
-                else if (_localContext.View.Source != null && !_localContext.View.Source.Equals(source))
-                {
-                    _localContext.View.Source = source;
                 }
 
                 xLowerLine.Visibility = Visibility.Visible;

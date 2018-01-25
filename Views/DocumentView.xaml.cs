@@ -57,7 +57,6 @@ namespace Dash
 
         private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
 
-
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
@@ -182,20 +181,15 @@ namespace Dash
 
                 if (_localContext.View == null)
                 {
-                    _localContext.View = new WebAndPdfView(source)
+                    _localContext.View = new WebAndPdfView(context)
                     {
-                        Width = _localContext.Width,
-                        Height = _localContext.Height,
-                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                        Width = _localContext.Width * _localContext.ScaleFactor,
+                        Height = _localContext.Height * _localContext.ScaleFactor,
                     };
                     xShadowHost.Children.Add(_localContext.View);
                     Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
                     Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
                     xContextTitle.Content = context.Title;
-                }
-                else if (!_localContext.View.Source.Equals(source))
-                {
-                    _localContext.View.Source = source;
                 }
             }
         }
