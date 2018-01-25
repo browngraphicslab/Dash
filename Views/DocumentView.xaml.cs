@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -17,6 +19,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
+using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using DashShared.Models;
 
@@ -1212,7 +1216,9 @@ namespace Dash
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
-            data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
+            data.SetText(string.Join("\n",
+                (ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(
+                    c => c.Title + "  :  " + c.Url)));
             Clipboard.SetContent(data);
         }
 

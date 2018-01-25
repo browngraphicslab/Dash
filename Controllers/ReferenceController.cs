@@ -64,6 +64,8 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
+        public override TypeInfo RootTypeInfo => GetFieldReference().GetRootFieldType();
+
         /// <summary>
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceController" />,
         ///     You should only set values on the controller, never directly on the model!
