@@ -40,7 +40,6 @@
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
                     <MenuFlyoutItem Text="Copy history to clipboard" Click="CopyHistory_Click"/>
-                    <MenuFlyoutItem Text="Export to Quizlet" Click="QuizletExport_Click"></MenuFlyoutItem>
                 </MenuFlyout>
             </Grid.ContextFlyout>
 
