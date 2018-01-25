@@ -194,7 +194,6 @@ namespace Dash
 
                 var context = ViewModel.DocumentController.GetFirstContext();
                 if (context == null) return;
-                var source = new Uri(context.Url);
                 ViewModel.SetHasTitle(true);
 
                 if (_contextPreview == null)
