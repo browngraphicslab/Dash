@@ -7,8 +7,11 @@ using Windows.Foundation.Metadata;
 using Dash.Controllers;
 using DashShared.Models;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 using Flurl.Util;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -337,6 +340,31 @@ namespace Dash
                 if (context.Equals(last))
                 {
                     neighboring.Remove(neighboring.TypedData.Last());
+                }
+                else
+                {
+                    Task.Run(async () =>
+                    {
+                        var hash = MainPage.Instance.WebContext.GetUrlHash();
+
+                        byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData);
+                        MemoryStream memoryStream = new MemoryStream(byteBuffer);
+                        memoryStream.Position = 0;
+
+                        BitmapImage originalBitmap = new BitmapImage();
+                        var height = originalBitmap.PixelHeight;
+                        var width = originalBitmap.PixelWidth;
+
+                        var bitmapImage = new WriteableBitmap(width, height);
+                        bitmapImage.SetSource(memoryStream.AsRandomAccessStream());
+
+                        memoryStream.Close();
+                        memoryStream = null;
+                        byteBuffer = null;
+
+                        var util = new ImageToDashUtil();
+                        await util.ParseBitmapAsync(bitmapImage, hash);
+                    });
                 }
                 neighboring.Add(new TextController(context.Serialize()));
             }

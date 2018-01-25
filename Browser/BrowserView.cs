@@ -362,6 +362,11 @@ namespace Dash
             CurrentChanged?.Invoke(this, current);
         }
 
+        public string GetUrlHash()
+        {
+            return UtilShared.GetDeterministicGuid(_url);
+        }
+
         public DocumentContext GetAsContext()
         {
             return new DocumentContext()
@@ -370,7 +375,8 @@ namespace Dash
                 Scroll = Scroll,
                 Title = Title,
                 ViewDuration = MillisecondsSinceBecomingCurrentTab,
-                CreationTimeTicks = DateTime.Now.Ticks
+                CreationTimeTicks = DateTime.Now.Ticks,
+                ImageId = GetUrlHash()
             };
         }
     }
