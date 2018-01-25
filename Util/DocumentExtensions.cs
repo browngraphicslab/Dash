@@ -332,6 +332,48 @@ namespace Dash
                 dataDocument.SetField(KeyStore.WebContextKey, neighboring, true);
             }
 
+            var saveImageTask = new Action(async () =>
+            {
+                if (MainPage.Instance.WebContext.ImageData == null)
+                {
+                    return;
+                }
+
+                var hash = MainPage.Instance.WebContext.GetUrlHash();
+
+                var prefix = "data:image/jpeg;base64,";
+
+                byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData.StartsWith(prefix)
+                    ? MainPage.Instance.WebContext.ImageData.Substring(prefix.Length)
+                    : MainPage.Instance.WebContext.ImageData);
+                MemoryStream memoryStream = new MemoryStream(byteBuffer);
+                memoryStream.Position = 0;
+
+                await UITask.RunTask(async () =>
+                {
+                    BitmapImage originalBitmap = new BitmapImage();
+                    await originalBitmap.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                    memoryStream.Close();
+                    memoryStream = null;
+
+                    var height = originalBitmap.PixelHeight;
+                    var width = originalBitmap.PixelWidth;
+
+                    memoryStream = new MemoryStream(byteBuffer);
+
+                    var bitmapImage = new WriteableBitmap(width, height);
+                    await bitmapImage.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                    memoryStream.Close();
+                    memoryStream = null;
+                    byteBuffer = null;
+
+                    var util = new ImageToDashUtil();
+                    await util.ParseBitmapAsync(bitmapImage, hash);
+                });
+            });
+
             var context = MainPage.Instance.WebContext.GetAsContext();
 
             if (neighboring.TypedData.Count > 0 && neighboring.TypedData.Last() != null)
@@ -343,34 +385,14 @@ namespace Dash
                 }
                 else
                 {
-                    Task.Run(async () =>
-                    {
-                        var hash = MainPage.Instance.WebContext.GetUrlHash();
-
-                        byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData);
-                        MemoryStream memoryStream = new MemoryStream(byteBuffer);
-                        memoryStream.Position = 0;
-
-                        BitmapImage originalBitmap = new BitmapImage();
-                        var height = originalBitmap.PixelHeight;
-                        var width = originalBitmap.PixelWidth;
-
-                        var bitmapImage = new WriteableBitmap(width, height);
-                        bitmapImage.SetSource(memoryStream.AsRandomAccessStream());
-
-                        memoryStream.Close();
-                        memoryStream = null;
-                        byteBuffer = null;
-
-                        var util = new ImageToDashUtil();
-                        await util.ParseBitmapAsync(bitmapImage, hash);
-                    });
+                    Task.Run(saveImageTask);
                 }
                 neighboring.Add(new TextController(context.Serialize()));
             }
             else
             {
                 neighboring.Add(new TextController(context.Serialize()));
+                Task.Run(saveImageTask);
             }
         }
 
