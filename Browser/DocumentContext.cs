@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,7 +41,9 @@ namespace Dash
         public BitmapImage GetImage()
         {
             // TODO this is such a hack if it stops working its might be cause we stopped saving all images with .jpg cause that was insane to begin with
-            var uriSource = new Uri(ApplicationData.Current.LocalFolder.Path + ImageId + ".jpg");
+            var uriSource = new Uri(ApplicationData.Current.LocalFolder.Path + "\\" + ImageId + ".jpg");
+            Debug.Assert(File.Exists(uriSource.AbsolutePath), "the webcontext either didn't save or the path is incorrect");
+
             return new BitmapImage(uriSource);
         }
 

@@ -45,21 +45,34 @@ namespace Dash
         }
     }
 
-    public sealed partial class WebAndPdfView : UserControl
+    public sealed partial class WebAndPdfView : UserControl, INotifyPropertyChanged
     {
+
         private BitmapImage _bitmapImage;
 
-        public Uri Source;
+        public BitmapImage BitmapImage
+        {
+            get => _bitmapImage;
+            set
+            {
+                _bitmapImage = value;
+                OnPropertyChanged();
+            }
+        }
 
         public WebAndPdfView(DocumentContext context)
         {
             InitializeComponent();
-            _bitmapImage = context.GetImage();
+            BitmapImage = context.GetImage();
         }
 
-        private void XContextImage_OnLoaded(object sender, RoutedEventArgs e)
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            xContextImage.Source = _bitmapImage;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

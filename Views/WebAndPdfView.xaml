@@ -10,6 +10,6 @@
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:DocumentContext}">
 
     <Grid Background="LightGray">
-        <Image x:Name="xContextImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Image x:Name="xContextImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="{x:Bind BitmapImage}"/>
     </Grid>
 </UserControl>
