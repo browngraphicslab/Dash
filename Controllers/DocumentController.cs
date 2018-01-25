@@ -744,6 +744,28 @@ namespace Dash
             return t;
         }
 
+        public TypeInfo GetFieldType(KeyController key)
+        {
+            var operatorController = GetField<OperatorController>(key);
+            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            {
+                return operatorController.Outputs[key];
+            }
+
+            return GetField(key)?.TypeInfo ?? TypeInfo.Any;
+        }
+
+        public TypeInfo GetRootFieldType(KeyController key)
+        {
+            var operatorController = GetField<OperatorController>(key);
+            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            {
+                return operatorController.Outputs[key];
+            }
+
+            return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
+        }
+
         /// <summary>
         ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
         ///     pairs. If <paramref name="forceMask" /> is true, all the fields are set on this <see cref="DocumentController" />
@@ -980,7 +1002,7 @@ namespace Dash
         public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
-            var opField = GetDereferencedField(KeyStore.OperatorKey, context) as OperatorController;
+            var opField = GetDereferencedField<OperatorController>(KeyStore.OperatorKey, context);
             if (opField != null)
                 return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
             return false;

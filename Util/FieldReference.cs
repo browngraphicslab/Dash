@@ -99,6 +99,16 @@ namespace Dash
             return DereferenceToRoot(context) as T;
         }
 
+        public TypeInfo GetFieldType(Context context)
+        {
+            return GetDocumentController(null).GetFieldType(FieldKey);
+        }
+
+        public TypeInfo GetRootFieldType()
+        {
+            return GetDocumentController(null).GetRootFieldType(FieldKey);
+        }
+
         public override bool Equals(object obj)
         {
             FieldReference reference = obj as FieldReference;
