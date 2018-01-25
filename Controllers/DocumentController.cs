@@ -1233,6 +1233,10 @@ namespace Dash
             {
                 return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
+            {
+                return QuizletOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+            }
             if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
             {
                 return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);

@@ -64,13 +64,23 @@ namespace Dash
                     SuggestBox.Visibility = Visibility.Visible;
                     SuggestBox.Focus(FocusState.Programmatic);
                 }
-
-                e.Handled = true;
             }
+            // if the user dragged from the header of a schema view
+            else if (CollectionDBSchemaHeader.DragModel != null)
+            {
+                var opDoc = OperatorFieldReference.GetDocumentController(null);
+                var el = sender as FrameworkElement;
+                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                opDoc.SetField(key, new TextController(CollectionDBSchemaHeader.DragModel.FieldKey.Id), true);
+
+
+            }
+            e.Handled = true;
         }
 
-        private void UIElement_OnDragOver(object sender, DragEventArgs e)
+        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
+
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
                 var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
@@ -94,6 +104,12 @@ namespace Dash
                 {
                     e.AcceptedOperation = DataPackageOperation.Link;
                 }
+            }
+
+            // if the user dragged from the header of a schema view
+            else if (CollectionDBSchemaHeader.DragModel != null)
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
             }
             e.Handled = true;
         }

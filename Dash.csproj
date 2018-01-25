@@ -119,6 +119,7 @@
     <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Demo\QuizletOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\Image\ImageToColorPalette.cs" />
@@ -167,6 +168,7 @@
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
@@ -339,6 +341,9 @@
     </Compile>
     <Compile Include="Views\Operators\OperatorInputEntry.xaml.cs">
       <DependentUpon>OperatorInputEntry.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Operators\QuizletOperatorView.xaml.cs">
+      <DependentUpon>QuizletOperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
       <DependentUpon>SearchOperatorView.xaml</DependentUpon>
@@ -864,6 +869,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Operators\QuizletOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Operators\SearchOperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1234,6 +1243,11 @@
     <PackageReference Include="Win2D.uwp">
       <Version>1.21.0</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsIoT, Version=10.0.15063.0">
+      <Name>Windows IoT Extensions for the UWP</Name>
+    </SDKReference>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
