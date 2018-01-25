@@ -32,11 +32,11 @@ namespace Dash
                 {
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    if (cargs == null)
-                    {
-                        return;
-                    }
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                    //if (cargs == null)
+                    //{
+                    //    return;
+                    //}
+                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                     {
                         UpdateViewModels(cargs, copiedContext);
                     }
@@ -126,9 +126,12 @@ namespace Dash
 
         public override void AddDocuments(List<DocumentController> documents, Context context)
         {
-            foreach (var doc in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                AddDocument(doc, context);
+                foreach (var doc in documents)
+                {
+                    AddDocument(doc, context);
+                }
             }
         }
 
@@ -157,9 +160,12 @@ namespace Dash
 
         public override void RemoveDocuments(List<DocumentController> documents)
         {
-            foreach (var doc in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                RemoveDocument(doc);
+                foreach (var doc in documents)
+                {
+                    RemoveDocument(doc);
+                }
             }
         }
 

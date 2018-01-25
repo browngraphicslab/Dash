@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -73,10 +74,12 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
+                    var collectionViewModel = new CollectionViewModel(
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
+                            KeyStore.GroupingKey));
+                    collectionViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
                     CollectionTreeView.DataContext =
-                        new CollectionViewModel(
-                            new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                                KeyStore.GroupingKey));
+                        collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;

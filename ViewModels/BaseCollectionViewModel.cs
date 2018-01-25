@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -42,6 +43,9 @@ namespace Dash
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
             SelectionGroup = new List<DocumentViewModel>();
+            //BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true);
+            BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) {Filter = o => true};
+            //BindableDocumentViewModels = new AdvancedCollectionView(new List<DocumentViewModel>());
         }
 
         public bool IsInterfaceBuilder
@@ -60,6 +64,8 @@ namespace Dash
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+
+        public AdvancedCollectionView BindableDocumentViewModels { get; set; }
 
         // used to keep track of groups of the currently selected items in a collection
         public List<DocumentViewModel> SelectionGroup { get; set; }
