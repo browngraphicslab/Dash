@@ -40,6 +40,30 @@ namespace Dash
 
             // get the document containing the operator
             _operatorDoc = refToOp?.GetDocumentController(null);
+
+            _operatorDoc?.AddFieldUpdatedListener(QuizletOperator.TitleKey, OnTitleFieldUpdated);
+
+            var titleText = _operatorDoc.GetDereferencedField<TextController>(QuizletOperator.TitleKey, null)?.Data;
+            if (titleText != null)
+            {
+                xTitleInput.Text = titleText;
+            }
+
+        }
+
+        private void OnTitleFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            if (xTitleInput.Text != tfmc.Data)
+            {
+                xTitleInput.Text = tfmc.Data;
+            }
+        }
+
+        private void TextBox_OnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _operatorDoc.SetField(QuizletOperator.TitleKey, new TextController(xTitleInput.Text), true);
         }
 
         /// <summary>
@@ -87,7 +111,7 @@ namespace Dash
                 data.Add((term, definition, image));
             }
 
-            var setTitle = "Dash Test Op";
+            var setTitle = _operatorDoc.GetDereferencedField<TextController>(QuizletOperator.TitleKey, null).Data ?? "Quiz Exported From Dash";
             ExportToQuizlet(data, setTitle);
         }
 
@@ -267,5 +291,6 @@ namespace Dash
            }
         }
 */
+
     }
 }
