@@ -154,20 +154,21 @@ namespace Dash
             }
         }
 
-        private static void TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
+        private static bool TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
         {
             if (!_bindingMap.ContainsKey(element))
             {
-                return;
+                return false;
             }
             var dict = _bindingMap[element];
             if (!dict.ContainsKey(property))
             {
-                return;
+                return false;
             }
             var t = dict[property];
             t();
             dict.Remove(property);
+            return true;
         }
 
         private static void AddRemoveBindingAction(FrameworkElement element, DependencyProperty property, Action removeBinding)
@@ -207,23 +208,25 @@ namespace Dash
             if (element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
             }
-
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            }
-
-            element.Loaded += OnElementOnLoaded;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
                 binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
             }
 
+            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            {
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            }
+
             element.Unloaded += OnElementOnUnloaded;
+
+            element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {
@@ -270,18 +273,10 @@ namespace Dash
             if (element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             }
-
-            void OnElementOnLoaded(object sender, RoutedEventArgs args)
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-            }
-
-            element.Loaded += OnElementOnLoaded;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
@@ -290,7 +285,17 @@ namespace Dash
                 token = -1;
             }
 
+            void OnElementOnLoaded(object sender, RoutedEventArgs args)
+            {
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
+            }
+
             element.Unloaded += OnElementOnUnloaded;
+
+            element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {

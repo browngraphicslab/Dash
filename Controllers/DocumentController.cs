@@ -127,6 +127,13 @@ namespace Dash
             }
             return false;
         }
+
+        public override string ToString()
+        {
+            return Title;
+        }
+
+
         /// <summary>
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed
@@ -979,6 +986,8 @@ namespace Dash
         {
             // TODO this should cause an operator to execute and return the proper value
             var fieldController = GetField(key);
+            context = context ?? new Context();
+            context.AddDocumentContext(this);
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 

@@ -52,11 +52,15 @@ namespace Dash
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (Equals(args.NewValue, oldViewModel))
+            {
+                return;
+            }
             if (oldViewModel != null)
             {
                 //TODO remove binding from old document
             }
-            if (args.NewValue != null && args.NewValue != oldViewModel)
+            if (args.NewValue != null)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
