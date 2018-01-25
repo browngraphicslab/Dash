@@ -61,7 +61,7 @@ namespace Dash
 
             var maxSearchResultSize = 75;
 
-            var vms = SearchByParts(text);
+            var vms = SearchHelper.SearchOverCollection(text);
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
@@ -369,14 +369,6 @@ namespace Dash
             return vm;
         }
 
-        /// <summary>
-        /// this criteria simple tells us which key and value pair to look at
-        /// </summary>
-        private class SpecialSearchCriteria
-        {
-            public string SearchText { get; set; }
-            public string SearchCategory { get; set; }
-        }
 
         private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
@@ -466,7 +458,7 @@ namespace Dash
                     return null;
                 }
 
-                return SearchOverCollection(string.Join(' ', searchParts), collectionDocument);
+                return CleanByType(SearchOverCollection(string.Join(' ', searchParts), collectionDocument));
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
@@ -477,9 +469,9 @@ namespace Dash
                     return null;
                 }
 
-                return SearchByParts(searchString)
+                return CleanByType(SearchByParts(searchString)
                     .Where(vm => collectionDocument == null ||
-                                 (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
+                                 (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
             }
             public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
                 List<DocumentController> collectionDocuments = null)
@@ -489,8 +481,33 @@ namespace Dash
                     return null;
                 }
 
-                return SearchByParts(searchString)
-                    .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument));
+                return CleanByType(SearchByParts(searchString)
+                    .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
+            }
+
+
+            private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
+            {
+                Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
+                {
+                    if (vm.IsLikelyUsefulContextText)
+                    {
+                        return vm;
+                    }
+
+                    switch (vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower())
+                    {
+                        case "collection box":  case "collected docs note":
+                            vm.ContextualText = "Found in Collection";
+                            break;
+                        default:
+                            vm.ContextualText = "Found: "+ vm.ContextualText;
+                            break;
+                    }
+                    Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
+                    return vm;
+                };
+                return vms.Select(convert);
             }
 
             /// <summary>
@@ -498,7 +515,7 @@ namespace Dash
             /// </summary>
             /// <param name="text"></param>
             /// <returns></returns>
-            private static List<SearchResultViewModel> SearchByParts(string text)
+                private static List<SearchResultViewModel> SearchByParts(string text)
             {
                 List<SearchResultViewModel> mainList = null;
                 foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
@@ -512,6 +529,8 @@ namespace Dash
                         mainList = searchResult;
                         searchResult = temp;
                     }
+
+                    int index = 0;
                     foreach (var existingVm in mainList.ToArray())
                     {
                         var valid = false;
@@ -520,6 +539,11 @@ namespace Dash
                             if (existingVm.ViewDocument.Equals(vm.ViewDocument))
                             {
                                 valid = true;
+                                if (!existingVm.IsLikelyUsefulContextText && vm.IsLikelyUsefulContextText)
+                                {
+                                    mainList.Remove(existingVm);
+                                    mainList.Insert(index, vm);
+                                }
                                 break;
                             }
                         }
@@ -527,6 +551,7 @@ namespace Dash
                         {
                             mainList.Remove(existingVm);
                         }
+                        index++;
                     }
                 }
                 return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
@@ -640,6 +665,7 @@ namespace Dash
                     url = url == null
                         ? ""
                         : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
+                    url = url == null ? url : "Context: " + url;
                     yield return CreateSearchResult(documentTree, docController, url ?? docController.DocumentType.Type,
                         title);
                 }
@@ -764,7 +790,7 @@ namespace Dash
                             ? lastTopText
                             : documentController.Title;
 
-                        var vm = CreateSearchResult(documentTree, documentController, bottomText, title);
+                        var vm = CreateSearchResult(documentTree, documentController, bottomText, title, lastFieldSearch.IsUseFullRelatedString);
 
                         if (!countToResults.ContainsKey(foundCount))
                         {
@@ -786,7 +812,7 @@ namespace Dash
             /// <param name="titleText"></param>
             /// <returns></returns>
             private static SearchResultViewModel CreateSearchResult(DocumentTree documentTree,
-                DocumentController dataDocumentController, string bottomText, string titleText)
+                DocumentController dataDocumentController, string bottomText, string titleText, bool isLikelyUsefulContextText = false)
             {
                 string preTitle = "";
 
@@ -802,8 +828,9 @@ namespace Dash
 
                 var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id,
                     documentNode?.ViewDocument ?? dataDocumentController,
-                    documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
+                    documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
                 return vm;
+            }
             }
 
             /// <summary>
@@ -817,4 +844,4 @@ namespace Dash
         }
 
     }
-}
+

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,6 +11,7 @@ using Windows.Graphics.Display;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Browser;
 using DashShared;
 
@@ -104,7 +106,9 @@ namespace Dash
                 using (DataReader reader = args.GetDataReader())
                 {
                     reader.UnicodeEncoding = Windows.Storage.Streams.UnicodeEncoding.Utf8;
-                    string read = reader.ReadString(reader.UnconsumedBufferLength);
+                    var bytes = new byte[reader.UnconsumedBufferLength];
+                    reader.ReadBytes(bytes);
+                    string read = Encoding.UTF8.GetString(bytes);
                     await HandleIncomingMessage(read);
                 }
             }
@@ -151,7 +155,7 @@ namespace Dash
         }
         */
 
-
+        private static string _prevPartialString = "";
         private static async Task HandleIncomingMessage(string read)
         {
             if (read.Equals("both"))
@@ -169,9 +173,22 @@ namespace Dash
             }
             else
             {
-                if (read.Contains("{"))
+                if (read.Contains("{") || read.Length > 100)
                 {
-                    var array = read.CreateObjectList<BrowserRequest>();
+                    var array = (_prevPartialString + read).CreateObjectList<BrowserRequest>();
+                    if (array.Count() == 0)
+                    {
+                        _prevPartialString += read;
+                        if (_prevPartialString.Length > 25000000)
+                        {
+                            _prevPartialString = "";
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        _prevPartialString = "";
+                    }
                     foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
                     {
                         var browser = new BrowserView(request.tabId);
@@ -236,13 +253,16 @@ namespace Dash
         private bool _isCurrent = false;
         private readonly int Id;
         private string _title;
-        private long _startTimeOfBeingCurrent = 0; 
+        private long _startTimeOfBeingCurrent = 0;
+        private string _imageData = null;
 
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
         public event EventHandler<bool> CurrentChanged;
         public event EventHandler<string> TitleChanged;
+        public event EventHandler<string> ImageDataChanged;
 
+        public string ImageData => _imageData; 
         public double Scroll => _scroll;
         public bool IsCurrent => _isCurrent;
         public string Url => _url;
@@ -282,6 +302,12 @@ namespace Dash
             request.tabId = Id;
             request.url = url;
             request.Send();
+        }
+
+        public void FireImageUpdated(string imageData)
+        {
+            _imageData = imageData;
+            ImageDataChanged?.Invoke(this, imageData);
         }
 
         /// <summary>

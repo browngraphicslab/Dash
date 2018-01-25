@@ -17,6 +17,7 @@ var start = function() {
             sending = true;
             var array = JSON.stringify(messagesToSend)
             messagesToSend.length = 0;
+            console.log("sending message array with length: " + array.length);
             socket.send(array)
             sending = false
         }

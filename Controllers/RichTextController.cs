@@ -86,7 +86,7 @@ namespace Dash
                 var index = lowerData.IndexOf(searchString);
                 index = Math.Max(0, index - textDecrementForContext);
                 var substring = Data.ReadableString.Substring(index, Math.Min(maxStringSize, Data.ReadableString.Length - index));
-                return new StringSearchModel(substring);
+                return new StringSearchModel(substring, true);
             }
             return StringSearchModel.False;
         }
