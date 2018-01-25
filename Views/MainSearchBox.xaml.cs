@@ -386,22 +386,13 @@ namespace Dash
         /// <returns></returns>
         public IEnumerable<DocumentController> GetViewDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
         {
-            var vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
-            return vms.Select(i => i.ViewDocument);
+            var vms =
+                (xAutoSuggestBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Select(srvm => srvm
+                    .ViewDocument);
+
+            return vms;
         }
 
-        /// <summary>
-        /// returns to you the search view models for the current search
-        /// </summary>
-        /// <param name="maxSearchResultSize"></param>
-        /// <param name="filterFunc"></param>
-        /// <returns></returns>
-        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize, Func<SearchResultViewModel, bool> filterFunc = null)
-        {
-            var text = _currentSearch;
-            var vms = filterFunc == null ? SearchByParts(text) : SearchByParts(text).Where(filterFunc);
-            return vms.Take(maxSearchResultSize);
-        }
 
         /// <summary>
         /// Called when we drag the entire search collection

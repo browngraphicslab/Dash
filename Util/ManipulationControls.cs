@@ -420,7 +420,7 @@ namespace Dash
             var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
 
             var groupViews = GroupViews(_grouping);
-            var allViews = (_element.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>()).ToList();
+            //var allViews = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.ToList();
 
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
@@ -428,7 +428,7 @@ namespace Dash
             var pos = new Point(x, y);
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
-            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
+            //var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                     () =>
                     {

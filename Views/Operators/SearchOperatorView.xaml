@@ -48,6 +48,5 @@
                 </DataTemplate>
             </AutoSuggestBox.ItemTemplate>
         </AutoSuggestBox>
-
     </Grid>
 </UserControl>
