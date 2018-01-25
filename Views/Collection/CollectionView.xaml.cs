@@ -73,6 +73,7 @@ namespace Dash
             ViewModel = vm;
 
             Unloaded += CollectionView_Unloaded;
+            
         }
 
         public void TryBindToParentDocumentSize()
@@ -184,8 +185,6 @@ namespace Dash
 
         #endregion
 
-
-
         #region CollectionView context menu 
 
         /// <summary>
@@ -194,18 +193,26 @@ namespace Dash
         /// </summary>
         private void UpdateContextMenu()
         {
+
+            var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
+
             // add a horizontal separator in context menu
-            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+            var contextMenu = ParentDocument.MenuFlyout;
+            var separatorOne = new MenuFlyoutSeparator();
+            contextMenu.Items.Add(separatorOne);
+            elementsToBeRemoved.Add(separatorOne);
 
             // add the item to create a new document
             var newDocument = new MenuFlyoutItem() { Text = "Add new document", Icon = new FontIcon() { Glyph = "\uf016;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
             newDocument.Click += MenuFlyoutItemNewDocument_Click;
-            ParentDocument.MenuFlyout.Items.Add(newDocument);
+            contextMenu.Items.Add(newDocument);
+            elementsToBeRemoved.Add(newDocument);
 
             // add the item to create a new collection
             var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
             newCollection.Click += MenuFlyoutItemNewCollection_Click;
-            ParentDocument.MenuFlyout.Items.Add(newCollection);
+            contextMenu.Items.Add(newCollection);
+            elementsToBeRemoved.Add(newCollection);
 
             var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
 
@@ -238,14 +245,18 @@ namespace Dash
 
 
             tagMode.Click += EnterTagMode;
-            ParentDocument.MenuFlyout.Items.Add(tagMode);
+            contextMenu.Items.Add(tagMode);
+            elementsToBeRemoved.Add(tagMode);
 
             // add another horizontal separator
-            ParentDocument.MenuFlyout.Items.Add(new MenuFlyoutSeparator());
+            var separatorTwo = new MenuFlyoutSeparator();
+            contextMenu.Items.Add(separatorTwo);
+            elementsToBeRemoved.Add(separatorTwo);
 
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
-            ParentDocument.MenuFlyout.Items.Add(viewCollectionAs);
+            contextMenu.Items.Add(viewCollectionAs);
+            elementsToBeRemoved.Add(viewCollectionAs);
 
             var freeform = new MenuFlyoutItem() { Text = "Freeform" };
             freeform.Click += MenuFlyoutItemFreeform_Click;
@@ -275,7 +286,17 @@ namespace Dash
             // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
             var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
             viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            ParentDocument.MenuFlyout.Items.Add(viewCollectionPreview);
+            contextMenu.Items.Add(viewCollectionPreview);
+            elementsToBeRemoved.Add(viewCollectionPreview);
+
+            Unloaded += (sender, args) =>
+            {
+                foreach (var flyoutItem in elementsToBeRemoved)
+                {
+                    contextMenu.Items.Remove(flyoutItem);
+                }
+            };
+
         }
 
         /// <summary>
@@ -602,6 +623,7 @@ namespace Dash
         {
             var rootFrame = Window.Current.Content as Frame;
             Debug.Assert(rootFrame != null);
+            rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
             rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
 
         }
