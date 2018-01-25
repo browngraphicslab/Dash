@@ -624,8 +624,6 @@ namespace Dash
             var rootFrame = Window.Current.Content as Frame;
             Debug.Assert(rootFrame != null);
             rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
-            rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
-
         }
 
         #endregion
