@@ -93,7 +93,6 @@
                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                     ScrollViewer.IsVerticalRailEnabled="True"
                       Tapped="xThumbs_Tapped"
-                      PointerPressed="xThumbs_PointerPressed"
                     ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
 
