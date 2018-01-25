@@ -4,6 +4,7 @@ function tabManager(sendRequestFunction) {
     var activeTabId = 0;
     var prevActiveTabScroll = {}
     var awaitingUpdateTimers = {}
+    var windowId = 1;
 
     /*
     var updateScroll = function(tabId, scroll) {
@@ -17,6 +18,7 @@ function tabManager(sendRequestFunction) {
 
     var updateTab = function (tabId) {
         var update = function (tab) {
+            windowId = tab.windowId;
             var finalUpdate = function (result) {
                 if (tab != null) {
                     var requestBody = {
@@ -40,6 +42,21 @@ function tabManager(sendRequestFunction) {
         chrome.tabs.get(tabId, update);
     }
 
+
+    var sendTabScreenshot = function (tabId) {
+        console.log("taking screenshot");
+        var imgUpdate = function (imgResult) {
+            console.log(imgResult.substring(0, 50));
+            var requestBody = {
+                "$type": "Dash.SetTabImageBrowserRequest, Dash",
+                "tabId": tabId,
+                "data" : imgResult
+            }
+            sendRequestFunction(requestBody);
+            console.log("sent screenshot");
+        }
+        chrome.tabs.captureVisibleTab(windowId, {quality: 2}, imgUpdate);
+    }
 
     var updateScrollFromId = function (tabId) {
         if (!(tabId.toString() in prevActiveTabScroll)) {
@@ -127,6 +144,8 @@ function tabManager(sendRequestFunction) {
         activeTabId = tabId;
         console.log("active tab set to: " + tabId);
         updateTab(tabId);
+        setTimeout(function() { sendTabScreenshot(tabId); }, 2000);
+
     }
 
     chrome.tabs.query({}, initTabsCallback);
@@ -147,7 +166,7 @@ function tabManager(sendRequestFunction) {
         var tabHandler = function (tab) {
             //console.log("in tab handler");
             //console.log(tab);
-            thisSetScrollPosition(tab.id, 150);
+            thisSetScrollPosition(tab.id, 0);
         }
 
         //console.log("Creating new tab with url: " + url)

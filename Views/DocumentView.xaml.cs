@@ -937,7 +937,7 @@ namespace Dash
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && !ViewModel.Undecorated
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
 
@@ -1082,19 +1082,13 @@ namespace Dash
             ToFront();
         }
 
-        public void MoveToContainingCollection()
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
         {
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null ||ViewModel == null)
-                return;
-            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var x = pointerPosition2.X - Window.Current.Bounds.X;
-            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-            var pos = new Point(x, y);
+            if (collection == null || ViewModel == null)
+                return false;
 
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>();
-
-            foreach (var nestedDocument in topCollection)
+            foreach (var nestedDocument in overlappedViews)
             {
                 CollectionView nestedCollection = null;
                 if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
@@ -1105,16 +1099,14 @@ namespace Dash
                         continue;
                     if (!nestedCollection.Equals(collection))
                     {
-                        var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                            Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                            new Point();
                         var keyString = ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
                         if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
                             var key = keyString.Substring(1);
                             var k = KeyController.LookupKeyByName(key);
                             var keyasgn = "";
-                            if (k == null) {
+                            if (k == null)
+                            {
                                 var splits = key.Split("=");
                                 keyasgn = splits.Length > 1 ? splits[1] : "";
                                 k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
@@ -1123,17 +1115,29 @@ namespace Dash
                             (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
 
                             this.DeleteDocument();
-                            return;
+                            return true;
                         }
-                        else
+                        else if (grouped != null)
                         {
-                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                            foreach (var g in grouped)
+                            {
+                                var pos = g.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                                var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                                    new Point();
+                                nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = true;
+                                collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = false;
+
+                            }
+                            return true;
                         }
                     }
-                    break;
+                    else break;
                 }
             }
+            return false;
         }
 
         #region Context menu click handlers

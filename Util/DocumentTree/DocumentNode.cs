@@ -43,7 +43,7 @@ namespace Dash
         {
             get
             {
-                var result = _groups.Values.SelectMany(i => i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey).TypedData).Select(i => Tree[i.Id]).ToArray();
+                var result = _groups.Values.SelectMany(i => i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData ?? new List<DocumentController>(){i.DataDocument}).Select(i => Tree[i.Id]).ToArray();
                 return result;
             }
         }

@@ -54,8 +54,7 @@ namespace Dash
         private SolidColorBrush highlightNotFocused = new SolidColorBrush(Colors.Gray) {Opacity=0.5};
         private bool CanSizeToFit = false;
         long TextChangedCallbackToken;
-
-        public string target = null;
+        
         private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
@@ -95,7 +94,7 @@ namespace Dash
 
             _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
 
-            xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
+            //xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
             xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
             {
                 var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
@@ -222,6 +221,7 @@ namespace Dash
 
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
+            string target = null;
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 var s1 = this.xRichEditBox.Document.Selection.StartPosition;
@@ -240,6 +240,13 @@ namespace Dash
             {
                 var doc = GetDoc();
                 var point = doc.GetPositionField().Data;
+
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target));
+                if (nearest != null)
+                {
+                    nearest.DeleteDocument();
+                    return;
+                }
 
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
                 if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
@@ -276,7 +283,33 @@ namespace Dash
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
             }
-            target = null;
+        }
+
+        private DocumentView FindNearestDisplayedTarget(Point where, DocumentController target)
+        {
+            double dist = double.MaxValue;
+            DocumentView nearest = null;
+            var targetData = target?.GetDataDocument(null);
+            foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+            {
+                var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData.Id)
+                {
+                    var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                    var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                    if (MainPage.Instance.GetBoundingRect().Contains(center))
+                    {
+                        var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                        if (d < dist)
+                        {
+                            d = dist;
+                            nearest = dvm;
+                        }
+                    }
+                }
+            }
+
+            return nearest;
         }
 
         private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -853,6 +886,7 @@ namespace Dash
                     xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                 }
             }
+
             if (!ctrlState && !altState)
             {
                 var parent = this.GetFirstAncestorOfType<DocumentView>();
@@ -862,22 +896,20 @@ namespace Dash
 
         private void handleControlPressed(object sender, KeyRoutedEventArgs e)
         {
-            var selection = xRichEditBox.Document.Selection;
             if (e.Key.Equals(VirtualKey.B))
             {
-                _rtfHelper.Bold(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+                //xRichEditBox.Document.Selection.CharacterFormat.Bold = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.I))
             {
-                _rtfHelper.Italicize(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
-                e.Handled = true;
+                //xRichEditBox.Document.Selection.CharacterFormat.Italic = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.U))
             {
-                _rtfHelper.Underline(true);
-                //FormatToolTipInfo(xRichEditBox.Document.Selection);
+                //xRichEditBox.Document.Selection.CharacterFormat.Underline = xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None ? UnderlineType.Single : UnderlineType.None;
+                //UpdateDocument();
             }
             else if (e.Key.Equals(VirtualKey.F))
             {
@@ -897,6 +929,8 @@ namespace Dash
             {
                 OpenContextMenu(sender);
             }
+
+            e.Handled = true;
         }
 
         private void xRichEditBox_SelectionChanged_1(object sender, RoutedEventArgs e)
