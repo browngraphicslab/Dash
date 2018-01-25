@@ -26,31 +26,12 @@ using Microsoft.Toolkit.Uwp.Helpers;
 
 namespace Dash
 {
-
-    public class ContextWebView
-    {
-        public WebAndPdfView View;
-        public double ScaleFactor;
-        public double ActualWidth => Width * ScaleFactor;
-        public double ActualHeight => Height * ScaleFactor;
-        public double Width;
-        public double Height;
-
-        public ContextWebView(WebAndPdfView view, double scaleFactor, double width, double height)
-        {
-            View = view;
-            ScaleFactor = scaleFactor;
-            Width = width;
-            Height = height;
-        }
-    }
-
-    public sealed partial class WebAndPdfView : UserControl, INotifyPropertyChanged
+    public sealed partial class ContextPreview : UserControl, INotifyPropertyChanged
     {
 
         private BitmapImage _bitmapImage;
 
-        public BitmapImage BitmapImage
+        private BitmapImage BitmapImage
         {
             get => _bitmapImage;
             set
@@ -60,12 +41,11 @@ namespace Dash
             }
         }
 
-        public WebAndPdfView(DocumentContext context)
+        public ContextPreview(DocumentContext context)
         {
             InitializeComponent();
             BitmapImage = context.GetImage();
         }
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 

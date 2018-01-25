@@ -59,7 +59,21 @@ namespace Dash
         private bool _ptrIn;
         private bool _multiSelected;
 
-        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
+        /// <summary>
+        /// The width of the context preview
+        /// </summary>
+        private const double _contextPreviewActualWidth = 255;
+
+        /// <summary>
+        /// The height of the context preview
+        /// </summary>
+        private const double _contextPreviewActualHeight = 330;
+
+        /// <summary>
+        /// A reference to the actual context preview
+        /// </summary>
+        private UIElement _contextPreview;
+
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -165,11 +179,11 @@ namespace Dash
                 return;
             ViewModel.ShowLocalContext = showContext;
 
-            if (!showContext && _localContext.View != null)
+            if (!showContext && _contextPreview != null)
             {
                 // TODO hide the context
-                xShadowHost.Children.Remove(_localContext.View);
-                _localContext.View = null;
+                xShadowHost.Children.Remove(_contextPreview);
+                _contextPreview = null;
                 GC.Collect();
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
             }
@@ -183,16 +197,16 @@ namespace Dash
                 var source = new Uri(context.Url);
                 ViewModel.SetHasTitle(true);
 
-                if (_localContext.View == null)
+                if (_contextPreview == null)
                 {
-                    _localContext.View = new WebAndPdfView(context)
+                    _contextPreview = new ContextPreview(context)
                     {
-                        Width = _localContext.Width * _localContext.ScaleFactor,
-                        Height = _localContext.Height * _localContext.ScaleFactor,
+                        Width = _contextPreviewActualWidth,
+                        Height = _contextPreviewActualHeight,
                     };
-                    xShadowHost.Children.Add(_localContext.View);
-                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
-                    Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+                    xShadowHost.Children.Add(_contextPreview);
+                    Canvas.SetLeft(_contextPreview, -_contextPreviewActualWidth - 15);
+                    Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
                     xContextTitle.Content = context.Title;
                 }
             }
@@ -1204,7 +1218,7 @@ namespace Dash
         private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
-            if (_localContext.View != null) Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+            if (_contextPreview != null) Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
