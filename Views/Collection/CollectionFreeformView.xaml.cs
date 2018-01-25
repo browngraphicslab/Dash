@@ -1191,132 +1191,6 @@ namespace Dash
             CancelDrag(e.Pointer);
         }
 
-        #region Marquee Select
-
-        private Rectangle _marquee;
-        private bool _multiSelect;
-        private Point _marqueeAnchor;
-        private bool _isSelecting;
-
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (_marquee != null)
-            {
-                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
-                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
-                MarqueeSelectDocs(marqueeRect);
-                _multiSelect = false;
-                _marquee = null;
-                _isSelecting = false;
-                e.Handled = true;
-            }
-
-            xOuterGrid.ReleasePointerCapture(e.Pointer);
-        }
-
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
-        {
-            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
-            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
-
-            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
-
-
-            var pos = currentPoint.Position;
-            var dX = pos.X - _marqueeAnchor.X;
-            var dY = pos.Y - _marqueeAnchor.Y;
-
-            //Height and width depend on the difference in position of the current point and the anchor (initial point)
-            double newWidth = (dX > 0) ? dX : -dX;
-            double newHeight = (dY > 0) ? dY : -dY;
-
-            //Anchor point should also be moved if dX or dY are moved
-            var newAnchor = _marqueeAnchor;
-            if (dX < 0) newAnchor.X += dX;
-            if (dY < 0) newAnchor.Y += dY;
-
-
-            if (newWidth > 5 && newHeight > 5 && _marquee == null)
-            {
-                _marquee = new Rectangle()
-                {
-                    Stroke = new SolidColorBrush(Colors.Gray),
-                    StrokeThickness = 1.5 / Zoom,
-                    StrokeDashArray = new DoubleCollection { 5, 2 },
-                    CompositeMode = ElementCompositeMode.SourceOver
-                };
-                SelectionCanvas.Children.Add(_marquee);
-            }
-
-            if (_marquee == null) return;
-
-            //Adjust the marquee rectangle
-            Canvas.SetLeft(_marquee, newAnchor.X);
-            Canvas.SetTop(_marquee, newAnchor.Y);
-            _marquee.Width = newWidth;
-            _marquee.Height = newHeight;
-
-            args.Handled = true;
-
-        }
-
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
-            {
-                xOuterGrid.CapturePointer(args.Pointer);
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                _marqueeAnchor = pos;
-                _isSelecting = true;
-            }
-        }
-
-        private void MarqueeSelectDocs(Rect marquee)
-        {
-            SelectionCanvas.Children.Clear();
-            if (!_multiSelect) DeselectAll();
-            var selectedDocs = new List<DocumentView>();
-            if (xItemsControl.ItemsPanelRoot != null)
-            {
-                IEnumerable<DocumentViewModel> docs =
-                    xItemsControl.Items.OfType<DocumentViewModel>();
-                foreach (var docvm in docs)
-                {
-                    var doc = docvm.DocumentController;
-                    var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidthField().Data;
-                    if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeightField().Data;
-                    if (double.IsNaN(height)) height = 0;
-                    var rect = new Rect(position, new Size(width, height));
-                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
-                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
-                    {
-                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                        if (documentView != null)
-                            selectedDocs.Add(
-                                documentView);
-                    }
-                }
-            }
-            foreach (var docView in selectedDocs)
-            {
-                Select(docView);
-                //AddToPayload(docView);
-            }
-            //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && selectedDocs.Count > 0)
-            {
-                var parentView = this.GetFirstAncestorOfType<CollectionView>();
-                parentView.MakeSelectionModeMultiple();
-            }
-        }
-
-        #endregion
-
         #region Flyout
         #endregion
 
@@ -1436,8 +1310,9 @@ namespace Dash
 
         #endregion
 
-        #region SELECTION
+        #region General Selection Util Functions
 
+        // if the current collectionview's documents can be selected
         private bool _isSelectionEnabled;
         public bool IsSelectionEnabled
         {
@@ -1451,15 +1326,15 @@ namespace Dash
                 }
             }
         }
-
-
-
+        // the selected Document Views and their corresponding Controllers(?)
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-
         private List<DocumentView> _documentViews = new List<DocumentView>();
-
-
+   
         private bool _isToggleOn;
+
+        /// <summary>
+        /// Selects or deselects all currently selected documents on the collection.
+        /// </summary>
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
@@ -1470,6 +1345,9 @@ namespace Dash
                     Deselect(docView);
         }
 
+        /// <summary>
+        /// Deselects all selected documents.
+        /// </summary>
         public void DeselectAll()
         {
             foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
@@ -1479,6 +1357,10 @@ namespace Dash
             ViewModel.SelectionGroup.Clear();
         }
 
+        /// <summary>
+        /// Deselects a specific document.
+        /// </summary>
+        /// <param name="docView"></param>
         private void Deselect(DocumentView docView)
         {
             ViewModel.SelectionGroup.Remove(docView.ViewModel);
@@ -1486,26 +1368,30 @@ namespace Dash
 
         }
 
+        /// <summary>
+        /// Selects a specific document.
+        /// </summary>
+        /// <param name="docView"></param>
         public void Select(DocumentView docView)
         {
             ViewModel.SelectionGroup.Add(docView.ViewModel);
             docView.ToggleMultiSelected(true);
+            docView.OnSelected();
         }
 
+        // the following functions propagate drag events to the ViewModels
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
         }
-
-
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
             ViewModel.CollectionViewOnDragEnter(sender, e);
-
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -1519,6 +1405,149 @@ namespace Dash
             e.Data.Properties.Add("View", true);
             e.Data.RequestedOperation = DataPackageOperation.Link;
         }
+        #endregion
+
+        #region Marquee Select
+
+        // variables relating to the marquee selection on a collection view
+        private Rectangle _marquee;
+        private bool _multiSelect;
+        private Point _marqueeAnchor;
+        private bool _isSelecting;
+
+        /// <summary>
+        /// When the mouse is released, selects all the items contained within the
+        /// selection marquee rectangle.
+        /// </summary>
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
+                MarqueeSelectDocs(marqueeRect);
+                _multiSelect = false;
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+
+            xOuterGrid.ReleasePointerCapture(e.Pointer);
+        }
+
+        /// <summary>
+        /// Updates the selection marquee rectangle if the left button or equivalent
+        /// is vbeing held down.
+        /// </summary>
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
+
+            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
+
+            var pos = currentPoint.Position;
+            var dX = pos.X - _marqueeAnchor.X;
+            var dY = pos.Y - _marqueeAnchor.Y;
+
+            //Height and width depend on the difference in position of the current point and the anchor (initial point)
+            double newWidth = (dX > 0) ? dX : -dX;
+            double newHeight = (dY > 0) ? dY : -dY;
+
+            //Anchor point should also be moved if dX or dY are moved
+            var newAnchor = _marqueeAnchor;
+            if (dX < 0) newAnchor.X += dX;
+            if (dY < 0) newAnchor.Y += dY;
+
+
+            if (newWidth > 5 && newHeight > 5 && _marquee == null)
+            {
+                _marquee = new Rectangle()
+                {
+                    Stroke = new SolidColorBrush(Colors.Gray),
+                    StrokeThickness = 1.5 / Zoom,
+                    StrokeDashArray = new DoubleCollection { 5, 2 },
+                    CompositeMode = ElementCompositeMode.SourceOver
+                };
+                SelectionCanvas.Children.Add(_marquee);
+            }
+
+            if (_marquee == null) return;
+
+            //Adjust the marquee rectangle
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+
+            args.Handled = true;
+
+        }
+
+        /// <summary>
+        /// When the pointer is initially pressed, begins creating
+        /// a marquee selection.
+        /// </summary>
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                _isSelecting = true;
+            }
+        }
+
+        /// <summary>
+        /// Given a rectangle, selects all of the documents that intersect
+        /// with the rectangle's area (performs the marquee selection logic.)
+        /// </summary>
+        /// <param name="marquee">the marquee rectangle</param>
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            MultiSelectEnabled(true);
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+            var selectedDocs = new List<DocumentView>();
+
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                IEnumerable<DocumentViewModel> docs =
+                    xItemsControl.Items.OfType<DocumentViewModel>();
+                foreach (var docvm in docs)
+                {
+                    var doc = docvm.DocumentController;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    if (double.IsNaN(width)) width = 0;
+                    var height = doc.GetHeightField().Data;
+                    if (double.IsNaN(height)) height = 0;
+                    var rect = new Rect(position, new Size(width, height));
+                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                    {
+                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                        if (documentView != null)
+                        {
+                            Select(documentView);
+
+                        }
+                    }
+                }
+            }
+            
+            //Makes the collectionview's selection mode "Multiple" if documents were selected.
+            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            {
+                var parentView = this.GetFirstAncestorOfType<CollectionView>();
+                parentView.MakeSelectionModeMultiple();
+            }
+        }
+
         #endregion
 
         #region Ink

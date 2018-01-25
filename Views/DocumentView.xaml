@@ -112,7 +112,9 @@
             </Grid>
 
             <!--The selection border-->
-            <Border Name="xSelectionBorder"  />
+            <Border Name="xSelectionBorder" Margin="-3" />
+            <Border Name="xMultiSelectBorder" BorderThickness="2" BorderBrush="DodgerBlue"
+                    Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <Border Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
                 <Ellipse x:Name="OperatorEllipse"  Style="{StaticResource xFieldLinkHandle}"

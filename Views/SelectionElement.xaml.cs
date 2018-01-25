@@ -21,9 +21,31 @@ namespace Dash
         private bool _isSelected;
         private bool _isLowestSelected;
         private bool _isLoaded;
-
+        private bool _multiSelectEnabled;
+        
         public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
-        public SelectionElement CurrentSelectedElement { get; private set; }
+
+        /// <summary>
+        /// Enables or disables multi-select mode. Handles overhead.
+        /// </summary>
+        /// <param name="val"></param>
+        public void MultiSelectEnabled(bool val)
+        {
+            // going from multiSelect to normal select
+            if (_multiSelectEnabled && !val)
+            {
+                SelectedElements.Clear();
+                this.Deactivate();
+            }
+            _multiSelectEnabled = val;
+        }
+
+        // single select wraps around the multi select list
+        public SelectionElement CurrentSelectedElement {
+            get { return SelectedElements?.FirstOrDefault(); }
+            private set { SelectedElements.Clear(); SelectedElements.Insert(0, value); }
+        }
+        public List<SelectionElement> SelectedElements { get; set; }
         public bool HasDragLeft;
         public bool IsSelected
         {
@@ -43,7 +65,6 @@ namespace Dash
             private set
             {
                 if (_isLowestSelected == value) return;
-
                 _isLowestSelected = value;
                 OnLowestActivated(value);
             }
@@ -54,6 +75,7 @@ namespace Dash
             InitializeComponent();
             Loaded += SelectionElement_Loaded;
             Unloaded += SelectionElement_Unloaded;
+            SelectedElements = new List<SelectionElement>();
         }
 
         private void SelectionElement_Unloaded(object sender, RoutedEventArgs e)
@@ -86,14 +108,18 @@ namespace Dash
             // if we don't already get the clicks tell our parent we want them
             if (!IsLowestSelected)
             {
-                // first deselect all of our children
-                CurrentSelectedElement?.Deactivate();
-
+                // select us and deselect everything else 
+                if (!_multiSelectEnabled)
+                {
+                    // first deselect all of our children
+                    CurrentSelectedElement?.Deactivate();
+                }
                 // then set up our ancestors
                 ParentSelectionElement?.SetAsAncestorOfSelected(this);
 
                 // finally set up our child
                 ParentSelectionElement?.SetCurrentlySelectedElement(this);
+                
             }
         }
 
@@ -104,13 +130,16 @@ namespace Dash
             IsLowestSelected = false;
 
             // if we had a child on a different branch deactivate that branch of children
-            if (CurrentSelectedElement != null && CurrentSelectedElement != selected)
+            if (!_multiSelectEnabled && CurrentSelectedElement != null && CurrentSelectedElement != selected)
             {
                 CurrentSelectedElement.Deactivate();
             }
 
             // set the child to be the newly selected element
-            CurrentSelectedElement = selected;
+            if (!_multiSelectEnabled)
+                CurrentSelectedElement = selected;
+            else
+                SelectedElements.Add(selected);
 
             // recursively set our parents to have the correct ancestors
             ParentSelectionElement?.SetAsAncestorOfSelected(this);
@@ -131,16 +160,29 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Selects a child SelectionElement with this as the parent SelectionElement
+        /// </summary>
+        /// <param name="newSelectedElement"></param>
         private void SetCurrentlySelectedElement(SelectionElement newSelectedElement)
         {
-            // if the new selected is different from the current selected element
-            if (CurrentSelectedElement != null && CurrentSelectedElement != newSelectedElement)
+            // if only in single selection mode
+            if (!_multiSelectEnabled)
             {
-                CurrentSelectedElement.Deactivate(); // deactivate the current
-            }
+                // if the new selected is different from the current selected element
+                if (CurrentSelectedElement != null && CurrentSelectedElement != newSelectedElement)
+                {
+                    CurrentSelectedElement.Deactivate(); // deactivate the current
+                }
 
-            // current = new
-            CurrentSelectedElement = newSelectedElement;
+                // current = new
+                CurrentSelectedElement = newSelectedElement;
+            }
+            else {
+                // add to selected list if non-null in multi select
+                if (newSelectedElement != null && !SelectedElements.Contains(newSelectedElement))
+                    SelectedElements.Add(newSelectedElement);
+            }
 
             // if new is not null
             if (newSelectedElement != null)
@@ -148,9 +190,6 @@ namespace Dash
                 // new is lowest selected and new is selected
                 newSelectedElement.IsSelected = true;
                 newSelectedElement.IsLowestSelected = true;
-
-                // deselect all of the newly selected elements children (not sure if necessary)
-                newSelectedElement.SetCurrentlySelectedElement(null);
 
                 // the current item is no longer the lowest selected
                 IsLowestSelected = false;

@@ -148,13 +148,14 @@ namespace Dash
             if (freeformView == null) return;
             if (!isMultiSelected)
             {
-                this.CanDrag = false;
-                this.DragStarting -= freeformView.DocView_OnDragStarting;
-                xFieldContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                //this.CanDrag = false;
+                // this.DragStarting -= freeformView.DocView_OnDragStarting;
+                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
             } else
             {
-                this.CanDrag = true;
-                this.DragStarting += freeformView.DocView_OnDragStarting;
+                
+                //this.CanDrag = true;
+                // this.DragStarting += freeformView.DocView_OnDragStarting; // todo: this is confusing to me what does this interaction do
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
             }
             _multiSelected = isMultiSelected;
@@ -444,21 +445,6 @@ namespace Dash
                 return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-        }
-
-
-        public DocumentController Choose()
-        {
-            OnSelected();
-            // bring document to center? 
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-            if (mainView != null)
-            {
-                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
-                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
-                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
-            }
-            return null;
         }
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
@@ -834,6 +820,7 @@ namespace Dash
         {
             (ParentCollection?.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            (ParentCollection?.CurrentView as CollectionFreeformView)?.MultiSelectEnabled(false);
         }
 
         private void OpenLayout()
@@ -882,7 +869,7 @@ namespace Dash
             xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
         }
 
-        public async void OnTapped(object sender, TappedRoutedEventArgs e)
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
                 CoreVirtualKeyStates.Down &&
@@ -891,12 +878,32 @@ namespace Dash
                 ViewModel.SetSelected(null, true);
                 return;
             }
+
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var freeform = (ParentCollection?.CurrentView as CollectionFreeformView);
+                freeform.Select(this);
+                ToggleMultiSelected(true);
+
+                return;
+            }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
 
             if (!IsSelected)
             {
+                SelectAndBringtoForefront();
+            }
+
+        }
+
+        /// <summary>
+        /// Brings the given DocumentView to the front (Z-index) of its
+        /// containing collection. Selects that DocumentView.
+        /// </summary>
+        async void SelectAndBringtoForefront()
+        {
                 await Task.Delay(100); // allows for double-tap
 
                 //Selects it and brings it to the foreground of the canvas, in front of all other documents.
@@ -909,14 +916,12 @@ namespace Dash
                         Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                     }
                     OnSelected();
-                    
+
 
                     // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
                     this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
                 }
-            }
         }
-
         protected override void OnActivated(bool isSelected)
         {
             ViewModel?.SetSelected(this, isSelected);
@@ -949,10 +954,11 @@ namespace Dash
 
 
             OperatorEllipse.Visibility = isBorderOn ? Visibility.Visible : Visibility.Collapsed;
-        }
+      }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
         {
+
             // get all the document views that are in the same collection as ourself
             var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
@@ -1153,46 +1159,55 @@ namespace Dash
 
         #region Context menu click handlers
 
+        // TODO: probably have a separate context menu for multi select
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            CopyDocument();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                view.CopyDocument();
         }
 
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            CopyViewDocument();
+            // for all selected documents (multi select compatible), perform action
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                view.CopyViewDocument();
         }
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            DeleteDocument();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements) 
+                    view.DeleteDocument();
         }
 
         private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
         {
-            OpenLayout();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                view.OpenLayout();
         }
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            KeyValueViewDocument();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                view.KeyValueViewDocument();
         }
 
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e)
         {
-            ShowPreviewDocument();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                view.ShowPreviewDocument();
         }
 
 
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e)
         {
-            ShowContext();
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                ShowContext();
         }
 
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
-            ScreenCap();
-
+            foreach (DocumentView view in ParentSelectionElement.SelectedElements)
+                ScreenCap();
         }
 
 
