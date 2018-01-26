@@ -72,7 +72,7 @@ namespace Dash
             }
             doc = doc.GetDataDocument();
             var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) ||
-                                (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
+                                (doc.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData
                                      .Any(MatchesFilter) ?? false);
             return matchesFilter;
         }

@@ -12,6 +12,11 @@
     DataContextChanged="TreeViewNode_OnDataContextChanged">
 
     <StackPanel>
+    <StackPanel.ContextFlyout>
+        <MenuFlyout>
+            <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItem_OnClick"></MenuFlyoutItem>
+        </MenuFlyout>
+    </StackPanel.ContextFlyout>
         <Grid x:Name="XHeader">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"></ColumnDefinition>
