@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using NewControls.Geometry;
 using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
+using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -33,7 +34,7 @@ namespace Dash
         public Point Translation { get; }
         public float Scale { get; }
     }
-      
+
 
 
     /// <summary>
@@ -94,7 +95,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions=null)
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions = null)
         {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
@@ -266,7 +267,7 @@ namespace Dash
 
             var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
-           
+
             foreach (var side in sides)
             {
                 var sideRect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
@@ -282,7 +283,7 @@ namespace Dash
                     }
                 }
             }
-            
+
             return documentViewsAboveThreshold;
         }
 
@@ -405,27 +406,48 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                if(_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                if (_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
             }
-        } 
+        }
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
             _isManipulating = false;
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            
-            _grouping = GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+            var docRoot = ParentDocument;
 
+            var groupViews = GroupViews(_grouping);
+           
+            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition2.X - Window.Current.Bounds.X;
+            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
+
+            var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => docRoot.MoveToContainingCollection()));
+                    () =>
+                    {
+                        var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
+                        if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
+                            GroupManager.RemoveGroup(pc, group);
+                        GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                    }));
+
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
             }
+        }
+        public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
+        {
+            var collectionFreeFormChildren = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
+            // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
+            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping != null && _grouping.Contains(dv.ViewModel));
+            return groupings?.ToList() ?? new List<DocumentView>();
         }
         public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -443,10 +465,12 @@ namespace Dash
                 return;
             }
             var docRoot = ParentDocument;
-            docRoot?.ToFront();
-            
+
             _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
-            
+            var groupViews = GroupViews(_grouping);
+            foreach (var gv in groupViews)
+                gv.ToFront();
+
             _isManipulating = true;
             _processManipulation = true;
 
@@ -541,7 +565,7 @@ namespace Dash
         /// </summary>
         private void BorderManipulateDeltaMove(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse && 
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
             {
@@ -560,7 +584,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) && 
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;
@@ -602,7 +626,7 @@ namespace Dash
 
                 // calculate the direction of the velocity
                 var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
-                
+
                 // checks if a certain number of direction changes occur in a specified time span
                 if (_numberOfTimesDirChanged == 0)
                 {
@@ -735,7 +759,7 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped=null)
+        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped = null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -756,7 +780,7 @@ namespace Dash
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-                    foreach (var g in grouped.Except(new List<DocumentViewModel> {docRoot.ViewModel}))
+                    foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
                         g?.TransformDelta(transformGroup);
                     }

@@ -386,7 +386,7 @@ namespace Dash
 
         private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.AllowedOperations = DataPackageOperation.Copy;
+            args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             var el = sender as FrameworkElement;
             var docRef = DataContext as DocumentFieldReference;
             args.Data.Properties["Operator Document"] = docRef.GetDocumentController(null);

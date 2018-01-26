@@ -10,6 +10,18 @@ namespace Dash
     {
         private readonly Dictionary<string,DocumentNode> _children = new Dictionary<string, DocumentNode>();
         private readonly Dictionary<string, DocumentNode> _parents= new Dictionary<string, DocumentNode>();
+
+        public DocumentTree.DocumentNodeGroup Group { get; }
+        public DocumentTree Tree { get; }
+
+        /// <summary>
+        /// gets all the members of the group that this node is in
+        /// </summary>
+        public DocumentNode[] GroupPeers
+        {
+            get { return Group?.Members; }
+        }
+
         public DocumentNode[] Children
         {
             get { return _children.Values.ToArray(); }
@@ -45,8 +57,11 @@ namespace Dash
         /// </summary>
         /// <param name="viewDocument"></param>
         /// <param name="dataDocument"></param>
-        public DocumentNode(DocumentController viewDocument)
+        public DocumentNode(DocumentController viewDocument, DocumentTree.DocumentNodeGroup group, DocumentTree tree)
         {
+            Group = group;
+            Tree = tree;
+            group.AddMember(this);
             ViewDocument = viewDocument;
             DataDocument = ViewDocument.GetDataDocument();
         }

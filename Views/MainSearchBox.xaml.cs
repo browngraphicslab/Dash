@@ -8,7 +8,8 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Newtonsoft.Json.Linq;
+using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -72,22 +73,28 @@ namespace Dash
             }
         }
 
-        
+
+        public DocumentController SearchForFirstMatchingDocument(string text)
+        {
+            var maxSearchResultSize = 75;
+            var vms = SearchHelper.SearchOverCollection(text.ToLower());
+
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                return searchResultViewModel.ViewDocument;
+            }
+            return null;
+
+        }
 
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             // Set sender.Text. You can use args.SelectedItem to build your text string.
             if (args.SelectedItem is SearchResultViewModel resultVM)
             {
-                if (resultVM?.DocumentCollection != null)
-                {
-                    var currentWorkspace = MainPage.Instance.MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-                    if (!currentWorkspace.GetDataDocument().Equals(resultVM.DocumentCollection.GetDataDocument()))
-                    {
-                        MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVM.DocumentCollection, resultVM.ViewDocument);
-                    }
-                }
-                MainPage.Instance.NavigateToDocumentInWorkspace(resultVM.ViewDocument);
+
             }
         }
 
@@ -118,6 +125,7 @@ namespace Dash
         }
 
 
+
         private void XAutoSuggestBox_OnGotFocus(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_currentSearch))
@@ -126,30 +134,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Gets the specified number of view documents for the current search
-        /// </summary>
-        /// <param name="maxSearchResultSize">The maximum number of results to return</param>
-        /// <param name="filterFunc">A filtering function to filter the type of view models returned</param>
-        /// <returns></returns>
-        public IEnumerable<DocumentController> GetViewDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
-        {
-            var vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
-            return vms.Select(i => i.ViewDocument);
-        }
-
-        /// <summary>
-        /// returns to you the search view models for the current search
-        /// </summary>
-        /// <param name="maxSearchResultSize"></param>
-        /// <param name="filterFunc"></param>
-        /// <returns></returns>
-        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize, Func<SearchResultViewModel, bool> filterFunc = null)
-        {
-            var text = _currentSearch;
-            var vms = filterFunc == null ? SearchHelper.SearchOverCollection(text) : SearchHelper.SearchOverCollection(text).Where(filterFunc);
-            return vms.Take(maxSearchResultSize);
-        }
 
         /// <summary>
         /// Called when we drag the entire search collection
@@ -157,7 +141,7 @@ namespace Dash
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             // get all the view docs for the search and set the key for the drag to a static const
-            args.Data.Properties[SearchCollectionDragKey] = GetViewDocumentsForCurrentSearch();
+            args.Data.Properties[SearchCollectionDragKey] = SearchHelper.SearchOverCollection(_currentSearch);//GetViewDocumentsForCurrentSearch();
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -192,23 +176,91 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         /// public static class for encapsulating all the search code
         /// </summary>
         public static class SearchHelper
         {
+            /// <summary>
+            /// this criteria simple tells us which key and value pair to look at
+            /// </summary>
+            private class SpecialSearchCriteria
+            {
+                public string SearchCategory { get; set; }
+                public string SearchText { get; set; }
+            }
+            /*
+            private class SearchCriteria : EntityBase
+            {
+                public string SearchText { get; set; }
+            }
+
+            private interface ISearchFilter<T> where T: SearchHelper
+            {
+                public bool Valid(DocumentNode node, T criteria)
+            }*/
+
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string[] searchParts,
                 DocumentController collectionDocument)
             {
-                return SearchOverCollection(string.Join(' ', searchParts), collectionDocument);
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
+                return CleanByType(SearchOverCollection(string.Join(' ', searchParts), collectionDocument));
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null)
             {
-                return SearchByParts(searchString)
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
+                return CleanByType(SearchByParts(searchString)
                     .Where(vm => collectionDocument == null ||
-                                 (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument)));
+                                 (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
+            }
+
+            public static IEnumerable<SearchResultViewModel> SearchOverCollectionList(string searchString,
+                List<DocumentController> collectionDocuments = null)
+            {
+                if (MainPage.Instance.MainDocument == null)
+                {
+                    return null;
+                }
+
+                return CleanByType(SearchByParts(searchString)
+                    .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
+            }
+
+
+            private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
+            {
+                Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
+                {
+                    if (vm.IsLikelyUsefulContextText)
+                    {
+                        return vm;
+                    }
+
+                    switch (vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower())
+                    {
+                        case "collection box":
+                        case "collected docs note":
+                            vm.ContextualText = "Found in Collection";
+                            break;
+                        default:
+                            //vm.ContextualText = "Found: "+ vm.ContextualText;
+                            break;
+                    }
+                    Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
+                    return vm;
+                };
+                return vms.Select(convert);
             }
 
             /// <summary>
@@ -226,10 +278,13 @@ namespace Dash
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
                     {
-                        var temp = mainList;
+                        var temp =
+                            mainList; //if there is no criteria, swap the order of lists so that this is the primary vm provider
                         mainList = searchResult;
                         searchResult = temp;
                     }
+
+                    int index = 0;
                     foreach (var existingVm in mainList.ToArray())
                     {
                         var valid = false;
@@ -238,6 +293,11 @@ namespace Dash
                             if (existingVm.ViewDocument.Equals(vm.ViewDocument))
                             {
                                 valid = true;
+                                if (!existingVm.IsLikelyUsefulContextText && vm.IsLikelyUsefulContextText)
+                                {
+                                    mainList.Remove(existingVm);
+                                    mainList.Insert(index, vm);
+                                }
                                 break;
                             }
                         }
@@ -245,9 +305,10 @@ namespace Dash
                         {
                             mainList.Remove(existingVm);
                         }
+                        index++;
                     }
                 }
-                return mainList ?? new List<SearchResultViewModel>();
+                return (mainList ?? new List<SearchResultViewModel>()).DistinctBy(i => i.ViewDocument.Id).ToList();
             }
 
             /// <summary>
@@ -266,12 +327,56 @@ namespace Dash
                 {
                     return GroupMembershipSearch(criteria);
                 }
+                if (criteria.SearchCategory == "rtf" ||
+                    criteria.SearchCategory == "rt" ||
+                    criteria.SearchCategory == "richtext" ||
+                    criteria.SearchCategory == "richtextformat")
+                {
+                    return RichTextContains(criteria);
+                }
                 return GenericSpecialSearch(criteria);
+            }
+
+            private static IEnumerable<SearchResultViewModel> RichTextContains(SpecialSearchCriteria criteria)
+            {
+                var tree = DocumentTree.MainPageTree;
+                return LocalSearch("").Where(vm => tree.GetNodeFromViewId(vm?.ViewDocument?.Id) != null &&
+                                                   (tree.GetNodeFromViewId(vm.ViewDocument.Id).DataDocument
+                                                       .EnumFields(false)
+                                                       .Any(f => (f.Value is RichTextController) && !
+                                                                     ((RichTextController) f.Value)
+                                                                     .SearchForStringInRichText(criteria.SearchText)
+                                                                     .StringFound)));
             }
 
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
-                return null;
+                var tree = DocumentTree.MainPageTree;
+                return LocalSearch(criteria.SearchText)
+                    .SelectMany(i => tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0])
+                    .DistinctBy(d => d.Id).SelectMany(i => MakeAdjacentSearchResultViewModels(i, criteria, tree, null));
+                /*
+                var tree = DocumentTree.MainPageTree;
+                var localSearch = LocalSearch(criteria.SearchText).Where(vm => tree[vm?.ViewDocument?.Id] != null).ToArray();
+                var map = new Dictionary<DocumentNode, SearchResultViewModel>();
+                foreach (var vm in localSearch)
+                {
+                    foreach(var peer in tree[vm.ViewDocument.Id].GroupPeers)
+                    {
+                        map[peer] = vm;
+                    }
+                }
+                var allPeers = localSearch.SelectMany(vm => tree[vm.ViewDocument.Id].GroupPeers).DistinctBy(i => i.Id).ToArray();
+
+                return allPeers.Select(node => MakeAdjacentSearchResultViewModel(node, criteria, tree, map[node]));*/
+            }
+
+            private static SearchResultViewModel[] MakeAdjacentSearchResultViewModels(DocumentNode node,
+                SpecialSearchCriteria criteria, DocumentTree tree, SearchResultViewModel foundVm)
+            {
+                return CreateSearchResults(tree, node.DataDocument,
+                    "Found near: " + (foundVm?.Title ?? criteria.SearchText),
+                    node.DataDocument.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data);
             }
 
             private static IEnumerable<SearchResultViewModel> CollectionMembershipSearch(SpecialSearchCriteria criteria)
@@ -295,6 +400,7 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GenericSpecialSearch(SpecialSearchCriteria criteria)
             {
                 var documentTree = DocumentTree.MainPageTree;
+
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
@@ -310,11 +416,13 @@ namespace Dash
                         }
                     }
                 }
+
+                var results = new List<SearchResultViewModel>();
                 foreach (var docController in docControllers)
                 {
                     var title = docController.Title;
 
-                    if (documentTree[docController.Id] != null && documentTree[docController.Id].DataDocument
+                    if (documentTree.GetNodeFromViewId(docController.Id) != null && documentTree.GetNodeFromViewId(docController.Id).DataDocument
                             .GetField<ListController<DocumentController>>(KeyStore.CollectionKey) != null)
                     {
                         title = GetTitleOfCollection(documentTree, docController) ?? "?";
@@ -323,9 +431,10 @@ namespace Dash
                     url = url == null
                         ? ""
                         : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
-                    yield return CreateSearchResult(documentTree, docController, url ?? docController.DocumentType.Type,
-                        title);
+                    url = url == null ? url : "Context: " + url;
+                    results.AddRange(CreateSearchResults(documentTree, docController.GetDataDocument(), url ?? docController.DocumentType.Type, title));
                 }
+                return results;
             }
 
             private static string GetTitleOfCollection(DocumentTree tree, DocumentController collection)
@@ -334,8 +443,7 @@ namespace Dash
                 {
                     return null;
                 }
-                return tree[collection.Id]?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)
-                    ?.Data;
+                return tree.GetNodeFromViewId(collection.Id)?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
             }
 
             /// <summary>
@@ -354,13 +462,15 @@ namespace Dash
                         docControllers.Add(documentController);
                     }
                 }
+                var results = new List<SearchResultViewModel>();
                 foreach (var docController in docControllers)
                 {
                     var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey,
                         null);
                     var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
-                    yield return CreateSearchResult(documentTree, docController, imageUrl, docController.Title);
+                    results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));
                 }
+                return results;
             }
 
 
@@ -447,13 +557,14 @@ namespace Dash
                             ? lastTopText
                             : documentController.Title;
 
-                        var vm = CreateSearchResult(documentTree, documentController, bottomText, title);
+                        var vm = CreateSearchResults(documentTree, documentController, bottomText, title,
+                            lastFieldSearch.IsUseFullRelatedString);
 
                         if (!countToResults.ContainsKey(foundCount))
                         {
                             countToResults.Add(foundCount, new List<SearchResultViewModel>());
                         }
-                        countToResults[foundCount].Add(vm);
+                        countToResults[foundCount].AddRange(vm);
                     }
                 }
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
@@ -468,35 +579,36 @@ namespace Dash
             /// <param name="bottomText"></param>
             /// <param name="titleText"></param>
             /// <returns></returns>
-            private static SearchResultViewModel CreateSearchResult(DocumentTree documentTree,
-                DocumentController dataDocumentController, string bottomText, string titleText)
+            private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree,
+                DocumentController dataDocumentController, string bottomText, string titleText,
+                bool isLikelyUsefulContextText = false)
             {
+                var vms = new List<SearchResultViewModel>();
                 string preTitle = "";
 
-                var documentNode = documentTree[dataDocumentController.Id];
-                if (documentNode?.Parents?.FirstOrDefault() != null)
+                var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
+                foreach (var documentNode in documentNodes ?? new DocumentNode[0])
                 {
-                    preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
-                                   .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
-                                   ? "?"
-                                   : documentNode.Parents.First().DataDocument
-                                       .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) + " >  ";
+                    if (documentNode?.Parents?.FirstOrDefault() != null)
+                    {
+                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+                                       .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
+                                       ? "?"
+                                       : documentNode.Parents.First().DataDocument
+                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) +
+                                   " >  ";
+                    }
+
+                    var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "",
+                        dataDocumentController.Id,
+                        documentNode?.ViewDocument ?? dataDocumentController,
+                        documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
+                    vms.Add(vm);
                 }
 
-                var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "", dataDocumentController.Id,
-                    documentNode?.ViewDocument ?? dataDocumentController,
-                    documentNode?.Parents?.FirstOrDefault()?.ViewDocument);
-                return vm;
-            }
-
-            /// <summary>
-            /// this criteria simple tells us which key and value pair to look at
-            /// </summary>
-            private class SpecialSearchCriteria
-            {
-                public string SearchText { get; set; }
-                public string SearchCategory { get; set; }
+                return vms.ToArray();
             }
         }
     }
 }
+

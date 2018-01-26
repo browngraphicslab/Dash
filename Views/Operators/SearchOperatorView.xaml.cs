@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -26,16 +27,21 @@ namespace Dash
         /// </summary>
         private DocumentController _operatorDoc;
 
+        /// <summary>
+        /// Observable collection of the search results for the autosuggestbox
+        /// </summary>
+        private readonly ObservableCollection<SearchResultViewModel> _searchResultViewModels = new ObservableCollection<SearchResultViewModel>();
+
+        /// <summary>
+        /// The current search string that the user is inputing
+        /// </summary>
+        private string _currentSearch;
+
         public SearchOperatorView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
-            Loaded += SearchOperatorView_Loaded;
-        }
-
-        private void SearchOperatorView_Loaded(object sender, RoutedEventArgs e)
-        {
-            xSearchBox.ShowCollectionDrag(false);
+            xAutoSuggestBox.ItemsSource = _searchResultViewModels;
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -46,24 +52,59 @@ namespace Dash
             // get the document containing the operator
             _operatorDoc = refToOp?.GetDocumentController(null);
 
-            // listen for when the input collection is changed
-            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.InputCollection, OnInputCollectionChanged);
-            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.Text, OnTextFieldChanged);
+            // listen for when the input text is changed
+            _operatorDoc?.AddFieldUpdatedListener(SearchOperatorController.TextKey, OnTextFieldChanged);
+
+            // set the initial autosuggest text to the current field value if it exists
+            xAutoSuggestBox.Text = _operatorDoc.GetDereferencedField<TextController>(SearchOperatorController.TextKey, null)?.Data ?? string.Empty;
         }
 
+        /// <summary>
+        /// Update the text in the autosuggestbox when the input text changes
+        /// </summary>
         private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
-            //XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            if (xAutoSuggestBox.Text != tfmc.Data)
+            {
+                xAutoSuggestBox.Text = tfmc.Data;
+            }
         }
 
-        private void OnInputCollectionChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        /// <summary>
+        /// Update the input to the collection when the user types something in the autosuggest box
+        /// </summary>
+        private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            //var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            //InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-            //_allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
+            sender.Text = _currentSearch;
+            _operatorDoc.SetField(SearchOperatorController.TextKey, new TextController(sender.Text), true);
         }
 
+        private void XAutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // Only get results when it was a user typing,
+            // otherwise assume the value got filled in by TextMemberPath
+            // or the handler for SuggestionChosen.
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var searchCollection = _operatorDoc.GetDereferencedField<ListController<DocumentController>>(SearchOperatorController.InputCollection, null)?.TypedData;
+                var searchText = sender.Text;
+                _searchResultViewModels.Clear();
+                foreach (var searchResultViewModel in MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection))
+                {
+                    _searchResultViewModels.Add(searchResultViewModel);
+                }
+            }
+
+            // update the current search
+            _currentSearch = sender.Text;
+        }
+
+        private void XAutoSuggestBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            // Set sender.Text. You can use args.SelectedItem to build your text string.
+            sender.Text = _currentSearch;
+        }
     }
 }

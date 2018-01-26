@@ -32,6 +32,10 @@ namespace Dash
                 {
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                    //if (cargs == null)
+                    //{
+                    //    return;
+                    //}
                     if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                     {
                         UpdateViewModels(cargs, copiedContext);
@@ -46,6 +50,7 @@ namespace Dash
 
                         AddViewModels(documents, context);
                     }
+
                 });
 
             CellSize = 250; // TODO figure out where this should be set
@@ -102,29 +107,38 @@ namespace Dash
 
         private void AddViewModels(List<DocumentController> documents, Context c)
         {
-            foreach (var documentController in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
-                documentViewModel.IsDraggerVisible = this.IsSelected;
-                DocumentViewModels.Add(documentViewModel);
+                foreach (var documentController in documents)
+                {
+                    var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                    documentViewModel.IsDraggerVisible = this.IsSelected;
+                    DocumentViewModels.Add(documentViewModel);
+                }
             }
         }
 
         private void RemoveViewModels(List<DocumentController> documents)
         {
-            var ids = documents.Select(doc => doc.GetId());
-            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
-            foreach (var vm in vms)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                DocumentViewModels.Remove(vm);
+                var ids = documents.Select(doc => doc.GetId());
+                var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+                foreach (var vm in vms)
+                {
+                    DocumentViewModels.Remove(vm);
+                }
             }
         }
 
         public override void AddDocuments(List<DocumentController> documents, Context context)
         {
-            foreach (var doc in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                AddDocument(doc, context);
+                foreach (var doc in documents)
+                {
+                    AddDocument(doc, context);
+                }
             }
         }
 
@@ -153,9 +167,12 @@ namespace Dash
 
         public override void RemoveDocuments(List<DocumentController> documents)
         {
-            foreach (var doc in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                RemoveDocument(doc);
+                foreach (var doc in documents)
+                {
+                    RemoveDocument(doc);
+                }
             }
         }
 

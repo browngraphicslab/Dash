@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -17,6 +19,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
+using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using DashShared.Models;
 
@@ -55,7 +59,20 @@ namespace Dash
         private bool _ptrIn;
         private bool _multiSelected;
 
-        private readonly ContextWebView _localContext = new ContextWebView(null, .3, 850, 1100);
+        /// <summary>
+        /// The width of the context preview
+        /// </summary>
+        private const double _contextPreviewActualWidth = 255;
+
+        /// <summary>
+        /// The height of the context preview
+        /// </summary>
+        private const double _contextPreviewActualHeight = 330;
+
+        /// <summary>
+        /// A reference to the actual context preview
+        /// </summary>
+        private UIElement _contextPreview;
 
 
         // == CONSTRUCTORs ==
@@ -123,16 +140,16 @@ namespace Dash
                 if (_ptrIn) ShowLocalContext(true);
             }
 
-            if (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift))
+            if (ViewModel != null && (ViewModel.IsLowestSelected && 
+                                      (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                                      e.VirtualKey.Equals(VirtualKey.Enter)))
             {
-                if (e.VirtualKey.Equals(VirtualKey.Enter))
-                {
-                    // don't shift enter on key value documents
-                    if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
-                        ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+                // don't shift enter on key value documents
+                if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                    ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                    return;
 
-                    HandleShiftEnter();
-                }
+                HandleShiftEnter();
             }
         }
 
@@ -166,11 +183,11 @@ namespace Dash
                 return;
             ViewModel.ShowLocalContext = showContext;
 
-            if (!showContext && _localContext.View != null)
+            if (!showContext && _contextPreview != null)
             {
                 // TODO hide the context
-                xShadowHost.Children.Remove(_localContext.View);
-                _localContext.View = null;
+                xShadowHost.Children.Remove(_contextPreview);
+                _contextPreview = null;
                 GC.Collect();
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
             }
@@ -181,25 +198,19 @@ namespace Dash
 
                 var context = ViewModel.DocumentController.GetFirstContext();
                 if (context == null) return;
-                var source = new Uri(context.Url);
                 ViewModel.SetHasTitle(true);
 
-                if (_localContext.View == null)
+                if (_contextPreview == null)
                 {
-                    _localContext.View = new WebAndPdfView(source)
+                    _contextPreview = new ContextPreview(context)
                     {
-                        Width = _localContext.Width,
-                        Height = _localContext.Height,
-                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                        Width = _contextPreviewActualWidth,
+                        Height = _contextPreviewActualHeight,
                     };
-                    xShadowHost.Children.Add(_localContext.View);
-                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth - 15);
-                    Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+                    xShadowHost.Children.Add(_contextPreview);
+                    Canvas.SetLeft(_contextPreview, -_contextPreviewActualWidth - 15);
+                    Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
                     xContextTitle.Content = context.Title;
-                }
-                else if (!_localContext.View.Source.Equals(source))
-                {
-                    _localContext.View.Source = source;
                 }
             }
         }
@@ -457,8 +468,7 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-
-            if (!ViewModel.Undecorated)
+            if (ViewModel != null && !ViewModel.Undecorated)
             {
                 // add manipulation code
                 ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
@@ -946,23 +956,18 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Turn the selection border on or off based on isBorderOn, also toggles the title
-        /// icon visibility based on isBorderOn unless the user specifically overrides this
-        /// behavior with isTitleVisible
-        /// </summary>
-        private void ToggleSelectionBorder(bool isBorderOn, bool? isTitleVisible = null)
+        private void ToggleSelectionBorder(bool isBorderOn, bool isOtherChromeVisible = true)
         {
 
             // change the thickness of the border so that it's visible
             xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
 
             // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = (isTitleVisible ?? isBorderOn) && !ViewModel.Undecorated
+            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                 ? (SolidColorBrush) Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
 
-
+            
             OperatorEllipse.Visibility = isBorderOn ? Visibility.Visible : Visibility.Collapsed;
       }
 
@@ -1104,19 +1109,13 @@ namespace Dash
             ToFront();
         }
 
-        public void MoveToContainingCollection()
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
         {
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null ||ViewModel == null)
-                return;
-            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var x = pointerPosition2.X - Window.Current.Bounds.X;
-            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-            var pos = new Point(x, y);
+            if (collection == null || ViewModel == null)
+                return false;
 
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>();
-
-            foreach (var nestedDocument in topCollection)
+            foreach (var nestedDocument in overlappedViews)
             {
                 CollectionView nestedCollection = null;
                 if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
@@ -1127,44 +1126,45 @@ namespace Dash
                         continue;
                     if (!nestedCollection.Equals(collection))
                     {
-                        var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                            Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                            new Point();
                         var keyString = ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
                         if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
                         {
                             var key = keyString.Substring(1);
-                            bool found = false;
-                            foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
+                            var k = KeyController.LookupKeyByName(key);
+                            var keyasgn = "";
+                            if (k == null)
                             {
-                                if (k.Name == key)
-                                {
-                                    (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                    (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                                    found = true;
-                                }
+                                var splits = key.Split("=");
+                                keyasgn = splits.Length > 1 ? splits[1] : "";
+                                k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
                             }
-
-                            if (!found)
-                            {
-                                var k = new KeyController(UtilShared.GenerateNewId(), key);
-                                (nestedCollection.CurrentView as CollectionPageView).SetHackText(k);
-                                (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-                            }
-
+                            (nestedCollection.CurrentView as CollectionPageView).SetHackText(k, keyasgn);
+                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
 
                             this.DeleteDocument();
-                            return;
+                            return true;
                         }
-                        else
+                        else if (grouped != null)
                         {
-                            nestedCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetSameCopy(where), null);
-                            collection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                            foreach (var g in grouped)
+                            {
+                                var pos = g.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                                var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                                    new Point();
+                                nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = true;
+                                collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                                (collection.CurrentView as CollectionFreeformView).SuspendGroups = false;
+
+                            }
+                            return true;
                         }
                     }
-                    break;
+                    else break;
                 }
             }
+            return false;
         }
 
         #region Context menu click handlers
@@ -1246,23 +1246,51 @@ namespace Dash
         private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
-            if (_localContext.View != null) Canvas.SetTop(_localContext.View, xMetadataPanel.ActualHeight);
+            if (_contextPreview != null) Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
-            data.SetText(string.Join("\n",(ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(c => c.Title + "  :  "+c.Url)));
+            data.SetText(string.Join("\n",
+                (ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(
+                    c => c.Title + "  :  " + c.Url)));
             Clipboard.SetContent(data);
         }
 
         public void HandleShiftEnter()
         {
             if (ViewModel.IsLowestSelected == false) return;
+
+
+
+
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+
+
+
+            // special case for search operators
+            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+            {
+                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) is SearchOperatorController)
+                {
+                    var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
+
+                    operatorDoc.SetField(SearchOperatorController.InputCollection,
+                        new DocumentReferenceController(ViewModel.DocumentController.Id,
+                            SearchOperatorController.ResultsKey), true);
+
+                    // TODO connect output to input
+
+                    Actions.DisplayDocument(collection.ViewModel, operatorDoc, where);
+                    return;
+                }
+            }
+
+
             collection.LoadNewActiveTextBox("", where, true);
         }
 

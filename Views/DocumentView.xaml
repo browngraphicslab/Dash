@@ -97,6 +97,8 @@
                         x:FieldModifier="public"
                         Margin="0,0,-20,-20"
                         HorizontalAlignment="Right"
+                        AllowFocusOnInteraction="False"
+                        AllowFocusWhenDisabled="False"
                         VerticalAlignment="Bottom"
                         ManipulationMode="TranslateX, TranslateY"
                         Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}">

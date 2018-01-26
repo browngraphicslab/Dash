@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -51,11 +52,15 @@ namespace Dash
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (Equals(args.NewValue, oldViewModel))
+            {
+                return;
+            }
             if (oldViewModel != null)
             {
                 //TODO remove binding from old document
             }
-            if (args.NewValue != null && args.NewValue != oldViewModel)
+            if (args.NewValue != null)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
@@ -73,10 +78,11 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
+                    var collectionViewModel = new CollectionViewModel(
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
+                            KeyStore.GroupingKey));
                     CollectionTreeView.DataContext =
-                        new CollectionViewModel(
-                            new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                                KeyStore.GroupingKey));
+                        collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;

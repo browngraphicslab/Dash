@@ -29,11 +29,16 @@ namespace Dash
         public TimelineElementViewModel ViewModel { get; private set; }
         public CollectionTimelineView ParentTimeline { get; private set; }
 
-        private static double _webViewActualHeight = 160;
-        private static double _webViewActualWidth =  250;
-        private static double _webViewScaleFactor = .3;
+        /// <summary>
+        /// The width and height of the context preview
+        /// </summary>
+        private const double ContextPreviewActualHeight = 160;
+        private const double ContextPreviewActualWidth = 250;
+        /// <summary>
+        /// A reference to the context preview
+        /// </summary>
+        private UIElement _contextPreview;
 
-        private readonly ContextWebView _localContext = new ContextWebView(null, _webViewScaleFactor, _webViewActualWidth/_webViewScaleFactor, _webViewActualHeight/_webViewScaleFactor);
 
         private bool _localContextVisible;
         private double _ellipseSize = 18;
@@ -162,11 +167,11 @@ namespace Dash
 
         public void DisplayBelow(bool showContext)
         {
-            if (!showContext && _localContext.View != null)
+            if (!showContext)
             {
                 // TODO hide the context
-                xDocHolder.Children.Remove(_localContext.View);
-                _localContext.View = null;
+                xDocHolder.Children.Remove(_contextPreview);
+                _contextPreview = null;
                 GC.Collect();
 
                 xLowerLine.Visibility = Visibility.Collapsed;
@@ -184,23 +189,17 @@ namespace Dash
             if (showContext)
             {
                 if (ViewModel == null) return;
-                var source = new Uri(ViewModel.DocumentContext.Url);
 
-                if (_localContext.View == null)
+                if (_contextPreview == null)
                 {
-                    _localContext.View = new WebAndPdfView(source)
+                    _contextPreview = new ContextPreview(ViewModel.DocumentContext)
                     {
-                        Width = _localContext.Width,
-                        Height = _localContext.Height,
-                        RenderTransform = new ScaleTransform { ScaleX = _localContext.ScaleFactor, ScaleY = _localContext.ScaleFactor }
+                        Width = ContextPreviewActualWidth,
+                        Height = ContextPreviewActualHeight,
                     };
-                    xDocHolder.Children.Add(_localContext.View);
-                    Canvas.SetLeft(_localContext.View, -_localContext.ActualWidth / 2 - EllipseSize / 2);
-                    if (xDocumentPreview != null) Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
-                }
-                else if (_localContext.View.Source != null && !_localContext.View.Source.Equals(source))
-                {
-                    _localContext.View.Source = source;
+                    xDocHolder.Children.Add(_contextPreview);
+                    Canvas.SetLeft(_contextPreview, - ContextPreviewActualWidth / 2 - EllipseSize / 2);
+                    if (xDocumentPreview != null) Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
                 }
 
                 xLowerLine.Visibility = Visibility.Visible;
@@ -266,9 +265,9 @@ namespace Dash
 
             try
             {
-                if(_localContext.View != null)
+                if(_contextPreview != null)
                 {
-                    Canvas.SetTop(_localContext.View, xDocumentPreview.ActualHeight);
+                    Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
 
                 }
                 Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);

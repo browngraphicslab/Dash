@@ -29,7 +29,8 @@ namespace Dash
                     Document = docController,
                     Key = KeyStore.DataKey,
                     Mode = BindingMode.TwoWay,
-                    Context = context
+                    Context = context,
+                    Tag = "Rich Text Box Text Binding"
                 };
                 element.AddFieldBinding(RichTextView.TextProperty, binding);
             }

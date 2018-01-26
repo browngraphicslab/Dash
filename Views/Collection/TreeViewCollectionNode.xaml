@@ -8,11 +8,12 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    x:Name="XControl">
+    x:Name="XControl"
+    DataContextChanged="TreeViewCollectionNode_OnDataContextChanged">
 
     <Grid Background="Transparent" HorizontalAlignment="Center">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding DocumentViewModels}"
+                 ItemsSource="{Binding BindableDocumentViewModels}"
                  SelectionMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">

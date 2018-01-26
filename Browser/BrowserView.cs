@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -8,8 +10,10 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Networking.Sockets;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.ViewManagement;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Browser;
 using DashShared;
 
@@ -104,7 +108,9 @@ namespace Dash
                 using (DataReader reader = args.GetDataReader())
                 {
                     reader.UnicodeEncoding = Windows.Storage.Streams.UnicodeEncoding.Utf8;
-                    string read = reader.ReadString(reader.UnconsumedBufferLength);
+                    var bytes = new byte[reader.UnconsumedBufferLength];
+                    reader.ReadBytes(bytes);
+                    string read = Encoding.UTF8.GetString(bytes);
                     await HandleIncomingMessage(read);
                 }
             }
@@ -151,7 +157,7 @@ namespace Dash
         }
         */
 
-
+        private static string _prevPartialString = "";
         private static async Task HandleIncomingMessage(string read)
         {
             if (read.Equals("both"))
@@ -169,9 +175,30 @@ namespace Dash
             }
             else
             {
-                if (read.Contains("{"))
+                if (!string.IsNullOrWhiteSpace(_prevPartialString) && !read.EndsWith(']'))
                 {
-                    var array = read.CreateObjectList<BrowserRequest>();
+                    _prevPartialString += read;
+                    if (_prevPartialString.Length > 25000000)
+                    {
+                        _prevPartialString = "";
+                    }
+                }
+                else if (read.Contains("{") || read.Length > 100)
+                {
+                    var array = (_prevPartialString + read).CreateObjectList<BrowserRequest>().ToArray();
+                    if (array.Count() == 0)
+                    {
+                        _prevPartialString += read;
+                        if (_prevPartialString.Length > 25000000)
+                        {
+                            _prevPartialString = "";
+                        }
+                        return;
+                    }
+                    else
+                    {
+                        _prevPartialString = "";
+                    }
                     foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
                     {
                         var browser = new BrowserView(request.tabId);
@@ -236,13 +263,16 @@ namespace Dash
         private bool _isCurrent = false;
         private readonly int Id;
         private string _title;
-        private long _startTimeOfBeingCurrent = 0; 
+        private long _startTimeOfBeingCurrent = 0;
+        private string _imageData = null;
 
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
         public event EventHandler<bool> CurrentChanged;
         public event EventHandler<string> TitleChanged;
+        public event EventHandler<string> ImageDataChanged;
 
+        public string ImageData => _imageData; 
         public double Scroll => _scroll;
         public bool IsCurrent => _isCurrent;
         public string Url => _url;
@@ -282,6 +312,18 @@ namespace Dash
             request.tabId = Id;
             request.url = url;
             request.Send();
+        }
+
+        public void FireImageUpdated(string imageData)
+        {
+            Debug.WriteLine("Browser view image changed, with image different: "+ imageData != _imageData);
+            if (!string.IsNullOrEmpty(imageData))
+            {
+                Task.Run(SameImageTask);
+            }
+            _imageData = imageData;
+            ImageDataChanged?.Invoke(this, imageData);
+            
         }
 
         /// <summary>
@@ -336,6 +378,13 @@ namespace Dash
             CurrentChanged?.Invoke(this, current);
         }
 
+        public string GetUrlHash()
+        {
+            var hash =  UtilShared.GetDeterministicGuid(_url);
+            Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
+            return hash;
+        }
+
         public DocumentContext GetAsContext()
         {
             return new DocumentContext()
@@ -344,8 +393,60 @@ namespace Dash
                 Scroll = Scroll,
                 Title = Title,
                 ViewDuration = MillisecondsSinceBecomingCurrentTab,
-                CreationTimeTicks = DateTime.Now.Ticks
+                CreationTimeTicks = DateTime.Now.Ticks,
+                ImageId = GetUrlHash()
             };
         }
+
+        private Action SameImageTask = new Action(async () =>
+        {
+            var hash = MainPage.Instance.WebContext.GetUrlHash();
+            if (MainPage.Instance.WebContext.ImageData == null || File.Exists(ApplicationData.Current.LocalFolder.Path + hash + ".jpg"))
+            {
+                return;
+            }
+
+
+
+            var prefix = "data:image/jpeg;base64,";
+
+            byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData.StartsWith(prefix)
+                ? MainPage.Instance.WebContext.ImageData.Substring(prefix.Length)
+                : MainPage.Instance.WebContext.ImageData);
+            MemoryStream memoryStream = new MemoryStream(byteBuffer);
+            memoryStream.Position = 0;
+
+            await UITask.RunTask(async () =>
+            {
+                BitmapImage originalBitmap = new BitmapImage();
+                await originalBitmap.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                memoryStream.Close();
+                memoryStream = null;
+
+                var height = originalBitmap.PixelHeight;
+                var width = originalBitmap.PixelWidth;
+
+                memoryStream = new MemoryStream(byteBuffer);
+
+                var bitmapImage = new WriteableBitmap(width, height);
+                await bitmapImage.SetSourceAsync(memoryStream.AsRandomAccessStream());
+
+                memoryStream.Close();
+                memoryStream = null;
+                byteBuffer = null;
+
+                var util = new ImageToDashUtil();
+
+                try
+                {
+                    await util.ParseBitmapAsync(bitmapImage, hash);
+                }
+                catch (Exception e)
+                {
+                    
+                }
+            });
+        });
     }
 }
