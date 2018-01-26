@@ -7,6 +7,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,12 +25,31 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;
-
         public CollectionGridView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionGridView_Unloaded;
+
+            PointerWheelChanged += CollectionGridView_PointerWheelChanged;
+        }
+
+        private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var point = e.GetCurrentPoint(this);
+
+                // get the scale amount
+                var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
+
+                ViewModel.CellSize += scaleAmount;
+                var style = new Style(typeof(GridViewItem));
+                style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                xGridView.ItemContainerStyle = style;
+                e.Handled = true;
+            }
         }
 
         public CollectionGridView(BaseCollectionViewModel viewModel) : this()
@@ -89,6 +110,10 @@ namespace Dash
                 xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
                 xGridView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
+                var style = new Style(typeof(GridViewItem));
+                style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                xGridView.ItemContainerStyle = style;
             }
         }
 

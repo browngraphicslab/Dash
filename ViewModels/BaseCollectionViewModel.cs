@@ -77,10 +77,11 @@ namespace Dash
 
         #region Grid or List Specific Variables I want to Remove
 
+        // todo: this should be tied to a field on the collection so that it will be persisted
         public double CellSize
         {
             get { return _cellSize; }
-            protected set { SetProperty(ref _cellSize, value); }
+            set { SetProperty(ref _cellSize, value); }
         }
 
         public bool CanDragItems
