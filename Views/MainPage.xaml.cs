@@ -273,12 +273,19 @@ namespace Dash
                         new Point(
                             containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
                             containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
-                    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+
+                    
+
+                    var pt = canvas.TransformToVisual(xMainDocView).TransformPoint(new Point(0, 0));
+                    var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
+                    var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
+
+                    root.MoveAnimated(oldTranslateX, oldTranslateY, new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
                 {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
+                    if (NavigateToDocumentAnimated(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
                         return true;
                 }
             return false;

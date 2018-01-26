@@ -847,22 +847,29 @@ namespace Dash
         }
 
 
-        public void MoveAnimated(TranslateTransform translate)
+        public void MoveAnimated(double oldTranslateX, double oldTranslateY, TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
 
-            SetFreeformTransformAnimated(translate);
+            SetFreeformTransformAnimated(oldTranslateX, oldTranslateY, translate);
 
         }
 
-
-        private CompositeTransform _originalTransform;
+        //TODO: move this to top of class definition
+        private MatrixTransform _originalTransform;
         private Storyboard _storyboard;
 
-        private void SetFreeformTransformAnimated(TranslateTransform translate)
+        private void SetFreeformTransformAnimated(double oldTranslateX, double oldTranslateY, TranslateTransform translate)
         {
             //TODO: Make this a shallow copy
-            _originalTransform = itemsPanelCanvas.RenderTransform as CompositeTransform;
+            //_originalTransform = (itemsPanelCanvas.RenderTransform as MatrixTransform);
+            
+            var old = (itemsPanelCanvas.RenderTransform as MatrixTransform).Matrix;
+
+            _originalTransform = new MatrixTransform()
+            {
+                Matrix = new Matrix(old.M11, old.M12, old.M21, old.M22, old.OffsetX, old.OffsetY)
+            };
 
             Debug.Assert(_originalTransform != null);
             var milliseconds = 1000;
@@ -871,19 +878,15 @@ namespace Dash
             _storyboard?.Children.Clear();
             _storyboard = new Storyboard { Duration = duration };
 
-            var scale = 1;
-
-            var translateX = translate.X;
-            var translateY = translate.Y;
 
             // Create a DoubleAnimation for each property to animate
-            var scaleAnimationX = MakeAnimationElement(scale, "ScaleX", duration);
-            var scaleAnimationY = MakeAnimationElement(scale, "ScaleY", duration);
+            //var scaleAnimationX = MakeAnimationElement(scale, "ScaleX", duration);
+            //var scaleAnimationY = MakeAnimationElement(scale, "ScaleY", duration);
             //var centerAnimationX = MakeAnimationElement(x, "CenterX", duration);
             //var centerAnimationY = MakeAnimationElement(y, "CenterY", duration);
-            var translateAnimationX = MakeAnimationElement(translateX, "TranslateX", duration);
-            var translateAnimationY = MakeAnimationElement(translateY, "TranslateY", duration);
-            var animationList = new List<DoubleAnimation>(new DoubleAnimation[] { translateAnimationX, translateAnimationY, scaleAnimationX, scaleAnimationY });
+            var translateAnimationX = MakeAnimationElement(translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
+            var animationList = new List<DoubleAnimation>(){ translateAnimationX, translateAnimationY};
 
 
             // Add each animation to the storyboard
@@ -892,9 +895,6 @@ namespace Dash
                 _storyboard.Children.Add(anim);
             }
 
-
-            CompositionTarget.Rendering -= CompositionTargetOnRendering;
-            CompositionTarget.Rendering += CompositionTargetOnRendering;
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
@@ -914,10 +914,23 @@ namespace Dash
 
         private void CompositionTargetOnRendering(object sender, object e)
         {
+            /*
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+
+            var composite = new TransformGroup();
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(new TranslateTransform()
+            {
+                X = _originalTransform.Matrix.OffsetX,
+                Y = _originalTransform.Matrix.OffsetY
+            });
+            var compValue = composite.Value;
+            */
+
             itemsPanelCanvas.RenderTransform = _originalTransform;
             InkHostCanvas.RenderTransform = _originalTransform;
 
-            /*
+            var matrix = _originalTransform.Matrix;
 
             var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
 
@@ -931,8 +944,6 @@ namespace Dash
                     (float)matrix.OffsetY);
                 xBackgroundCanvas.Invalidate();
             }
-            */
-
         }
 
         private DoubleAnimation MakeAnimationElement(double to, String name, Duration duration)
@@ -944,23 +955,23 @@ namespace Dash
             Storyboard.SetTarget(toReturn, _originalTransform);
             Storyboard.SetTargetProperty(toReturn, name);
 
-            if (name == "ScaleX")
-                toReturn.From = _originalTransform.ScaleX;
+            //if (name == "ScaleX")
+            //    toReturn.From = _originalTransform.;
 
-            if (name == "ScaleY")
-                toReturn.From = _originalTransform.ScaleX;
+            //if (name == "ScaleY")
+            //    toReturn.From = _originalTransform.ScaleX;
 
-            if (name == "CenterX")
-                toReturn.From = _originalTransform.CenterX;
+            //if (name == "CenterX")
+            //    toReturn.From = _originalTransform.CenterX;
 
-            if (name == "CenterY")
-                toReturn.From = _originalTransform.CenterY;
+            //if (name == "CenterY")
+            //    toReturn.From = _originalTransform.CenterY;
 
-            if (name == "TranslateX")
-                toReturn.From = _originalTransform.TranslateX;
+            if (name == "Matrix.OffsetX")
+                toReturn.From = _originalTransform.Matrix.OffsetX;
 
-            if (name == "TranslateY")
-                toReturn.From = _originalTransform.TranslateY;
+            if (name == "Matrix.OffsetY")
+                toReturn.From = _originalTransform.Matrix.OffsetY;
 
             toReturn.To = to;
             toReturn.EasingFunction = new QuadraticEase();
