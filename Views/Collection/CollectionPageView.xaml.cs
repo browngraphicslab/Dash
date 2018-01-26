@@ -210,7 +210,8 @@ namespace Dash
                 {
                     Mode = BindingMode.OneWay,
                     Document = value.DocumentController.GetDataDocument(null),
-                    Key = KeyStore.TitleKey
+                    Key = KeyStore.TitleKey,
+                    Tag = "CurPage Title Binding"
                 };
 
                 if (value.Content is CollectionView)
