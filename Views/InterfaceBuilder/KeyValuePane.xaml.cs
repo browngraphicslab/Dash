@@ -204,8 +204,10 @@ namespace Dash
                     case TypeInfo.Point:
                         fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
                         break;
-                    case TypeInfo.None:
                     case TypeInfo.Document:
+                        fmController = new Converters.DocumentControllerToStringConverter(null).ConvertXamlToData(stringValue);
+                        break;
+                    case TypeInfo.None:
                     case TypeInfo.PointerReference:
                     case TypeInfo.DocumentReference:
                     case TypeInfo.Operator:

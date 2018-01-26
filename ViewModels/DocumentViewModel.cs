@@ -221,6 +221,11 @@ namespace Dash
             return Equals((DocumentViewModel) obj);
         }
 
+        public override string ToString()
+        {
+            return DocumentController.ToString();
+        }
+
         public override int GetHashCode()
         {
             return (DocumentController != null ? DocumentController.GetHashCode() : 0);

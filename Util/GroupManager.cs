@@ -50,11 +50,11 @@ namespace Dash
                 return groupings;
             }
             
-            return SetupGroupings(parentDocument.ViewModel, parentDocument.ParentCollection);
+            return SetupGroupings(parentDocument.ViewModel, parentDocument.ParentCollection, true);
         }
 
 
-        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection)
+        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite=false)
         {
             if (parentCollection == null || docViewModel == null || parentCollection.ParentDocument == null)
                 return new List<DocumentViewModel>();
@@ -66,7 +66,9 @@ namespace Dash
             if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
             {
                 var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups), true);
+                if (groups != null || forceWrite) {
+                    parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
+                }
 
                 DocumentController newDragGroupDocument;
                 return GetGroupMembers(parentCollection, docViewModel, out newDragGroupDocument).Select((gd) => parentCollection.GetDocumentViewModel(gd)).ToList();
@@ -113,11 +115,14 @@ namespace Dash
                     removedGroups.Add(g);
                 }
             }
-            var newGroupsList = new List<DocumentController>(groupsList.TypedData);
-            newGroupsList.AddRange(addedItems);
-            newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
-            groupsList = new ListController<DocumentController>(newGroupsList);
-            collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
+            if (addedItems.Count > 0 || removedGroups.Count > 0)
+            {
+                var newGroupsList = new List<DocumentController>(groupsList.TypedData);
+                newGroupsList.AddRange(addedItems);
+                newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
+                groupsList = new ListController<DocumentController>(newGroupsList);
+                collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
+            }
             return groupsList;
         }
         
@@ -197,6 +202,7 @@ namespace Dash
 
             }
 
+            return null;
             var sameList = otherGroups.ToList();
             sameList.Add(dragGroupDocument);
             return sameList;

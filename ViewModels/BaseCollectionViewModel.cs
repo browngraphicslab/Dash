@@ -77,10 +77,11 @@ namespace Dash
 
         #region Grid or List Specific Variables I want to Remove
 
+        // todo: this should be tied to a field on the collection so that it will be persisted
         public double CellSize
         {
             get { return _cellSize; }
-            protected set { SetProperty(ref _cellSize, value); }
+            set { SetProperty(ref _cellSize, value); }
         }
 
         public bool CanDragItems
@@ -324,6 +325,24 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            // accept move, then copy, and finally accept whatever they requested (for now)
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+            {
+                e.AcceptedOperation = DataPackageOperation.Move;
+            }
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            else
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation;
+            }
+
+            // special case for schema view... should be removed
+            if (CollectionDBSchemaHeader.DragModel != null)
+                e.AcceptedOperation = DataPackageOperation.Copy;
+
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
@@ -575,7 +594,7 @@ namespace Dash
             }
 
             // if the user drags a data document
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("Operator Document"))
             {
                 var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
 
@@ -591,6 +610,21 @@ namespace Dash
                     var docAlias = refDoc.GetKeyValueAlias(where);
                     AddDocument(docAlias, null);
                 }
+            }
+
+
+            // if the user tries to move a view doucment
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
+            {
+
+                var collViewModel = (BaseCollectionViewModel) e.DataView.Properties["Collection View Model"];
+                if (collViewModel == this)
+                {
+                    e.AcceptedOperation = DataPackageOperation.None;
+                    return;
+                }
+                var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Move"];
+                Actions.DisplayDocument(this, viewDoc, where);
             }
 
             e.Handled = true;

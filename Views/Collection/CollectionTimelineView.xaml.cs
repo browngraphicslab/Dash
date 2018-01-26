@@ -130,14 +130,21 @@ namespace Dash
             Metadata.ActualWidth = ActualWidth;
             MetadataUpdated?.Invoke();
 
-            SetTimelineWidth(CurrentXPosition + 100);
+            var width = CurrentXPosition + 100;
+            var minWidth = ActualWidth - 160;
+            if (width < minWidth)
+            {
+                width = minWidth;
+            }
+
+            SetTimelineWidth(width);
         }
 
         private void SetTimelineWidth(double width)
         {
             xHorizontalLine.Width = width;
             Canvas.SetLeft(xVerticalLineRight, width + 80);
-            xScrollViewCanvas.Width = width + 130;
+            xScrollViewCanvas.Width = width;
         }
 
         #region ContextManagement

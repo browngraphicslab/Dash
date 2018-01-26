@@ -698,8 +698,8 @@
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\WebAndPdfView.xaml.cs">
-      <DependentUpon>WebAndPdfView.xaml</DependentUpon>
+    <Compile Include="Views\ContextPreview.xaml.cs">
+      <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
@@ -1160,7 +1160,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\WebAndPdfView.xaml">
+    <Page Include="Views\ContextPreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

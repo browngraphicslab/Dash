@@ -12,7 +12,7 @@
 
     <Grid Background="Transparent" HorizontalAlignment="Center">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding DocumentViewModels}"
+                 ItemsSource="{Binding BindableDocumentViewModels}"
                  SelectionMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">

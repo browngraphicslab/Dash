@@ -29,7 +29,7 @@
                 <Grid Name="xDocGrid" BorderBrush="LightGray" BorderThickness="1" Background="White" Opacity=".9" Margin="-120,0,0,0">
                     <local:DocumentView x:Name="xDocumentPreview" Width="150" Height="30"
                     DataContext="{Binding DocumentViewModel}" 
-                    SizeChanged="DocumentPreviewSizeChanged">
+                    SizeChanged="DocumentPreviewSizeChanged" IsHitTestVisible="False">
                     </local:DocumentView>
                 </Grid>
                 

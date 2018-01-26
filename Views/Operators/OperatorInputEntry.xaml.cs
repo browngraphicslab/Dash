@@ -80,6 +80,11 @@ namespace Dash
 
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
+            // set the input type
+            var el = sender as FrameworkElement;
+            var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            _inputType = opField.Inputs[key].Type;
 
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
@@ -89,14 +94,9 @@ namespace Dash
                     // the key we're dragging from
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     // the operator controller the input is going to
-                    var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
-                    var el = sender as FrameworkElement;
                     // the key we're dropping on
-                    var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
                     // the type of the field we're dragging
-                    var fieldType = new DocumentReferenceController(refDoc.Id, refKey).DereferenceToRoot(null).TypeInfo;
-                    // the type of the input we're dragging on
-                    _inputType = opField.Inputs[key].Type;
+                    var fieldType = refDoc.GetRootFieldType(refKey);
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
@@ -123,14 +123,54 @@ namespace Dash
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                if (sender.Text == "")
+                var queryText = sender.Text;
+
+                // get the fields that have the same type as the key the user is suggesting for
+                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key);
+
+                // add all the fields with the correct type to the list of suggestions
+                var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController)).ToList();
+
+                // get all the fields from the connecting document that are collections
+                var collections = _refDoc.EnumDisplayableFields()
+                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key);
+
+                // if the user has entered dot syntax we want to parse that as <collection>.<field>
+                // unfortunatley we don't parse anything nested beyond that
+                if (queryText.EndsWith("."))
                 {
-                    sender.ItemsSource = _refDoc.EnumDisplayableFields().Select(kv => kv.Key);
+                    // iterate over all collections
+                    foreach (var collectionKey in collections)
+                    {
+                        // make sure it is a collection of documents (not numbers or strings)
+                        var docCollection =
+                            _refDoc.GetDereferencedField<ListController<DocumentController>>(collectionKey, null);
+                        if (docCollection != null)
+                        {
+                            // get the keys for fields that are associated with types we have as input
+                            var validHeaderKeys = Util.GetTypedHeaders(docCollection)
+                                .Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti))).Select(kt => kt.Key);
+                            // add the keys as collection field pairs
+                            suggestions.AddRange(
+                                validHeaderKeys.Select(fieldKey => new CollectionKeyPair(fieldKey, collectionKey)));
+                        }
+                    }
+                }
+                // if the user hasn't used a "." then we at least let them autocomplete collections of documents
+                else
+                {
+                    suggestions.AddRange(collections.Where(collectionKey => _refDoc.GetDereferencedField<ListController<DocumentController>>(collectionKey, null) != null).Select(collectionKey => new CollectionKeyPair(collectionKey)));
+                }
+                
+                // set the itemsource to either filtered or unfiltered suggestions
+                if (queryText == string.Empty)
+                {
+                    sender.ItemsSource = suggestions;
                 }
                 else
                 {
-                    sender.ItemsSource = _refDoc.EnumDisplayableFields().Select(kv => kv.Key)
-                        .Where(k => k.Name.ToLower().Contains(sender.Text.ToLower()));
+                    suggestions = suggestions.Where(s => s.ToString().ToLower().Contains(queryText.ToLower())).ToList();
+                    sender.ItemsSource = suggestions;
                 }
             }
         }
@@ -142,21 +182,36 @@ namespace Dash
                 return;
             }
             var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
-            if (args.ChosenSuggestion != null)
+            if (args.ChosenSuggestion is CollectionKeyPair chosen)
             {
-                OperatorFieldReference.GetDocumentController(null).SetField(key,
-                    new DocumentReferenceController(_refDoc.Id, (KeyController)args.ChosenSuggestion), true);
+                if (chosen.CollectionKey == null)
+                {
+                    OperatorFieldReference.GetDocumentController(null).SetField(key,
+                        new DocumentReferenceController(_refDoc.Id, chosen.FieldKey), true);
+                }
+                else
+                {
+                    OperatorFieldReference.GetDocumentController(null)
+                        .SetField(key, new TextController(chosen.FieldKey.Id), true);
+                }
             }
             else
             {
-                KeyController refKey = _refDoc.EnumDisplayableFields()
-                    .Select(kv => kv.Key).FirstOrDefault(k => k.Name == args.QueryText);
-                if (refKey != null)
-                {
-                    OperatorFieldReference.GetDocumentController(null).SetField(key,
-                        new DocumentReferenceController(_refDoc.Id, refKey), true);
-                }
+                // TODO LSM made it so the user has to unambiguously select a key. this can be changed
+                // TODO when we have more robust key parsing
+
+
+                //KeyController refKey = _refDoc.EnumDisplayableFields()
+                //    .Select(kv => kv.Key).FirstOrDefault(k => k.Name == args.QueryText);
+                //if (refKey != null)
+                //{
+                //    OperatorFieldReference.GetDocumentController(null).SetField(key,
+                //        new DocumentReferenceController(_refDoc.Id, refKey), true);
+                //}
             }
+
+            // hide the suggestion box
+            SuggestBox.Visibility = Visibility.Collapsed;
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -171,6 +226,28 @@ namespace Dash
         private void SuggestBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             SuggestBox.Visibility = Visibility.Collapsed;
+        }
+
+        private class CollectionKeyPair
+        {
+            public readonly KeyController CollectionKey;
+            public readonly KeyController FieldKey;
+
+            public CollectionKeyPair(KeyController fieldKey, KeyController collectionKey = null)
+            {
+                CollectionKey = collectionKey;
+                FieldKey = fieldKey;
+            }
+
+            public override string ToString()
+            {
+                var collectionString = CollectionKey?.ToString();
+                if (collectionString != null)
+                {
+                    return collectionString + "." + FieldKey;
+                }
+                return FieldKey.ToString();
+            }
         }
     }
 }

@@ -50,6 +50,7 @@ namespace Dash
 
                         AddViewModels(documents, context);
                     }
+
                 });
 
             CellSize = 250; // TODO figure out where this should be set
@@ -106,21 +107,27 @@ namespace Dash
 
         private void AddViewModels(List<DocumentController> documents, Context c)
         {
-            foreach (var documentController in documents)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
-                documentViewModel.IsDraggerVisible = this.IsSelected;
-                DocumentViewModels.Add(documentViewModel);
+                foreach (var documentController in documents)
+                {
+                    var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                    documentViewModel.IsDraggerVisible = this.IsSelected;
+                    DocumentViewModels.Add(documentViewModel);
+                }
             }
         }
 
         private void RemoveViewModels(List<DocumentController> documents)
         {
-            var ids = documents.Select(doc => doc.GetId());
-            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
-            foreach (var vm in vms)
+            using (BindableDocumentViewModels.DeferRefresh())
             {
-                DocumentViewModels.Remove(vm);
+                var ids = documents.Select(doc => doc.GetId());
+                var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+                foreach (var vm in vms)
+                {
+                    DocumentViewModels.Remove(vm);
+                }
             }
         }
 

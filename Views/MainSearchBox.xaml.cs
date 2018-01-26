@@ -77,7 +77,6 @@ namespace Dash
         public DocumentController SearchForFirstMatchingDocument(string text)
         {
             var maxSearchResultSize = 75;
-
             var vms = SearchHelper.SearchOverCollection(text.ToLower());
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
@@ -135,30 +134,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Gets the specified number of view documents for the current search
-        /// </summary>
-        /// <param name="maxSearchResultSize">The maximum number of results to return</param>
-        /// <param name="filterFunc">A filtering function to filter the type of view models returned</param>
-        /// <returns></returns>
-        public IEnumerable<DocumentController> GetViewDocumentsForCurrentSearch(int maxSearchResultSize = 75, Func<SearchResultViewModel, bool> filterFunc = null)
-        {
-            var vms = GetSearchViewModelsForCurrentSearch(maxSearchResultSize, filterFunc);
-            return vms.Select(i => i.ViewDocument);
-        }
-
-        /// <summary>
-        /// returns to you the search view models for the current search
-        /// </summary>
-        /// <param name="maxSearchResultSize"></param>
-        /// <param name="filterFunc"></param>
-        /// <returns></returns>
-        public IEnumerable<SearchResultViewModel> GetSearchViewModelsForCurrentSearch(int maxSearchResultSize, Func<SearchResultViewModel, bool> filterFunc = null)
-        {
-            var text = _currentSearch;
-            var vms = filterFunc == null ? SearchHelper.SearchOverCollection(text) : SearchHelper.SearchOverCollection(text).Where(filterFunc);
-            return vms.Take(maxSearchResultSize);
-        }
 
         /// <summary>
         /// Called when we drag the entire search collection

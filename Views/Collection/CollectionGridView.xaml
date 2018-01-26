@@ -16,21 +16,22 @@
     >
     <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
-                  ScrollViewer.VerticalScrollMode="Enabled"
-                  VirtualizingStackPanel.VirtualizationMode="Standard"
-                  Loaded="XGridView_OnLoaded"
-                  ItemsSource="{Binding DocumentViewModels}"
-                  CanDragItems="{Binding CanDragItems}"
-                  ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
-                  IsHitTestVisible="{Binding IsSelected}"
-                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
-                  Style="{StaticResource xCollectionGridViewStyle}"
-                  ShowsScrollingPlaceholders="False"
-                  >
+                ScrollViewer.VerticalScrollMode="Enabled"
+                VirtualizingStackPanel.VirtualizationMode="Standard"
+                ItemsSource="{Binding DocumentViewModels}"
+                CanDragItems="True"
+                DragItemsStarting="XGridView_OnDragItemsStarting"  
+                DragItemsCompleted="XGridView_OnDragItemsCompleted"  
+                ManipulationMode="All"
+                IsHitTestVisible="{Binding IsSelected}"
+                SelectionMode="Single"
+                Style="{StaticResource xCollectionGridViewStyle}"
+                ShowsScrollingPlaceholders="False" 
+                >
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="#20000000" BorderThickness="1" CornerRadius="5">
-                        <Viewbox Height="300" Width="300">
+                        <Viewbox>
                             <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
                         </Viewbox>
                     </Border>
