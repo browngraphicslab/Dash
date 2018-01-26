@@ -119,6 +119,12 @@
         <x:String x:Key="RightCaretIcon">&#xf0da;</x:String>
         <x:String x:Key="LeftCaretIcon">&#xf0d9;</x:String>
 
+        <!-- Type Color Coding -->
+        <SolidColorBrush x:Key="NumberTypeColor" Color="#F44336"/>
+        <SolidColorBrush x:Key="DocumentTypeClor" Color="{StaticResource WindowsBlueColor}"/> <!--most important data type mirrors most important color-->
+        <SolidColorBrush x:Key="RichTextTypeColor" Color="{StaticResource MainTextColor}"/> <!-- common text type mirrors common text color -->
+        <SolidColorBrush x:Key="ImageTypeColor" Color="#3F51B5"/>
+
         <!-- DEFAULT STYLES-->
         <Style TargetType="Button">
             <Setter Property="Padding" Value="0"></Setter>
