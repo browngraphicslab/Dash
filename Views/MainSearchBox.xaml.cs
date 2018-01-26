@@ -75,8 +75,8 @@ namespace Dash
         public DocumentController SearchForFirstMatchingDocument(string text)
         {
             var maxSearchResultSize = 75;
-
-            var vms = SearchByParts(text.ToLower());
+            
+            var vms = SearchHelper.SearchOverCollection(text.ToLower());
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
