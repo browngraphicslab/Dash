@@ -207,7 +207,8 @@ namespace Dash
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
             string allRtfText = GetRtfText();
             UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            if (!allRtfText.Equals(Text.RtfFormatString) || !allText.Equals(Text.ReadableString))
+                Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 

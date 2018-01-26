@@ -67,7 +67,6 @@ namespace Dash
             {
                 var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
                 if (groups != null || forceWrite) {
-                    Debug.WriteLine("" + groups + " " + forceWrite);
                     parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
                 }
 

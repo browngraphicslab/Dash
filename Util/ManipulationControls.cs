@@ -434,40 +434,11 @@ namespace Dash
                     {
                         docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews);
                         GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
-                        //if (parentCollection != null)
-                        //{
-                        //    (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = true;
-                        //    Debug.WriteLine("ManipulationControls - SortByY - why does this mess up CollectionVIews?");
-                        //    SortByY(parentCollection.ViewModel.DocumentViewModels);
-                        //    (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = false;
-                        //}
                     }));
 
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
-            }
-        }
-        static void SortByY(ObservableCollection<DocumentViewModel> docViewModels)
-        {
-            var sl = new SortedList<double, List<DocumentViewModel>>();
-            foreach (var d in docViewModels)
-            {
-                var pos = d.DocumentController.GetPositionField()?.Data.Y ?? double.MaxValue;
-                if (sl.ContainsKey(pos))
-                {
-                    sl[pos].Add(d);
-                }
-                else
-                {
-                    sl.Add(pos, new List<DocumentViewModel>(new DocumentViewModel[] { d }));
-                }
-            }
-            docViewModels.Clear();
-            foreach (var s in sl)
-            {
-                foreach (var d in s.Value)
-                    docViewModels.Add(d);
             }
         }
         public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
