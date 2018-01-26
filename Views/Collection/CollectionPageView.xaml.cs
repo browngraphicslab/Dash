@@ -176,7 +176,7 @@ namespace Dash
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString)?.GetViewCopy(new Point());
+                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null))?.GetViewCopy(new Point());
                     if (img != null)
                     {
                         img.GetWidthField().NumberFieldModel.Data = double.NaN;

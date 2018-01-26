@@ -74,10 +74,10 @@ namespace Dash
         }
 
 
-        public DocumentController SearchForFirstMatchingDocument(string text)
+        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
             var maxSearchResultSize = 75;
-            var vms = SearchHelper.SearchOverCollection(text.ToLower());
+            var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController : thisController);
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
@@ -213,14 +213,14 @@ namespace Dash
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
-                DocumentController collectionDocument = null)
+                DocumentController collectionDocument = null, DocumentController thisController = null)
             {
                 if (MainPage.Instance.MainDocument == null)
                 {
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString)
+                return CleanByType(SearchByParts(searchString, thisController)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
             }
@@ -268,12 +268,17 @@ namespace Dash
             /// </summary>
             /// <param name="text"></param>
             /// <returns></returns>
-            private static List<SearchResultViewModel> SearchByParts(string text)
+            private static List<SearchResultViewModel> SearchByParts(string text, DocumentController thisController = null)
             {
                 List<SearchResultViewModel> mainList = null;
                 foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
+                    if (criteria != null && criteria.SearchText == "this" && thisController != null)
+                    {
+                        criteria.SearchText = thisController.Id.ToLower();
+                    }
+
                     var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
@@ -352,8 +357,9 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
                 var tree = DocumentTree.MainPageTree;
-                return LocalSearch(criteria.SearchText)
-                    .SelectMany(i => tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0])
+                var local = LocalSearch(criteria.SearchText).ToArray();
+                return local
+                    .SelectMany(i => (tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0]).Concat(tree.GetNodesFromDataDocumentId(i.ViewDocument.GetDataDocument(null).Id)?.SelectMany(k => k.GroupPeers) ?? new DocumentNode[0]))
                     .DistinctBy(d => d.Id).SelectMany(i => MakeAdjacentSearchResultViewModels(i, criteria, tree, null));
                 /*
                 var tree = DocumentTree.MainPageTree;
@@ -565,6 +571,13 @@ namespace Dash
                             countToResults.Add(foundCount, new List<SearchResultViewModel>());
                         }
                         countToResults[foundCount].AddRange(vm);
+                    }else if (documentController.Id.ToLower() == searchString)
+                    {
+                        if (!countToResults.ContainsKey(1))
+                        {
+                            countToResults[1] = new List<SearchResultViewModel>();
+                        }
+                        countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
                     }
                 }
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
