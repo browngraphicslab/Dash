@@ -432,7 +432,7 @@ namespace Dash
                         ? ""
                         : (Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute) ? new Uri(url).LocalPath : url);
                     url = url == null ? url : "Context: " + url;
-                    results.AddRange(CreateSearchResults(documentTree, docController, url ?? docController.DocumentType.Type, title));
+                    results.AddRange(CreateSearchResults(documentTree, docController.GetDataDocument(), url ?? docController.DocumentType.Type, title));
                 }
                 return results;
             }
