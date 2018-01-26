@@ -1509,7 +1509,7 @@ namespace Dash
         /// <param name="marquee">the marquee rectangle</param>
         private void MarqueeSelectDocs(Rect marquee)
         {
-            MultiSelectEnabled(true);
+            SetMultiSelectEnabled(true);
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
             var selectedDocs = new List<DocumentView>();

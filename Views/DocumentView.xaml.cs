@@ -144,19 +144,18 @@ namespace Dash
         public void ToggleMultiSelected(bool isMultiSelected)
         {
             if (isMultiSelected == _multiSelected) return;
-            var freeformView = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
             if (freeformView == null) return;
             if (!isMultiSelected)
             {
                 //this.CanDrag = false;
                 // this.DragStarting -= freeformView.DocView_OnDragStarting;
-                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                ParentSelectionElement.SetMultiSelectEnabled(false);
             } else
             {
-                
+                ParentSelectionElement.SetMultiSelectEnabled(true);
                 //this.CanDrag = true;
                 // this.DragStarting += freeformView.DocView_OnDragStarting; // todo: this is confusing to me what does this interaction do
-                xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
             }
             _multiSelected = isMultiSelected;
         }
@@ -820,7 +819,7 @@ namespace Dash
         {
             (ParentCollection?.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-            (ParentCollection?.CurrentView as CollectionFreeformView)?.MultiSelectEnabled(false);
+            (ParentCollection?.CurrentView as CollectionFreeformView)?.SetMultiSelectEnabled(false);
         }
 
         private void OpenLayout()
@@ -869,6 +868,11 @@ namespace Dash
             xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
         }
 
+        /// <summary>
+        /// When the document is tapped. Handles selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
@@ -879,13 +883,19 @@ namespace Dash
                 return;
             }
 
+            // ctrl + click also allows for multi select
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 var freeform = (ParentCollection?.CurrentView as CollectionFreeformView);
-                freeform.Select(this);
+                freeform?.Select(this);
                 ToggleMultiSelected(true);
 
                 return;
+            }
+
+            // otherwise, just perform a single select UNLESS you're bringing up the context menu
+            else if (!(Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) == CoreVirtualKeyStates.Down)) {
+                ToggleMultiSelected(false);
             }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;

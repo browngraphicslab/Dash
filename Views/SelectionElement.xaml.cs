@@ -29,16 +29,18 @@ namespace Dash
         /// Enables or disables multi-select mode. Handles overhead.
         /// </summary>
         /// <param name="val"></param>
-        public void MultiSelectEnabled(bool val)
+        public void SetMultiSelectEnabled(bool val)
         {
             // going from multiSelect to normal select
-            if (_multiSelectEnabled && !val)
+            if (!val)
             {
+                foreach (SelectionElement e in SelectedElements)
+                    e.Deactivate();
                 SelectedElements.Clear();
-                this.Deactivate();
             }
             _multiSelectEnabled = val;
         }
+        public bool MultiSelectEnabled { get { return _multiSelectEnabled; } }
 
         // single select wraps around the multi select list
         public SelectionElement CurrentSelectedElement {
@@ -108,12 +110,6 @@ namespace Dash
             // if we don't already get the clicks tell our parent we want them
             if (!IsLowestSelected)
             {
-                // select us and deselect everything else 
-                if (!_multiSelectEnabled)
-                {
-                    // first deselect all of our children
-                    CurrentSelectedElement?.Deactivate();
-                }
                 // then set up our ancestors
                 ParentSelectionElement?.SetAsAncestorOfSelected(this);
 
@@ -199,7 +195,8 @@ namespace Dash
             IsSelected = true;
         }
 
-        private void Deactivate()
+        
+        protected void Deactivate()
         {
             CurrentSelectedElement?.Deactivate();
             IsSelected = false;
