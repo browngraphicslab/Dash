@@ -5,8 +5,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,26 +26,45 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;
-
         public CollectionGridView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
-            Unloaded += CollectionGridView_Unloaded;
+            //Unloaded += CollectionGridView_Unloaded;
+
+            PointerWheelChanged += CollectionGridView_PointerWheelChanged;
+        }
+
+        private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var point = e.GetCurrentPoint(this);
+
+                // get the scale amount
+                var scaleAmount = point.Properties.MouseWheelDelta > 0 ? 10 : -10;
+
+                ViewModel.CellSize += scaleAmount;
+                var style = new Style(typeof(GridViewItem));
+                style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                xGridView.ItemContainerStyle = style;
+                e.Handled = true;
+            }
         }
 
         public CollectionGridView(BaseCollectionViewModel viewModel) : this()
         {
             DataContext = viewModel;
         }
-        private void XGridView_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            //_scrollViewer = xGridView.GetFirstDescendantOfType<ScrollViewer>();
-            //_scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
-            //UpdateVisibleIndices(true);
-        }
+        //private void XGridView_OnLoaded(object sender, RoutedEventArgs e)
+        //{
+        //    //_scrollViewer = xGridView.GetFirstDescendantOfType<ScrollViewer>();
+        //    //_scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
+        //    //UpdateVisibleIndices(true);
+        //}
 
-        private int _prevOffset;
+        //private int _prevOffset;
         //private void ScrollViewerOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
         //{
         //    UpdateVisibleIndices();
@@ -74,38 +96,42 @@ namespace Dash
                 // remove events from current view model if there is a current view model
                 if (ViewModel != null)
                 {
-                    xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                    xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-                    xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                    //xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                    //xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    //xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                     xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-                    xGridView.PointerPressed -= ViewModel.XGridView_PointerPressed;
-                    xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
+                    //xGridView.PointerPressed -= ViewModel.XGridView_PointerPressed;
+                    //xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
                 }
 
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
-                xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-                xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-                xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+                //xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+                //xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+                //xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
-                xGridView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
+                //xGridView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
+                var style = new Style(typeof(GridViewItem));
+                style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+                style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+                xGridView.ItemContainerStyle = style;
             }
         }
 
-        private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null)
-            {
-                xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-                xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
-                xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-                xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
-                xGridView.Loaded -= XGridView_OnLoaded;
-                //_scrollViewer.ViewChanging -= ScrollViewerOnViewChanging;
-            }
-            Unloaded -= CollectionGridView_Unloaded;
-        }
+        //private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
+        //{
+        //    if (ViewModel != null)
+        //    {
+        //        //xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+        //        //xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+        //        //xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+        //        xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+        //        //xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
+        //        //xGridView.Loaded -= XGridView_OnLoaded;
+        //        //_scrollViewer.ViewChanging -= ScrollViewerOnViewChanging;
+        //    }
+        //    Unloaded -= CollectionGridView_Unloaded;
+        //}
 
         #region ItemSelection
 
@@ -154,6 +180,7 @@ namespace Dash
         }
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.GetDataDocument(null);
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
@@ -161,5 +188,33 @@ namespace Dash
         }
 
         #endregion
+
+
+        private void XGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm != null)
+            {
+                e.Data.Properties["View Doc To Move"] = dvm.DocumentController;
+                e.Data.RequestedOperation = DataPackageOperation.Move;
+                e.Data.Properties["Collection View Model"] = ViewModel;
+            }
+        }
+
+        private void XGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (args.DropResult == DataPackageOperation.None)
+            {
+                return;
+            }
+            var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
+            if (dvm != null)
+            {
+                var pc = this.GetFirstAncestorOfType<CollectionView>();
+                var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
+                GroupManager.RemoveGroup(pc, group);
+                ViewModel.RemoveDocument(dvm.DocumentController);
+            }
+        }
     }
 }

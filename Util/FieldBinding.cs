@@ -110,7 +110,7 @@ namespace Dash
             }
 
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
-            var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, string.Empty);
+            var fieldData = converter == null || field is ReferenceController ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, string.Empty);
 
             if (field == null)
             {

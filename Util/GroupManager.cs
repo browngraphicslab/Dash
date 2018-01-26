@@ -21,6 +21,13 @@ namespace Dash
 {
     class GroupManager
     {
+
+        static public void RemoveGroup(CollectionView parentCollection, DocumentController group)
+        {
+            var groupsList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            groupsList.Remove(group);
+            parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groupsList.TypedData), true);
+        }
         static public List<DocumentViewModel> SplitupGroupings(DocumentView parentDocument, bool canSplitupDragGroup)
         {
             if (parentDocument?.ParentCollection == null || parentDocument?.ViewModel?.DocumentController == null)
@@ -67,7 +74,6 @@ namespace Dash
             {
                 var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
                 if (groups != null || forceWrite) {
-                    Debug.WriteLine("" + groups + " " + forceWrite);
                     parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
                 }
 
