@@ -849,52 +849,76 @@ namespace Dash
 
         public void MoveAnimated(TranslateTransform translate)
         {
-
-
             if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
 
-            var composite = new TransformGroup();
-            composite.Children.Add(canvas.RenderTransform);
-            composite.Children.Add(translate);
+            SetFreeformTransformAnimated(translate);
 
-            var compValue = composite.Value;
-
-            SetFreeformTransformAnimated(new MatrixTransform { Matrix = compValue });
         }
 
-        private void SetFreeformTransformAnimated(MatrixTransform matrixTransform)
+
+        private CompositeTransform _originalTransform;
+        private Storyboard _storyboard;
+
+        private void SetFreeformTransformAnimated(TranslateTransform translate)
         {
-            var matrix = matrixTransform.Matrix;
+            //TODO: Make this a shallow copy
+            _originalTransform = itemsPanelCanvas.RenderTransform as CompositeTransform;
 
-            var animationX = new DoubleAnimation()
+            Debug.Assert(_originalTransform != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+            _storyboard?.Stop();
+            _storyboard?.Children.Clear();
+            _storyboard = new Storyboard { Duration = duration };
+
+            var scale = 1;
+
+            var translateX = translate.X;
+            var translateY = translate.Y;
+
+            // Create a DoubleAnimation for each property to animate
+            var scaleAnimationX = MakeAnimationElement(scale, "ScaleX", duration);
+            var scaleAnimationY = MakeAnimationElement(scale, "ScaleY", duration);
+            //var centerAnimationX = MakeAnimationElement(x, "CenterX", duration);
+            //var centerAnimationY = MakeAnimationElement(y, "CenterY", duration);
+            var translateAnimationX = MakeAnimationElement(translateX, "TranslateX", duration);
+            var translateAnimationY = MakeAnimationElement(translateY, "TranslateY", duration);
+            var animationList = new List<DoubleAnimation>(new DoubleAnimation[] { translateAnimationX, translateAnimationY, scaleAnimationX, scaleAnimationY });
+
+
+            // Add each animation to the storyboard
+            foreach (var anim in animationList)
             {
-                From = 0,
-                To = matrix.M12,
-                Duration = TimeSpan.FromSeconds(5),
-            };
+                _storyboard.Children.Add(anim);
+            }
 
 
-            var animationY = new DoubleAnimation()
-            {
-                From = 0,
-                To = matrix.M21,
-                Duration = TimeSpan.FromSeconds(5),
-            };
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
 
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
 
-            Storyboard.SetTarget(animationX, itemsPanelCanvas);
-            Storyboard.SetTargetProperty(animationX, "(UIElement.RenderTransform).(Translate.X)");
+            // Begin the animation.
+            _storyboard.Begin();
+            _storyboard.Completed -= StoryboardOnCompleted;
+            _storyboard.Completed += StoryboardOnCompleted;
+            
+        }
 
-            Storyboard.SetTarget(animationY, itemsPanelCanvas);
-            Storyboard.SetTargetProperty(animationY, "(UIElement.RenderTransform).()");
+        private void StoryboardOnCompleted(object sender, object e)
+        {
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            _storyboard.Completed -= StoryboardOnCompleted;
+        }
 
-            var sb = new Storyboard();
-            sb.Children.Add(animationX);
-            sb.Children.Add(animationY);
-            sb.Begin();
+        private void CompositionTargetOnRendering(object sender, object e)
+        {
+            itemsPanelCanvas.RenderTransform = _originalTransform;
+            InkHostCanvas.RenderTransform = _originalTransform;
 
             /*
+
             var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
 
             if (_resourcesLoaded)
@@ -909,9 +933,39 @@ namespace Dash
             }
             */
 
+        }
 
-            //itemsPanelCanvas.RenderTransform = matrixTransform;
-            //InkHostCanvas.RenderTransform = matrixTransform;
+        private DoubleAnimation MakeAnimationElement(double to, String name, Duration duration)
+        {
+
+            var toReturn = new DoubleAnimation();
+            toReturn.EnableDependentAnimation = true;
+            toReturn.Duration = duration;
+            Storyboard.SetTarget(toReturn, _originalTransform);
+            Storyboard.SetTargetProperty(toReturn, name);
+
+            if (name == "ScaleX")
+                toReturn.From = _originalTransform.ScaleX;
+
+            if (name == "ScaleY")
+                toReturn.From = _originalTransform.ScaleX;
+
+            if (name == "CenterX")
+                toReturn.From = _originalTransform.CenterX;
+
+            if (name == "CenterY")
+                toReturn.From = _originalTransform.CenterY;
+
+            if (name == "TranslateX")
+                toReturn.From = _originalTransform.TranslateX;
+
+            if (name == "TranslateY")
+                toReturn.From = _originalTransform.TranslateY;
+
+            toReturn.To = to;
+            toReturn.EasingFunction = new QuadraticEase();
+            return toReturn;
+
         }
 
         /// <summary>
