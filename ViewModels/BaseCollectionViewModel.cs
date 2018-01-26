@@ -617,7 +617,7 @@ namespace Dash
             if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
             {
 
-                var collViewModel = (BaseCollectionViewModel) e.DataView.Properties["Collection View  Model"];
+                var collViewModel = (BaseCollectionViewModel) e.DataView.Properties["Collection View Model"];
                 if (collViewModel == this)
                 {
                     e.AcceptedOperation = DataPackageOperation.None;
