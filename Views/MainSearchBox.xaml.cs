@@ -74,7 +74,7 @@ namespace Dash
         }
 
 
-        public DocumentController SearchForFirstMatchingDocument(string text)
+        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisDocument)
         {
             var maxSearchResultSize = 75;
             var vms = SearchHelper.SearchOverCollection(text.ToLower());
