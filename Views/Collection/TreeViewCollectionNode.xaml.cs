@@ -66,6 +66,10 @@ namespace Dash
 
         public bool MatchesFilter(DocumentController doc)
         {
+            if (FilterString == null)//TODO Why is this null?
+            {
+                return false;
+            }
             doc = doc.GetDataDocument();
             var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) ||
                                 (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
