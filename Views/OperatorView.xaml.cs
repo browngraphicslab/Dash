@@ -46,15 +46,6 @@ namespace Dash
 
         public DocumentView DocumentView { get { return documentView; } }
 
-        public FieldControllerBase GetValue(KeyController key)
-        {
-            DocumentController docController = documentView.ViewModel.DocumentController;
-
-            // check to see if there is an operator on this document, if so it would be stored at the
-            return docController.GetField(key);
-
-        }
-
         /// <summary>
         /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
         /// </summary>
