@@ -109,22 +109,9 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Grid Padding="0" Grid.Row="0" VerticalAlignment="Center" Height="35" x:Name="xPageNumContainer" Grid.Column="1" Background="LightGray"  Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xPageNumContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xPageNum_ManipulationStarted">
-                <TextBlock x:Name="xPageNum" Text="DragOut" HorizontalTextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Grid Padding="0" Grid.Row="0" VerticalAlignment="Center" Height="35" x:Name="xDragContainer" Grid.Column="1" Background="LightGray"  Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xDragContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xDrag_ManipulationStarted">
+                <TextBlock Text="DragOut" HorizontalTextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </Grid>
-
-            <!--Grid x:Name="navBar" Grid.Row="0" Height="35" VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="25"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="25"/>
-                </Grid.ColumnDefinitions>
-                <Button x:Name="prevButton" Grid.Column="0" VerticalContentAlignment="Center" VerticalAlignment="Stretch" Content="&lt;&lt;" Padding="0" Click="PrevButton_Click"/>
-                <Grid Padding="0" x:Name="xPageNumContainer" Grid.Column="1" Background="LightGray" VerticalAlignment="Stretch" Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xPageNumContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xPageNum_ManipulationStarted">
-                    <TextBlock x:Name="xPageNum" Text="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                </Grid>
-                <Button x:Name="xNextButton" Grid.Column="2" VerticalContentAlignment="Center" RelativePanel.RightOf="xPageNumContainer"  VerticalAlignment="Stretch" Content=">>" Click="NextButton_Click"/>
-            </-->
         </Grid>
 
     </Grid>
