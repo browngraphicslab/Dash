@@ -205,23 +205,33 @@ namespace Dash
                     }
                 };
 
+            bool loaded = false;
+            //TODO We can probably get rid of this check because we have the loaded bool
+            //and IsInVisualTree doesn't seem to indicate that it is already loaded
             if (element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                loaded = true;
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                if (loaded)
+                {
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    loaded = false;
+                }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                if (!loaded)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                    loaded = true;
+                }
             }
 
             element.Unloaded += OnElementOnUnloaded;
@@ -230,9 +240,13 @@ namespace Dash
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                if (loaded)
+                {
+                    element.Loaded -= OnElementOnLoaded;
+                    element.Unloaded -= OnElementOnUnloaded;
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    loaded = false;
+                }
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);
@@ -269,28 +283,38 @@ namespace Dash
                     }
                 };
 
+            bool loaded = false;
             long token = -1;
+            //TODO We can probably get rid of this check because we have the loaded bool
+            //and IsInVisualTree doesn't seem to indicate that it is already loaded
             if (element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
+                loaded = true;
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                element.UnregisterPropertyChangedCallback(property, token);
-                token = -1;
+                if (loaded)
+                {
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    element.UnregisterPropertyChangedCallback(property, token);
+                    token = -1;
+                    loaded = false;
+                }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
+                if (!loaded)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                    token = element.RegisterPropertyChangedCallback(property, callback);
+                    loaded = true;
+                }
             }
 
             element.Unloaded += OnElementOnUnloaded;
@@ -299,12 +323,16 @@ namespace Dash
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                if (token != -1)
+                if (loaded)
                 {
-                    element.UnregisterPropertyChangedCallback(property, token);
+                    element.Loaded -= OnElementOnLoaded;
+                    element.Unloaded -= OnElementOnUnloaded;
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    if (token != -1)
+                    {
+                        element.UnregisterPropertyChangedCallback(property, token);
+                    }
+                    loaded = false;
                 }
             }
 
