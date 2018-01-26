@@ -73,7 +73,6 @@ namespace Dash
             }
         }
 
-
         public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
         {
             var maxSearchResultSize = 75;

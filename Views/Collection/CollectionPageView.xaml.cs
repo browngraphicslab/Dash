@@ -163,7 +163,7 @@ namespace Dash
                 DisplayString = keyasgn;
                 DisplayKey = documentKey;
                 var data = CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey);
-                if (data == null && !string.IsNullOrEmpty(DisplayString))
+                if (!string.IsNullOrEmpty(DisplayString))
                 {
                     var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
                     var replacedString = DisplayString;
@@ -176,13 +176,14 @@ namespace Dash
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null))?.GetViewCopy(new Point());
-                    if (img != null)
+                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
-                        img.GetWidthField().NumberFieldModel.Data = double.NaN;
-                        img.GetHeightField().NumberFieldModel.Data = double.NaN;
+                        var imgView = img.GetViewCopy();
+                        imgView.GetWidthField().NumberFieldModel.Data = double.NaN;
+                        imgView.GetHeightField().NumberFieldModel.Data = double.NaN;
+                        data = imgView;
                     }
-                    data = img;
                 }
                 if (data != null)
                 {
@@ -200,11 +201,6 @@ namespace Dash
             {
                 xDocView.DataContext = value;
 
-                // replace old layout of page name/id with a new one because
-                // fieldbinding's can't be removed yet
-                //xPageNumContainer.Children.Remove(xPageNum);
-                //xPageNum = new TextBlock();
-
 
                 var binding = new FieldBinding<TextController>()
                 {
@@ -219,9 +215,6 @@ namespace Dash
                     value.Content.Loaded -= Content_Loaded;
                     value.Content.Loaded += Content_Loaded;
                 }
-
-                //xPageNumContainer.Children.Add(xPageNum);
-                //xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
 
                 SetHackText(CaptionKey, DisplayKey, DisplayString);
 
@@ -337,7 +330,6 @@ namespace Dash
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 xThumbs.SelectedIndex = Math.Max(0, ind - 1);
-               // CurPage = PageDocumentViewModels[Math.Max(0, ind - 1)];
             }
         }
 
@@ -347,7 +339,6 @@ namespace Dash
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
-               // CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
             }
         }
 
@@ -367,19 +358,25 @@ namespace Dash
                 if (x != null)
                 {
 
-                    x.Focus(FocusState.Keyboard);
-                    x.Focus(FocusState.Pointer);
+                    try
+                    {
+                        x.Focus(FocusState.Keyboard);
+                        x.Focus(FocusState.Pointer);
+                    } catch (Exception)
+                    {
+
+                    }
                 }
             }
         }
 
-        private void xPageNum_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void xDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Handled = true;
             e.Complete();
         }
 
-        private void xPageNumContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
+        private void xDragContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
         {
             e.Data.RequestedOperation = DataPackageOperation.Link;
             e.Data.Properties.Add("View", true);
@@ -411,7 +408,13 @@ namespace Dash
 
         private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xThumbs.Focus(FocusState.Pointer);
+            try { 
+                xThumbs.Focus(FocusState.Pointer);
+            }
+            catch (Exception)
+            {
+
+            }
         }
         private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
         {

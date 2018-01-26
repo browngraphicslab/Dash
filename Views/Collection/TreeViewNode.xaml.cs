@@ -81,7 +81,6 @@ namespace Dash
                     var collectionViewModel = new CollectionViewModel(
                         new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
                             KeyStore.GroupingKey));
-                    collectionViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);

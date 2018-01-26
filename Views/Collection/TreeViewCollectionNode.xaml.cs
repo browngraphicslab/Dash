@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -25,7 +26,7 @@ namespace Dash
 
         public string FilterString
         {
-            get { return (string) GetValue(FilterStringProperty); }
+            get { return (string)GetValue(FilterStringProperty); }
             set { SetValue(FilterStringProperty, value); }
         }
 
@@ -34,13 +35,47 @@ namespace Dash
 
         public DocumentController ContainingDocument
         {
-            get { return (DocumentController) GetValue(ContainingDocumentProperty); }
+            get { return (DocumentController)GetValue(ContainingDocumentProperty); }
             set { SetValue(ContainingDocumentProperty, value); }
         }
+
+        public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
+            this.RegisterPropertyChangedCallback(FilterStringProperty,
+                (sender, dp) => ViewModel?.BindableDocumentViewModels.RefreshFilter());
         }
+
+        private void TreeViewCollectionNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var cvm = args.NewValue as CollectionViewModel;
+            if (cvm == null)
+            {
+                return;
+            }
+            cvm.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            cvm.BindableDocumentViewModels.Filter = Filter;
+        }
+        private bool Filter(object o)
+        {
+            var dvm = (DocumentViewModel)o;
+            return MatchesFilter(dvm.DocumentController);
+        }
+
+        public bool MatchesFilter(DocumentController doc)
+        {
+            if (FilterString == null)//TODO Why is this null?
+            {
+                return false;
+            }
+            doc = doc.GetDataDocument();
+            var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) ||
+                                (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
+                                     .Any(MatchesFilter) ?? false);
+            return matchesFilter;
+        }
+
     }
 }

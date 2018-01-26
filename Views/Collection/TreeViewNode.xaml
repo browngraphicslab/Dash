@@ -8,6 +8,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
+    x:Name="Control"
     DataContextChanged="TreeViewNode_OnDataContextChanged">
 
     <StackPanel>
@@ -19,6 +20,6 @@
             <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="1" DoubleTapped="XTextBlock_OnDoubleTapped" CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
             <TextBlock x:Name="XArrowBlock" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped"></TextBlock>
         </Grid>
-        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{x:Bind FilterString}" ContainingDocument="{x:Bind ContainingDocument}"></local:TreeViewCollectionNode>
+        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}"></local:TreeViewCollectionNode>
     </StackPanel>
 </UserControl>

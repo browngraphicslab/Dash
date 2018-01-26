@@ -343,7 +343,6 @@ namespace Dash
             };
 
             var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
-            collectionViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
             xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu

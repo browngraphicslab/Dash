@@ -206,14 +206,9 @@ namespace Dash
                 };
 
             bool loaded = false;
-            //TODO We can probably get rid of this check because we have the loaded bool
-            //and IsInVisualTree doesn't seem to indicate that it is already loaded
-            if (element.IsInVisualTree())
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                loaded = true;
-            }
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            loaded = true;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
@@ -285,15 +280,11 @@ namespace Dash
 
             bool loaded = false;
             long token = -1;
-            //TODO We can probably get rid of this check because we have the loaded bool
-            //and IsInVisualTree doesn't seem to indicate that it is already loaded
-            if (element.IsInVisualTree())
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-                loaded = true;
-            }
+
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            token = element.RegisterPropertyChangedCallback(property, callback);
+            loaded = true;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {

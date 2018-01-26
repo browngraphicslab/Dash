@@ -417,22 +417,23 @@ namespace Dash
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
             _isManipulating = false;
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
             var groupViews = GroupViews(_grouping);
-            //var allViews = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.ToList();
-
+           
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
             var y = pointerPosition2.Y - Window.Current.Bounds.Y;
             var pos = new Point(x, y);
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
-            //var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
+            var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                     () =>
                     {
-                        docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews);
+                        var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
+                        if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
+                            GroupManager.RemoveGroup(pc, group);
                         GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
                     }));
 
