@@ -180,6 +180,7 @@ namespace Dash
         }
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.GetDataDocument(null);
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
@@ -209,10 +210,11 @@ namespace Dash
             var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm != null)
             {
+                var pc = this.GetFirstAncestorOfType<CollectionView>();
+                var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
+                GroupManager.RemoveGroup(pc, group);
                 ViewModel.RemoveDocument(dvm.DocumentController);
             }
-
-
         }
     }
 }
