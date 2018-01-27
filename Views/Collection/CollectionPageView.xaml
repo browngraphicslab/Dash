@@ -9,7 +9,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
-    AllowDrop="True"   
+    AllowDrop="True"    
+    DragOver="xDocContainer_DragOver" 
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     DragLeave="CollectionViewOnDragLeave"
@@ -51,7 +52,11 @@
                     
                 </RowDefinition>
             </Grid.RowDefinitions>
-            <local:DocumentView x:Name="xDocView" Grid.Column="0" DataContext="{Binding CurPage}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <local:DocumentView x:Name="xDocView" DataContext="{Binding CurPage}" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            <Grid x:Name="xDockSpots" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
+                <Button Content="- body -" HorizontalAlignment="Center" VerticalAlignment="Top"    Margin="0 10 0 0"  Width="50" Height="30" AllowDrop="True" Drop="Top_Drop"/>
+                <Button Content="- footer -"    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 10" Width="50" Height="30"  AllowDrop="True" Drop="Bottom_Drop"/>
+            </Grid>
             <TextBox Name="xDocTitle" x:FieldModifier="public" Grid.Row="1" Width="200" Height="0" VerticalAlignment="Bottom"   HorizontalAlignment="Left" Visibility="Collapsed"></TextBox>
         </Grid>
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
