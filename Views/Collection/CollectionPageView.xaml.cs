@@ -106,7 +106,6 @@ namespace Dash
                     thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
                     ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush=new SolidColorBrush(Colors.Transparent) });
                 }
-                //^ CurPage = PageDocumentViewModels.First();
             }
         }
 
@@ -128,7 +127,7 @@ namespace Dash
 
         public void SetHackCaptionText(KeyController captionKey)
         {
-            if (captionKey != null)
+            if (captionKey != null && CurPage != null)
             {
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
@@ -146,7 +145,7 @@ namespace Dash
         }
         public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
         {
-            if (documentKey != null)
+            if (documentKey != null && CurPage != null)
             {
                 DisplayString = keyasgn;
                 DisplayKey = documentKey;
@@ -320,7 +319,7 @@ namespace Dash
                 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }
-
+            e.Handled = true;
         }
 
         private void Bottom_Drop(object sender, DragEventArgs e)
@@ -345,6 +344,7 @@ namespace Dash
 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }
+            e.Handled = true;
         }
 
         public void SetDropIndicationFill(Brush fill)
