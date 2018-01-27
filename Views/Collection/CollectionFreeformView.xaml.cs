@@ -967,13 +967,13 @@ namespace Dash
             //if (name == "CenterY")
             //    toReturn.From = _originalTransform.CenterY;
 
-            if (name == "Matrix.OffsetX")
+            if (name == "MatrixTransform.Matrix.OffsetX")
                 toReturn.From = _originalTransform.Matrix.OffsetX;
 
-            if (name == "Matrix.OffsetY")
+            if (name == "MatrixTransform.Matrix.OffsetY")
                 toReturn.From = _originalTransform.Matrix.OffsetY;
 
-            toReturn.To = to;
+            toReturn.To = toReturn.From + to;
             toReturn.EasingFunction = new QuadraticEase();
             return toReturn;
 
