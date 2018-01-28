@@ -68,7 +68,7 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    _parentDocument = _parentDocument.GetDataDocument(null);
+                    //_parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
@@ -280,7 +280,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)

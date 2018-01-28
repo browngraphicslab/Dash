@@ -118,7 +118,23 @@ namespace Dash
 
         public double YPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController))?.Data.Y ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get
+            {
+                var posField = LayoutDocument
+                    .GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController));
+                if (posField != null)
+                {
+                    return posField.Data.Y;
+                }
+                var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (groupField != null)
+                {
+                    return groupField.TypedData.Min(
+                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                              double.PositiveInfinity);
+                }
+                return double.PositiveInfinity; //Use inf so that sorting works reasonably
+            }
             set
             {
                 var positionController =
@@ -372,7 +388,16 @@ namespace Dash
                 byte b = byte.Parse(hexColor.Substring(7, 2), NumberStyles.HexNumber);
                 _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
+
+            OnLowestSelectionSet += OnOnLowestSelectionSet;
         }
+
+        private void OnOnLowestSelectionSet(bool lowestSelection)
+        {
+            var selectedField = DocumentController.GetFieldOrCreateDefault<NumberController>(KeyStore.SelectedKey);
+            selectedField.Data = lowestSelection ? 1 : 0;
+        }
+
         void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             SetHasTitle(!Undecorated && DocumentController.GetDataDocument(null).HasTitle);

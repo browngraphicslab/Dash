@@ -31,9 +31,11 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Xaml.Media.Animation;
 using DashShared.Models;
 using Flurl.Util;
 using NewControls.Geometry;
+using Syncfusion.Pdf.Graphics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -44,7 +46,6 @@ namespace Dash
 
         #region ScalingVariables    
 
-        public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -82,6 +83,17 @@ namespace Dash
         private const float BackgroundOpacity = 1.0f;
 
         #endregion
+
+        /// <summary>
+        /// Transform being updated during animation
+        /// </summary>
+        private MatrixTransform _transformBeingAnimated;
+        /// <summary>
+        /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
+        /// </summary>
+        private Storyboard _storyboard1;
+
+        private Storyboard _storyboard2;
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
@@ -837,13 +849,122 @@ namespace Dash
             var composite = new TransformGroup();
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-
             var compValue = composite.Value;
 
             SetFreeformTransform(new MatrixTransform { Matrix = compValue });
         }
 
 
+        public void MoveAnimated(TranslateTransform translate)
+        {
+            if (!IsHitTestVisible) return;
+
+            var old = (itemsPanelCanvas.RenderTransform as MatrixTransform).Matrix;
+            _transformBeingAnimated = new MatrixTransform() {Matrix = old};
+
+
+            Debug.Assert(_transformBeingAnimated != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds/2.0));
+
+            //Clear storyboard
+            _storyboard1?.Stop();
+            _storyboard1?.Children.Clear();
+            _storyboard1 = new Storyboard { Duration  = duration };
+
+            _storyboard2?.Stop();
+            _storyboard2?.Children.Clear();
+            _storyboard2 = new Storyboard { Duration = duration };
+
+
+            var startX = _transformBeingAnimated.Matrix.OffsetX;
+            var startY = _transformBeingAnimated.Matrix.OffsetY;
+
+            var halfTranslateX = translate.X / 2;
+            var halfTranslateY = translate.Y / 2;
+
+
+
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(startY,  Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            translateAnimationX.AutoReverse = false;
+            translateAnimationY.AutoReverse = false;
+
+
+            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
+            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+
+            zoomOutAnimationX.AutoReverse = true;
+            zoomOutAnimationY.AutoReverse = true;
+
+            zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+            zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+
+
+            _storyboard1.Children.Add(translateAnimationX);
+            _storyboard1.Children.Add(translateAnimationY);
+            if (scaleFactor < 0.8)
+            {
+                _storyboard1.Children.Add(zoomOutAnimationX);
+                _storyboard1.Children.Add(zoomOutAnimationY);
+            }
+
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
+
+            // Begin the animation.
+            _storyboard1.Begin();
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+            _storyboard1.Completed += Storyboard1OnCompleted;
+    
+            
+
+        }
+
+        private void Storyboard1OnCompleted(object sender, object e)
+        {
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+        }
+
+        private void CompositionTargetOnRendering(object sender, object e)
+        {
+            SetFreeformTransform(_transformBeingAnimated); //Update the transform
+        }
+
+        private DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
+        {
+
+            var toReturn = new DoubleAnimation();
+            toReturn.EnableDependentAnimation = true;
+            toReturn.Duration = duration;
+            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
+            Storyboard.SetTargetProperty(toReturn, name);
+
+            toReturn.From = from;
+            toReturn.To = to;
+            /*
+            if (name == "MatrixTransform.Matrix.OffsetX")
+            {
+                toReturn.From = from;
+                toReturn.To = toReturn.From + to;
+            }
+
+            if (name == "MatrixTransform.Matrix.OffsetY")
+            {
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetY;
+                toReturn.To = Math.Min(0.0, _transformBeingAnimated.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
+            }
+            */
+
+            toReturn.EasingFunction = new QuadraticEase();
+            return toReturn;
+
+        }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -893,7 +1014,6 @@ namespace Dash
             }
         }
 
-
         #endregion
 
         #region BackgroundTiling
@@ -934,6 +1054,8 @@ namespace Dash
 
             itemsPanelCanvas.RenderTransform = matrixTransform;
             InkHostCanvas.RenderTransform = matrixTransform;
+
+
         }
 
         private void SetInitialTransformOnBackground()
@@ -943,8 +1065,8 @@ namespace Dash
             {
                 CenterX = 0,
                 CenterY = 0,
-                ScaleX = CanvasScale,
-                ScaleY = CanvasScale
+                ScaleX = 1,
+                ScaleY = 1
             };
 
             composite.Children.Add(scale);

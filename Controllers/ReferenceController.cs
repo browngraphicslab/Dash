@@ -30,6 +30,7 @@ namespace Dash
         protected void DocFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
         {
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            //OnFieldModelUpdated(dargs, c);
             OnFieldModelUpdated(dargs.FieldArgs, c);
         }
 

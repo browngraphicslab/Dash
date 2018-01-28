@@ -76,23 +76,16 @@ namespace NewControls
             SizeChanged += WordCloud_SizeChanged;
         }
 
-        async void processText(string text)
+        void processText(string text)
         {
-#pragma warning disable 1998
-            await Task.Run(async () => {
-#pragma warning restore 1998
-                var blacklist = ComponentFactory.CreateBlacklist(ExcludeEnglishCommonWords); 
-                var customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
-
-               // var inputType = ComponentFactory.DetectInputType(text);
-                // var progress = ComponentFactory.CreateProgressBar(inputType, progressBar);
-                var terms = new StringExtractor(text, new NullProgressIndicator()); //  ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
-                var stemmer = ComponentFactory.CreateWordStemmer(m_wordStemmer);  
-                var words = terms.Filter(blacklist).Filter(customBlacklist).CountOccurences();
-#pragma warning disable CS4014
-                MainPage.Instance.Dispatcher.RunIdleAsync((args) =>
-                    WeightedWords = words.GroupByStem(stemmer).SortByOccurences().Cast<IWord>());
-#pragma warning disable CS4014
+            var blacklist = ComponentFactory.CreateBlacklist(ExcludeEnglishCommonWords);
+            var customBlacklist = CommonBlacklist.CreateFromTextFile(""); //  s_BlacklistTxtFileName);
+            var terms = new StringExtractor(text, new NullProgressIndicator()); //  ComponentFactory.CreateExtractor(inputType, text, new NullProgressIndicator());
+            var stemmer = ComponentFactory.CreateWordStemmer(m_wordStemmer);
+            var words = terms.Filter(blacklist).Filter(customBlacklist).CountOccurences();
+            UITask.Run(() =>
+            {
+                WeightedWords = words.GroupByStem(stemmer).SortByOccurences().Cast<IWord>();
             });
         }
         void WordCloud_SizeChanged(object sender, SizeChangedEventArgs e)

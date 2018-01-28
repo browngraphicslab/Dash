@@ -22,7 +22,6 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
-using DashShared.Models;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -1106,25 +1105,7 @@ namespace Dash
                         continue;
                     if (!nestedCollection.Equals(collection))
                     {
-                        var keyString = ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
-                        if (nestedCollection.CurrentView is CollectionPageView && keyString?.StartsWith("#") == true)
-                        {
-                            var key = keyString.Substring(1);
-                            var k = KeyController.LookupKeyByName(key);
-                            var keyasgn = "";
-                            if (k == null)
-                            {
-                                var splits = key.Split("=");
-                                keyasgn = splits.Length > 1 ? splits[1] : "";
-                                k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
-                            }
-                            (nestedCollection.CurrentView as CollectionPageView).SetHackText(k, keyasgn);
-                            (nestedCollection.CurrentView as CollectionPageView).xDocTitle.Visibility = Visibility.Visible;
-
-                            this.DeleteDocument();
-                            return true;
-                        }
-                        else if (grouped != null)
+                        if (grouped != null)
                         {
                             foreach (var g in grouped)
                             {
@@ -1270,6 +1251,31 @@ namespace Dash
             args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
             args.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+
+        private void OperatorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Ellipse ellipse)
+            {
+                ellipse.Fill = new SolidColorBrush(Colors.Gold);
+                ellipse.Height += 3;
+                ellipse.Width += 3;
+            }
+        }
+
+        private void OperatorEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Ellipse ellipse)
+            {
+                ellipse.Fill = (SolidColorBrush) App.Instance.Resources["FieldHandleColor"];
+                ellipse.Height -= 3;
+                ellipse.Width -= 3;
+            }
+        }
+
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
 }
