@@ -42,6 +42,8 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
+        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+
         private bool _isCollection = false;
 
         public TreeViewNode()
@@ -172,6 +174,21 @@ namespace Dash
         {
             args.Data.Properties["Operator Document"] = (DataContext as DocumentViewModel).DocumentController.GetDataDocument(null);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+        }
+
+        public void DeleteDocument()
+        {
+            var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var cvm = collTreeView.ViewModel;
+            var doc = ViewModel.DocumentController;
+            cvm.RemoveDocument(doc);
+            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)
+                ?.Remove(doc);//TODO Kind of a hack
+        }
+
+        private void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
         }
     }
 }
