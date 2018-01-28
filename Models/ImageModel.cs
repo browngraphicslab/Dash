@@ -18,9 +18,14 @@ namespace Dash
         /// </summary>
         public Uri Data
         {
-            get => localFile == null ? globalUri : new Uri(ApplicationData.Current.LocalFolder.Path + localFile);
+            get => localFile == null ? globalUri : new Uri(ApplicationData.Current.LocalFolder.Path + "\\"+ localFile);
             set
             {
+                if (value == null)
+                {
+                    return;
+                }
+
                 if (value.IsFile && value.LocalPath.Contains(ApplicationData.Current.LocalFolder.Path))
                 {
                     localFile = value.Segments.Last();
