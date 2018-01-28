@@ -102,6 +102,8 @@ namespace Dash
                     DocumentViewModels.Clear();
                     AddDocuments(args.ChangedDocuments, c);
                     break;
+                default:
+                    break;
             }
         }
 
