@@ -15,10 +15,11 @@ namespace Dash
 {
     public delegate IValueConverter GetConverter<in T>(T field) where T : FieldControllerBase;
 
-    public enum XamlDerefernceLevel
+    public enum XamlDereferenceLevel
     {
         DereferenceToRoot,
-        DereferenceOneLevel
+        DereferenceOneLevel,
+        DontDereference
     };
 
     public class FieldBinding<T, U> where T : FieldControllerBase where U : FieldControllerBase, new()
@@ -27,8 +28,8 @@ namespace Dash
         public DocumentController Document;
         public KeyController Key;
         public GetConverter<T> GetConverter;
-        public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
-        public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;
+        public XamlDereferenceLevel XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot;
+        public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
         public Object FallbackValue;
 
         public Context Context;
@@ -44,7 +45,7 @@ namespace Dash
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
             var refField = Document.GetField(Key) as ReferenceController;
-            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
+            if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
             {
                 element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
             }
@@ -103,7 +104,11 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key, Context);
+            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key, Context);
+            if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference)
+            {
+                field = field as T;
+            }
             if (field is ReferenceController)
             {
                 xamlData = new Tuple<Context, object>(Context, xamlData);

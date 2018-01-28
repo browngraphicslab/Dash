@@ -1253,6 +1253,26 @@ namespace Dash
             args.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
+        private void OperatorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Ellipse ellipse)
+            {
+                ellipse.Fill = new SolidColorBrush(Colors.Gold);
+                ellipse.Height += 3;
+                ellipse.Width += 3;
+            }
+        }
+
+        private void OperatorEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Ellipse ellipse)
+            {
+                ellipse.Fill = (SolidColorBrush) App.Instance.Resources["FieldHandleColor"];
+                ellipse.Height -= 3;
+                ellipse.Width -= 3;
+            }
+        }
+
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
