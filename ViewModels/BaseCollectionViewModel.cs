@@ -355,7 +355,7 @@ namespace Dash
 
                 // bcz: testing stuff out here...
                 var cnote = new CollectionNote(where, dragData.ViewType);
-                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceController).DereferenceToRoot(null);
+                var getDocs = (dragData.HeaderColumnReference as ReferenceController).DereferenceToRoot(null);
 
                 var subDocs = new List<DocumentController>();
                 var showField = dragData.FieldKey;
@@ -371,7 +371,7 @@ namespace Dash
                 if (subDocs != null)
                     cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
                 else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
+                cnote.Document.SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
 
                 AddDocument(cnote.Document, null);
                 DBTest.DBDoc.AddChild(cnote.Document);
