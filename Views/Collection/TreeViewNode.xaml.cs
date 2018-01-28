@@ -133,7 +133,7 @@ namespace Dash
                     docToFocus = docsInGroup.TypedData.FirstOrDefault();
                 }
             }
-            if (! MainPage.Instance.NavigateToDocumentInWorkspace(docToFocus))
+            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
             //var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
             //var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
