@@ -47,7 +47,7 @@ namespace Dash
             }
 
 
-            outputs[ComputedTitle] = new TextController(Prefix() + ((output ?? new TextController("Untitled")).Data));
+            outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);
         }
 
         public override FieldModelController<OperatorModel> Copy()
