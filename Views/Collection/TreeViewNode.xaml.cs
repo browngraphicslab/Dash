@@ -123,8 +123,8 @@ namespace Dash
 
         private class SelectedToColorConverter : SafeDataToXamlConverter<double, Brush>
         {
-            private SolidColorBrush _unselectedBrush = new SolidColorBrush(Colors.Transparent);
-            private SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
+            private readonly SolidColorBrush _unselectedBrush = new SolidColorBrush(Colors.Transparent);
+            private readonly SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
             public override Brush ConvertDataToXaml(double data, object parameter = null)
             {
                 return data == 0 ? _unselectedBrush : _selectedBrush;
