@@ -1272,5 +1272,10 @@ namespace Dash
                 ellipse.Width -= 3;
             }
         }
+
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+        }
     }
 }

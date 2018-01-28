@@ -165,12 +165,12 @@ namespace Dash
                 // set the itemsource to either filtered or unfiltered suggestions
                 if (queryText == string.Empty)
                 {
-                    sender.ItemsSource = suggestions;
+                    sender.ItemsSource = suggestions.ToHashSet();
                 }
                 else
                 {
                     suggestions = suggestions.Where(s => s.ToString().ToLower().Contains(queryText.ToLower())).ToList();
-                    sender.ItemsSource = suggestions;
+                    sender.ItemsSource = suggestions.ToHashSet();
                 }
             }
         }
@@ -237,6 +237,22 @@ namespace Dash
             {
                 CollectionKey = collectionKey;
                 FieldKey = fieldKey;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var pair = obj as CollectionKeyPair;
+                return pair != null &&
+                       EqualityComparer<KeyController>.Default.Equals(CollectionKey, pair.CollectionKey) &&
+                       EqualityComparer<KeyController>.Default.Equals(FieldKey, pair.FieldKey);
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = 1443636342;
+                hashCode = hashCode * -1521134295 + EqualityComparer<KeyController>.Default.GetHashCode(CollectionKey);
+                hashCode = hashCode * -1521134295 + EqualityComparer<KeyController>.Default.GetHashCode(FieldKey);
+                return hashCode;
             }
 
             public override string ToString()

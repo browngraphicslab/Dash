@@ -22,7 +22,7 @@
             </Flyout>
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="xHeaderArea" Height="30"></RowDefinition>
+            <RowDefinition x:Name="xHeaderArea" Height="42"></RowDefinition>
             <RowDefinition x:Name="xDataArea" Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Border Visibility="Collapsed" x:Name="HeaderBorderThickness" BorderThickness="1" />
@@ -50,7 +50,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
-                            <local:CollectionDBSchemaHeader DataContext="{Binding}" Height="25"/>
+                            <local:CollectionDBSchemaHeader DataContext="{Binding}" Height="40"/>
                         </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>

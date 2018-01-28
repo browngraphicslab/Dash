@@ -31,6 +31,7 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Xaml.Media.Animation;
 using DashShared.Models;
 using Flurl.Util;
 using NewControls.Geometry;
@@ -82,6 +83,15 @@ namespace Dash
         private const float BackgroundOpacity = 1.0f;
 
         #endregion
+
+        /// <summary>
+        /// Transform being updated during animation
+        /// </summary>
+        private MatrixTransform _transformBeingAnimated;
+        /// <summary>
+        /// Animation storyboard
+        /// </summary>
+        private Storyboard _storyboard;
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
@@ -837,13 +847,86 @@ namespace Dash
             var composite = new TransformGroup();
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-
             var compValue = composite.Value;
 
             SetFreeformTransform(new MatrixTransform { Matrix = compValue });
         }
 
 
+        public void MoveAnimated(TranslateTransform translate)
+        {
+            if (!IsHitTestVisible) return;
+
+            var old = (itemsPanelCanvas.RenderTransform as MatrixTransform).Matrix;
+            _transformBeingAnimated = new MatrixTransform() {Matrix = old};
+
+
+            Debug.Assert(_transformBeingAnimated != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+
+            //Clear storyboard
+            _storyboard?.Stop();
+            _storyboard?.Children.Clear();
+            _storyboard = new Storyboard { Duration = duration };
+
+            // Create a DoubleAnimation for each property to animate
+            var translateAnimationX = MakeAnimationElement(translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
+            var animationList = new List<DoubleAnimation>() { translateAnimationX, translateAnimationY };
+
+            // Add each animation to the storyboard
+            foreach (var anim in animationList)
+            {
+                _storyboard.Children.Add(anim);
+            }
+
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
+
+            // Begin the animation.
+            _storyboard.Begin();
+            _storyboard.Completed -= StoryboardOnCompleted;
+            _storyboard.Completed += StoryboardOnCompleted;
+
+        }
+
+        private void StoryboardOnCompleted(object sender, object e)
+        {
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            _storyboard.Completed -= StoryboardOnCompleted;
+        }
+
+        private void CompositionTargetOnRendering(object sender, object e)
+        {
+            SetFreeformTransform(_transformBeingAnimated); //Update the transform
+        }
+
+        private DoubleAnimation MakeAnimationElement(double to, String name, Duration duration)
+        {
+
+            var toReturn = new DoubleAnimation();
+            toReturn.EnableDependentAnimation = true;
+            toReturn.Duration = duration;
+            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
+            Storyboard.SetTargetProperty(toReturn, name);
+
+            if (name == "MatrixTransform.Matrix.OffsetX")
+            {
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetX;
+                toReturn.To = toReturn.From + to;
+            }
+
+            if (name == "MatrixTransform.Matrix.OffsetY")
+            {
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetY;
+                toReturn.To = Math.Min(0.0, _transformBeingAnimated.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
+            }
+
+            toReturn.EasingFunction = new QuadraticEase();
+            return toReturn;
+
+        }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -892,7 +975,6 @@ namespace Dash
                     converter.UpdateLine();
             }
         }
-
 
         #endregion
 
