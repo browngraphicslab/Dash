@@ -22,12 +22,12 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <Rectangle Fill="White"></Rectangle>
-        <Grid Background="#223333" Grid.Row="0" >
-            <TextBlock TextAlignment="Center" FontWeight="Bold" Margin="10" Foreground="#EEFFFF" FontSize="18">My Workspaces</TextBlock>
-        </Grid>
+        <Grid Background="{StaticResource WindowsBlue}" Grid.Row="0">
+            <TextBlock TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}"  Foreground="#EEFFFF" Padding="0,7">My Workspaces</TextBlock>
+    </Grid>
         <TextBox x:Name="XFilterBox" FontSize="16" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
         <local:TreeViewCollectionNode HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
-        <Button Grid.Row="3" HorizontalAlignment="Stretch" Height="55" Background="#CC778888" Foreground="#DDEEFFFF" FontWeight="Medium" Tapped="UIElement_OnTapped">ADD WORKSPACE</Button>
-
+        <Button Grid.Row="3"  HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
+            </Button>
     </Grid>
 </UserControl>
