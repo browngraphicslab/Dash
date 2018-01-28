@@ -30,7 +30,7 @@ namespace Dash
             var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context);
             if (fieldData == null && !(refField is ReferenceController))
             {
-                fieldData = (refField as FieldControllerBase)?.GetValue(_context);
+                fieldData = refField;
             }
 
             // convert ListControllers to a string representation
