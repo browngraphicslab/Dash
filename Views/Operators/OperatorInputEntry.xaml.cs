@@ -137,7 +137,7 @@ namespace Dash
 
                 // if the user has entered dot syntax we want to parse that as <collection>.<field>
                 // unfortunatley we don't parse anything nested beyond that
-                if (queryText.EndsWith("."))
+                if (queryText.Contains("."))
                 {
                     // iterate over all collections
                     foreach (var collectionKey in collections)
@@ -149,7 +149,7 @@ namespace Dash
                         {
                             // get the keys for fields that are associated with types we have as input
                             var validHeaderKeys = Util.GetTypedHeaders(docCollection)
-                                .Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti))).Select(kt => kt.Key);
+                                /*.Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti)))*/.Select(kt => kt.Key);
                             // add the keys as collection field pairs
                             suggestions.AddRange(
                                 validHeaderKeys.Select(fieldKey => new CollectionKeyPair(fieldKey, collectionKey)));
