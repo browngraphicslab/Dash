@@ -104,7 +104,7 @@ namespace Dash
                     }
                     else //Collection 
                     {
-                        XIconBox.Symbol = Symbol.Folder;
+                        XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
                         new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
