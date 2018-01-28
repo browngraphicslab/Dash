@@ -192,7 +192,7 @@ namespace Dash
             var selected = GetSelected();
             if (selected != null)
             {
-                xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+                var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
                 this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;

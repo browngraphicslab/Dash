@@ -58,7 +58,7 @@ namespace Dash
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
-        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
+        public override KeyController CollectionKey => _collectionRef.FieldKey ?? base.CollectionKey;
 
 
 

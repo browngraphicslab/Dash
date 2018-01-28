@@ -68,7 +68,7 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    _parentDocument = _parentDocument.GetDataDocument(null);
+                    //_parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
