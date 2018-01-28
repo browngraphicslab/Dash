@@ -98,7 +98,7 @@ namespace Dash
                 {
                     _isCollection = true;
                     XIconBox.Visibility = Visibility.Visible;
-                    if (dvm.DocumentController.LayoutName.ToLower().Contains("group"))
+                    if (dvm.DocumentController.LayoutName.ToLower().Contains("group"))//tfs: Hack
                     {
                         XIconBox.Symbol = Symbol.Copy;
                     }
