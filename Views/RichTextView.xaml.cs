@@ -464,7 +464,7 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null).GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data ??
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data ??
                        parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data;
             }
             return null;
@@ -573,7 +573,15 @@ namespace Dash
             if (parent.ManipulationControls == null)
                 return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
+
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
+            var parentCollection =
+                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
+            if (parentCollection != null)
+            {
+                translation.X *= parentCollection.Matrix.M11;
+                translation.Y *= parentCollection.Matrix.M22;
+            }
             _rightDragLastPosition = pointerPosition;
             parent.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
