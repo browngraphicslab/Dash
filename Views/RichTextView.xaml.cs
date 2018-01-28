@@ -569,19 +569,20 @@ namespace Dash
         /// <param name="e"></param>
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            var parentCollectionTransform =
+                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
+            if (parentCollectionTransform == null) return;
+
             var parent = this.GetFirstAncestorOfType<DocumentView>();
             if (parent.ManipulationControls == null)
                 return;
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
 
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
-            var parentCollection =
-                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
-            if (parentCollection != null)
-            {
-                translation.X *= parentCollection.Matrix.M11;
-                translation.Y *= parentCollection.Matrix.M22;
-            }
+
+            translation.X *= parentCollectionTransform.Matrix.M11;
+            translation.Y *= parentCollectionTransform.Matrix.M22;
+
             _rightDragLastPosition = pointerPosition;
             parent.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
