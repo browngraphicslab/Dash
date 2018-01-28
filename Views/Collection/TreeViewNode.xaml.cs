@@ -8,6 +8,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -58,22 +59,28 @@ namespace Dash
             {
                 return;
             }
-            if (oldViewModel != null)
-            {
-                //TODO remove binding from old document
-            }
             if (args.NewValue != null)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
 
-                var fieldBinding = new FieldBinding<TextController>
+                var textBlockBinding = new FieldBinding<TextController>
                 {
                     Document = dvm.DocumentController.GetDataDocument(null),
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
                     Tag = "TreeViewNode text block binding"
+                };
+
+                var textBoxBinding = new FieldBinding<TextController>
+                {
+                    Document = dvm.DocumentController.GetDataDocument(null),
+                    Key = KeyStore.TitleKey,
+                    FallbackValue = "Untitled",
+                    Mode = BindingMode.TwoWay,
+                    FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
+                    Tag = "TreeViewNode text box binding"
                 };
 
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
@@ -88,7 +95,7 @@ namespace Dash
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;
-                    fieldBinding.Tag = "TreeViewNodeCol";
+                    textBlockBinding.Tag = "TreeViewNodeCol";
                 }
                 else
                 {
@@ -98,7 +105,8 @@ namespace Dash
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
-                XTextBlock.AddFieldBinding(TextBlock.TextProperty, fieldBinding);
+                XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
+                XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
             }
         }
 
@@ -193,12 +201,25 @@ namespace Dash
 
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            xBorder.Visibility = Visibility.Visible;
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+        }
+
+        private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            xBorder.Visibility = Visibility.Collapsed;
+        }
+
+        private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                XTextBlock.Focus(FocusState.Programmatic);
+            }
         }
     }
 }
