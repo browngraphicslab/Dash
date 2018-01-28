@@ -372,7 +372,16 @@ namespace Dash
                 byte b = byte.Parse(hexColor.Substring(7, 2), NumberStyles.HexNumber);
                 _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
+
+            OnLowestSelectionSet += OnOnLowestSelectionSet;
         }
+
+        private void OnOnLowestSelectionSet(bool lowestSelection)
+        {
+            var selectedField = DocumentController.GetFieldOrCreateDefault<NumberController>(KeyStore.SelectedKey);
+            selectedField.Data = lowestSelection ? 1 : 0;
+        }
+
         void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             SetHasTitle(!Undecorated && DocumentController.GetDataDocument(null).HasTitle);

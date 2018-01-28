@@ -9,6 +9,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -83,6 +84,15 @@ namespace Dash
                     Tag = "TreeViewNode text box binding"
                 };
 
+                var headerBinding = new FieldBinding<NumberController>
+                {
+                    Document = dvm.DocumentController,
+                    Key = KeyStore.SelectedKey,
+                    FallbackValue = new SolidColorBrush(Colors.Transparent),
+                    Mode = BindingMode.OneWay,
+                    Converter = new SelectedToColorConverter()
+                };
+
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
@@ -107,6 +117,22 @@ namespace Dash
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
+                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
+            }
+        }
+
+        private class SelectedToColorConverter : SafeDataToXamlConverter<double, Brush>
+        {
+            private SolidColorBrush _unselectedBrush = new SolidColorBrush(Colors.Transparent);
+            private SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
+            public override Brush ConvertDataToXaml(double data, object parameter = null)
+            {
+                return data == 0 ? _unselectedBrush : _selectedBrush;
+            }
+
+            public override double ConvertXamlToData(Brush xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
             }
         }
 
