@@ -880,10 +880,6 @@ namespace Dash
 
 
             // Create a DoubleAnimation for each property to animate
-            //var scaleAnimationX = MakeAnimationElement(scale, "ScaleX", duration);
-            //var scaleAnimationY = MakeAnimationElement(scale, "ScaleY", duration);
-            //var centerAnimationX = MakeAnimationElement(x, "CenterX", duration);
-            //var centerAnimationY = MakeAnimationElement(y, "CenterY", duration);
             var translateAnimationX = MakeAnimationElement(translate.X, "MatrixTransform.Matrix.OffsetX", duration);
             var translateAnimationY = MakeAnimationElement(translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
             var animationList = new List<DoubleAnimation>(){ translateAnimationX, translateAnimationY};
@@ -914,19 +910,6 @@ namespace Dash
 
         private void CompositionTargetOnRendering(object sender, object e)
         {
-            /*
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-
-            var composite = new TransformGroup();
-            composite.Children.Add(canvas.RenderTransform);
-            composite.Children.Add(new TranslateTransform()
-            {
-                X = _originalTransform.Matrix.OffsetX,
-                Y = _originalTransform.Matrix.OffsetY
-            });
-            var compValue = composite.Value;
-            */
-
             itemsPanelCanvas.RenderTransform = _originalTransform;
             InkHostCanvas.RenderTransform = _originalTransform;
 
@@ -955,25 +938,19 @@ namespace Dash
             Storyboard.SetTarget(toReturn, _originalTransform);
             Storyboard.SetTargetProperty(toReturn, name);
 
-            //if (name == "ScaleX")
-            //    toReturn.From = _originalTransform.;
-
-            //if (name == "ScaleY")
-            //    toReturn.From = _originalTransform.ScaleX;
-
-            //if (name == "CenterX")
-            //    toReturn.From = _originalTransform.CenterX;
-
-            //if (name == "CenterY")
-            //    toReturn.From = _originalTransform.CenterY;
 
             if (name == "MatrixTransform.Matrix.OffsetX")
+            {
                 toReturn.From = _originalTransform.Matrix.OffsetX;
+                toReturn.To = toReturn.From + to;
+            }
 
             if (name == "MatrixTransform.Matrix.OffsetY")
+            {
                 toReturn.From = _originalTransform.Matrix.OffsetY;
+                toReturn.To = Math.Max(0.0, _originalTransform.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
+            }
 
-            toReturn.To = toReturn.From + to;
             toReturn.EasingFunction = new QuadraticEase();
             return toReturn;
 
