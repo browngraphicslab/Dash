@@ -27,19 +27,27 @@ namespace Dash
                     return;
                 }
 
+                // if the value is a file and the file exists in the local folder then set localFile to the filename
                 if (value.IsFile && File.Exists(ApplicationData.Current.LocalFolder.Path + "\\" + value.Segments.Last()))
                 {
                     localFile = value.Segments.Last();
                 }
                 else
                 {
+                    // otherwise assume the file is a globalUri like http so set it there
                     globalUri = value;
                 }
             }
         }
 
+        /// <summary>
+        /// not null if the file is stored in localfolder
+        /// </summary>
         private string localFile;
 
+        /// <summary>
+        ///  not null if the file is stored outside localfolder like on the web
+        /// </summary>
         private Uri globalUri;
 
         public string ByteData = null;
