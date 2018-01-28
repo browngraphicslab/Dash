@@ -110,7 +110,7 @@ namespace Dash
             }
 
             var converter = GetConverter != null ? GetConverter((T)field) : Converter;
-            var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, string.Empty);
+            var fieldData = converter == null || field is ReferenceController ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, string.Empty);
 
             if (field == null)
             {
@@ -154,20 +154,21 @@ namespace Dash
             }
         }
 
-        private static void TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
+        private static bool TryRemoveOldBinding(FrameworkElement element, DependencyProperty property)
         {
             if (!_bindingMap.ContainsKey(element))
             {
-                return;
+                return false;
             }
             var dict = _bindingMap[element];
             if (!dict.ContainsKey(property))
             {
-                return;
+                return false;
             }
             var t = dict[property];
             t();
             dict.Remove(property);
+            return true;
         }
 
         private static void AddRemoveBindingAction(FrameworkElement element, DependencyProperty property, Action removeBinding)
@@ -204,32 +205,43 @@ namespace Dash
                     }
                 };
 
-            if (element.IsInVisualTree())
+            bool loaded = false;
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            loaded = true;
+
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                if (loaded)
+                {
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    loaded = false;
+                }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            }
-
-            element.Loaded += OnElementOnLoaded;
-
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
-            {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                if (!loaded)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                    loaded = true;
+                }
             }
 
             element.Unloaded += OnElementOnUnloaded;
 
+            element.Loaded += OnElementOnLoaded;
+
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                if (loaded)
+                {
+                    element.Loaded -= OnElementOnLoaded;
+                    element.Unloaded -= OnElementOnUnloaded;
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    loaded = false;
+                }
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);
@@ -266,40 +278,52 @@ namespace Dash
                     }
                 };
 
+            bool loaded = false;
             long token = -1;
-            if (element.IsInVisualTree())
+
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            token = element.RegisterPropertyChangedCallback(property, callback);
+            loaded = true;
+
+            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
+                if (loaded)
+                {
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    element.UnregisterPropertyChangedCallback(property, token);
+                    token = -1;
+                    loaded = false;
+                }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-            }
-
-            element.Loaded += OnElementOnLoaded;
-
-            void OnElementOnUnloaded(object sender, RoutedEventArgs args)
-            {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                element.UnregisterPropertyChangedCallback(property, token);
-                token = -1;
+                if (!loaded)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                    token = element.RegisterPropertyChangedCallback(property, callback);
+                    loaded = true;
+                }
             }
 
             element.Unloaded += OnElementOnUnloaded;
 
+            element.Loaded += OnElementOnLoaded;
+
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
-                element.Unloaded -= OnElementOnUnloaded;
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                if (token != -1)
+                if (loaded)
                 {
-                    element.UnregisterPropertyChangedCallback(property, token);
+                    element.Loaded -= OnElementOnLoaded;
+                    element.Unloaded -= OnElementOnUnloaded;
+                    binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                    if (token != -1)
+                    {
+                        element.UnregisterPropertyChangedCallback(property, token);
+                    }
+                    loaded = false;
                 }
             }
 

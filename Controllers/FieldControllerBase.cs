@@ -21,6 +21,8 @@ namespace Dash
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
         public abstract TypeInfo TypeInfo { get; }
+        public virtual TypeInfo RootTypeInfo => TypeInfo;
+
         public event FieldUpdatedHandler FieldModelUpdated;
 
 

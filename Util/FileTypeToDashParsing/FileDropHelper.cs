@@ -152,11 +152,19 @@ namespace Dash
                 // for each file, get it's type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
-                    var fileType = await GetFileData(file, dataView);
-                    var documentController = await ParseFileAsync(fileType, where, dataView);
-                    if (documentController != null)
+                    FileData fileType;
+                    try
                     {
-                        outputCollection.Add(documentController);
+                        fileType = await GetFileData(file, dataView);
+                        var documentController = await ParseFileAsync(fileType, where, dataView);
+                        if (documentController != null)
+                        {
+                            outputCollection.Add(documentController);
+                        }
+                    }
+                    catch (ArgumentException e)
+                    {
+                        Debug.WriteLine(e);
                     }
                 }
 
@@ -249,7 +257,8 @@ namespace Dash
             if (filepath.EndsWith(".jpg") ||
                 filepath.EndsWith(".jpeg") || 
                 filepath.EndsWith(".png") || 
-                filepath.EndsWith(".gif"))
+                filepath.EndsWith(".bmp") || 
+                filepath.EndsWith(".gif")) // PRODUCTION READY! Is this all of them? who knows?
                 return FileType.Image;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;

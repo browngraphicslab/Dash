@@ -698,8 +698,8 @@
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\WebAndPdfView.xaml.cs">
-      <DependentUpon>WebAndPdfView.xaml</DependentUpon>
+    <Compile Include="Views\ContextPreview.xaml.cs">
+      <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
@@ -1160,7 +1160,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\WebAndPdfView.xaml">
+    <Page Include="Views\ContextPreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1179,11 +1179,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Push\" />
-  </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="WindowsIoT, Version=10.0.16299.0">
-      <Name>Windows IoT Extensions for the UWP</Name>
-    </SDKReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper">
@@ -1243,11 +1238,6 @@
     <PackageReference Include="Win2D.uwp">
       <Version>1.21.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="WindowsIoT, Version=10.0.15063.0">
-      <Name>Windows IoT Extensions for the UWP</Name>
-    </SDKReference>
   </ItemGroup>
   <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

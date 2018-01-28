@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -18,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -45,6 +47,7 @@ namespace Dash
             };
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
+            this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
         }
@@ -89,77 +92,87 @@ namespace Dash
 
                     PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
 
-                    var thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
+                    DocumentController thumbnailImageViewDoc = null;
+                    var richText = pageDoc.GetDataDocument(null).GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
+                    var docText = pageDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
+                    if (docText != null)
+                    {
+                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText.Substring(0, Math.Min(100, docText.Length))).Document;
+                    }
+                    else
+                    {
+                        thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
+                    }
                     thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                    ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
-
-                    CurPage = PageDocumentViewModels.First();
+                    ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush=new SolidColorBrush(Colors.Transparent) });
                 }
             }
+        }
+
+
+        private void xThumbs_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (xThumbs.Items.Count > 0)
+                xThumbs.SelectedIndex = 0;
+        }
+        private void xThumbs_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (xThumbs.Items.Count > 0)
+                xThumbs.SelectedIndex = 0;
         }
 
         KeyController CaptionKey = null;
         KeyController DisplayKey = null;
         string DisplayString = "";
-        public void SetHackText(KeyController newKey, string keyasgn)
+
+        public void SetHackCaptionText(KeyController captionKey)
         {
-            if (CaptionKey == null)
-                SetHackText(newKey, null,  keyasgn);
-            else SetHackText(CaptionKey, newKey, keyasgn);
-        }
-        public void SetHackText(KeyController captionKey, KeyController documentKey, string keyasgn)
-        {
-            if (captionKey != null)
+            if (captionKey != null && CurPage != null)
             {
+                xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
-                xDocContainer.Children.Remove(xDocTitle);
-                xDocTitle = new TextBox() { VerticalAlignment = VerticalAlignment.Bottom, Width = 200, Height = 0, Visibility = xDocTitle.Visibility };
-                Grid.SetRow(xDocTitle, 1);
-                xDocContainer.Children.Add(xDocTitle);
-                if (captionKey != null)
+                var captionBinding = new FieldBinding<FieldControllerBase>()
                 {
-                    var captionBinding = new FieldBinding<FieldControllerBase>()
-                    {
-                        Mode = BindingMode.TwoWay,
-                        Document = CurPage.DocumentController.GetDataDocument(null),
-                        Key = CaptionKey,
-                        Converter = new ObjectToStringConverter()
-                    };
-                    xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
-                    xDocTitle.Height = 30;
-                    xDocCaptionRow.Height = new GridLength(30);
-                }
-                else
-                {
-                    xDocTitle.Height = 0;
-                    xDocCaptionRow.Height = new GridLength(0);
-                }
+                    Mode = BindingMode.TwoWay,
+                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Key = CaptionKey,
+                    Converter = new ObjectToStringConverter()
+                };
+                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                xDocTitle.Height = 30;
+                xDocCaptionRow.Height = new GridLength(30);
             }
-            if (documentKey != null)
+        }
+        public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
+        {
+            if (documentKey != null && CurPage != null)
             {
                 DisplayString = keyasgn;
                 DisplayKey = documentKey;
-                var data = CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey);
-                if (data == null && !string.IsNullOrEmpty(DisplayString))
+                xDocView.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                var data = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField(DisplayKey,null);
+                if (!string.IsNullOrEmpty(DisplayString))
                 {
                     var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
                     var replacedString = DisplayString;
                     foreach (var keyToReplace in keysToReplace)
                     {
                         var k = KeyController.LookupKeyByName(keyToReplace.ToString().Substring(1));
-                        if (k != null) { 
+                        if (k != null)
+                        {
                             var value = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<TextController>(k, null)?.Data;
                             if (value != null)
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString)?.GetViewCopy(new Point());
-                    if (img != null)
+                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
-                        img.GetWidthField().NumberFieldModel.Data = double.NaN;
-                        img.GetHeightField().NumberFieldModel.Data = double.NaN;
+                        var imgView = img.GetViewCopy();
+                        imgView.GetWidthField().NumberFieldModel.Data = double.NaN;
+                        imgView.GetHeightField().NumberFieldModel.Data = double.NaN;
+                        data = imgView;
                     }
-                    data = img;
                 }
                 if (data != null)
                 {
@@ -169,25 +182,20 @@ namespace Dash
                 }
             }
         }
-
         public DocumentViewModel CurPage
         {
-            get { return this.xDocView.DataContext as DocumentViewModel; }
+            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : this.xDocView.DataContext as DocumentViewModel; }
             set
             {
                 xDocView.DataContext = value;
-
-                // replace old layout of page name/id with a new one because
-                // fieldbinding's can't be removed yet
-                xPageNumContainer.Children.Remove(xPageNum);
-                xPageNum = new TextBlock();
 
 
                 var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.OneWay,
                     Document = value.DocumentController.GetDataDocument(null),
-                    Key = KeyStore.TitleKey
+                    Key = KeyStore.TitleKey,
+                    Tag = "CurPage Title Binding"
                 };
 
                 if (value.Content is CollectionView)
@@ -196,10 +204,8 @@ namespace Dash
                     value.Content.Loaded += Content_Loaded;
                 }
 
-                xPageNumContainer.Children.Add(xPageNum);
-                xPageNum.AddFieldBinding(TextBlock.TextProperty, binding);
-
-                SetHackText(CaptionKey, DisplayKey, DisplayString);
+                SetHackCaptionText(CaptionKey);
+                SetHackBodyDoc(DisplayKey, DisplayString);
 
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)
@@ -283,6 +289,62 @@ namespace Dash
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragLeave(sender, e);
+            this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
+        private void xDocContainer_DragOver(object sender, DragEventArgs e)
+        {
+            this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        }
+
+        private void Top_Drop(object sender, DragEventArgs e)
+        {
+            this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            if (!e.DataView.Properties.ContainsKey("Operator Document"))
+                return;
+            var doc = e.DataView.Properties["Operator Document"] as DocumentController;
+            var keyString = doc.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            if (keyString?.StartsWith("#") == true)
+            {
+                var key = keyString.Substring(1);
+                var k = KeyController.LookupKeyByName(key);
+                var keyasgn = "";
+                if (k == null)
+                {
+                    var splits = key.Split("=");
+                    keyasgn = splits.Length > 1 ? splits[1] : "";
+                    k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                }
+                SetHackBodyDoc(k, keyasgn);
+                
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            e.Handled = true;
+        }
+
+        private void Bottom_Drop(object sender, DragEventArgs e)
+        {
+            this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            if (!e.DataView.Properties.ContainsKey("Operator Document"))
+                return;
+            var doc = e.DataView.Properties["Operator Document"] as DocumentController;
+            var keyString = doc.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            if (keyString?.StartsWith("#") == true)
+            {
+                var key = keyString.Substring(1);
+                var k = KeyController.LookupKeyByName(key);
+                var keyasgn = "";
+                if (k == null)
+                {
+                    var splits = key.Split("=");
+                    keyasgn = splits.Length > 1 ? splits[1] : "";
+                    k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                }
+                SetHackCaptionText(k);
+
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            e.Handled = true;
         }
 
         public void SetDropIndicationFill(Brush fill)
@@ -296,9 +358,6 @@ namespace Dash
         {
             ViewModel.SetSelected(this, isSelected);
             ViewModel.UpdateDocumentsOnSelection(isSelected);
-            if (isSelected)
-                xSplitter.Opacity = 1;
-            else xSplitter.Opacity = 0;
         }
 
 
@@ -315,7 +374,7 @@ namespace Dash
             if (CurPage != null)
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                CurPage = PageDocumentViewModels[Math.Max(0, ind - 1)];
+                xThumbs.SelectedIndex = Math.Max(0, ind - 1);
             }
         }
 
@@ -324,7 +383,7 @@ namespace Dash
             if (CurPage != null)
             {
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
-                CurPage = PageDocumentViewModels[Math.Min(PageDocumentViewModels.Count - 1, ind + 1)];
+                xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
             }
         }
 
@@ -338,15 +397,31 @@ namespace Dash
         {
             var ind = xThumbs.SelectedIndex;
             CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+            if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
+            {
+                var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();
+                if (x != null)
+                {
+
+                    try
+                    {
+                        x.Focus(FocusState.Keyboard);
+                        x.Focus(FocusState.Pointer);
+                    } catch (Exception)
+                    {
+
+                    }
+                }
+            }
         }
 
-        private void xPageNum_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void xDrag_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Handled = true;
             e.Complete();
         }
 
-        private void xPageNumContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
+        private void xDragContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
         {
             e.Data.RequestedOperation = DataPackageOperation.Link;
             e.Data.Properties.Add("View", true);
@@ -357,6 +432,8 @@ namespace Dash
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Handled)
+                return;
             if (e.Key == Windows.System.VirtualKey.PageDown || e.Key == Windows.System.VirtualKey.Down)
             {
                 NextButton_Click(sender, e);
@@ -365,6 +442,31 @@ namespace Dash
             if (e.Key == Windows.System.VirtualKey.PageUp || e.Key == Windows.System.VirtualKey.Up)
             {
                 PrevButton_Click(sender, e);
+                e.Handled = true;
+            }
+        }
+
+        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            args.Cancel = true;
+        }
+
+        private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            try { 
+                xThumbs.Focus(FocusState.Pointer);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+        private void xDocContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            var focus = FocusManager.GetFocusedElement() as FrameworkElement;
+            if (focus == null || focus.GetFirstAncestorOfType<CollectionPageView>() != this || xThumbs.GetDescendants().Contains(focus))
+            {
+                xThumbs.Focus(FocusState.Pointer);
                 e.Handled = true;
             }
         }

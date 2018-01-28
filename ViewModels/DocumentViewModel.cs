@@ -93,13 +93,43 @@ namespace Dash
         public bool MenuOpen
         {
             get => _menuOpen;
-            set => SetProperty(ref _menuOpen, value); 
+            set => SetProperty(ref _menuOpen, value);
         }
 
         public IconTypeEnum IconType => iconType;
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
+
+        public double XPos
+        {
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController))?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            set
+            {
+                var positionController =
+                    LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, new Context(DocumentController)) as PointController;
+
+                if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
+                {
+                    positionController.Data = new Point(value, positionController.Data.Y);
+                }
+            }
+        }
+
+        public double YPos
+        {
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController))?.Data.Y ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            set
+            {
+                var positionController =
+                    LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, new Context(DocumentController)) as PointController;
+
+                if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
+                {
+                    positionController.Data = new Point(positionController.Data.X, value);
+                }
+            }
+        }
 
         public double Width
         {
@@ -154,7 +184,7 @@ namespace Dash
                 {
                     var context = new Context(DocumentController);
 
-                     // set position
+                    // set position
                     var posFieldModelController =
                         LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointController;
@@ -176,6 +206,29 @@ namespace Dash
         {
             get => _groupMargin;
             set => SetProperty(ref _groupMargin, value);
+        }
+
+        protected bool Equals(DocumentViewModel other)
+        {
+            return Equals(DocumentController, other.DocumentController);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((DocumentViewModel) obj);
+        }
+
+        public override string ToString()
+        {
+            return DocumentController.ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            return (DocumentController != null ? DocumentController.GetHashCode() : 0);
         }
 
         private Rect _groupingBounds;
@@ -231,7 +284,8 @@ namespace Dash
         public Brush BackgroundBrush
         {
             get => _backgroundBrush;
-            set  {
+            set
+            {
                 if (SetProperty(ref _backgroundBrush, value))
                 {
                     if (value is SolidColorBrush)
@@ -269,7 +323,9 @@ namespace Dash
         }
 
         private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get => keysToFrameworkElements;
+        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements
+        {
+            get => keysToFrameworkElements;
             set => keysToFrameworkElements = value;
         }
 
@@ -302,7 +358,7 @@ namespace Dash
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
             Context = newContext;
-            
+
             DocumentController.GetDataDocument(context).AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
             titleChanged(null, null, null);
 
@@ -341,7 +397,7 @@ namespace Dash
             {
                 return;
             }
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) fieldUpdatedEventArgs;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)fieldUpdatedEventArgs;
             Debug.Assert(dargs.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey));
             Debug.WriteLine(dargs.Action);
             OnActiveLayoutChanged(new Context(DocumentController));
@@ -365,7 +421,7 @@ namespace Dash
             var icon = (NumberController)DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
-        
+
         public DocumentController LayoutDocument
         {
             get
@@ -510,14 +566,14 @@ namespace Dash
 
             args.Data.Properties.Add(nameof(BaseCollectionViewModel), collectionViewModel);
             args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
-                // different sources based on whether it's a collection or a document 
+            // different sources based on whether it's a collection or a document 
             if (docView != null)
                 docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void OnCollectionSelectedChanged(bool isCollectionSelected)
         {
-               
+
         }
 
         public void Dispose()

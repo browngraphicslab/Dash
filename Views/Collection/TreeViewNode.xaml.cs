@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,6 +42,8 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
+        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+
         private bool _isCollection = false;
 
         public TreeViewNode()
@@ -51,11 +54,15 @@ namespace Dash
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (Equals(args.NewValue, oldViewModel))
+            {
+                return;
+            }
             if (oldViewModel != null)
             {
                 //TODO remove binding from old document
             }
-            if (args.NewValue != null && args.NewValue != oldViewModel)
+            if (args.NewValue != null)
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
@@ -73,10 +80,11 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
+                    var collectionViewModel = new CollectionViewModel(
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
+                            KeyStore.GroupingKey));
                     CollectionTreeView.DataContext =
-                        new CollectionViewModel(
-                            new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                                KeyStore.GroupingKey));
+                        collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;
@@ -166,6 +174,21 @@ namespace Dash
         {
             args.Data.Properties["Operator Document"] = (DataContext as DocumentViewModel).DocumentController.GetDataDocument(null);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+        }
+
+        public void DeleteDocument()
+        {
+            var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var cvm = collTreeView.ViewModel;
+            var doc = ViewModel.DocumentController;
+            cvm.RemoveDocument(doc);
+            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)
+                ?.Remove(doc);//TODO Kind of a hack
+        }
+
+        private void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            DeleteDocument();
         }
     }
 }

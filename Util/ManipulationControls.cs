@@ -34,7 +34,7 @@ namespace Dash
         public Point Translation { get; }
         public float Scale { get; }
     }
-      
+
 
 
     /// <summary>
@@ -95,7 +95,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions=null)
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions = null)
         {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
@@ -267,7 +267,7 @@ namespace Dash
 
             var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
-           
+
             foreach (var side in sides)
             {
                 var sideRect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
@@ -283,7 +283,7 @@ namespace Dash
                     }
                 }
             }
-            
+
             return documentViewsAboveThreshold;
         }
 
@@ -406,68 +406,40 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                if(_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                if (_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
                 ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
             }
-        } 
+        }
 
         public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
         {
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
             _isManipulating = false;
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
             var groupViews = GroupViews(_grouping);
-            var allViews =   (_element.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>()).ToList();
-            
+           
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition2.X - Window.Current.Bounds.X;
             var y = pointerPosition2.Y - Window.Current.Bounds.Y;
             var pos = new Point(x, y);
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
-            var parentCollection = _element.GetFirstAncestorOfType<CollectionView>();
+            var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
             docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () => {
-                        docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews);
+                    () =>
+                    {
+                        var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
+                        if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
+                            GroupManager.RemoveGroup(pc, group);
                         GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
-                        if (parentCollection != null)
-                        {
-                            (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = true;
-                            Debug.WriteLine("ManipulationControls - SortByY - why does this mess up CollectionVIews?");
-                            SortByY(parentCollection.ViewModel.DocumentViewModels);
-                            (parentCollection.CurrentView as CollectionFreeformView).SuspendGroups = false;
-                        }
                     }));
 
-            
             if (manipulationCompletedRoutedEventArgs != null)
             {
                 manipulationCompletedRoutedEventArgs.Handled = true;
-            }
-        }
-        static void SortByY( ObservableCollection<DocumentViewModel> docViewModels)
-        {
-            var sl = new SortedList<double, List<DocumentViewModel>>();
-            foreach (var d in docViewModels)
-            {
-                var pos = d.DocumentController.GetPositionField()?.Data.Y ?? double.MaxValue;
-                if (sl.ContainsKey(pos))
-                {
-                    sl[pos].Add(d);
-                }
-                else
-                {
-                    sl.Add(pos, new List<DocumentViewModel>(new DocumentViewModel[] { d }));
-                }
-            }
-            docViewModels.Clear();
-            foreach (var s in sl)
-            {
-                foreach (var d in s.Value)
-                    docViewModels.Add(d);
             }
         }
         public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
@@ -493,7 +465,7 @@ namespace Dash
                 return;
             }
             var docRoot = ParentDocument;
-            
+
             _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
             var groupViews = GroupViews(_grouping);
             foreach (var gv in groupViews)
@@ -593,7 +565,7 @@ namespace Dash
         /// </summary>
         private void BorderManipulateDeltaMove(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse && 
+            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
             {
@@ -612,7 +584,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) && 
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 return;
@@ -654,7 +626,7 @@ namespace Dash
 
                 // calculate the direction of the velocity
                 var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
-                
+
                 // checks if a certain number of direction changes occur in a specified time span
                 if (_numberOfTimesDirChanged == 0)
                 {
@@ -787,7 +759,7 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped=null)
+        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped = null)
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
@@ -808,7 +780,7 @@ namespace Dash
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-                    foreach (var g in grouped.Except(new List<DocumentViewModel> {docRoot.ViewModel}))
+                    foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
                         g?.TransformDelta(transformGroup);
                     }

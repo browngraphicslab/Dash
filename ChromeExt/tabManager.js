@@ -5,6 +5,7 @@ function tabManager(sendRequestFunction) {
     var prevActiveTabScroll = {}
     var awaitingUpdateTimers = {}
     var windowId = 1;
+    var screenShotTimeout = null;
 
     /*
     var updateScroll = function(tabId, scroll) {
@@ -132,11 +133,21 @@ function tabManager(sendRequestFunction) {
         addTab(newTab);
     }
 
+    var awaitSendScreenshot = function (tabId) {
+        if (screenShotTimeout == null) {
+            screenShotTimeout = setTimeout(function () {
+                screenShotTimeout = null;
+                sendTabScreenshot(tabId);
+            }, 2000);
+        }
+    }
+
     //callback for when a tab is updated
     var tabUpdatedCallback = function (tabId, changeInfo, tab) {
         console.log("tab updated with change info: ");
         console.log(changeInfo);
         updateTab(tabId);
+        awaitSendScreenshot(tabId);
     }
 
     //callback to get all existing tabs
@@ -144,8 +155,7 @@ function tabManager(sendRequestFunction) {
         activeTabId = tabId;
         console.log("active tab set to: " + tabId);
         updateTab(tabId);
-        setTimeout(function() { sendTabScreenshot(tabId); }, 2000);
-
+        awaitSendScreenshot(tabId);
     }
 
     chrome.tabs.query({}, initTabsCallback);

@@ -11,12 +11,16 @@ namespace Dash
         private readonly Dictionary<string,DocumentNode> _children = new Dictionary<string, DocumentNode>();
         private readonly Dictionary<string, DocumentNode> _parents= new Dictionary<string, DocumentNode>();
 
+        public DocumentTree.DocumentNodeGroup Group { get; }
         public DocumentTree Tree { get; }
 
         /// <summary>
-        /// the Groups that it's in
+        /// gets all the members of the group that this node is in
         /// </summary>
-        private readonly Dictionary<string, DocumentNode> _groups = new Dictionary<string, DocumentNode>();
+        public DocumentNode[] GroupPeers
+        {
+            get { return Group?.Members; }
+        }
 
         public DocumentNode[] Children
         {
@@ -26,28 +30,6 @@ namespace Dash
         {
             get { return _parents.Values.ToArray(); }
         }
-
-        /// <summary>
-        /// the groups that this node is in
-        /// </summary>
-        public DocumentNode[] Groups
-        {
-            get { return _groups.Values.ToArray(); }
-        }
-
-
-        /// <summary>
-        /// the groups that this node is in
-        /// </summary>
-        public DocumentNode[] GroupPeers
-        {
-            get
-            {
-                var result = _groups.Values.SelectMany(i => i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData ?? new List<DocumentController>(){i.DataDocument}).Select(i => Tree[i.Id]).ToArray();
-                return result;
-            }
-        }
-
 
         /// <summary>
         /// The Id of this DocumentNode
@@ -75,9 +57,11 @@ namespace Dash
         /// </summary>
         /// <param name="viewDocument"></param>
         /// <param name="dataDocument"></param>
-        public DocumentNode(DocumentController viewDocument, DocumentTree tree)
+        public DocumentNode(DocumentController viewDocument, DocumentTree.DocumentNodeGroup group, DocumentTree tree)
         {
+            Group = group;
             Tree = tree;
+            group.AddMember(this);
             ViewDocument = viewDocument;
             DataDocument = ViewDocument.GetDataDocument();
         }
@@ -90,15 +74,6 @@ namespace Dash
                 parent.AddChild(this);
             }
         }
-
-        public void AddParentGroup(DocumentNode parentGroup)
-        {
-            if (!_groups.ContainsKey(parentGroup.Id))
-            {
-                _groups[parentGroup.Id] = parentGroup;
-            }
-        }
-
 
         public void AddChild(DocumentNode child)
         {
