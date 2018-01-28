@@ -36,8 +36,8 @@
                         Name="xAutoSuggestBox"
                         GotFocus="XAutoSuggestBox_OnGotFocus"
                         Grid.Column="1"
+                        TextBoxStyle="{StaticResource AutoFontSize}"
                         Width="300"
-                        Height="32"
                         VerticalAlignment="Center"
                         >
             <AutoSuggestBox.ItemTemplate>
