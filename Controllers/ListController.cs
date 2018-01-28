@@ -151,7 +151,7 @@ namespace Dash
             foreach (var element in elements)
             {
                 AddHelper(element);
-                //TODO tfs: Remove deleted fields from the list if we can delete fields 
+                //TODO tfs: Remove deleted fields from the list when they are deleted if we can delete fields 
             }
             UpdateOnServer();
 

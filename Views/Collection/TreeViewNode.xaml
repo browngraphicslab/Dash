@@ -14,7 +14,9 @@
     <StackPanel>
     <StackPanel.ContextFlyout>
         <MenuFlyout>
-            <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItem_OnClick"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Open" Click="Open_OnClick"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Rename" Click="Rename_OnClick"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Delete" Icon="Delete" Click="Delete_OnClick"></MenuFlyoutItem>
         </MenuFlyout>
     </StackPanel.ContextFlyout>
         <Grid x:Name="XHeader">

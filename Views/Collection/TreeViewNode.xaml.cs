@@ -186,9 +186,19 @@ namespace Dash
                 ?.Remove(doc);//TODO Kind of a hack
         }
 
-        private void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
+        private void Delete_OnClick(object sender, RoutedEventArgs e)
         {
             DeleteDocument();
+        }
+
+        private void Rename_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void Open_OnClick(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
     }
 }

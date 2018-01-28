@@ -30,6 +30,7 @@
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">
                     <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+                    <MenuFlyoutItem Text="Open" Click="MenuFlyoutItemOpen_OnClick" />
                     <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>

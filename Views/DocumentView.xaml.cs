@@ -1252,5 +1252,10 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
             args.Data.RequestedOperation = DataPackageOperation.Move;
         }
+
+        private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+        }
     }
 }
