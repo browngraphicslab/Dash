@@ -97,6 +97,15 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
+                    XIconBox.Visibility = Visibility.Visible;
+                    if (dvm.DocumentController.LayoutName.ToLower().Contains("group"))
+                    {
+                        XIconBox.Symbol = Symbol.Copy;
+                    }
+                    else //Collection 
+                    {
+                        XIconBox.Symbol = Symbol.Folder;
+                    }
                     var collectionViewModel = new CollectionViewModel(
                         new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
                             KeyStore.GroupingKey));
@@ -112,6 +121,7 @@ namespace Dash
                     _isCollection = false;
                     XArrowBlock.Text = "";
                     XArrowBlock.Visibility = Visibility.Collapsed;
+                    XIconBox.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
