@@ -211,9 +211,12 @@ namespace Dash
                 };
 
             bool loaded = false;
-            binding.ConvertToXaml(element, property, binding.Context);
-            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            loaded = true;
+            if (element.IsInVisualTree())
+            {
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                loaded = true;
+            }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
@@ -286,10 +289,13 @@ namespace Dash
             bool loaded = false;
             long token = -1;
 
-            binding.ConvertToXaml(element, property, binding.Context);
-            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            token = element.RegisterPropertyChangedCallback(property, callback);
-            loaded = true;
+            if (element.IsInVisualTree())
+            {
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
+                loaded = true;
+            }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
