@@ -253,8 +253,9 @@ namespace Dash
                 if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                 {
                     var pt = point;
-                    pt.X += 150;
-                    pt.Y += 50;
+                    pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
+                    pt.X += 80;
+                    pt.Y += 0;
                     if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
                         theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                     var collection = this.GetFirstAncestorOfType<CollectionView>();
@@ -335,10 +336,8 @@ namespace Dash
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
 
-            var startPt = new Point();
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
             // try to get last typed character based on the current selection position 
             this.xRichEditBox.Document.Selection.SetRange(Math.Max(0, s1 - 1), s1);
@@ -362,7 +361,16 @@ namespace Dash
                         // see if we can find a document whose primary keys match the text
                         var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
 
-                         createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
+                        var startPt = new Point();
+                        try
+                        {
+                            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+                        }
+                        catch (Exception exception)
+                        {
+                            Debug.WriteLine(exception);
+                        }
+                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
                     }
                 }
             }

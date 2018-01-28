@@ -155,7 +155,7 @@ namespace Dash
         public void ToggleMultiSelected(bool isMultiSelected)
         {
             if (isMultiSelected == _multiSelected) return;
-            var freeformView = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
             if (freeformView == null) return;
             if (!isMultiSelected)
             {
