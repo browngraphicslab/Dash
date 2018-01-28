@@ -118,7 +118,23 @@ namespace Dash
 
         public double YPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController))?.Data.Y ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get
+            {
+                var posField = LayoutDocument
+                    .GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController));
+                if (posField != null)
+                {
+                    return posField.Data.Y;
+                }
+                var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (groupField != null)
+                {
+                    return groupField.TypedData.Min(
+                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                              double.PositiveInfinity);
+                }
+                return double.PositiveInfinity; //Use inf so that sorting works reasonably
+            }
             set
             {
                 var positionController =
