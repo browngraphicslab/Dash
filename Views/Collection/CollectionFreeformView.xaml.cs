@@ -46,7 +46,6 @@ namespace Dash
 
         #region ScalingVariables    
 
-        public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -1055,6 +1054,8 @@ namespace Dash
 
             itemsPanelCanvas.RenderTransform = matrixTransform;
             InkHostCanvas.RenderTransform = matrixTransform;
+
+
         }
 
         private void SetInitialTransformOnBackground()
@@ -1064,8 +1065,8 @@ namespace Dash
             {
                 CenterX = 0,
                 CenterY = 0,
-                ScaleX = CanvasScale,
-                ScaleY = CanvasScale
+                ScaleX = 1,
+                ScaleY = 1
             };
 
             composite.Children.Add(scale);
