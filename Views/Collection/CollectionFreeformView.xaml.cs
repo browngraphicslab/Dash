@@ -84,6 +84,15 @@ namespace Dash
 
         #endregion
 
+        /// <summary>
+        /// Transform being updated during animation
+        /// </summary>
+        private MatrixTransform _transformBeingAnimated;
+        /// <summary>
+        /// Animation storyboard
+        /// </summary>
+        private Storyboard _storyboard;
+
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
 
@@ -830,8 +839,6 @@ namespace Dash
         #region Manipulation
         public Rect ClipRect => xClippingRect.Rect;
 
-
-
         public void Move(TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
@@ -840,57 +847,39 @@ namespace Dash
             var composite = new TransformGroup();
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-
             var compValue = composite.Value;
 
             SetFreeformTransform(new MatrixTransform { Matrix = compValue });
         }
 
 
-        public void MoveAnimated(double oldTranslateX, double oldTranslateY, TranslateTransform translate)
+        public void MoveAnimated(TranslateTransform translate)
         {
             if (!IsHitTestVisible) return;
 
-            SetFreeformTransformAnimated(oldTranslateX, oldTranslateY, translate);
-
-        }
-
-        //TODO: move this to top of class definition
-        private MatrixTransform _originalTransform;
-        private Storyboard _storyboard;
-
-        private void SetFreeformTransformAnimated(double oldTranslateX, double oldTranslateY, TranslateTransform translate)
-        {
-            //TODO: Make this a shallow copy
-            //_originalTransform = (itemsPanelCanvas.RenderTransform as MatrixTransform);
-            
             var old = (itemsPanelCanvas.RenderTransform as MatrixTransform).Matrix;
+            _transformBeingAnimated = new MatrixTransform() {Matrix = old};
 
-            _originalTransform = new MatrixTransform()
-            {
-                Matrix = new Matrix(old.M11, old.M12, old.M21, old.M22, old.OffsetX, old.OffsetY)
-            };
 
-            Debug.Assert(_originalTransform != null);
+            Debug.Assert(_transformBeingAnimated != null);
             var milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+
+            //Clear storyboard
             _storyboard?.Stop();
             _storyboard?.Children.Clear();
             _storyboard = new Storyboard { Duration = duration };
 
-
             // Create a DoubleAnimation for each property to animate
             var translateAnimationX = MakeAnimationElement(translate.X, "MatrixTransform.Matrix.OffsetX", duration);
             var translateAnimationY = MakeAnimationElement(translate.Y, "MatrixTransform.Matrix.OffsetY", duration);
-            var animationList = new List<DoubleAnimation>(){ translateAnimationX, translateAnimationY};
-
+            var animationList = new List<DoubleAnimation>() { translateAnimationX, translateAnimationY };
 
             // Add each animation to the storyboard
             foreach (var anim in animationList)
             {
                 _storyboard.Children.Add(anim);
             }
-
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;
@@ -899,7 +888,7 @@ namespace Dash
             _storyboard.Begin();
             _storyboard.Completed -= StoryboardOnCompleted;
             _storyboard.Completed += StoryboardOnCompleted;
-            
+
         }
 
         private void StoryboardOnCompleted(object sender, object e)
@@ -910,23 +899,7 @@ namespace Dash
 
         private void CompositionTargetOnRendering(object sender, object e)
         {
-            itemsPanelCanvas.RenderTransform = _originalTransform;
-            InkHostCanvas.RenderTransform = _originalTransform;
-
-            var matrix = _originalTransform.Matrix;
-
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
-
-            if (_resourcesLoaded)
-            {
-                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)matrix.M12,
-                    (float)matrix.M21,
-                    (float)aliasSafeScale,
-                    (float)matrix.OffsetX,
-                    (float)matrix.OffsetY);
-                xBackgroundCanvas.Invalidate();
-            }
+            SetFreeformTransform(_transformBeingAnimated); //Update the transform
         }
 
         private DoubleAnimation MakeAnimationElement(double to, String name, Duration duration)
@@ -935,20 +908,19 @@ namespace Dash
             var toReturn = new DoubleAnimation();
             toReturn.EnableDependentAnimation = true;
             toReturn.Duration = duration;
-            Storyboard.SetTarget(toReturn, _originalTransform);
+            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
             Storyboard.SetTargetProperty(toReturn, name);
-
 
             if (name == "MatrixTransform.Matrix.OffsetX")
             {
-                toReturn.From = _originalTransform.Matrix.OffsetX;
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetX;
                 toReturn.To = toReturn.From + to;
             }
 
             if (name == "MatrixTransform.Matrix.OffsetY")
             {
-                toReturn.From = _originalTransform.Matrix.OffsetY;
-                toReturn.To = Math.Max(0.0, _originalTransform.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetY;
+                toReturn.To = Math.Min(0.0, _transformBeingAnimated.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
             }
 
             toReturn.EasingFunction = new QuadraticEase();
@@ -1003,7 +975,6 @@ namespace Dash
                     converter.UpdateLine();
             }
         }
-
 
         #endregion
 

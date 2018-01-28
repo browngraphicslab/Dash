@@ -281,7 +281,7 @@ namespace Dash
                     var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
                     var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
 
-                    root.MoveAnimated(oldTranslateX, oldTranslateY, new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
