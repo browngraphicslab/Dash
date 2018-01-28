@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Windows.Storage;
 using DashShared;
@@ -26,7 +27,7 @@ namespace Dash
                     return;
                 }
 
-                if (value.IsFile && value.LocalPath.Contains(ApplicationData.Current.LocalFolder.Path))
+                if (value.IsFile && File.Exists(ApplicationData.Current.LocalFolder.Path + "\\" + value.Segments.Last()))
                 {
                     localFile = value.Segments.Last();
                 }
