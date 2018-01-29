@@ -61,8 +61,19 @@ namespace Dash
                 }
                 else
                 {
-                    SuggestBox.Visibility = Visibility.Visible;
-                    SuggestBox.Focus(FocusState.Programmatic);
+
+                    // if only one field on the input has the correct type then connect that field
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    if (fieldsWithCorrectType.Count == 1)
+                    {
+                        var refKey = fieldsWithCorrectType[0];
+                        opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
+                    }
+                    else // otherwise display the autosuggest box
+                    {
+                        SuggestBox.Visibility = Visibility.Visible;
+                        SuggestBox.Focus(FocusState.Programmatic);
+                    }
                 }
             }
             // if the user dragged from the header of a schema view
@@ -72,10 +83,10 @@ namespace Dash
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
                 opDoc.SetField(key, new TextController(CollectionDBSchemaHeader.DragModel.FieldKey.Id), true);
-
-
             }
-            e.Handled = true;
+
+
+            e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
         }
 
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
@@ -126,14 +137,14 @@ namespace Dash
                 var queryText = sender.Text;
 
                 // get the fields that have the same type as the key the user is suggesting for
-                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key);
+                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
 
                 // add all the fields with the correct type to the list of suggestions
                 var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController)).ToList();
 
                 // get all the fields from the connecting document that are collections
                 var collections = _refDoc.EnumDisplayableFields()
-                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key);
+                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
 
                 // if the user has entered dot syntax we want to parse that as <collection>.<field>
                 // unfortunatley we don't parse anything nested beyond that
