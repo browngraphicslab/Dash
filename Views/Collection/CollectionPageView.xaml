@@ -54,22 +54,22 @@
             </Grid.RowDefinitions>
             <local:DocumentView x:Name="xDocView" DataContext="{Binding CurPage}" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Grid x:Name="xDockSpots" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
-                <Button Content="- body -" HorizontalAlignment="Center" VerticalAlignment="Top"    Margin="0 10 0 0"  Width="50" Height="30" AllowDrop="True" Drop="Top_Drop"/>
-                <Button Content="- footer -"    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 10" Width="50" Height="30"  AllowDrop="True" Drop="Bottom_Drop"/>
+                <Button Content="- body -" HorizontalAlignment="Center" VerticalAlignment="Top"    Margin="0 10 0 0"  Width="100" Height="50" Opacity="0.5" Background="White" AllowDrop="True" Drop="Top_Drop"/>
+                <Button Content="- footer -"    HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 10" Width="100" Height="50" Opacity="0.5" Background="White" AllowDrop="True" Drop="Bottom_Drop"/>
             </Grid>
-            <TextBox Name="xDocTitle" x:FieldModifier="public" Grid.Row="1" Width="200" Height="0" VerticalAlignment="Bottom"   HorizontalAlignment="Left" Visibility="Collapsed"></TextBox>
+            <TextBox Name="xDocTitle" x:FieldModifier="public" Grid.Row="1" TextAlignment="Center"  Height="0" VerticalAlignment="Bottom"   HorizontalAlignment="Stretch" Visibility="Collapsed"></TextBox>
         </Grid>
-        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
+        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False"
             x:Name="xSplitter"
             Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 
                 FontSize="13">
-            <localMicrosoft:GridSplitter.Element>
-                <Grid GettingFocus="TextBlock_GettingFocus">
+            <localMicrosoft:GridSplitter.Element AllowFocusOnInteraction="False">
+                <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">
                     <TextBlock HorizontalAlignment="Center" 
-                                   IsHitTestVisible="False"
+                                   IsHitTestVisible="False" AllowFocusOnInteraction="False"
                                    VerticalAlignment="Center"  
                                     GettingFocus="TextBlock_GettingFocus"
                                     Text="&#xE784;"
