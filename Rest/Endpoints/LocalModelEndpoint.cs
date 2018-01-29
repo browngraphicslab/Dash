@@ -48,7 +48,7 @@ namespace Dash
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
                 }
 
-                Debug.WriteLine("Database at:   "+ DashConstants.LocalStorageFolder.Path);
+                Debug.WriteLine("\n\n\n\nDatabase at:   "+ DashConstants.LocalStorageFolder.Path + "\n\n\n\n");
             }
             catch (Exception e)
             {

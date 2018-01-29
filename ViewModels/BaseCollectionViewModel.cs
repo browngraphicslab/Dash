@@ -598,6 +598,15 @@ namespace Dash
             {
                 var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
 
+                // hack to stop people from dragging a collection on itself get the parent doc of the collection
+                // and then compare data docs, if they're equal then return
+                var parentDocDataDoc = (sender as FrameworkElement)?.GetFirstAncestorOfType<CollectionView>()?
+                    .ParentDocument?.ViewModel?.DocumentController?.GetDataDocument();
+                if (parentDocDataDoc != null && refDoc.GetDataDocument().Equals(parentDocDataDoc))
+                {
+                    return;
+                }
+
                 //There is a specified key, so check if it's the right type
                 if (e.DataView.Properties.ContainsKey("Operator Key")) 
                 {
@@ -618,19 +627,33 @@ namespace Dash
                 }
             }
 
-
-            // if the user tries to move a view doucment
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
+            // if the dataview contains this view model then don't accept the drag
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("Collection View Model"))
             {
-
-                var collViewModel = (BaseCollectionViewModel) e.DataView.Properties["Collection View Model"];
-                if (collViewModel == this)
+                var collViewModel = (BaseCollectionViewModel)e.DataView.Properties["Collection View Model"];
+                if (collViewModel.Equals(this))
                 {
                     e.AcceptedOperation = DataPackageOperation.None;
                     return;
                 }
+            }
+
+
+
+            // if the user tries to move a view document
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
+            {
                 var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Move"];
                 Actions.DisplayDocument(this, viewDoc, where);
+                e.AcceptedOperation = DataPackageOperation.Move;
+            }
+
+            // if the user tries to copy a view document
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Copy"))
+            {
+                var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Copy"];
+                Actions.DisplayDocument(this, viewDoc.GetViewCopy(where), where);
+                e.AcceptedOperation = DataPackageOperation.Copy;
             }
 
             e.Handled = true;
@@ -651,11 +674,11 @@ namespace Dash
 
 
             // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Move))
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Copy))
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }  else 

@@ -628,6 +628,35 @@ namespace Dash
                 return vms.ToArray();
             }
         }
+
+        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
+            }
+        }
+
+        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                var doc = (DocumentController) e.DataView.Properties["Operator Document"];
+                var listKeys = doc.EnumDisplayableFields()
+                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                if (listKeys.Count == 1)
+                {
+                    var currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    if (!string.IsNullOrWhiteSpace(currText))
+                    {
+                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
+                    }
+                }
+            }
+
+            e.Handled = true;
+        }
     }
 }
 

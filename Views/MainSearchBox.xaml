@@ -38,6 +38,9 @@
                         TextBoxStyle="{StaticResource AutoFontSize}"
                         Width="300"
                         VerticalAlignment="Center"
+                        DragEnter="XAutoSuggestBox_OnDragEnter"
+                        Drop="XAutoSuggestBox_OnDrop"
+                        AllowDrop="True"
                         >
             <AutoSuggestBox.ItemTemplate>
                 
