@@ -75,7 +75,7 @@
                         VerticalContentAlignment="Center"
                         x:Name="xContextTitle"
                         Margin="0, 0, 15, 0"
-                        Visibility="{Binding Path=ShowLocalContext}"/>
+                        Visibility="Collapsed"/>
                 </Border>
             </RelativePanel>
 

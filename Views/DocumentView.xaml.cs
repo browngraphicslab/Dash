@@ -234,7 +234,7 @@ namespace Dash
         {
             if (IsSelected == false)
             {
-                ToggleSelectionBorder(false);
+                ToggleSelectionBorderAndChrome(false);
             }
 
             ToggleGroupSelectionBorderColor(false);
@@ -249,7 +249,7 @@ namespace Dash
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ToggleSelectionBorder(true);
+            ToggleSelectionBorderAndChrome(true);
             ToggleGroupSelectionBorderColor(true);
 
             _ptrIn = true;
@@ -564,6 +564,8 @@ namespace Dash
             Interval = new TimeSpan(0, 0, 0, 0, 600),
         };
 
+        private bool _draggerButtonBeingManipulated;
+
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -664,6 +666,10 @@ namespace Dash
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
             }
+
+            if (!_draggerButtonBeingManipulated) Debug.WriteLine("Dragger Manipulation Started");
+
+            _draggerButtonBeingManipulated = true;
         }
 
         void fitFreeFormChildrenToTheirLayouts()
@@ -688,6 +694,13 @@ namespace Dash
             {
                 ProportionalScaling = false;
             }
+            _draggerButtonBeingManipulated = false;
+            Debug.WriteLine("Dragger Manipulation Completed");
+            if (!IsSelected)
+            {
+                DraggerButton.Visibility = Visibility.Collapsed;
+            }
+
         }
 
         /// <summary>
@@ -929,15 +942,21 @@ namespace Dash
             // if we are being deselected
             if (!isSelected)
             {
-                ToggleSelectionBorder(false);
+                ToggleSelectionBorderAndChrome(false);
             }
             else
             {
-                ToggleSelectionBorder(true);
+                ToggleSelectionBorderAndChrome(true);
             }
         }
 
-        private void ToggleSelectionBorder(bool isBorderOn, bool isOtherChromeVisible = true)
+        /// <summary>
+        /// Sets whther the selection border is on, all other chrome can be turned off or on independently
+        /// so that we don't see huge amounts of chrome when we hover over groups
+        /// </summary>
+        /// <param name="isBorderOn"></param>
+        /// <param name="isOtherChromeVisible"></param>
+        private void ToggleSelectionBorderAndChrome(bool isBorderOn, bool isOtherChromeVisible = true)
         {
 
             // change the thickness of the border so that it's visible
@@ -950,6 +969,15 @@ namespace Dash
 
 
             OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
+            if (!_draggerButtonBeingManipulated && isBorderOn && isOtherChromeVisible &&
+                ViewModel?.Undecorated == false)
+            {
+                DraggerButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                //DraggerButton.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
@@ -974,7 +1002,7 @@ namespace Dash
                     // don't turn on our own border (for aesthetic reasons)
                     if (dv != this)
                     {
-                        dv.ToggleSelectionBorder(isGroupBorderVisible, false);
+                        dv.ToggleSelectionBorderAndChrome(isGroupBorderVisible, false);
                     }
 
 
@@ -985,7 +1013,7 @@ namespace Dash
                 // turn off the borders for documents not in the group
                 else
                 {
-                    dv.ToggleSelectionBorder(false);
+                    dv.ToggleSelectionBorderAndChrome(false);
                 }
 
 
