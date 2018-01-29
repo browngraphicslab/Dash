@@ -413,19 +413,38 @@ namespace Dash
             {
                 var documentTree = DocumentTree.MainPageTree;
 
+                var negateCategory = criteria.SearchCategory.StartsWith('!');
+                var searchCategory = criteria.SearchCategory.TrimStart('!');
+
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
+                    var hasField = false;
                     foreach (var kvp in documentController.EnumFields())
                     {
-                        if (kvp.Key.Name.ToLower().Contains(criteria.SearchCategory))
+                        var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
+                        if (contains)
                         {
+                            hasField = true;
                             var stringSearch = kvp.Value.SearchForString(criteria.SearchText);
-                            if (stringSearch.StringFound)
+                            if ((stringSearch.StringFound && !negateCategory) || (!stringSearch.StringFound && negateCategory))
                             {
                                 docControllers.Add(documentController);
                             }
                         }
+                    }
+                    if (negateCategory && string.IsNullOrEmpty(criteria.SearchText) && !hasField)
+                    {
+                        foreach (var kvp in documentController.GetDataDocument().EnumFields())
+                        {
+                            var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
+                            if (contains)
+                            {
+                                hasField = true;
+                            }
+                        }
+                        if (!hasField)
+                            docControllers.Add(documentController);
                     }
                 }
 

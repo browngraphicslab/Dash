@@ -93,6 +93,8 @@ namespace Dash
 
         public DocumentController GetDocumentGroup(DocumentController document)
         {
+            if (ParentDocument == null)
+                return null;
             var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             if (groupsList == null) return null;

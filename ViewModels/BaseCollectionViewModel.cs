@@ -579,7 +579,8 @@ namespace Dash
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var models = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>);
-                var docs = models.Select((srvm) => srvm.ViewDocument);
+                var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>().Select((cv) => cv.ParentDocument?.ViewModel?.DocumentController?.GetDataDocument(null));
+                var docs = models.Select((srvm) => srvm.ViewDocument).Where((d) => !parentDocs.Contains(d.GetDataDocument(null)) && d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }

@@ -167,7 +167,7 @@ namespace Dash
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
                     if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
                         var imgView = img.GetViewCopy();
