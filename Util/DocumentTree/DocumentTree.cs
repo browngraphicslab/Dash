@@ -108,7 +108,7 @@ namespace Dash
             {
                 if (!groupDict.ContainsKey(childDoc.Id))
                 {
-                    Debug.WriteLine("FIX ME: DocumentTree has document without group");
+                    //Debug.WriteLine("FIX ME: DocumentTree has document without group");
                     continue;
                 }
                 var childNode = CreateNode(childDoc, groupDict[childDoc.Id]);

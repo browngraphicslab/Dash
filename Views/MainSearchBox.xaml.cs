@@ -208,7 +208,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchOverCollection(string.Join(' ', searchParts), collectionDocument));
+                return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
@@ -219,7 +219,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString, thisController)
+                return CleanByType(SearchByParts(searchString.ToLower(), thisController)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
             }
@@ -232,7 +232,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString)
+                return CleanByType(SearchByParts(searchString.ToLower())
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             }
 
@@ -241,7 +241,8 @@ namespace Dash
             {
                 Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
-                    if (vm.IsLikelyUsefulContextText)
+                    var type = vm.ViewDocument.GetDataDocument(null).DocumentType?.Type?.ToLower();
+                    if (vm.IsLikelyUsefulContextText|| type == null)
                     {
                         return vm;
                     }
@@ -260,7 +261,7 @@ namespace Dash
                             //vm.ContextualText = "Found: "+ vm.ContextualText;
                             break;
                     }
-                    Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
+                    //Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
                     return vm;
                 };
                 return vms.Select(convert);
@@ -273,13 +274,15 @@ namespace Dash
             /// <returns></returns>
             private static List<SearchResultViewModel> SearchByParts(string text, DocumentController thisController = null)
             {
+                var thisControllerId = thisController?.Id?.ToLower();
+                
                 List<SearchResultViewModel> mainList = null;
                 foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
                     if (criteria != null && criteria.SearchText == "this" && thisController != null)
                     {
-                        criteria.SearchText = thisController.Id.ToLower();
+                        criteria.SearchText = thisControllerId ?? "";
                     }
 
                     var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();

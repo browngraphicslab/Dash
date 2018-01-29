@@ -91,7 +91,7 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 3000;
+        public static int MillisecondBetweenLocalSave = 10000; //10 seconds
 
         #endregion LocalServer
 
