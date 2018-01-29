@@ -216,7 +216,8 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties["Operator Document"] = (DataContext as DocumentViewModel).DocumentController.GetDataDocument(null);
+            args.Data.Properties["Operator Document"] = (DataContext as DocumentViewModel).DocumentController;
+            args.Data.Properties["Tree View Node"] = true;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
 

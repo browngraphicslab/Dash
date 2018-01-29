@@ -25,8 +25,11 @@ namespace Dash
         static public void RemoveGroup(CollectionView parentCollection, DocumentController group)
         {
             var groupsList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-            groupsList.Remove(group);
-            parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groupsList.TypedData), true);
+            if (groupsList != null)
+            {
+                groupsList.Remove(@group);
+                parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groupsList.TypedData), true);
+            }
         }
         static public List<DocumentViewModel> SplitupGroupings(DocumentView parentDocument, bool canSplitupDragGroup)
         {
