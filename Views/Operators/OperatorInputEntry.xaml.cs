@@ -49,15 +49,14 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
                 // we pass a view document, so we get the data document
-                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
+                _refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                _refDoc = refDoc;
                 if (e.DataView.Properties.ContainsKey("Operator Key"))
                 {
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                    opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
                 }
                 else
                 {
@@ -67,7 +66,7 @@ namespace Dash
                     if (fieldsWithCorrectType.Count == 1)
                     {
                         var refKey = fieldsWithCorrectType[0];
-                        opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
+                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
                     }
                     else // otherwise display the autosuggest box
                     {
@@ -99,7 +98,7 @@ namespace Dash
 
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+                _refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
                 if (e.DataView.Properties.ContainsKey("Operator Key")) //There is a specified key, so check if it's the right type
                 {
                     // the key we're dragging from
@@ -107,13 +106,14 @@ namespace Dash
                     // the operator controller the input is going to
                     // the key we're dropping on
                     // the type of the field we're dragging
-                    var fieldType = refDoc.GetRootFieldType(refKey);
+                    var fieldType = _refDoc.GetRootFieldType(refKey);
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
                 else //There's just a document, and a key needs to be chosen later, so accept for now
                 {
-                    e.AcceptedOperation = DataPackageOperation.Link;
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
                 }
             }
 

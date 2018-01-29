@@ -535,6 +535,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
         }
 
         /// <summary>
