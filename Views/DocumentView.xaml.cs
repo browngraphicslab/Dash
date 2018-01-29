@@ -958,25 +958,19 @@ namespace Dash
         /// <param name="isOtherChromeVisible"></param>
         private void ToggleSelectionBorderAndChrome(bool isBorderOn, bool isOtherChromeVisible = true)
         {
-
-            // change the thickness of the border so that it's visible
-            xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
-
-            // show the title icon based on isBorderOn, unless isTitleVisible is set
-            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
-                ? (SolidColorBrush) Application.Current.Resources["TitleText"]
-                    : new SolidColorBrush(Colors.Transparent);
-
-
-            OperatorEllipse.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
-            if (!_draggerButtonBeingManipulated && isBorderOn && isOtherChromeVisible &&
-                ViewModel?.Undecorated == false)
+            if (_draggerButtonBeingManipulated)
             {
-                DraggerButton.Visibility = Visibility.Visible;
+                OperatorEllipse.Visibility = DraggerButton.Visibility = Visibility.Visible;
+                xSelectionBorder.BorderThickness = new Thickness(3);
+                xTitleIcon.Foreground = (SolidColorBrush) Application.Current.Resources["TitleText"];
             }
             else
             {
-                //DraggerButton.Visibility = Visibility.Collapsed;
+                OperatorEllipse.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
+                xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+                xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
+                    ? (SolidColorBrush)Application.Current.Resources["TitleText"]
+                    : new SolidColorBrush(Colors.Transparent);
             }
         }
 
