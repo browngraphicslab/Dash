@@ -155,7 +155,7 @@ namespace Dash
         public void ToggleMultiSelected(bool isMultiSelected)
         {
             if (isMultiSelected == _multiSelected) return;
-            var freeformView = ParentCollection.CurrentView as CollectionFreeformView;
+            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
             if (freeformView == null) return;
             if (!isMultiSelected)
             {
@@ -535,6 +535,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
         }
 
         /// <summary>

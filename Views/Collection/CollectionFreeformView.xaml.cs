@@ -859,8 +859,13 @@ namespace Dash
         {
             if (!IsHitTestVisible) return;
 
-            var old = (itemsPanelCanvas.RenderTransform as MatrixTransform).Matrix;
-            _transformBeingAnimated = new MatrixTransform() {Matrix = old};
+            var old = (itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+
+            if (old == null)
+            {
+                return;
+            }
+            _transformBeingAnimated = new MatrixTransform() {Matrix = (Matrix) old};
 
 
             Debug.Assert(_transformBeingAnimated != null);

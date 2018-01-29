@@ -21,11 +21,10 @@
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
-                       FontSize="15" 
+                       FontSize="{StaticResource DefaultFontSize}" 
                        Text="{StaticResource CollectionIcon}" 
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Center"
-                       Height="32"
             />
         </Border>
 

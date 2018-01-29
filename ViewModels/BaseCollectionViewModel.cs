@@ -576,7 +576,6 @@ namespace Dash
 
             // if the user drags the entire collection of documents from the search bar
             if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var docs = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>).Select((srvm) => srvm.DocumentCollection);

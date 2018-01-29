@@ -389,10 +389,10 @@ namespace Dash
                 _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
 
-            OnLowestSelectionSet += OnOnLowestSelectionSet;
+            OnSelectionSet += OnSelectionSetUpdate; // TODO rename this
         }
 
-        private void OnOnLowestSelectionSet(bool lowestSelection)
+        private void OnSelectionSetUpdate(bool lowestSelection)
         {
             var selectedField = DocumentController.GetFieldOrCreateDefault<NumberController>(KeyStore.SelectedKey);
             selectedField.Data = lowestSelection ? 1 : 0;

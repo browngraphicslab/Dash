@@ -49,20 +49,30 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
                 // we pass a view document, so we get the data document
-                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
+                _refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                _refDoc = refDoc;
                 if (e.DataView.Properties.ContainsKey("Operator Key"))
                 {
                     var refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                    opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
                 }
                 else
                 {
-                    SuggestBox.Visibility = Visibility.Visible;
-                    SuggestBox.Focus(FocusState.Programmatic);
+
+                    // if only one field on the input has the correct type then connect that field
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    if (fieldsWithCorrectType.Count == 1)
+                    {
+                        var refKey = fieldsWithCorrectType[0];
+                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
+                    }
+                    else // otherwise display the autosuggest box
+                    {
+                        SuggestBox.Visibility = Visibility.Visible;
+                        SuggestBox.Focus(FocusState.Programmatic);
+                    }
                 }
             }
             // if the user dragged from the header of a schema view
@@ -72,10 +82,10 @@ namespace Dash
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
                 opDoc.SetField(key, new TextController(CollectionDBSchemaHeader.DragModel.FieldKey.Id), true);
-
-
             }
-            e.Handled = true;
+
+
+            e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
         }
 
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
@@ -88,7 +98,7 @@ namespace Dash
 
             if (e.DataView.Properties.ContainsKey("Operator Document"))
             {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+                _refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
                 if (e.DataView.Properties.ContainsKey("Operator Key")) //There is a specified key, so check if it's the right type
                 {
                     // the key we're dragging from
@@ -96,13 +106,14 @@ namespace Dash
                     // the operator controller the input is going to
                     // the key we're dropping on
                     // the type of the field we're dragging
-                    var fieldType = refDoc.GetRootFieldType(refKey);
+                    var fieldType = _refDoc.GetRootFieldType(refKey);
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
                 else //There's just a document, and a key needs to be chosen later, so accept for now
                 {
-                    e.AcceptedOperation = DataPackageOperation.Link;
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
                 }
             }
 
@@ -126,14 +137,14 @@ namespace Dash
                 var queryText = sender.Text;
 
                 // get the fields that have the same type as the key the user is suggesting for
-                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key);
+                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
 
                 // add all the fields with the correct type to the list of suggestions
                 var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController)).ToList();
 
                 // get all the fields from the connecting document that are collections
                 var collections = _refDoc.EnumDisplayableFields()
-                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key);
+                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
 
                 // if the user has entered dot syntax we want to parse that as <collection>.<field>
                 // unfortunatley we don't parse anything nested beyond that

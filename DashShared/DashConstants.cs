@@ -167,7 +167,7 @@ namespace DashShared
             public static KeyModel UserLinksKey = new KeyModel("D5E8B9F2-BDDC-4031-B40D-E4762E535E65", "_User-Created Links");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
             public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "_Parsed Fields");
-            public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "WebContext");
+            public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "_WebContext");
             public static KeyModel LastWorkspaceKey = new KeyModel("66F05DB2-2F68-4E37-985D-36303A1AF4E4", "_Last Workspace");
             public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");

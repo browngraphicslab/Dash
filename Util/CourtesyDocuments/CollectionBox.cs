@@ -79,14 +79,14 @@ namespace Dash
             var view       = new CollectionView(collectionViewModel,  viewType);
 
             //add to key to framework element dictionary
-            var reference = data as ReferenceController;
-            if (keysToFrameworkElementsIn != null)
-            {
-                keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
-                docController.SetField(KeyStore.CollectionOutputKey,
-                    new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
-            }
+            //var reference = data as ReferenceController;
+            //if (keysToFrameworkElementsIn != null)
+            //{
+            //    keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
+            //    keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+            //    docController.SetField(KeyStore.CollectionOutputKey,
+            //        new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
+            //}
 
             SetupBindings(view, docController, context);
 

@@ -247,7 +247,11 @@ namespace Dash
                         return vm;
                     }
 
-                    switch (type)
+                    var docType = vm.ViewDocument.GetDataDocument(null).DocumentType;
+                    if (docType.Type == null)
+                        return vm;
+
+                    switch (docType.Type.ToLower())
                     {
                         case "collection box":
                         case "collected docs note":
