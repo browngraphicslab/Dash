@@ -22,6 +22,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace Dash
 {
@@ -617,7 +619,9 @@ namespace Dash
                 }
                 else
                 {
-                    var docAlias = refDoc.GetKeyValueAlias(where);
+                    var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                        .HasFlag(CoreVirtualKeyStates.Down);
+                    var docAlias =  shiftState ? refDoc.GetViewCopy(where) : refDoc.GetKeyValueAlias(where);
                     AddDocument(docAlias, null);
                 }
             }

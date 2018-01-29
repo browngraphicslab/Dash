@@ -310,7 +310,7 @@ namespace Dash
             {
                 var key = keyString.Substring(1);
                 var k = KeyController.LookupKeyByName(key);
-                var keyasgn = "";
+                var keyasgn = key;
                 if (k == null)
                 {
                     var splits = key.Split("=");

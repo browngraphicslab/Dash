@@ -1403,10 +1403,26 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
+            if (_marquee != null && e.Key == VirtualKey.Back)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+
+                foreach (var v in viewsinMarquee)
+                    v.DeleteDocument();
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
             if (_marquee != null && e.Key == VirtualKey.G)
             {
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
                 var doc = Util.BlankDocWithPosition(where);
                 doc.GetWidthField().Data = _marquee.Width;
                 doc.GetHeightField().Data = _marquee.Height;
@@ -1422,7 +1438,6 @@ namespace Dash
             if (_marquee != null && e.Key == VirtualKey.C)
             {
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
                 var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                 var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
                 var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;

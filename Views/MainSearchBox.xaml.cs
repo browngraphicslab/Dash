@@ -629,15 +629,16 @@ namespace Dash
                 {
                     if (documentNode?.Parents?.FirstOrDefault() != null)
                     {
-                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+                        preTitle = " >  " +
+                            ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
                                        .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
                                        ? "?"
                                        : documentNode.Parents.First().DataDocument
-                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) +
-                                   " >  ";
+                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
+                                 ;
                     }
 
-                    var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "",
+                    var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
                         dataDocumentController.Id,
                         documentNode?.ViewDocument ?? dataDocumentController,
                         documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
