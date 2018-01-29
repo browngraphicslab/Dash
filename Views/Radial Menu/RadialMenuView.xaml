@@ -68,8 +68,6 @@
                         <components:RadialMenuButton x:Name="Document" Label="Grouping" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Operator" Label="Operator" IconSymbol="{x:Bind OperatorSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="NotesButton" Label="Notes" IconSymbol="{x:Bind NoteSymbol}">
-                        </components:RadialMenuButton>
                     </userControl:RadialMenu.Buttons>
                 </userControl:RadialMenu>
             </Grid>

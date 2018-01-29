@@ -290,7 +290,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
+                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
