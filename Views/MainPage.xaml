@@ -54,7 +54,7 @@
 
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" Tapped="CollapseButton_OnTapped"
             x:Name="xSplitter"
-            Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
+            Grid.Column="1" Width="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 

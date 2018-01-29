@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -13,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 using DashShared.Models;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -106,5 +108,36 @@ namespace Dash
             // Set sender.Text. You can use args.SelectedItem to build your text string.
             sender.Text = _currentSearch;
         }
+
+
+        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
+            }
+        }
+
+        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                var doc = (DocumentController)e.DataView.Properties["Operator Document"];
+                var listKeys = doc.EnumDisplayableFields()
+                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                if (listKeys.Count == 1)
+                {
+                    var currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    if (!string.IsNullOrWhiteSpace(currText))
+                    {
+                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
+                    }
+                }
+            }
+
+            e.Handled = true;
+        }
+
     }
 }
