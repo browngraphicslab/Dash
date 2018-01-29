@@ -492,5 +492,10 @@ namespace Dash
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
+
+        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            args.Cancel = true;
+        }
     }
 }

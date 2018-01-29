@@ -1319,7 +1319,7 @@ namespace Dash
         }
 
         #region Marquee Select
-
+        
         private Rectangle _marquee;
         private bool _multiSelect;
         private Point _marqueeAnchor;
@@ -1334,6 +1334,8 @@ namespace Dash
                 Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
                 MarqueeSelectDocs(marqueeRect);
                 _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
                 _isSelecting = false;
                 e.Handled = true;
@@ -1366,13 +1368,19 @@ namespace Dash
 
             if (newWidth > 5 && newHeight > 5 && _marquee == null)
             {
-                _marquee = new Rectangle()
+                if (_marquee == null)
                 {
-                    Stroke = new SolidColorBrush(Colors.Gray),
-                    StrokeThickness = 1.5 / Zoom,
-                    StrokeDashArray = new DoubleCollection { 5, 2 },
-                    CompositeMode = ElementCompositeMode.SourceOver
-                };
+                    _marquee = new Rectangle()
+                    {
+                        Stroke = new SolidColorBrush(Colors.Gray),
+                        StrokeThickness = 1.5 / Zoom,
+                        StrokeDashArray = new DoubleCollection { 5, 2 },
+                        CompositeMode = ElementCompositeMode.SourceOver
+                    };
+                    MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                    MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
+                }
+                _marquee.AllowFocusOnInteraction = true;
                 SelectionCanvas.Children.Add(_marquee);
             }
 
@@ -1388,6 +1396,26 @@ namespace Dash
 
         }
 
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
+                var doc = Util.BlankDocWithPosition(where);
+                doc.GetWidthField().Data = _marquee.Width;
+                doc.GetHeightField().Data = _marquee.Height;
+                ViewModel.AddDocument(doc, null);
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+        }
+
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
@@ -1398,6 +1426,7 @@ namespace Dash
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 _marqueeAnchor = pos;
                 _isSelecting = true;
+                PreviewTextbox_LostFocus(null, null);
             }
         }
 
