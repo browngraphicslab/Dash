@@ -14,12 +14,14 @@ namespace Dash
     [FieldModelTypeAttribute(TypeInfo.Image)]
     public class ImageModel : FieldModel
     {
+        private Uri _uriCache;
+
         /// <summary>
         /// A <see cref="Uri"/> which points to the <see cref="BitmapImage.UriSource"/>
         /// </summary>
         public Uri Data
         {
-            get => localFile == null ? globalUri : new Uri(ApplicationData.Current.LocalFolder.Path + "\\"+ localFile);
+            get => _uriCache;
             set
             {
                 if (value == null)
@@ -37,6 +39,8 @@ namespace Dash
                     // otherwise assume the file is a globalUri like http so set it there
                     globalUri = value;
                 }
+
+                _uriCache = localFile == null ? globalUri : new Uri(ApplicationData.Current.LocalFolder.Path + "\\" + localFile);
             }
         }
 
