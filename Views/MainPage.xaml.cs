@@ -114,6 +114,8 @@ namespace Dash
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
                 var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                var history =
+                    MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
@@ -128,7 +130,7 @@ namespace Dash
                 }
                 else
                 {
-                    lastWorkspace = MainDocument.GetField(KeyStore.LastWorkspaceKey) as DocumentController;
+                    lastWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
@@ -154,6 +156,32 @@ namespace Dash
             {
                 return false;
             }
+            var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+            if (currentWorkspace.Equals(workspace))
+            {
+                return true;
+            }
+            workspace = workspace.MakeDelegate();
+            workspace.SetWidth(double.NaN);
+            workspace.SetHeight(double.NaN);
+            var documentViewModel = new DocumentViewModel(workspace);
+            xMainDocView.DataContext = documentViewModel;
+            documentViewModel.SetSelected(null, true);
+            MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            return true;
+        }
+
+        public void GoBack()
+        {
+            var history =
+                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
+            if (history.Count == 0)
+            {
+                return;
+            }
+            var workspace = history.TypedData.Last();
+            history.Remove(workspace);
             workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
@@ -161,7 +189,6 @@ namespace Dash
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
-            return true;
         }
 
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
@@ -496,6 +523,11 @@ namespace Dash
         private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
             args.Cancel = true;
+        }
+
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            GoBack();
         }
     }
 }

@@ -695,7 +695,7 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount)));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
             }
             else
             {
@@ -776,7 +776,8 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y), new Point(scaleFactor, scaleFactor));
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
+                    new Point(scaleFactor, scaleFactor), e.Position);
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();

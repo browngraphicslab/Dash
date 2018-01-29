@@ -50,6 +50,9 @@
             <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
                 <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
             </Button>
+            <Button VerticalAlignment="Stretch" Tapped="UIElement_OnTapped">
+                <SymbolIcon Symbol="Back"></SymbolIcon>
+            </Button>
         </StackPanel>
 
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" Tapped="CollapseButton_OnTapped"

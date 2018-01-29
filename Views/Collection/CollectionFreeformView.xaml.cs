@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.HumanInterfaceDevice;
@@ -32,6 +34,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
+using Dash.Annotations;
 using DashShared.Models;
 using Flurl.Util;
 using NewControls.Geometry;
@@ -41,7 +44,7 @@ using Syncfusion.Pdf.Graphics;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView, INotifyPropertyChanged
     {
 
         #region ScalingVariables    
@@ -122,6 +125,30 @@ namespace Dash
 
         public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
 
+        private TransformGroupData _transformGroup = new TransformGroupData(new Point(), new Point());
+        public TransformGroupData TransformGroup
+        {
+            get => _transformGroup;
+            set
+            {
+                //TODO possibly handle a scale center not being 0,0 here
+                if (_transformGroup.Equals(value))
+                {
+                    return;
+                }
+                _transformGroup = value;
+                var doc = (ViewModel as CollectionViewModel)?.ContainerDocument;
+                if (doc != null)
+                {
+                    var colCenter = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey);
+                    colCenter.Data = value.Translate;
+                    var colScale = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanZoomKey);
+                    colScale.Data = value.ScaleAmount;
+                }
+                OnPropertyChanged();
+            }
+        }
+
         public IOReference GetCurrentReference()
         {
             return _currReference;
@@ -143,6 +170,22 @@ namespace Dash
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+
+                var cvm = vm as CollectionViewModel;
+                if (cvm != null)
+                {
+                    var doc = cvm.ContainerDocument;
+
+                    var pos = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                    var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                    if (ManipulationControls != null)
+                    {
+                        ManipulationControls.ElementScale = zoom.X;
+                    }
+
+                    SetFreeformTransform(
+                        new MatrixTransform() {Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y)});
+                }
             }
         }
         public bool SuspendGroups = false;
@@ -179,6 +222,8 @@ namespace Dash
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls.ElementScale = (ViewModel as CollectionViewModel).ContainerDocument
+                                                .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
@@ -865,18 +910,18 @@ namespace Dash
             {
                 return;
             }
-            _transformBeingAnimated = new MatrixTransform() {Matrix = (Matrix) old};
+            _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
 
 
             Debug.Assert(_transformBeingAnimated != null);
             var milliseconds = 1000;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
-            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds/2.0));
+            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds / 2.0));
 
             //Clear storyboard
             _storyboard1?.Stop();
             _storyboard1?.Children.Clear();
-            _storyboard1 = new Storyboard { Duration  = duration };
+            _storyboard1 = new Storyboard { Duration = duration };
 
             _storyboard2?.Stop();
             _storyboard2?.Children.Clear();
@@ -893,7 +938,7 @@ namespace Dash
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(startY,  Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationY = MakeAnimationElement(startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
@@ -925,8 +970,8 @@ namespace Dash
             _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-    
-            
+
+
 
         }
 
@@ -989,8 +1034,8 @@ namespace Dash
             // calculate the scale delta
             var scaleDelta = new ScaleTransform
             {
-                CenterX = 0,
-                CenterY = 0,
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
                 ScaleX = transformationDelta.ScaleAmount.X,
                 ScaleY = transformationDelta.ScaleAmount.Y
             };
@@ -1001,14 +1046,8 @@ namespace Dash
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
-            // clamp the y offset so that we can only scrollw down
-            var compValue = composite.Value;
-            if (compValue.OffsetY > 0)
-            {
-                compValue.OffsetY = 0;
-            }
 
-            var matrix = new MatrixTransform { Matrix = compValue };
+            var matrix = new MatrixTransform { Matrix = composite.Value };
             SetFreeformTransform(matrix);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
@@ -1041,7 +1080,12 @@ namespace Dash
 
         private void SetFreeformTransform(MatrixTransform matrixTransform)
         {
+            // clamp the y offset so that we can only scrollw down
             var matrix = matrixTransform.Matrix;
+            if (matrix.OffsetY > 0)
+            {
+                matrix.OffsetY = 0;
+            }
 
             var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
 
@@ -1056,26 +1100,22 @@ namespace Dash
                 xBackgroundCanvas.Invalidate();
             }
 
-
-            itemsPanelCanvas.RenderTransform = matrixTransform;
-            InkHostCanvas.RenderTransform = matrixTransform;
-
-
+            TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
         private void SetInitialTransformOnBackground()
         {
-            var composite = new TransformGroup();
-            var scale = new ScaleTransform
-            {
-                CenterX = 0,
-                CenterY = 0,
-                ScaleX = 1,
-                ScaleY = 1
-            };
+            //var composite = new TransformGroup();
+            //var scale = new ScaleTransform
+            //{
+            //    CenterX = 0,
+            //    CenterY = 0,
+            //    ScaleX = 1,
+            //    ScaleY = 1
+            //};
 
-            composite.Children.Add(scale);
-            SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
+            //composite.Children.Add(scale);
+            //SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
@@ -1161,7 +1201,7 @@ namespace Dash
             }
 
             var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
-            
+
             ListController<DocumentController> group =
                 groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
             if (groupDoc == null || group == null)
@@ -1324,7 +1364,7 @@ namespace Dash
         }
 
         #region Marquee Select
-        
+
         private Rectangle _marquee;
         private bool _multiSelect;
         private Point _marqueeAnchor;
@@ -1527,7 +1567,8 @@ namespace Dash
 
             _isSelecting = false;
 
-            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
+            //RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
+            RenderPreviewTextbox(e.GetPosition(itemsPanelCanvas));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1730,6 +1771,7 @@ namespace Dash
         }
 
         string previewTextBuffer = "";
+
         private async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
@@ -1900,5 +1942,12 @@ namespace Dash
         #endregion
 
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
