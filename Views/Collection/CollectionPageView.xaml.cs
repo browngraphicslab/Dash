@@ -129,12 +129,14 @@ namespace Dash
         {
             if (captionKey != null && CurPage != null)
             {
+
+                var bodyDoc = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
                 var captionBinding = new FieldBinding<FieldControllerBase>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Document = bodyDoc ?? CurPage.DocumentController.GetDataDocument(null),
                     Key = CaptionKey,
                     Converter = new ObjectToStringConverter()
                 };

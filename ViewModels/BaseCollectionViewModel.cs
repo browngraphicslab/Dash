@@ -668,7 +668,7 @@ namespace Dash
 
 
             // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Move))
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }

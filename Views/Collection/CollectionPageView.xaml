@@ -45,12 +45,8 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition>
-                    
-                </RowDefinition>
-                <RowDefinition x:Name="xDocCaptionRow" Height="0">
-                    
-                </RowDefinition>
+                <RowDefinition />
+                <RowDefinition x:Name="xDocCaptionRow" Height="0" />
             </Grid.RowDefinitions>
             <local:DocumentView x:Name="xDocView" DataContext="{Binding CurPage}" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Grid x:Name="xDockSpots" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
@@ -59,17 +55,18 @@
             </Grid>
             <TextBox Name="xDocTitle" x:FieldModifier="public" Grid.Row="1" TextAlignment="Center"  Height="0" VerticalAlignment="Bottom"   HorizontalAlignment="Stretch" Visibility="Collapsed"></TextBox>
         </Grid>
-        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False"
+        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
             x:Name="xSplitter"
             Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 
                 FontSize="13">
-            <localMicrosoft:GridSplitter.Element AllowFocusOnInteraction="False">
+            <localMicrosoft:GridSplitter.Element>
                 <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">
                     <TextBlock HorizontalAlignment="Center" 
-                                   IsHitTestVisible="False" AllowFocusOnInteraction="False"
+                                   IsHitTestVisible="False" 
+                                AllowFocusOnInteraction="False"
                                    VerticalAlignment="Center"  
                                     GettingFocus="TextBlock_GettingFocus"
                                     Text="&#xE784;"
