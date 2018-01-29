@@ -579,7 +579,7 @@ namespace Dash
             if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-                var docs = e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<DocumentController>;
+                var docs = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>).Select((srvm) => srvm.DocumentCollection);
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }
