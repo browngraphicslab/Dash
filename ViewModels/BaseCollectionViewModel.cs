@@ -578,7 +578,8 @@ namespace Dash
             if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-                var docs = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>).Select((srvm) => srvm.DocumentCollection);
+                var models = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>);
+                var docs = models.Select((srvm) => srvm.ViewDocument);
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }
@@ -667,11 +668,11 @@ namespace Dash
 
 
             // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Move))
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Copy))
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }  else 

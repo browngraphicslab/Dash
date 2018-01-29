@@ -1403,7 +1403,7 @@ namespace Dash
 
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee != null)
+            if (_marquee != null && e.Key == VirtualKey.G)
             {
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -1411,6 +1411,27 @@ namespace Dash
                 doc.GetWidthField().Data = _marquee.Width;
                 doc.GetHeightField().Data = _marquee.Height;
                 ViewModel.AddDocument(doc, null);
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+            if (_marquee != null && e.Key == VirtualKey.C)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
+                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+                var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
+                doc.GetWidthField().Data = _marquee.Width;
+                doc.GetHeightField().Data = _marquee.Height;
+                ViewModel.AddDocument(doc, null);
+
+                foreach (var v in viewsinMarquee)
+                    v.DeleteDocument();
 
                 _multiSelect = false;
                 SelectionCanvas.Children.Remove(_marquee);
@@ -1435,10 +1456,8 @@ namespace Dash
             }
         }
 
-        private void MarqueeSelectDocs(Rect marquee)
+        private List<DocumentView> DocsInMarquee(Rect marquee)
         {
-            SelectionCanvas.Children.Clear();
-            if (!_multiSelect) DeselectAll();
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
@@ -1463,11 +1482,16 @@ namespace Dash
                     }
                 }
             }
-            foreach (var docView in selectedDocs)
-            {
-                Select(docView);
-                //AddToPayload(docView);
-            }
+            return selectedDocs;
+
+        }
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+
+            var selectedDocs = DocsInMarquee(marquee);
+
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
             if (!IsSelectionEnabled && selectedDocs.Count > 0)
             {
