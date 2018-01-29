@@ -63,8 +63,20 @@ namespace Dash
             return SetupGroupings(parentDocument.ViewModel, parentDocument.ParentCollection, true);
         }
 
-
-        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite=false)
+        /// Todo: Fix AddConnected to be able to join multiple groups instead of having to iteratively add one group at a time -- then this function can be replaced with SetupGroupings2
+        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite = false)
+        {
+            var groups = SetupGroupings2(docViewModel, parentCollection, forceWrite);
+            while (true)
+            {
+                var groups2 = SetupGroupings2(docViewModel, parentCollection, forceWrite);
+                if (groups2.Count == groups.Count)
+                    return groups2;
+                groups = groups2;
+            }
+            return groups;
+        }
+        static public List<DocumentViewModel> SetupGroupings2(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite=false)
         {
             if (parentCollection == null || docViewModel == null || parentCollection.ParentDocument == null)
                 return new List<DocumentViewModel>();

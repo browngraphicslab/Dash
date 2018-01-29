@@ -115,8 +115,9 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Grid Padding="0" Grid.Row="0" VerticalAlignment="Center" Height="35" x:Name="xDragContainer" Grid.Column="1" Background="LightGray"  Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xDragContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xDrag_ManipulationStarted">
-                <TextBlock Text="DragOut" HorizontalTextAlignment="Center" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-            </Grid>
+                <SymbolIcon x:Name="xIconBox" Symbol="Share" Foreground="#EEEEFFFF" HorizontalAlignment="Center" VerticalAlignment="Stretch"></SymbolIcon>
+
+             </Grid>
         </Grid>
 
     </Grid>
