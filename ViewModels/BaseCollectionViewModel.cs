@@ -672,7 +672,7 @@ namespace Dash
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.Data.RequestedOperation.HasFlag(DataPackageOperation.Copy))
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }  else 
