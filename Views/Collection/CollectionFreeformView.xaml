@@ -16,6 +16,7 @@
     Tapped="OnTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+    x:Name="Control"
     >
 
     <Grid x:Name="xOuterGrid" Background="{ThemeResource CollectionViewBackground}" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" DoubleTapped="OnDoubleTapped"
@@ -25,12 +26,13 @@
         </Grid.Clip>
 
         <!--<InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
-        <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->        
+        <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" 
                    Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
-        <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"></Canvas>
+        <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
+                RenderTransform="{Binding ElementName=Control, Path=TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"></Canvas>
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
@@ -45,6 +47,7 @@
                             Height="0"
                             VerticalAlignment="Top"
                             HorizontalAlignment="Left"
+                            RenderTransform="{Binding ElementName=Control, Path=TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                             >
                     </Canvas>
                 </ItemsPanelTemplate>
