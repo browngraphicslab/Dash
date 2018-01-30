@@ -280,7 +280,7 @@ namespace Dash
 
         private void PositionContextPreview()
         {
-            var previewMarginLeft = 10;
+            var previewMarginLeft = 1;
             var previewMarginTop = 25;
             Canvas.SetTop(xContextTitle, previewMarginTop);
             if (_localContextPreview != null)
@@ -569,6 +569,7 @@ namespace Dash
         {
             if (ViewModel != null && !ViewModel.Undecorated)
             {
+                xTitleIcon.Tapped += XTitleIcon_Tapped;
                 // add manipulation code
                 ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
                 ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
@@ -604,6 +605,12 @@ namespace Dash
                 ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
                 return;
             }
+        }
+
+        private void XTitleIcon_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ShowContext();
+            e.Handled = true;
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -1400,7 +1407,7 @@ namespace Dash
         {
             var frameworkElement = sender as FrameworkElement;
             if (frameworkElement != null)
-                Canvas.SetLeft(xContextTitle, -frameworkElement.ActualWidth - 10);
+                Canvas.SetLeft(xContextTitle, -frameworkElement.ActualWidth - 1);
         }
     }
 }

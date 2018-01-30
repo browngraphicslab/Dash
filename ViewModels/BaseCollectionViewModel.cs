@@ -625,7 +625,7 @@ namespace Dash
                 else
                 {
                     var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                        .HasFlag(CoreVirtualKeyStates.Down);
+                        .HasFlag(CoreVirtualKeyStates.Down) || e.DataView.Properties.ContainsKey("View");
                     var docAlias =  shiftState ? refDoc.GetViewCopy(where) : refDoc.GetKeyValueAlias(where);
                     AddDocument(docAlias, null);
                 }

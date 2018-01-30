@@ -180,7 +180,8 @@ namespace Dash
                 {
                     CurPage.DocumentController.GetDataDocument(null).SetField(DisplayKey, data, true);
                     var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
-                    xDocView.DataContext = new DocumentViewModel(db.Document);
+                    
+                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
                 }
             }
         }

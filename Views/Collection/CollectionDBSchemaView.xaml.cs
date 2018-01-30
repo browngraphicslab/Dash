@@ -482,9 +482,10 @@ namespace Dash
                 docControllerList.Add(vm.Document);
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
             }
-            args.Data.Properties.Add("DocumentControllerList", docControllerList);
+            var dataDoc = docControllerList.FirstOrDefault();
+            args.Data.Properties["Operator Document"] = dataDoc;
             args.Data.Properties.Add("View", true);
-            args.Data.RequestedOperation = DataPackageOperation.Link;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }
