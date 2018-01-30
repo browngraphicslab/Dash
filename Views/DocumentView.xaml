@@ -48,6 +48,7 @@
             <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
+            <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
             <RelativePanel x:Name="xMetadataPanel" 
                   VerticalAlignment="Top"
                   HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
@@ -60,22 +61,6 @@
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
-                <Border                  
-                        x:Name="xContextTitleBorder"
-                        RelativePanel.Below="xTitleBorder"
-                        RelativePanel.AlignRightWithPanel="True"
-                        RelativePanel.AlignLeftWithPanel="True">
-                    <HyperlinkButton                              
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Foreground="CornflowerBlue"
-                        Content=""
-                        Tapped="xContextLinkTapped"
-                        VerticalContentAlignment="Center"
-                        x:Name="xContextTitle"
-                        Margin="0, 0, 15, 0"
-                        Visibility="Collapsed"/>
                 </Border>
             </RelativePanel>
 
@@ -124,6 +109,18 @@
                          PointerExited="OperatorEllipse_OnPointerExited"/>
             </Border>
 
+            <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <HyperlinkButton                              
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Foreground="CornflowerBlue"
+                    Content=""
+                    Tapped="xContextLinkTapped"
+                    VerticalContentAlignment="Center"
+                    x:Name="xContextTitle"
+                    Margin="0, 0, 15, 0"
+                    Visibility="Collapsed"/>
+            </Canvas>
             
             <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
         </Grid>

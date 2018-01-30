@@ -127,6 +127,7 @@ namespace Dash
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
+            System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
             e.Handled = true;
         }
 

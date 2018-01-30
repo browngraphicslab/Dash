@@ -54,7 +54,6 @@ namespace Dash
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
-        private bool _f1Down;
         private bool _ptrIn;
         private bool _multiSelected;
 
@@ -71,7 +70,8 @@ namespace Dash
         /// <summary>
         /// A reference to the actual context preview
         /// </summary>
-        private UIElement _contextPreview;
+        private UIElement _localContextPreview;
+        private UIElement _selectedContextPreview;
 
 
         // == CONSTRUCTORs ==
@@ -117,7 +117,6 @@ namespace Dash
             var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
             if (!f1.HasFlag(CoreVirtualKeyStates.Down))
             {
-                _f1Down = false;
                 ShowLocalContext(false);
             }
         }
@@ -133,11 +132,16 @@ namespace Dash
             var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
                 .HasFlag(CoreVirtualKeyStates.Down);
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
             if (f1State.HasFlag(CoreVirtualKeyStates.Down))
             {
-                _f1Down = true;
                 if (_ptrIn) ShowLocalContext(true);
             }
+            if (f2State.HasFlag(CoreVirtualKeyStates.Down))
+            {
+                if (_ptrIn) ShowSelectedContext();
+            }
+            
 
             if (ViewModel != null && (ViewModel.IsLowestSelected && 
                                       (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
@@ -178,13 +182,21 @@ namespace Dash
                 return;
             ViewModel.ShowLocalContext = showContext;
 
-            if (!showContext && _contextPreview != null)
+            if (!showContext && _localContextPreview != null)
             {
-                // TODO hide the context
-                xShadowHost.Children.Remove(_contextPreview);
-                _contextPreview = null;
+                xContextCanvas.Children.Remove(_localContextPreview);
+                _localContextPreview = null;
                 GC.Collect();
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
+                if (_selectedContextPreview == null)
+                {
+                    xContextTitle.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    xContextTitle.Content = ViewModel.DocumentController
+                        .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext().Title;
+                }
             }
 
             if (showContext)
@@ -195,19 +207,92 @@ namespace Dash
                 if (context == null) return;
                 ViewModel.SetHasTitle(true);
 
-                if (_contextPreview == null)
+                if (_localContextPreview == null)
                 {
-                    _contextPreview = new ContextPreview(context)
+                    _localContextPreview = new ContextPreview(context)
                     {
                         Width = _contextPreviewActualWidth,
                         Height = _contextPreviewActualHeight,
                     };
-                    _contextPreview.Tapped += (s, e) => ShowContext();
-                    xShadowHost.Children.Add(_contextPreview);
-                    Canvas.SetLeft(_contextPreview, -_contextPreviewActualWidth - 15);
-                    Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
+                    _localContextPreview.Tapped += (s, e) => ShowContext();
+                    xContextCanvas.Children.Add(_localContextPreview);
                     xContextTitle.Content = context.Title;
+                    xContextTitle.Visibility = Visibility.Visible;
+                    PositionContextPreview();
                 }
+            }
+        }
+
+        public void ShowSelectedContext(bool selectedChanged = false)
+        {
+            if (ViewModel == null)
+                return;
+
+            if (_selectedContextPreview != null && selectedChanged == false)
+            {
+                xContextCanvas.Children.Remove(_selectedContextPreview);
+                _selectedContextPreview = null;
+                GC.Collect();
+                ViewModel.SetHasTitle(ViewModel.IsSelected);
+                if (_localContextPreview == null)
+                {
+                    xContextTitle.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    xContextTitle.Content = ViewModel.DocumentController.GetFirstContext().Title;
+                }
+            }
+            else
+            {
+                if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
+
+                var context = ViewModel.DocumentController
+                    .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext();
+                if (context == null) return;
+                ViewModel.SetHasTitle(true);
+
+                if (_selectedContextPreview == null)
+                {
+                    _selectedContextPreview = new ContextPreview(context)
+                    {
+                        Width = _contextPreviewActualWidth,
+                        Height = _contextPreviewActualHeight,
+                    };
+                    xContextCanvas.Children.Add(_selectedContextPreview);
+                }
+                else
+                {
+                    (_selectedContextPreview as ContextPreview).Context = context;
+                }
+                xContextTitle.Content = context.Title;
+                xContextTitle.Visibility = Visibility.Visible;
+                PositionContextPreview();
+                ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
+                ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
+            }
+        }
+
+        private void OnSelectedSchemaRowUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+        {
+            ShowSelectedContext(true);
+        }
+
+        private void PositionContextPreview()
+        {
+            var previewMarginLeft = 10;
+            var previewMarginTop = 25;
+            Canvas.SetLeft(xContextTitle, ActualWidth + previewMarginLeft);
+            Canvas.SetTop(xContextTitle, previewMarginTop);
+            if (_localContextPreview != null)
+            {
+                Canvas.SetLeft(_localContextPreview, ActualWidth + previewMarginLeft);
+                Canvas.SetTop(_localContextPreview, 35 + previewMarginTop);
+            }
+            if (_selectedContextPreview != null)
+            {
+                Canvas.SetLeft(_selectedContextPreview, ActualWidth + previewMarginLeft);
+                Canvas.SetTop(_selectedContextPreview, 35 + previewMarginTop);
             }
         }
 
@@ -242,7 +327,9 @@ namespace Dash
 
 
             _ptrIn = false;
-            if (_f1Down == false) ShowLocalContext(false);
+            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
+            if (f1State.HasFlag(CoreVirtualKeyStates.None)) ShowLocalContext(false);
         }
 
 
@@ -254,8 +341,10 @@ namespace Dash
             ToggleGroupSelectionBorderColor(true);
 
             _ptrIn = true;
-
-            if (_f1Down) ShowLocalContext(true);
+            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
+            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
+            if (f1State.HasFlag(CoreVirtualKeyStates.Down)) ShowLocalContext(true);
+            if (f2State.HasFlag(CoreVirtualKeyStates.Down)) ShowSelectedContext(); // TODO show selected row
         }
 
 
@@ -1212,6 +1301,7 @@ namespace Dash
         private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+            PositionContextPreview();
         }
 
         private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -1222,7 +1312,6 @@ namespace Dash
         private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
-            if (_contextPreview != null) Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
@@ -1274,7 +1363,7 @@ namespace Dash
         {
             args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         private void OperatorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
