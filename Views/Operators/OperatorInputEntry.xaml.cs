@@ -60,9 +60,8 @@ namespace Dash
                 }
                 else
                 {
-
                     // if only one field on the input has the correct type then connect that field
-                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                     if (fieldsWithCorrectType.Count == 1)
                     {
                         var refKey = fieldsWithCorrectType[0];

@@ -282,16 +282,15 @@ namespace Dash
         {
             var previewMarginLeft = 10;
             var previewMarginTop = 25;
-            Canvas.SetLeft(xContextTitle, ActualWidth + previewMarginLeft);
             Canvas.SetTop(xContextTitle, previewMarginTop);
             if (_localContextPreview != null)
             {
-                Canvas.SetLeft(_localContextPreview, ActualWidth + previewMarginLeft);
+                Canvas.SetLeft(_localContextPreview, -_contextPreviewActualWidth - previewMarginLeft);
                 Canvas.SetTop(_localContextPreview, 35 + previewMarginTop);
             }
             if (_selectedContextPreview != null)
             {
-                Canvas.SetLeft(_selectedContextPreview, ActualWidth + previewMarginLeft);
+                Canvas.SetLeft(_selectedContextPreview, -_contextPreviewActualWidth - previewMarginLeft);
                 Canvas.SetTop(_selectedContextPreview, 35 + previewMarginTop);
             }
         }
@@ -1395,6 +1394,13 @@ namespace Dash
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
+        }
+
+        private void xContextHyperLinkSizechanged(object sender, SizeChangedEventArgs e)
+        {
+            var frameworkElement = sender as FrameworkElement;
+            if (frameworkElement != null)
+                Canvas.SetLeft(xContextTitle, -frameworkElement.ActualWidth - 10);
         }
     }
 }

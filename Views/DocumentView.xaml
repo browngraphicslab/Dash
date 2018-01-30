@@ -119,7 +119,8 @@
                     VerticalContentAlignment="Center"
                     x:Name="xContextTitle"
                     Margin="0, 0, 15, 0"
-                    Visibility="Collapsed"/>
+                    Visibility="Collapsed"
+                    SizeChanged="xContextHyperLinkSizechanged"/>
             </Canvas>
             
             <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
