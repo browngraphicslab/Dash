@@ -1,6 +1,6 @@
 ﻿
 
-using Windows.Storage;
+//using Windows.Storage;
 
 namespace DashShared
 {
@@ -85,7 +85,7 @@ namespace DashShared
 
         #region LocalServer
 
-        public static StorageFolder LocalStorageFolder = ApplicationData.Current.LocalFolder;
+       // public static StorageFolder LocalStorageFolder = ApplicationData.Current.LocalFolder;
 
         public static string LocalServerDocumentFilepath = "dash.documents"; //
         public static string LocalServerKeyFilepath = "dash.keys"; //
