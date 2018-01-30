@@ -188,7 +188,15 @@ namespace Dash
                 _localContextPreview = null;
                 GC.Collect();
                 ViewModel.SetHasTitle(ViewModel.IsSelected);
-                xContextTitle.Visibility = Visibility.Collapsed;
+                if (_selectedContextPreview == null)
+                {
+                    xContextTitle.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    xContextTitle.Content = ViewModel.DocumentController
+                        .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext().Title;
+                }
             }
 
             if (showContext)
