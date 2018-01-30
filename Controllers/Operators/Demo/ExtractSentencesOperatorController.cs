@@ -64,7 +64,6 @@ namespace Dash
                 {
                     var sentences = Regex.Split(textInput, @"(?<=[\.!\?])\s+");
 
-                    var protoLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
                     //var sentenceIndex = 0;
                     foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)).ToList())
@@ -74,7 +73,7 @@ namespace Dash
                         outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
                         outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
 
-                        var docLayout = protoLayout.MakeDelegate();
+                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, 200, 200).Document;
                         docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
                         outputDocs.Add(docLayout);
 

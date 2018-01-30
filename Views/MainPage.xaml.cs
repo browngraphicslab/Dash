@@ -146,7 +146,7 @@ namespace Dash
 
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
-            BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
+            //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
         public bool SetCurrentWorkspace(DocumentController workspace)

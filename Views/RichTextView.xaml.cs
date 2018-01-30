@@ -521,9 +521,15 @@ namespace Dash
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
-
+            var docParent = this.GetFirstAncestorOfType<DocumentView>();
+            docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+        }
+
+        private void XOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            UpdateDocument();
         }
 
         /// <summary>

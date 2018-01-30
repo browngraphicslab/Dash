@@ -133,14 +133,20 @@ namespace Dash
                 var bodyDoc = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
-                var captionBinding = new FieldBinding<FieldControllerBase>()
+
+                var currPageBinding = new FieldBinding<FieldControllerBase>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = bodyDoc ?? CurPage.DocumentController.GetDataDocument(null),
+                    Document = CurPage.DocumentController.GetDataDocument(null),
                     Key = CaptionKey,
                     Converter = new ObjectToStringConverter()
                 };
-                xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
+                xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
+
+                bodyDoc?.SetField(CaptionKey,
+                    new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
+                        CaptionKey), true);
+
                 xDocTitle.Height = 50;
                 xDocCaptionRow.Height = new GridLength(50);
             }
@@ -207,8 +213,9 @@ namespace Dash
                     value.Content.Loaded += Content_Loaded;
                 }
 
+                SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
-                SetHackBodyDoc(DisplayKey, DisplayString);
+
 
                 var ind = PageDocumentViewModels.IndexOf(CurPage);
                 if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)

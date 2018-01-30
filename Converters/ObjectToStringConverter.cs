@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dash.Converters;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -41,6 +42,8 @@ namespace Dash
                     return "<empty list>";
                 return "[" + string.Join(", ", ilist.Cast<object>().Select(o => o.ToString())) + "]";
             }
+
+            Debug.WriteLine("\n\n datatoxaml:\n\t" + fieldData?.ToString() ?? "<null>");
 
             // use null as a fallback value if we have nothing better
             return fieldData == null ? "<null>" : fieldData.ToString();
