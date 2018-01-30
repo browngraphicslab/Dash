@@ -88,6 +88,11 @@ namespace Dash
             e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
         }
 
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+            UIElement_OnDragEnter(sender, e);
+        }
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
             // set the input type

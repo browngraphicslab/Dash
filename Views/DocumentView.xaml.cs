@@ -202,6 +202,7 @@ namespace Dash
                         Width = _contextPreviewActualWidth,
                         Height = _contextPreviewActualHeight,
                     };
+                    _contextPreview.Tapped += (s, e) => ShowContext();
                     xShadowHost.Children.Add(_contextPreview);
                     Canvas.SetLeft(_contextPreview, -_contextPreviewActualWidth - 15);
                     Canvas.SetTop(_contextPreview, xMetadataPanel.ActualHeight);
