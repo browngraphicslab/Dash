@@ -638,6 +638,12 @@ namespace Dash
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
         }
 
+        public void StyleKeyValuePane()
+        {
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
+
+        }
+
         #endregion
 
 
