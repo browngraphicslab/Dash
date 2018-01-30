@@ -75,7 +75,7 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             int maxStringSize = 125;
-            int textDecrementForContext = 15;
+            int textDecrementForContext = 8;
 
             _lowerData = String.IsNullOrEmpty(_lowerData) ? ((Model as TextModel)?.Data?.ToLower() ?? "") : _lowerData;
 
