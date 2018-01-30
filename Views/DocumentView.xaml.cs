@@ -1361,7 +1361,7 @@ namespace Dash
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
             args.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
