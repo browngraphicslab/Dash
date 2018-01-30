@@ -87,7 +87,7 @@ namespace Dash
 
             if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
             {
-                var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
+                var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController).ToList());
                 if (groups != null || forceWrite) {
                     parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
                 }
@@ -171,7 +171,7 @@ namespace Dash
             return null;
         }
 
-        static public List<DocumentController> AddConnected(CollectionView parentCollection, List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, IEnumerable<DocumentController> otherGroups)
+        static public List<DocumentController> AddConnected(CollectionView parentCollection, List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, List<DocumentController> otherGroups)
         {
             foreach (var dragDocument in dragDocumentList)
             {

@@ -58,11 +58,6 @@ namespace Dash
                     OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
                 }
             }
-            //var keylist = (sender
-            //    .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
-            //        new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
-            //if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
-            //    OnFieldModelUpdated(args.FieldArgs);
         }
         
         public override object GetValue(Context context)

@@ -41,10 +41,15 @@ namespace Dash
             }
         }
 
+        public DocumentContext Context
+        {
+            set => BitmapImage = value.GetImage();
+        }
+
         public ContextPreview(DocumentContext context)
         {
             InitializeComponent();
-            BitmapImage = context.GetImage();
+            Context = context;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

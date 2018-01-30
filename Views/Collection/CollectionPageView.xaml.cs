@@ -179,8 +179,9 @@ namespace Dash
                 if (data != null)
                 {
                     CurPage.DocumentController.GetDataDocument(null).SetField(DisplayKey, data, true);
-                    var db = new DataBox(CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
-                    xDocView.DataContext = new DocumentViewModel(db.Document);
+                    var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
+                    
+                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
                 }
             }
         }
@@ -309,13 +310,13 @@ namespace Dash
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
-                var k = KeyController.LookupKeyByName(key);
-                var keyasgn = key;
+                var splits = key.Split("=");
+                var keyName = splits.Length > 0 ? splits[0] : key;
+                var k = KeyController.LookupKeyByName(keyName);
+                var keyasgn = splits.Length > 1 ? splits[1] : "";
                 if (k == null)
                 {
-                    var splits = key.Split("=");
-                    keyasgn = splits.Length > 1 ? splits[1] : "";
-                    k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                    k = new KeyController(UtilShared.GenerateNewId(), keyName);
                 }
                 SetHackBodyDoc(k, keyasgn);
                 

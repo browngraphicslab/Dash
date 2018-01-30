@@ -140,6 +140,8 @@ namespace Dash
             foreach (var d in docs.Select((dd) => dd.GetDataDocument(null)))
             {
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
+                if (fieldDict == null)
+                    continue;
                 foreach (var f in d.EnumFields())
                     if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
                     {
@@ -198,9 +200,9 @@ namespace Dash
 
         Dictionary<KeyController, List<object>> setupPivotDoc(KeyController pivotKey, Dictionary<object, Dictionary<KeyController, List<object>>> dictionary, Dictionary<object, DocumentController> pivotDictionary, DocumentController d)
         {
-            var obj = d.GetDataDocument(null).GetDereferencedField(pivotKey, null).GetValue(null);
+            var obj = d.GetDataDocument(null).GetDereferencedField(pivotKey, null)?.GetValue(null);
             DocumentController pivotDoc = null;
-            if (!dictionary.ContainsKey(obj))
+            if (obj != null && !dictionary.ContainsKey(obj))
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
@@ -236,9 +238,12 @@ namespace Dash
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
             }
 
-            d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
-            var fieldDict = dictionary[obj];
-            return fieldDict;
+            if (obj != null)
+            {
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
+                return dictionary[obj];
+            }
+            return null;
         }
         
         KeyController expandCollection(CollectionDBSchemaHeader.HeaderDragData dragData, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
@@ -292,7 +297,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
+                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -620,7 +625,7 @@ namespace Dash
                 else
                 {
                     var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                        .HasFlag(CoreVirtualKeyStates.Down);
+                        .HasFlag(CoreVirtualKeyStates.Down) || e.DataView.Properties.ContainsKey("View");
                     var docAlias =  shiftState ? refDoc.GetViewCopy(where) : refDoc.GetKeyValueAlias(where);
                     AddDocument(docAlias, null);
                 }

@@ -274,7 +274,7 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
             //Action<ICollectionView, DragEventArgs> onSearchAdd = Actions.AddSearch;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNote;
+            //Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNote;
             //Action<ICollectionView, DragEventArgs> changeTheme = Actions.ChangeTheme;
             //var importModel =
             //    new RadialActionModel("", "") {CollectionDropAction = onImportDropped, IsDraggable = true};
@@ -283,14 +283,14 @@ namespace Dash
             var documentModel = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
             //var themeModel = new RadialActionModel("Theme", Symbol.Edit) {CollectionDropAction = changeTheme, IsDraggable = false};
             //var searchModel = new RadialActionModel("Search", Symbol.Find) { CollectionDropAction = onSearchAdd, IsDraggable = true };
-            var notesModel = new RadialActionModel("Notes", Symbol.Page) { CollectionDropAction = addNotes, IsDraggable = true };
+            //var notesModel = new RadialActionModel("Notes", Symbol.Page) { CollectionDropAction = addNotes, IsDraggable = true };
             //SetActionModel(importModel, ImportButton);
             SetActionModel(operatorModel, Operator);
             SetActionModel(collectionModel, Collection);
             SetActionModel(documentModel, Document);
             //SetActionModel(themeModel, Theme);
             //SetActionModel(searchModel, SearchButton);
-            SetActionModel(notesModel, NotesButton);
+            //SetActionModel(notesModel, NotesButton);
         }
 
         private void Ink_OnInnerArcPressed(object sender, PointerRoutedEventArgs e)

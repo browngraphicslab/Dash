@@ -290,7 +290,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, 
                                                      FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
@@ -309,7 +309,7 @@ namespace Dash
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
@@ -482,9 +482,10 @@ namespace Dash
                 docControllerList.Add(vm.Document);
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
             }
-            args.Data.Properties.Add("DocumentControllerList", docControllerList);
+            var dataDoc = docControllerList.FirstOrDefault();
+            args.Data.Properties["Operator Document"] = dataDoc;
             args.Data.Properties.Add("View", true);
-            args.Data.RequestedOperation = DataPackageOperation.Link;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }

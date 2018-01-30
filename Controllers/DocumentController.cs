@@ -599,7 +599,7 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
 
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey))
+            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey) && !key.Equals(KeyStore.DocumentContextKey))
             {
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
@@ -1318,9 +1318,11 @@ namespace Dash
             {
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
             }
-
-            // this invokes listeners which have been added on a per doc level of granularity
-            OnFieldModelUpdated(args, c);
+            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
+            {
+                // this invokes listeners which have been added on a per doc level of granularity
+                OnFieldModelUpdated(args, c);
+            }
 
             if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
             {

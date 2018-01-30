@@ -36,19 +36,19 @@ namespace Dash
                 new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                if (File.Exists(DashConstants.LocalStorageFolder.Path + "\\" + _fileName))
+                if (File.Exists(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName))
                 {
-                    var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\" + _fileName);
+                    var dictionaryText = File.ReadAllText(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName);
                     _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
-                    File.Copy(DashConstants.LocalStorageFolder.Path + "\\" + _fileName, DashConstants.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
+                    File.Copy(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName, LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
                 }
                 else
                 {
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
                 }
-
-                Debug.WriteLine("\n\n\n\nDatabase at:   "+ DashConstants.LocalStorageFolder.Path + "\n\n\n\n");
+                
+                Debug.WriteLine("\n\n\n\nDatabase at:   "+ LocalKeyEndpoint.LocalStorageFolder.Path + "\n\n\n\n");
             }
             catch (Exception e)
             {
@@ -68,7 +68,7 @@ namespace Dash
                 if (_modelDictionary != null)
                 {
                     var d = new Dictionary<string, string>(_modelDictionary);
-                    var file = await DashConstants.LocalStorageFolder.CreateFileAsync("temp_"+_fileName, CreationCollisionOption.ReplaceExisting);
+                    var file = await LocalKeyEndpoint.LocalStorageFolder.CreateFileAsync("temp_"+_fileName, CreationCollisionOption.ReplaceExisting);
                     using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
                         using (var outgoingStream = stream.GetOutputStreamAt(0))

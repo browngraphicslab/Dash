@@ -60,9 +60,8 @@ namespace Dash
                 }
                 else
                 {
-
                     // if only one field on the input has the correct type then connect that field
-                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                     if (fieldsWithCorrectType.Count == 1)
                     {
                         var refKey = fieldsWithCorrectType[0];
@@ -88,6 +87,11 @@ namespace Dash
             e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
         }
 
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+            UIElement_OnDragEnter(sender, e);
+        }
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
             // set the input type
@@ -122,6 +126,7 @@ namespace Dash
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
+            System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
             e.Handled = true;
         }
 

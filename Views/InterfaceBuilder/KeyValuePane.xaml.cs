@@ -71,6 +71,7 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView?.hideDraggerButton();
+            docView?.StyleKeyValuePane();
         }
 
         /// <summary>

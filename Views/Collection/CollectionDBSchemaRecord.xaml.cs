@@ -49,9 +49,15 @@ namespace Dash
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
+            args.Data.Properties["Operator Document"] = dataDoc;
             args.Data.Properties.Add("View", true);
-            args.Data.RequestedOperation = DataPackageOperation.Link;
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+
+            //var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
+            //args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
+            //args.Data.Properties.Add("View", true);
+            //args.Data.RequestedOperation = DataPackageOperation.Link;
             GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
         }
 
