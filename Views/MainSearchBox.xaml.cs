@@ -275,9 +275,44 @@ namespace Dash
             private static List<SearchResultViewModel> SearchByParts(string text, DocumentController thisController = null)
             {
                 var thisControllerId = thisController?.Id?.ToLower();
-                
+
+                var parts = new List<string>();
+                var curr = "";
+                var inQuotes = false;
+                foreach (var character in text)
+                {
+                    if (character.Equals(' '))
+                    {
+                        if (inQuotes)
+                        {
+                            curr += character;
+                        }
+                        else
+                        {
+                            parts.Add(curr);
+                            curr = "";
+                        }
+                    }
+                    else if (character.Equals('"'))
+                    {
+                        if (inQuotes)
+                        {
+                            parts.Add(curr);
+                            curr = "";
+                        }
+                        inQuotes = !inQuotes;
+                    }
+                    else
+                    {
+                        curr += character;
+                    }
+                }
+                parts.Add(curr);
+                parts = parts.Where(i => !string.IsNullOrEmpty(i) && !string.IsNullOrWhiteSpace(i)).ToList();
+
+
                 List<SearchResultViewModel> mainList = null;
-                foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var searchPart in parts)//text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
                     if (criteria != null && criteria.SearchText == "this" && thisController != null)
@@ -512,7 +547,7 @@ namespace Dash
             /// <returns></returns>
             private static SpecialSearchCriteria GetSpecialSearchCriteria(string searchText)
             {
-                searchText = searchText.Replace(" ", "");
+                //searchText = searchText.Replace(" ", "");
                 var split = searchText.Split(':');
                 if (split.Count() == 2)
                 {

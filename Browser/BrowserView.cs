@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -212,12 +214,27 @@ namespace Dash
         {
             await SendToServer(req.Serialize());
         }
+
+        private static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
+        }
+
         private static async Task SendToServer(string message)
         {
             if (_socket == null)
             {
                 await InitSocket();
-                _dataMessageWriter.WriteString("dash:123");
+                var ip = GetLocalIPAddress();
+                _dataMessageWriter.WriteString("dash:"+ ip);
                 await _dataMessageWriter.StoreAsync();
                 _ready = true;
             }
