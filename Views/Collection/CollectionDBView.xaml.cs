@@ -88,10 +88,10 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
-                    {
-                        _parentDocument = _parentDocument.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
-                    }
+                    //if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
+                    //{
+                    //    _parentDocument = _parentDocument.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
+                    //}
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorController.BucketsKey) == null)
                         ParentDocument.SetField(DBFilterOperatorController.BucketsKey, new ListController<NumberController>(new NumberController[] {
@@ -179,7 +179,7 @@ namespace Dash
         {
             var dbDocs  = ParentDocument?.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
             var buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(DBFilterOperatorController.BucketsKey, context)?.Data;
-            var pattern = ParentDocument?.GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, context)?.Data?.Trim(' ', '\r')?.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries); ;
+            var pattern = ParentDocument?.GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, context)?.Data?.Trim(' ', '\r')?.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
             var autofit = ParentDocument?.GetDereferencedField<NumberController>(DBFilterOperatorController.AutoFitKey, context)?.Data != 0;
             var selectedBars = ParentDocument?.GetDereferencedField<ListController<NumberController>>(DBFilterOperatorController.SelectedKey, context)?.Data;
             if (dbDocs != null && buckets != null)

@@ -47,21 +47,17 @@ namespace Dash
 
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
-            //if (dargs != null)
-            //{
-            //    var fieldKey = dargs.Reference.FieldKey;
-            //    if (fieldKey.Equals(KeyStore.TitleKey) ||
-            //        fieldKey.Equals(KeyStore.PositionFieldKey))
-            //    {
-            //        OnFieldModelUpdated(null, context);
-            //    }
-            //}
-            //var keylist = (sender
-            //    .GetDereferencedField<ListFieldModelController<TextFieldModelController>>(KeyStore.PrimaryKeyKey,
-            //        new Context(sender))?.Data.Select((d) => (d as TextFieldModelController).Data));
-            //if (keylist != null && keylist.Contains(args.Reference.FieldKey.Id))
-            //    OnFieldModelUpdated(args.FieldArgs);
+            var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+            if (dargs != null)
+            {
+                Debug.Assert(sender is T);
+                var fieldKey = dargs.Reference.FieldKey;
+                if (fieldKey.Equals(KeyStore.TitleKey) ||
+                    fieldKey.Equals(KeyStore.PositionFieldKey))
+                {
+                    OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
+                }
+            }
         }
         
         public override object GetValue(Context context)
@@ -151,7 +147,7 @@ namespace Dash
             foreach (var element in elements)
             {
                 AddHelper(element);
-                //TODO tfs: Remove deleted fields from the list if we can delete fields 
+                //TODO tfs: Remove deleted fields from the list when they are deleted if we can delete fields 
             }
             UpdateOnServer();
 
@@ -283,10 +279,11 @@ namespace Dash
         {
             public enum ListChangedAction
             {
-                Add,
-                Remove,
-                Replace,
-                Clear
+                Add, //Items were added to the list
+                Remove, //Items were removed from the list
+                Replace, //Items in the list were replaced with other items
+                Clear, //The list was cleared
+                Update //An item in the list was updated
             }
 
             public readonly List<T> ChangedDocuments;

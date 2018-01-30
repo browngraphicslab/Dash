@@ -381,7 +381,7 @@ namespace Dash
         public string GetUrlHash()
         {
             var hash =  UtilShared.GetDeterministicGuid(_url);
-            Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
+            //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }
 

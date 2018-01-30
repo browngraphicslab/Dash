@@ -9,9 +9,9 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
-    class TransformGroupDataToGroupTransformConverter : SafeDataToXamlConverter<TransformGroupData, TransformGroup>
+    class TransformGroupDataToGroupTransformConverter : SafeDataToXamlConverter<TransformGroupData, Transform>
     {
-        public override TransformGroup ConvertDataToXaml(TransformGroupData data, object parameter = null)
+        public override Transform ConvertDataToXaml(TransformGroupData data, object parameter = null)
         {
             var group = new TransformGroup();
             group.Children.Add(new ScaleTransform
@@ -26,10 +26,10 @@ namespace Dash
                 X = data.Translate.X,
                 Y = data.Translate.Y
             });
-            return group;
+            return new MatrixTransform {Matrix = group.Value};
         }
 
-        public override TransformGroupData ConvertXamlToData(TransformGroup xaml, object parameter = null)
+        public override TransformGroupData ConvertXamlToData(Transform xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

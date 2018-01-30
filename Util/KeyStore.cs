@@ -39,13 +39,16 @@ namespace Dash
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
         public static KeyController ParsedFieldKey = new KeyController(DashConstants.KeyStore.ParsedFieldsKey);
         public static KeyController WebContextKey = new KeyController(DashConstants.KeyStore.WebContextKey);
+        public static KeyController ModifiedTimestampKey = new KeyController(DashConstants.KeyStore.ModifiedTimestampKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
+        public static KeyController WorkspaceHistoryKey = new KeyController(DashConstants.KeyStore.WorkspaceHistoryKey);
         public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
         public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
         public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
         public static KeyController ActualHeightKey = new KeyController(DashConstants.KeyStore.ActualHeightKey);
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
+        public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
 
         /// <summary>
         /// Key for collection data

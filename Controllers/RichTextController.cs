@@ -97,9 +97,9 @@ namespace Dash
             int textDecrementForContext = 15;
 
             var lowerData = Data.RtfFormatString.ToLower();
-            if (lowerData.Contains(searchString))
+            var index = lowerData.IndexOf(searchString);
+            if (index >= 0)
             {
-                var index = lowerData.IndexOf(searchString);
                 index = Math.Max(0, index - textDecrementForContext);
                 var substring = Data.RtfFormatString.Substring(index, Math.Min(maxStringSize, Data.RtfFormatString.Length - index));
                 return new StringSearchModel(substring);

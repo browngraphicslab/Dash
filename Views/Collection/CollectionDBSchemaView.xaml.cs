@@ -68,7 +68,7 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    _parentDocument = _parentDocument.GetDataDocument(null);
+                    //_parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
                         ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
@@ -280,7 +280,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -289,7 +290,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, 
                                                      FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
@@ -308,7 +309,7 @@ namespace Dash
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 

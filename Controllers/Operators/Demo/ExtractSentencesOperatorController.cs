@@ -67,7 +67,7 @@ namespace Dash
                     var protoLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
                     //var sentenceIndex = 0;
-                    foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
+                    foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)).ToList())
                     {
                         var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new RichTextController(new RichTextModel.RTD(sentence)), true);
@@ -100,7 +100,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
     }

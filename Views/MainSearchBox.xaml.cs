@@ -208,7 +208,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchOverCollection(string.Join(' ', searchParts), collectionDocument));
+                return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
@@ -219,7 +219,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString, thisController)
+                return CleanByType(SearchByParts(searchString.ToLower(), thisController)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
             }
@@ -232,7 +232,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString)
+                return CleanByType(SearchByParts(searchString.ToLower())
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             }
 
@@ -241,12 +241,17 @@ namespace Dash
             {
                 Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
-                    if (vm.IsLikelyUsefulContextText)
+                    var type = vm.ViewDocument.GetDataDocument(null).DocumentType?.Type?.ToLower();
+                    if (vm.IsLikelyUsefulContextText|| type == null)
                     {
                         return vm;
                     }
 
-                    switch (vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower())
+                    var docType = vm.ViewDocument.GetDataDocument(null).DocumentType;
+                    if (docType.Type == null)
+                        return vm;
+
+                    switch (docType.Type.ToLower())
                     {
                         case "collection box":
                         case "collected docs note":
@@ -256,7 +261,7 @@ namespace Dash
                             //vm.ContextualText = "Found: "+ vm.ContextualText;
                             break;
                     }
-                    Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
+                    //Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
                     return vm;
                 };
                 return vms.Select(convert);
@@ -269,13 +274,15 @@ namespace Dash
             /// <returns></returns>
             private static List<SearchResultViewModel> SearchByParts(string text, DocumentController thisController = null)
             {
+                var thisControllerId = thisController?.Id?.ToLower();
+                
                 List<SearchResultViewModel> mainList = null;
                 foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
                     if (criteria != null && criteria.SearchText == "this" && thisController != null)
                     {
-                        criteria.SearchText = thisController.Id.ToLower();
+                        criteria.SearchText = thisControllerId ?? "";
                     }
 
                     var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
@@ -406,19 +413,38 @@ namespace Dash
             {
                 var documentTree = DocumentTree.MainPageTree;
 
+                var negateCategory = criteria.SearchCategory.StartsWith('!');
+                var searchCategory = criteria.SearchCategory.TrimStart('!');
+
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
+                    var hasField = false;
                     foreach (var kvp in documentController.EnumFields())
                     {
-                        if (kvp.Key.Name.ToLower().Contains(criteria.SearchCategory))
+                        var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
+                        if (contains)
                         {
+                            hasField = true;
                             var stringSearch = kvp.Value.SearchForString(criteria.SearchText);
-                            if (stringSearch.StringFound)
+                            if ((stringSearch.StringFound && !negateCategory) || (!stringSearch.StringFound && negateCategory))
                             {
                                 docControllers.Add(documentController);
                             }
                         }
+                    }
+                    if (negateCategory && string.IsNullOrEmpty(criteria.SearchText) && !hasField)
+                    {
+                        foreach (var kvp in documentController.GetDataDocument().EnumFields())
+                        {
+                            var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
+                            if (contains)
+                            {
+                                hasField = true;
+                            }
+                        }
+                        if (!hasField)
+                            docControllers.Add(documentController);
                     }
                 }
 
@@ -603,15 +629,16 @@ namespace Dash
                 {
                     if (documentNode?.Parents?.FirstOrDefault() != null)
                     {
-                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+                        preTitle = " >  " +
+                            ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
                                        .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
                                        ? "?"
                                        : documentNode.Parents.First().DataDocument
-                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) +
-                                   " >  ";
+                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
+                                 ;
                     }
 
-                    var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "",
+                    var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
                         dataDocumentController.Id,
                         documentNode?.ViewDocument ?? dataDocumentController,
                         documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
@@ -620,6 +647,35 @@ namespace Dash
 
                 return vms.ToArray();
             }
+        }
+
+        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                e.AcceptedOperation = DataPackageOperation.Link;
+            }
+        }
+
+        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            {
+                var doc = (DocumentController) e.DataView.Properties["Operator Document"];
+                var listKeys = doc.EnumDisplayableFields()
+                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                if (listKeys.Count == 1)
+                {
+                    var currText = xAutoSuggestBox.Text;
+                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
+                    if (!string.IsNullOrWhiteSpace(currText))
+                    {
+                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
+                    }
+                }
+            }
+
+            e.Handled = true;
         }
     }
 }

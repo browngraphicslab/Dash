@@ -129,18 +129,20 @@ namespace Dash
         {
             if (captionKey != null && CurPage != null)
             {
+
+                var bodyDoc = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
                 var captionBinding = new FieldBinding<FieldControllerBase>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Document = bodyDoc ?? CurPage.DocumentController.GetDataDocument(null),
                     Key = CaptionKey,
                     Converter = new ObjectToStringConverter()
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, captionBinding);
-                xDocTitle.Height = 30;
-                xDocCaptionRow.Height = new GridLength(30);
+                xDocTitle.Height = 50;
+                xDocCaptionRow.Height = new GridLength(50);
             }
         }
         public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
@@ -165,7 +167,7 @@ namespace Dash
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
                     if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
                         var imgView = img.GetViewCopy();
@@ -308,7 +310,7 @@ namespace Dash
             {
                 var key = keyString.Substring(1);
                 var k = KeyController.LookupKeyByName(key);
-                var keyasgn = "";
+                var keyasgn = key;
                 if (k == null)
                 {
                     var splits = key.Split("=");
@@ -448,7 +450,13 @@ namespace Dash
 
         private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
-            args.Cancel = true;
+            try
+            {
+                args.Cancel = true;
+            } catch (Exception)
+            {
+
+            }
         }
 
         private void xThumbs_Tapped(object sender, TappedRoutedEventArgs e)
