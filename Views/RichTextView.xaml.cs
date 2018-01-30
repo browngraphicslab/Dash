@@ -223,7 +223,8 @@ namespace Dash
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
             string target = null;
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+            if (true || ctrlDown)
             {
                 var s1 = this.xRichEditBox.Document.Selection.StartPosition;
                 var s2 = this.xRichEditBox.Document.Selection.EndPosition;
@@ -242,10 +243,12 @@ namespace Dash
                 var doc = GetDoc();
                 var point = doc.GetPositionField().Data;
 
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target));
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
                 if (nearest != null)
                 {
-                    nearest.DeleteDocument();
+                    if (ctrlDown)
+                        nearest.DeleteDocument();
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
                     return;
                 }
 
@@ -287,7 +290,7 @@ namespace Dash
             }
         }
 
-        private DocumentView FindNearestDisplayedTarget(Point where, DocumentController target)
+        private DocumentView FindNearestDisplayedTarget(Point where, DocumentController target, bool onlyOnPage=true)
         {
             double dist = double.MaxValue;
             DocumentView nearest = null;
@@ -299,7 +302,7 @@ namespace Dash
                 {
                     var mprect = dvm.GetBoundingRect(MainPage.Instance);
                     var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-                    if (MainPage.Instance.GetBoundingRect().Contains(center))
+                    if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
                     {
                         var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
                         if (d < dist)
@@ -333,6 +336,8 @@ namespace Dash
                     return;
                 }
             }
+            e.Handled = true;
+            return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
 
@@ -376,19 +381,18 @@ namespace Dash
             }
 
             this.xRichEditBox.Document.Selection.SetRange(s1, s2);
-            e.Handled = true;
         }
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
-            if (e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
-            {
-                var c = DataDocument.GetField(KeyStore.WebContextKey) as TextController;
-                if (c != null)
-                {
-                    BrowserView.OpenTab(c.Data);
-                }
-            }
+            //if (e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
+            //{
+            //    var c = DataDocument.GetField(KeyStore.WebContextKey) as ListController<TextController>;
+            //    if (c != null)
+            //    {
+            //        BrowserView.OpenTab((c.Data.First()as TextController).Data);
+            //    }
+            //}
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
         
