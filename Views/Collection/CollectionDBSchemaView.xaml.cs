@@ -260,12 +260,12 @@ namespace Dash
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
             var dbDocs = ParentDocument
-                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData?.Select((d) => d.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? d);
+                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
             {
-                var str = d.GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                var str = d.GetDataDocument(null).GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
