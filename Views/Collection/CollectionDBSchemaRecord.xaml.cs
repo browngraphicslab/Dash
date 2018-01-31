@@ -35,15 +35,23 @@ namespace Dash
         
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _downPt = e.GetCurrentPoint(null);
-            e.Handled = true;
+            if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                _downPt = e.GetCurrentPoint(null);
+                e.Handled = true;
+            }
+            else
+                _downPt = null;
         }
 
         private void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            e.Complete();
-            StartDragAsync(_downPt);
-            e.Handled = true;
+            if (_downPt != null)
+            {
+                e.Complete();
+                StartDragAsync(_downPt);
+                e.Handled = true;
+            }
         }
 
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
