@@ -21,7 +21,7 @@ using System.Collections.ObjectModel;
 namespace Dash
 {
 
-    public class ManipulationDeltaData
+    public struct ManipulationDeltaData
     {
         public ManipulationDeltaData(Point position, Point translation, float scale)
         {
@@ -591,7 +591,7 @@ namespace Dash
             }
 
             TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
-            DetectShake(sender, e);
+            //DetectShake(sender, e);
 
             if (_grouping == null || _grouping.Count < 2)
                 Snap(true);

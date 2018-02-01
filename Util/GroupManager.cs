@@ -210,7 +210,7 @@ namespace Dash
                                     dvm.BackgroundBrush = brush;
                                 return newList;
                             }
-                            else
+                            else if (false)
                             {   // add the dragged documents to the otherGroup they overlap with
                                 var groupList = otherGroup.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                                 groupList.AddRange(dragDocumentList);

@@ -76,12 +76,13 @@ namespace Dash
                 }
             }
             // if the user dragged from the header of a schema view
-            else if (e.DataView.Properties.ContainsKey("CollectionFieldKey"))
+            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                var fieldKey = (e.DataView.Properties["CollectionFieldKey"] as KeyController);
+                var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
+                var fieldKey = dragData.FieldKey;
                 opDoc.SetField(key, new TextController(fieldKey.Id), true);
             }
 
@@ -123,7 +124,7 @@ namespace Dash
             }
 
             // if the user dragged from the header of a schema view
-            else if (e.DataView.Properties.ContainsKey("CollectionFieldKey"))
+            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }

@@ -47,17 +47,17 @@ namespace Dash
 
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
-            if (dargs != null)
-            {
-                Debug.Assert(sender is T);
-                var fieldKey = dargs.Reference.FieldKey;
-                if (fieldKey.Equals(KeyStore.TitleKey) ||
-                    fieldKey.Equals(KeyStore.PositionFieldKey))
-                {
-                    OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
-                }
-            }
+            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+            //if (dargs != null)
+            //{
+            //    Debug.Assert(sender is T);
+            //    var fieldKey = dargs.Reference.FieldKey;
+            //    if (fieldKey.Equals(KeyStore.TitleKey) ||
+            //        fieldKey.Equals(KeyStore.PositionFieldKey))
+            //    {
+            //        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
+            //    }
+            //}
         }
         
         public override object GetValue(Context context)
