@@ -451,7 +451,7 @@ namespace Dash
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
                 var strings = text.Split(new char[] { '\r' });
-                var htmlNote = new HtmlNote(html, BrowserView.Current.Title, where).Document;
+                var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                 foreach (var str in html.Split(new char[] { '\r' }))
                 {
                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());

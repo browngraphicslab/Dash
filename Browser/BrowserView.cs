@@ -217,15 +217,22 @@ namespace Dash
 
         private static string GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            try
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (var ip in host.AddressList)
                 {
-                    return ip.ToString();
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        return ip.ToString();
+                    }
                 }
+                throw new Exception("No network adapters with an IPv4 address in the system!");
             }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
+            catch (Exception e)
+            {
+                return "123";
+            }
         }
 
         private static async Task SendToServer(string message)
@@ -233,7 +240,7 @@ namespace Dash
             if (_socket == null)
             {
                 await InitSocket();
-                var ip = GetLocalIPAddress();
+                var ip = "123";
                 _dataMessageWriter.WriteString("dash:"+ ip);
                 await _dataMessageWriter.StoreAsync();
                 _ready = true;
