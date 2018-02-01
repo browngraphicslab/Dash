@@ -14,10 +14,10 @@
     <Grid Width="{Binding Width}" MinWidth="10" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition MinWidth="5" Width="10"></ColumnDefinition>
+            <ColumnDefinition MinWidth="10" Width="10"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid Tapped="HeaderTapped" DoubleTapped="HeaderDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
-            <TextBlock Padding="3 0 0 0" IsHitTestVisible="False"  FontSize="{StaticResource DefaultFontSize}" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
+            <TextBox Padding="3 0 0 0" IsHitTestVisible="False"  FontSize="{StaticResource DefaultFontSize}" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
         </Grid>
         <Grid Grid.Column="1" x:Name="ResizeHandle"  ManipulationMode="All" CanDrag="False" Background="{ThemeResource SelectedGrey}"
                   ManipulationStarted="ResizeHandleManipulationStarted" ManipulationDelta="ResizeHandleManipulationDelta" ManipulationCompleted="ResizeHandleManipulationCompleted"/>
