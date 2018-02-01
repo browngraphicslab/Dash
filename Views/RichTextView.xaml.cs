@@ -192,8 +192,11 @@ namespace Dash
             var selected = GetSelected();
             if (selected != null)
             {
+                prevQueryLength = selected.Length;
                 var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
+                var s = xRichEditBox.Document.Selection.StartPosition;
+                originalCharFormat.Add(s, this.xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                 this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                 this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 UpdateDocument();
@@ -476,10 +479,18 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data ??
-                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(DBFilterOperatorController.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
             }
             return null;
+        }
+        void SetSelected(string query)
+        {
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            if (parentDoc != null)
+            {
+                parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+            }
         }
 
         DocumentController GetDoc()
@@ -522,9 +533,15 @@ namespace Dash
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
             var docParent = this.GetFirstAncestorOfType<DocumentView>();
+            docParent.ViewModel.DocumentController.GetDataDocument(null).AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+        }
+
+        void selectedFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            MatchQuery(GetSelected());
         }
 
         private void XOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -753,9 +770,14 @@ namespace Dash
         /// <param name="args"></param>
         private void XSearchBox_OnQueryChanged(SearchBox sender, SearchBoxQueryChangedEventArgs args)
         {
+            var query = args.QueryText;
+            SetSelected(query);
+        }
+
+        private void MatchQuery(string query)
+        {
             this.ClearSearchHighlights();
             nextMatch = 0;
-            var query = args.QueryText;
             prevQueryLength = query.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
@@ -778,6 +800,8 @@ namespace Dash
                     selectedText.CharacterFormat.BackgroundColor = Colors.Yellow;
                 }
             }
+            xRichEditBox.Document.Selection.StartPosition = 0;
+            xRichEditBox.Document.Selection.EndPosition = 0;
         }
 
         /// <summary>
@@ -827,7 +851,10 @@ namespace Dash
                 xRichEditBox.Document.Selection.StartPosition = key;
                 xRichEditBox.Document.Selection.EndPosition = key + prevQueryLength;
                 xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormat[key]);
+
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
+            UpdateDocument();
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
             originalCharFormat.Clear();
         }
@@ -961,9 +988,11 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void xRichEditBox_SelectionChanged_1(object sender, RoutedEventArgs e)
+        private void xSearchDelete_Click(object sender, RoutedEventArgs e)
         {
-
+            SetSelected("");
+            //ClearSearchHighlights();
+            xSearchBoxPanel.Visibility = Visibility.Collapsed;
         }
 
         #region opening

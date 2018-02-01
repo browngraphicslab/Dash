@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
 using DashShared.Models;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -112,7 +113,7 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
@@ -120,9 +121,10 @@ namespace Dash
 
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var doc = (DocumentController)e.DataView.Properties["Operator Document"];
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                var doc = dragData.GetDraggedDocument();
                 var listKeys = doc.EnumDisplayableFields()
                     .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)

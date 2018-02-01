@@ -24,6 +24,7 @@ using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
 using Windows.System;
 using Windows.UI.Core;
+using Dash.Models.DragModels;
 
 namespace Dash
 {
@@ -246,11 +247,11 @@ namespace Dash
             return null;
         }
         
-        KeyController expandCollection(CollectionDBSchemaHeader.HeaderDragData dragData, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
+        KeyController expandCollection(KeyController fieldKey, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
         {
             foreach (var d in (getDocs as ListController<DocumentController>).TypedData)
             {
-                var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
+                var fieldData = d.GetDataDocument(null).GetDereferencedField(fieldKey, null);
                 if (fieldData is ListController<DocumentController>)
                     foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
                     {
@@ -346,43 +347,33 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation;
             }
 
-            // special case for schema view... should be removed
-            if (CollectionDBSchemaHeader.DragModel != null)
-                e.AcceptedOperation = DataPackageOperation.Copy;
-
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
 
-            if (e.DataView != null &&
-                  (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
-                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
-                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
-
-                // bcz: testing stuff out here...
-                var cnote = new CollectionNote(where, dragData.ViewType);
-                var getDocs = (dragData.HeaderColumnReference as ReferenceController).DereferenceToRoot(null);
-
-                var subDocs = new List<DocumentController>();
+                var dragData  = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
+                var getDocs   = dragData.CollectionReference.DereferenceToRoot(null);
+                var subDocs   = new List<DocumentController>();
                 var showField = dragData.FieldKey;
+                var cnote     = new CollectionNote(where, dragData.ViewType);
+
                 if ((getDocs as ListController<DocumentController>).Data.Any())
                 {
                     var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                    if (firstDocValue is ListController<DocumentController> || firstDocValue.GetValue(null) is List<FieldControllerBase>)
-                        showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    if (firstDocValue is ListController<DocumentController> || firstDocValue?.GetValue(null) is List<FieldControllerBase>)
+                        showField = expandCollection(dragData.FieldKey, getDocs, subDocs, showField);
                     else if (firstDocValue is DocumentController)
                         subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
                     cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
-                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.HeaderColumnReference, true);
-                cnote.Document.SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
+                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
+                cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
 
                 AddDocument(cnote.Document, null);
-                DBTest.DBDoc.AddChild(cnote.Document);
-                CollectionDBSchemaHeader.DragModel = null;
                 return;
             }
 
@@ -602,33 +593,12 @@ namespace Dash
             }
 
             // if the user drags a data document
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-                // hack to stop people from dragging a collection on itself get the parent doc of the collection
-                // and then compare data docs, if they're equal then return
-                var parentDocDataDoc = (sender as FrameworkElement)?.GetFirstAncestorOfType<CollectionView>()?
-                    .ParentDocument?.ViewModel?.DocumentController?.GetDataDocument();
-                if (parentDocDataDoc != null && refDoc.GetDataDocument().Equals(parentDocDataDoc))
-                {
-                    return;
-                }
-
-                //There is a specified key, so check if it's the right type
-                if (e.DataView.Properties.ContainsKey("Operator Key")) 
-                {
-                    var refKey = (KeyController) e.DataView.Properties["Operator Key"];
-                    var doc = new DataBox(new DocumentReferenceController(refDoc.Id, refKey), where.X, where.Y).Document;
-                    AddDocument(doc, null);
-                }
-                else
-                {
-                    var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                        .HasFlag(CoreVirtualKeyStates.Down) || e.DataView.Properties.ContainsKey("View");
-                    var docAlias =  shiftState ? refDoc.GetViewCopy(where) : refDoc.GetKeyValueAlias(where);
-                    AddDocument(docAlias, null);
-                }
+                if (dragModel.CanDrop(sender as FrameworkElement))
+                    AddDocument(dragModel.GetDropDocument(where), null);
             }
 
             // if the dataview contains this view model then don't accept the drag
@@ -691,8 +661,8 @@ namespace Dash
             }
 
             // special case for schema view... should be removed
-            if (CollectionDBSchemaHeader.DragModel != null)
-                e.AcceptedOperation = DataPackageOperation.Copy;
+            //if (e.DataView.Properties.ContainsKey("CollectionReference"))
+            //    e.AcceptedOperation = DataPackageOperation.Copy;
             
             e.DragUIOverride.IsContentVisible = true;
 

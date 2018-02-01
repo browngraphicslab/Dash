@@ -13,6 +13,7 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Globalization;
+using Dash.Models.DragModels;
 
 namespace Dash
 {
@@ -578,22 +579,6 @@ namespace Dash
             {
                 GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleAmountFieldModelController.Data);
             }
-        }
-
-        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, BaseCollectionViewModel collectionViewModel)
-        {
-            var docView = sender as DocumentView;
-            DocumentView.DragDocumentView = docView;
-
-            // create border around the doc being dragged
-            if (docView != null)
-                docView.OuterGrid.BorderThickness = new Thickness(5);
-
-            args.Data.Properties.Add(nameof(BaseCollectionViewModel), collectionViewModel);
-            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
-            // different sources based on whether it's a collection or a document 
-            if (docView != null)
-                docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void OnCollectionSelectedChanged(bool isCollectionSelected)

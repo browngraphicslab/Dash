@@ -1254,10 +1254,6 @@ namespace Dash
             {
                 return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
-            if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
-            {
-                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
-            }
             if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);

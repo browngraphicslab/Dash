@@ -78,13 +78,11 @@
         </localMicrosoft:GridSplitter>
         <Grid >
             <Grid.RowDefinitions>
-                <RowDefinition Height="35"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <!--StackPanel x:Name="xThumbs" Orientation="Horizontal" Grid.Row="0" Background="Black" VerticalAlignment="Stretch" /-->
 
             <ListView x:Name="xThumbs" 
-                    Grid.Row="1" 
                       Loaded="xThumbs_Loaded"
                       DataContextChanged="xThumbs_DataContextChanged"
                     SelectionMode="Single"
@@ -95,6 +93,8 @@
                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                     ScrollViewer.IsVerticalRailEnabled="True"
                       Tapped="xThumbs_Tapped"
+                      CanDragItems="True"
+                      DragItemsStarting="xThumbs_DragItemsStarting"
                     ScrollViewer.HorizontalScrollMode="Disabled">
                 <ListView.Resources>
 
@@ -111,10 +111,6 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Grid Padding="0" Grid.Row="0" VerticalAlignment="Center" Height="35" x:Name="xDragContainer" Grid.Column="1" Background="LightGray"  Margin="-5 0 0 0" HorizontalAlignment="Stretch" CanDrag="True" DragStarting="xDragContainer_DragStarting" ManipulationMode="All" ManipulationStarted="xDrag_ManipulationStarted">
-                <SymbolIcon x:Name="xIconBox" Symbol="Share" Foreground="#EEEEFFFF" HorizontalAlignment="Center" VerticalAlignment="Stretch"></SymbolIcon>
-
-             </Grid>
         </Grid>
 
     </Grid>

@@ -94,7 +94,7 @@ namespace Dash
             Init();
         }
 
-        public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc?.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
             Init();
         }

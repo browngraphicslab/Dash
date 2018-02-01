@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Dash.Models.DragModels;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -1373,7 +1374,7 @@ namespace Dash
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            args.Data.Properties["Operator Document"] = ViewModel.DocumentController;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }

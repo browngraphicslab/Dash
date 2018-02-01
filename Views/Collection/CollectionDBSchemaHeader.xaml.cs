@@ -28,7 +28,6 @@ namespace Dash
         public class HeaderViewModel : ViewModelBase
         {
             double _width;
-            double _minWidth = 30;
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
@@ -39,25 +38,23 @@ namespace Dash
                 get => _width;
                 set => SetProperty(ref _width, value);
             }
-            public double MinWidth
-            {
-                get => _minWidth;
-                set => SetProperty(ref _minWidth, value);
-            }
         }
+        double _startHeaderDragWidth = 0;
+
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
-            MainView.CoreWindow.PointerPressed -= CoreWindow_PointerPressed;
-            MainView.CoreWindow.PointerPressed += CoreWindow_PointerPressed;
-        }
-        
-        static void CoreWindow_PointerPressed(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
-        {
-            DragModel = null;
         }
 
-        private void SelectTap(object sender, TappedRoutedEventArgs e)
+        public HeaderViewModel ViewModel { get => DataContext as HeaderViewModel;  }
+        public CollectionView ParentCollection { get => VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this); } 
+
+        /// <summary>
+        /// Tapping the headers toggles the sorting of the column (up,down,none)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HeaderTapped(object sender, TappedRoutedEventArgs e)
         {
             var viewModel = (DataContext as HeaderViewModel);
             var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
@@ -67,71 +64,40 @@ namespace Dash
             }
         }
 
-        private void TextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        /// <summary>
+        /// Double tapping the header switches to a DB view for the header's data field
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HeaderDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var collection = VisualTreeHelperExtensions.GetFirstAncestorOfType<CollectionView>(this);
-            if (collection != null)
+            if (ParentCollection != null)
             {
-                var viewModel = (DataContext as HeaderViewModel);
-                viewModel.SchemaDocument.SetField(DBFilterOperatorController.FilterFieldKey, new TextController(viewModel.FieldKey.Name), true);
-                collection.SetDBView();
+                ViewModel.SchemaDocument.SetField(CollectionDBView.FilterFieldKey, ViewModel.FieldKey, true);
+                ParentCollection.SetDBView();
             }
         }
 
-        public class HeaderDragData  
+        private void ResizeHandleManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            public ReferenceController HeaderColumnReference;
-            public KeyController FieldKey;
-            public CollectionView.CollectionViewType ViewType;
-        }
-
-        /// <summary>
-        /// Static bucket to hold drag data when the header is dragged, this is a total hack!
-        /// </summary>
-        public static HeaderDragData DragModel = null;
-        
-        private void UserControl_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            var viewModel = (DataContext as HeaderViewModel);
-            DragModel = new HeaderDragData()
-            {
-                HeaderColumnReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), (viewModel.SchemaView.DataContext as CollectionViewModel).CollectionKey),
-                FieldKey = viewModel.FieldKey,
-                ViewType = CollectionView.CollectionViewType.DB
-            };
-            e.Handled = true;
-            e.Complete();
-        }
-
-        double _startWidth = 0;
-        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var viewModel = (DataContext as HeaderViewModel);
-            viewModel.Width = Math.Max(0, _startWidth + e.Cumulative.Translation.X);
+            ViewModel.Width = Math.Max(0, _startHeaderDragWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
-        private void Grid_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void ResizeHandleManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var viewModel = (DataContext as HeaderViewModel);
-            viewModel.SchemaView.xHeaderView.CanReorderItems = false;
-            viewModel.SchemaView.xHeaderView.CanDragItems = false;
-            _startWidth = viewModel.Width;
+            
+            ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
+            ViewModel.SchemaView.xHeaderView.CanDragItems = false;
+            _startHeaderDragWidth = ViewModel.Width;
             e.Handled = true;
         }
 
-        private void Grid_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void ResizeHandleManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            var viewModel = (DataContext as HeaderViewModel);
-            viewModel.SchemaView.xHeaderView.CanReorderItems = true;
-            viewModel.SchemaView.xHeaderView.CanDragItems = true;
+            ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
+            ViewModel.SchemaView.xHeaderView.CanDragItems = true;
             e.Handled = true;
 
-        }
-
-        private void DBS_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            NameGrid.Width = Math.Max(1, e.NewSize.Width - 7);
-            Text.Width = Math.Max(1, Width - 7);
         }
     }
 }
