@@ -16,6 +16,8 @@ using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using DashShared.Models;
 using Windows.UI.Xaml.Controls;
+using static Dash.CollectionDBSchemaHeader;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -50,7 +52,6 @@ namespace Dash
                     ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
-            CollectionDBSchemaHeader.DragModel = null;
         }
 
         //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
@@ -70,9 +71,8 @@ namespace Dash
                 {
                     //_parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
-                            new TextController(""), true);
+                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
+                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
@@ -484,9 +484,21 @@ namespace Dash
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
             }
             var dataDoc = docControllerList.FirstOrDefault();
-            args.Data.Properties["Operator Document"] = dataDoc;
-            args.Data.Properties.Add("View", true);
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            foreach (var m in e.Items)
+            {
+                var viewModel = m as HeaderViewModel;
+                var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                e.Data.Properties.Add(nameof(DragCollectionFieldModel),
+                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
+                    viewModel.FieldKey,
+                    CollectionView.CollectionViewType.DB));
+            }
         }
     }
 }

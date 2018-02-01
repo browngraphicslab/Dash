@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using static Windows.ApplicationModel.Core.CoreApplication;
 using Visibility = DashShared.Visibility;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -177,7 +178,7 @@ namespace Dash
             if (!UserInputIsValid()) return;
 
             var item = (TypeInfo) xTypeComboBox.SelectedItem;
-            var key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);
+            var key = KeyController.LookupKeyByName(xNewKeyField.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);
             FieldControllerBase fmController = new TextController("something went wrong");
             var stringValue = xNewValueField.Text;
 
@@ -403,8 +404,7 @@ namespace Dash
             var container = (KeyFieldContainer) ((FrameworkElement) sender).DataContext;
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
             args.Data.RequestedOperation = DataPackageOperation.Link;
-            args.Data.Properties["Operator Document"] = _dataContextDocument;
-            args.Data.Properties["Operator Key"] = container.Key;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, container.Key);
         }
 
         private void XNewKeyField_OnKeyUp(object sender, KeyRoutedEventArgs e)

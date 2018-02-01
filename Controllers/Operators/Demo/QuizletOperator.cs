@@ -47,7 +47,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return "QuizletOperator()";
         }
 
         public override FieldModelController<OperatorModel> Copy()

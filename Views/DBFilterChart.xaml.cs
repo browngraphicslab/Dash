@@ -50,12 +50,13 @@ namespace Dash
                     Converter = new DocumentCollectionToStringConverter(true),
                     Context = new Context(OpDoc)
                 });
-                xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<TextController>()
+                xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = OpDoc,
                     Key = DBFilterOperatorController.FilterFieldKey,
-                    Context = new Context(OpDoc)
+                    Context = new Context(OpDoc),
+                    Converter=new ObjectToStringConverter()
                 });
                 xAutoFit.AddFieldBinding(CheckBox.IsCheckedProperty, new FieldBinding<NumberController>()
                 {

@@ -36,7 +36,7 @@
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
-                     
+                      DragItemsStarting="xHeaderView_DragItemsStarting"
                       Style="{StaticResource xSchemaListView}"
                       
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"

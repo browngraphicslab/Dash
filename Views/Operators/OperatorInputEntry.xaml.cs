@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -46,17 +47,17 @@ namespace Dash
 
         private void UIElement_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 // we pass a view document, so we get the data document
-                _refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();
+                _refDoc = dragData.GetDraggedDocument()?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                if (e.DataView.Properties.ContainsKey("Operator Key"))
+                if (dragData.DraggedKey != null)
                 {
-                    var refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
                 }
                 else
                 {
@@ -75,12 +76,13 @@ namespace Dash
                 }
             }
             // if the user dragged from the header of a schema view
-            else if (CollectionDBSchemaHeader.DragModel != null)
+            else if (e.DataView.Properties.ContainsKey("CollectionFieldKey"))
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                opDoc.SetField(key, new TextController(CollectionDBSchemaHeader.DragModel.FieldKey.Id), true);
+                var fieldKey = (e.DataView.Properties["CollectionFieldKey"] as KeyController);
+                opDoc.SetField(key, new TextController(fieldKey.Id), true);
             }
 
 
@@ -100,17 +102,16 @@ namespace Dash
             var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
             _inputType = opField.Inputs[key].Type;
 
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                _refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
-                if (e.DataView.Properties.ContainsKey("Operator Key")) //There is a specified key, so check if it's the right type
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                _refDoc = dragData.GetDraggedDocument();
+                if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
                 {
-                    // the key we're dragging from
-                    var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     // the operator controller the input is going to
                     // the key we're dropping on
                     // the type of the field we're dragging
-                    var fieldType = _refDoc.GetRootFieldType(refKey);
+                    var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
@@ -122,7 +123,7 @@ namespace Dash
             }
 
             // if the user dragged from the header of a schema view
-            else if (CollectionDBSchemaHeader.DragModel != null)
+            else if (e.DataView.Properties.ContainsKey("CollectionFieldKey"))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }

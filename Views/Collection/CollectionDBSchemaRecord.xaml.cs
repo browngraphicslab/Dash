@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -57,8 +58,7 @@ namespace Dash
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            args.Data.Properties["Operator Document"] = dataDoc;
-            args.Data.Properties.Add("View", true);
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
 

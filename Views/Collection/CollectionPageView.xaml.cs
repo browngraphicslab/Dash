@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -143,9 +144,10 @@ namespace Dash
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
 
-                bodyDoc?.SetField(CaptionKey,
-                    new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
-                        CaptionKey), true);
+                if (!bodyDoc.Equals(CurPage.DocumentController.GetDataDocument(null)))
+                    bodyDoc?.SetField(CaptionKey,
+                        new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
+                            CaptionKey), true);
 
                 xDocTitle.Height = 50;
                 xDocCaptionRow.Height = new GridLength(50);
@@ -310,10 +312,10 @@ namespace Dash
         private void Top_Drop(object sender, DragEventArgs e)
         {
             this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            if (!e.DataView.Properties.ContainsKey("Operator Document"))
+            if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
-            var doc = e.DataView.Properties["Operator Document"] as DocumentController;
-            var keyString = doc.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -335,19 +337,17 @@ namespace Dash
         private void Bottom_Drop(object sender, DragEventArgs e)
         {
             this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            if (!e.DataView.Properties.ContainsKey("Operator Document"))
+            if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
-            var doc = e.DataView.Properties["Operator Document"] as DocumentController;
-            var keyString = doc.GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
                 var k = KeyController.LookupKeyByName(key);
-                var keyasgn = "";
                 if (k == null)
                 {
                     var splits = key.Split("=");
-                    keyasgn = splits.Length > 1 ? splits[1] : "";
                     k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
                 }
                 SetHackCaptionText(k);
@@ -433,11 +433,11 @@ namespace Dash
 
         private void xDragContainer_DragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            e.Data.RequestedOperation = DataPackageOperation.Link;
-            e.Data.Properties.Add("View", true);
+            e.Data.RequestedOperation = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            e.AllowedOperations       = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             e.Data.Properties.Add("Width", xDocView.ActualWidth);
             e.Data.Properties.Add("Height", xDocView.ActualHeight);
-            CurPage.DocumentView_DragStarting(sender, e, ViewModel);
+            e.Data.Properties.Add(nameof(DragDocumentModel), new DragDocumentModel(CurPage.DocumentController, true));
         }
 
         private void SelectionElement_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -485,6 +485,12 @@ namespace Dash
                 xThumbs.Focus(FocusState.Pointer);
                 e.Handled = true;
             }
+        }
+
+        private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            foreach (var m in e.Items)
+                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((m as DocumentViewModel).DocumentController, true);
         }
     }
 }
