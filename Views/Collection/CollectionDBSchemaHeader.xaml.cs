@@ -83,21 +83,27 @@ namespace Dash
             ViewModel.Width = Math.Max(0, _startHeaderDragWidth + e.Cumulative.Translation.X);
             e.Handled = true;
         }
+        
         private void ResizeHandleManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            
-            ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
-            ViewModel.SchemaView.xHeaderView.CanDragItems = false;
-            _startHeaderDragWidth = ViewModel.Width;
             e.Handled = true;
         }
 
         private void ResizeHandleManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            e.Handled = true;
+        }
+        private void ResizeHandle_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
+            ViewModel.SchemaView.xHeaderView.CanDragItems = false;
+            _startHeaderDragWidth = ViewModel.Width;
+        }
+
+        private void ResizeHandle_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
             ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
             ViewModel.SchemaView.xHeaderView.CanDragItems = true;
-            e.Handled = true;
-
         }
     }
 }
