@@ -64,7 +64,7 @@ namespace Dash
             }
             else
             {
-                return TextingBox.MakeView(documentController, context);
+                return RichTextBox.MakeView(documentController, context);
             }
             return new Grid();
         }

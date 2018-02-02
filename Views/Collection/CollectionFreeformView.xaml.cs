@@ -1411,6 +1411,7 @@ namespace Dash
 
             if (newWidth > 5 && newHeight > 5 && _marquee == null)
             {
+                this.Focus(FocusState.Programmatic);
                 if (_marquee == null)
                 {
                     _marquee = new Rectangle()
