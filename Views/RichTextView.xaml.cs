@@ -778,7 +778,7 @@ namespace Dash
         {
             this.ClearSearchHighlights();
             nextMatch = 0;
-            prevQueryLength = query.Length;
+            prevQueryLength = query == null ? 0 : query.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;

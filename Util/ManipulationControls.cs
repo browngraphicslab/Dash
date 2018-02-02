@@ -434,7 +434,8 @@ namespace Dash
                         var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
                         if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
                             GroupManager.RemoveGroup(pc, group);
-                        GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                        if (canSplitupDragGroup)
+                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
                     }));
 
             if (manipulationCompletedRoutedEventArgs != null)
@@ -466,7 +467,7 @@ namespace Dash
             }
             var docRoot = ParentDocument;
 
-            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
+            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
             var groupViews = GroupViews(_grouping);
             foreach (var gv in groupViews)
                 gv.ToFront();

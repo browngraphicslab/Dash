@@ -208,7 +208,7 @@ namespace Dash
             if (!SuspendGroups)
             {
                 foreach (var dvm in ViewModel.DocumentViewModels)
-                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
+                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
             }
         }
 

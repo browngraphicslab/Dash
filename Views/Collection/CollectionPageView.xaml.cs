@@ -144,7 +144,7 @@ namespace Dash
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
 
-                if (!bodyDoc.Equals(CurPage.DocumentController.GetDataDocument(null)))
+                if (bodyDoc?.Equals(CurPage.DocumentController.GetDataDocument(null)) == false)
                     bodyDoc?.SetField(CaptionKey,
                         new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
                             CaptionKey), true);
