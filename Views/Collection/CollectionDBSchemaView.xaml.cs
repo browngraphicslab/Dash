@@ -484,8 +484,13 @@ namespace Dash
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
             }
             var dataDoc = docControllerList.FirstOrDefault();
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+            if (dataDoc == null)
+                args.Cancel = true;
+            else
+            {
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+            }
         }
 
         private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
