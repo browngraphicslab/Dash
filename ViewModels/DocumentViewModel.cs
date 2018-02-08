@@ -313,6 +313,8 @@ namespace Dash
             }
         }
 
+        public bool GroupOnCreate = false;
+
         public Brush BorderBrush
         {
             get => _borderBrush;

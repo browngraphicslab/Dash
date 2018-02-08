@@ -196,6 +196,11 @@ namespace Dash
             {
                 DocumentViews = IterateDocumentViews().ToList();
             }
+            if (e.NewItems != null)
+            {
+                foreach (var d in e.NewItems)
+                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel).GroupOnCreate;
+            }
 
             IEnumerable<DocumentView> IterateDocumentViews()
             {
@@ -1959,6 +1964,10 @@ namespace Dash
                         richEditBox.Focus(FocusState.Programmatic);
                         documentView.OnSelected();
                     }
+                }
+                if (documentView.ViewModel.GroupOnCreate)
+                {
+                    documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
                 }
             }
 
