@@ -605,15 +605,17 @@ namespace Dash
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var newContext = new Context(c);
-                        if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
-                        ) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
+                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                             newContext.AddDocumentContext(this);
+                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
+                            reference, args, false);
                         if (ShouldExecute(newContext, reference.FieldKey))
                         {
-                            newContext = Execute(newContext, true);
+                            newContext = Execute(newContext, true, updateArgs);
                         }
                         OnDocumentFieldUpdated(this,
-                            new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false),
+                            updateArgs,
                             newContext, true);
                     };
                 if (oldField != null)
@@ -1061,10 +1063,11 @@ namespace Dash
             }
 
             bool needsToExecute = updatedArgs != null;
-            var id = inputs.Values.Select(f => f.Id).GetHashCode();
+            var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
             var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
                 "_Cache Access Key");
 
+            //TODO We should get rid of old cache values that aren't necessary at some point
             var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
             if (updatedArgs == null)
             {
