@@ -1968,6 +1968,7 @@ namespace Dash
                 if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                 {
                     documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
+                    documentView.ViewModel.GroupOnCreate = false;
                 }
             }
 
