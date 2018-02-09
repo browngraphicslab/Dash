@@ -149,7 +149,8 @@ namespace Dash
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                // for each file, get it's type, parse it, and add it to the output collection
+                int offset = 0; 
+                // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
                     FileData fileType;
@@ -160,6 +161,8 @@ namespace Dash
                         if (documentController != null)
                         {
                             outputCollection.Add(documentController);
+                            documentController.SetField(KeyStore.PositionFieldKey, new PointController(new Point(offset, 0)), true);
+                            offset += 200; 
                         }
                     }
                     catch (ArgumentException e)
