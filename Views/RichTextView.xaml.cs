@@ -23,6 +23,7 @@ using Windows.ApplicationModel.Core;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using System.Text.RegularExpressions;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -246,47 +247,78 @@ namespace Dash
                 var doc = GetDoc();
                 var point = doc.GetPositionField().Data;
 
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
-                if (nearest != null)
-                {
-                    if (ctrlDown)
-                        nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
-                    return;
-                }
-
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
+
+                var collection = this.GetFirstAncestorOfType<CollectionView>();
+                var contextDoc = theDoc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
+                if (theDoc.DocumentType.Equals(DataBox.DocumentType) && contextDoc != null)
                 {
                     var pt = point;
                     pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                    pt.X += 80;
+                    pt.X += 10;
                     pt.Y += 0;
-                    if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                    var collection = this.GetFirstAncestorOfType<CollectionView>();
-                    if (collection != null)
-                    {
-                        Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
-                    }
+                    
+                    var menuFlyout = new MenuFlyout() { Placement = FlyoutPlacementMode.Bottom };
+                    var menuFlyoutItem = new MenuFlyoutItem() { Text = theDoc.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data ?? "<>" };
+                    menuFlyoutItem.Click += (s, a) => Actions.DisplayDocument(collection.ViewModel, contextDoc.GetDataDocument(null).GetKeyValueAlias(pt));
+                    menuFlyout.Items.Add(menuFlyoutItem);
+                    menuFlyout.Closed += (s, a) => this.ContextFlyout = null;
+                    this.ContextFlyout = menuFlyout;
+                    this.ContextFlyout.ShowAt(this);
                 }
-                else if (target.StartsWith("http"))
+                else
                 {
-                    theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                    if (theDoc != null && theDoc != DBTest.DBNull)
+
+                    var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
+                    if (nearest != null)
+                    {
+                        if (ctrlDown)
+                            nearest.DeleteDocument();
+                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                        return;
+                    }
+
+                    if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
                         var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        var collection = this.GetFirstAncestorOfType<CollectionView>();
+                        pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
+                        pt.X += 10;
+                        pt.Y += 0;
+                        var api = theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data;
+                        if (api == CollectionNote.APISignature)
+                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                         if (collection != null)
                         {
                             Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
                         }
                     }
-                    else
+                    else if (target.StartsWith("http"))
                     {
-                        MainPage.Instance.WebContext.SetUrl(target);
+                        theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
+                        if (theDoc != null && theDoc != DBTest.DBNull)
+                        {
+                            var pt = point;
+                            pt.X -= 150;
+                            pt.Y -= 50;
+                            if (collection != null)
+                            {
+                                Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                            }
+                        }
+                        else
+                        {
+                            if (MainPage.Instance.WebContext != null)
+                                MainPage.Instance.WebContext.SetUrl(target);
+                            else
+                            {
+                                var pt = point;
+                                pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
+                                pt.X += 10;
+                                pt.Y += 0;
+                                var page = new HtmlNote(target, target, pt).Document;
+                                Actions.DisplayDocument(collection.ViewModel, page);
+                            }
+                        }
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -301,7 +333,7 @@ namespace Dash
             foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
             {
                 var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData.Id)
+                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData?.Id)
                 {
                     var mprect = dvm.GetBoundingRect(MainPage.Instance);
                     var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -403,14 +435,10 @@ namespace Dash
         {
             e.Handled = true;
             DocumentController theDoc = null;
-            if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
-                theDoc = docCtrls.First();
-            }
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
-            {
-                theDoc = e.DataView.Properties["Operator Document"] as DocumentController;
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                theDoc = dragModel.GetDropDocument(new Point(), true);
             }
             var forceLocal = true;
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
@@ -693,8 +721,13 @@ namespace Dash
                     link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
                 }
 
-                if (xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition && xRichEditBox.Document.Selection.Link != link)
+                if (xRichEditBox.Document.Selection.Link != link)
                 {
+                    if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
+                    }
+
                     // set the hyperlink for the matched text
                     this.xRichEditBox.Document.Selection.Link = link;
                     // advance the end selection past the RTF embedded HYPERLINK keyword

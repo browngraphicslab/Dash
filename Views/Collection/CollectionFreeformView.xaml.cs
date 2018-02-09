@@ -199,7 +199,7 @@ namespace Dash
             if (e.NewItems != null)
             {
                 foreach (var d in e.NewItems)
-                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel).GroupOnCreate;
+                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
             }
 
             IEnumerable<DocumentView> IterateDocumentViews()
@@ -1965,7 +1965,7 @@ namespace Dash
                         documentView.OnSelected();
                     }
                 }
-                if (documentView.ViewModel.GroupOnCreate)
+                if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                 {
                     documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
                 }
