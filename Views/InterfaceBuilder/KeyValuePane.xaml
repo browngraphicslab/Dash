@@ -13,21 +13,23 @@
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
           BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" /> <!--empty header space-->
-            <RowDefinition Height="7*" /> <!--column values-->
-            <RowDefinition Height="*" /> <!--random space-->
-            <RowDefinition Height="Auto" /> <!--bottom button-->
+            <RowDefinition Height="40" />
+            <!--empty header space-->
+            <RowDefinition Height="7*" />
+            <!--column values-->
+            <RowDefinition Height="Auto" />
+            <!--bottom button-->
         </Grid.RowDefinitions>
 
-        
+
         <!--header row-->
         <Grid Grid.Row="0">
-            
+
             <!--header-->
-            <Rectangle VerticalAlignment="Stretch" Width="285" HorizontalAlignment="Stretch"
+            <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
             <TextBlock Foreground="White" Margin="0,-2,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
-            
+
             <!--close button-->
             <Button FontSize="18" Margin="265,0,0,0" Foreground="White" Background="Transparent"
                     Tapped="CloseButton_Tapped">
@@ -35,15 +37,38 @@
             </Button>
         </Grid>
 
+        <!--key value lists-->
+        <Grid Grid.Row="1" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+                <ColumnDefinition Width="7*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <!--key listview-->
+            <ListView Name="xKeyListView">
+
+            </ListView>
+
+            <!--field listview-->
+            <ListView Name="xFieldListView">
+
+            </ListView>
+        </Grid>
+
         
-        <!--scrolling fields-->
+        
+        <!--scrolling fields--><!--
+        
         <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
-            <!--column values-->
+            
+        --><!--column values--><!--
+        
             <ListView x:Name="xKeyValueListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}"
                       Margin="0" ScrollViewer.IsVerticalRailEnabled="True">
 
-                <!--make the cells in the list view fully expand-->
+                
+        --><!--make the cells in the list view fully expand--><!--
+        
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -54,7 +79,9 @@
                         <Setter Property="BorderBrush" Value="LightGray" />
                     </Style>
                 </ListView.ItemContainerStyle>
-                <!--template for list rows-->
+                
+        --><!--template for list rows--><!--
+        
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:KeyFieldContainer">
                         <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
@@ -89,15 +116,15 @@
                             </ScrollViewer>
                             <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0"
                                       DragStarting="Icon_OnDragStarting" CanDrag="True"
-                                      FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
+                                      FontSize="14" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-        </ScrollViewer>
+        </ScrollViewer>-->
 
         <!--add field ui-->
-        <Grid Grid.Row="3" Background="AliceBlue">
+        <Grid Grid.Row="2" Background="AliceBlue">
             <Button x:Name="xCreateFieldButton" Height="40" Background="SteelBlue" Foreground="White"
                     HorizontalAlignment="Stretch" Click="ShowCreateFieldOptions">
                 ADD FIELD
@@ -129,6 +156,7 @@
 
                 </Grid>
             </StackPanel>
+            <!--<Rectangle Width="50" HorizontalAlignment="Right" Fill="PaleVioletRed"></Rectangle>-->
         </Grid>
 
     </Grid>

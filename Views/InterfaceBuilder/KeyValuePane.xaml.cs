@@ -47,6 +47,12 @@ namespace Dash
         /// </summary>
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
+        /// <summary>
+        /// separate lists for key and value
+        /// </summary>
+        private ObservableCollection<KeyFieldContainer> KeyListItemSource { get; }
+        private ObservableCollection<KeyFieldContainer> FieldListItemSource { get; }
+
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
         public KeyValuePane()
@@ -54,6 +60,10 @@ namespace Dash
             InitializeComponent();
 
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
+
+            KeyListItemSource = new ObservableCollection<KeyFieldContainer>();
+            FieldListItemSource = new ObservableCollection<KeyFieldContainer>();
+
             DataContextChanged += KeyValuePane_DataContextChanged;
 
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
@@ -105,17 +115,37 @@ namespace Dash
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
-            ListItemSource.Clear();
+            //ListItemSource.Clear();
+            //if (_dataContextDocument != null)
+            //{
+            //    var keys = _dataContextDocument
+            //                   .GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
+            //                   ?.TypedData?.ToList() ?? new List<KeyController>();
+            //    foreach (var keyFieldPair in _dataContextDocument.EnumFields())
+            //        if (!keyFieldPair.Key.Name.StartsWith("_"))
+            //            ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
+            //                new BoundController(keyFieldPair.Value, _dataContextDocument),
+            //                keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+            //}
+
+            KeyListItemSource.Clear();
+            FieldListItemSource.Clear();
             if (_dataContextDocument != null)
             {
-                var keys = _dataContextDocument
-                               .GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                               ?.TypedData?.ToList() ?? new List<KeyController>();
+                var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
+                    ?.TypedData?.ToList() ?? new List<KeyController>(); // get dereferenced field and if it exists make it a list, if not make a new list
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
+                {
+                    // hidden keys start with an underscore. if not hidden, add to keys list and fields list
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
-                        ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-                            new BoundController(keyFieldPair.Value, _dataContextDocument),
+                    {
+                        KeyListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundController(keyFieldPair.Value, _dataContextDocument),
                             keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+                        FieldListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundController(keyFieldPair.Value, _dataContextDocument),
+                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+                    }
+                        
+                }
             }
         }
 
