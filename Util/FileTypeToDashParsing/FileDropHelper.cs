@@ -162,7 +162,7 @@ namespace Dash
                         {
                             outputCollection.Add(documentController);
                             documentController.SetField(KeyStore.PositionFieldKey, new PointController(new Point(offset, 0)), true);
-                            offset += 200; 
+                            offset += CollectionNote.Offset; 
                         }
                     }
                     catch (ArgumentException e)
@@ -172,8 +172,8 @@ namespace Dash
                 }
 
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
+                cnote.SetXPosition(offset);
                 collectionViewModel.AddDocument(cnote.Document, null);
-
             }
             else
             {

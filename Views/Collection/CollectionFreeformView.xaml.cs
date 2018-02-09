@@ -199,7 +199,8 @@ namespace Dash
             if (e.NewItems != null)
             {
                 foreach (var d in e.NewItems)
-                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel).GroupOnCreate;
+                    if (DataContext != null)    // not sure what GroupOncreate does but this crashes when dropping to schema view 
+                        (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel).GroupOnCreate; 
             }
 
             IEnumerable<DocumentView> IterateDocumentViews()
@@ -213,7 +214,9 @@ namespace Dash
             if (!SuspendGroups)
             {
                 foreach (var dvm in ViewModel.DocumentViewModels)
+                {
                     GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
+                }
             }
         }
 

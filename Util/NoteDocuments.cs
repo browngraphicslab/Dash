@@ -43,7 +43,7 @@ namespace Dash
                 var prototype = ContentController<FieldModel>.GetController<DocumentController>(_prototypeID);
                 if (prototype == null)
                 {
-                    prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
+                    prototype = CreatePrototype();
                     prototype.SetField(KeyStore.ThisKey, prototype, true);
                 }
                 return prototype;
@@ -101,6 +101,13 @@ namespace Dash
         public class CollectionNote : NoteDocument
         {
             public static string APISignature = "Collected Docs Note Data API";
+            public static int Offset = 250;
+            public static KeyController XPositionKey = new KeyController("NGUID", "CollectionXPos"); 
+
+            public void SetXPosition(double x)
+            {
+                Document.SetField(XPositionKey, new NumberController(x), true); 
+            }
 
             public override DocumentController CreatePrototype()
             {
@@ -109,8 +116,8 @@ namespace Dash
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
                     [KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
-                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
-                };
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
+            };
                 var protoDoc =  new DocumentController(fields, Type, _prototypeID);
 
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
@@ -147,6 +154,7 @@ namespace Dash
                 docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                 docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
                 docLayout.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewtype.ToString()), true);
+                docLayout.SetField(XPositionKey, new NumberController(0), true);
 
                 if (false)
                 {
