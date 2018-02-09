@@ -101,7 +101,11 @@ namespace Dash
             if (refValue.Item2 is string)
                 return doc.ParseDocField(FieldKey, refValue.Item2 as string, field);
             else if (refValue.Item2 is RichTextModel.RTD)
-                return doc.SetField(FieldKey, new RichTextController(refValue.Item2 as RichTextModel.RTD), false);
+            {
+                var rtfield = doc.GetFieldOrCreateDefault<RichTextController>(FieldKey);
+                rtfield.Data = refValue.Item2 as RichTextModel.RTD;
+                return true;
+            }
             else
                 ;
             return false;

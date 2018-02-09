@@ -606,15 +606,17 @@ namespace Dash
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var newContext = new Context(c);
-                        if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
-                        ) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
+                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                             newContext.AddDocumentContext(this);
+                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
+                            reference, args, false);
                         if (ShouldExecute(newContext, reference.FieldKey))
                         {
-                            newContext = Execute(newContext, true);
+                            newContext = Execute(newContext, true, updateArgs);
                         }
                         OnDocumentFieldUpdated(this,
-                            new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false),
+                            updateArgs,
                             newContext, true);
                     };
                 if (oldField != null)
@@ -1018,7 +1020,7 @@ namespace Dash
             return false;
         }
 
-        public Context Execute(Context oldContext, bool update)
+        public Context Execute(Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1061,13 +1063,47 @@ namespace Dash
                 }
             }
 
-            // execute the operator
-            opField.Execute(inputs, outputs);
+            bool needsToExecute = updatedArgs != null;
+            var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
+            var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
+                "_Cache Access Key");
+
+            //TODO We should get rid of old cache values that aren't necessary at some point
+            var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
+            if (updatedArgs == null)
+            {
+                foreach (var opFieldOutput in opField.Outputs)
+                {
+                    var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
+                    if (field == null)
+                    {
+                        needsToExecute = true;
+                        outputs.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        outputs[opFieldOutput.Key] = field;
+                    }
+                }
+            }
+
+
+            if (needsToExecute)
+            {
+                // execute the operator
+                opField.Execute(inputs, outputs, updatedArgs);
+            }
 
             // pass the updates along 
             // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
+                if (needsToExecute)
+                {
+                    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
+                        .SetField(key, fieldModel.Value, true);
+                }
                 var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)
