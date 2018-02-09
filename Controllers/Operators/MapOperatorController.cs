@@ -45,7 +45,7 @@ namespace Dash
             return false;
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var input = (BaseListController) inputs[InputKey];
             var op = (OperatorController)inputs[OperatorKey];
@@ -61,7 +61,7 @@ namespace Dash
             foreach (var fieldModelController in input.Data)
             {
                 inDict[inKey] = fieldModelController;
-                op.Execute(inDict, outDict);
+                op.Execute(inDict, outDict, args);
                 outputList.Add(outDict[outKey]);
             }
 

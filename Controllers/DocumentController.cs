@@ -1017,7 +1017,7 @@ namespace Dash
             return false;
         }
 
-        public Context Execute(Context oldContext, bool update)
+        public Context Execute(Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1060,13 +1060,46 @@ namespace Dash
                 }
             }
 
-            // execute the operator
-            opField.Execute(inputs, outputs);
+            bool needsToExecute = updatedArgs != null;
+            var id = inputs.Values.Select(f => f.Id).GetHashCode();
+            var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
+                "_Cache Access Key");
+
+            var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
+            if (updatedArgs == null)
+            {
+                foreach (var opFieldOutput in opField.Outputs)
+                {
+                    var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
+                    if (field == null)
+                    {
+                        needsToExecute = true;
+                        outputs.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        outputs[opFieldOutput.Key] = field;
+                    }
+                }
+            }
+
+
+            if (needsToExecute)
+            {
+                // execute the operator
+                opField.Execute(inputs, outputs, updatedArgs);
+            }
 
             // pass the updates along 
             // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
+                if (needsToExecute)
+                {
+                    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
+                        .SetField(key, fieldModel.Value, true);
+                }
                 var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)

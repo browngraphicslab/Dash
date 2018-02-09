@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,8 +45,9 @@ namespace Dash
             [OutputKey] = TypeInfo.Text
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
+            Debug.WriteLine("Concat");
             var a = (inputs[AKey] as TextController).Data;
             var b = (inputs[BKey] as TextController).Data;
             outputs[OutputKey] = new TextController(a + b);
