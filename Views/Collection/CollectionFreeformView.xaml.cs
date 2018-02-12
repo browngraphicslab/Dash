@@ -191,7 +191,7 @@ namespace Dash
         public bool SuspendGroups = false;
 
         private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
+        { 
             if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
             {
                 DocumentViews = IterateDocumentViews().ToList();

@@ -102,12 +102,6 @@ namespace Dash
         {
             public static string APISignature = "Collected Docs Note Data API";
             public static int Offset = 250;
-            public static KeyController XPositionKey = new KeyController("NGUID", "CollectionXPos"); 
-
-            public void SetXPosition(double x)
-            {
-                Document.SetField(XPositionKey, new NumberController(x), true); 
-            }
 
             public override DocumentController CreatePrototype()
             {
@@ -154,7 +148,6 @@ namespace Dash
                 docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
                 docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
                 docLayout.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewtype.ToString()), true);
-                docLayout.SetField(XPositionKey, new NumberController(0), true);
 
                 if (false)
                 {
