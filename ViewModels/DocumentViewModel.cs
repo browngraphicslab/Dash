@@ -458,7 +458,9 @@ namespace Dash
         {
             get
             {
-                var layoutDoc = DocumentController?.GetDereferencedField(KeyStore.ActiveLayoutKey, new Context(DocumentController)) as DocumentController;
+                var layoutDoc =
+                    DocumentController?.GetDereferencedField<DocumentController>(KeyStore.ActiveLayoutKey,
+                        new Context(DocumentController));
                 return layoutDoc == null ? DocumentController : layoutDoc;
             }
         }

@@ -66,7 +66,7 @@ namespace Dash
             {
                 return TextingBox.MakeView(documentController, context);
             }
-            else
+            else if (data is RichTextController)
             {
                 return RichTextBox.MakeView(documentController, context);
             }

@@ -265,10 +265,10 @@ namespace Dash
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
             //ManipulationControls?.FitToParent();
-            if (parentOfFreeFormChild.ViewModel.DocumentController.GetActiveLayout()?.GetField(KeyStore.CollectionFitToParentKey) != null)
-            {
-                ManipulationControls?.FitToParent();
-            }
+            //if (parentOfFreeFormChild.ViewModel.DocumentController.GetActiveLayout()?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            //{
+            //    ManipulationControls?.FitToParent();
+            //}
         }
 
         #endregion
