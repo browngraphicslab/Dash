@@ -34,7 +34,7 @@ namespace Dash
             [ResultsKey] = TypeInfo.List,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data?.ToLower() : null;
             var searchCollection = inputs.ContainsKey(InputCollection) ? (inputs[InputCollection] as ListController<DocumentController>)?.TypedData : null;

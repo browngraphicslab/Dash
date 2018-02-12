@@ -35,6 +35,7 @@ namespace Dash
         public static KeyController UserLinksKey = new KeyController(DashConstants.KeyStore.UserLinksKey);
         public static KeyController CollectionOutputKey = new KeyController(DashConstants.KeyStore.CollectionOutputKey);
         public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
+        public static KeyController OperatorCacheKey = new KeyController(DashConstants.KeyStore.OperatorCacheKey);
         public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
         public static KeyController ParsedFieldKey = new KeyController(DashConstants.KeyStore.ParsedFieldsKey);
@@ -55,6 +56,7 @@ namespace Dash
         /// TODO This might be better in a different class
         /// </summary>
         public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "_CollectionFitToParent");
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "_Horizontal Alignment");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "_Vertical Alignment");
