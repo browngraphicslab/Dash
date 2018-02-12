@@ -126,7 +126,7 @@ namespace Dash
             IsLowestSelected = false;
 
             // if we had a child on a different branch deactivate that branch of children
-            if (!_multiSelectEnabled && CurrentSelectedElement != null && CurrentSelectedElement != selected)
+            if (!_multiSelectEnabled && CurrentSelectedElement != null)
             {
                 CurrentSelectedElement.Deactivate();
             }

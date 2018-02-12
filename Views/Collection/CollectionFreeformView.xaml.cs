@@ -1241,7 +1241,6 @@ namespace Dash
             e.Handled = true;
 
             SelectionCanvas?.Children?.Clear();
-            DeselectAll();
 
             _isSelecting = false;
 
