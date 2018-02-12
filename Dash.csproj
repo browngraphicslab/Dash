@@ -116,6 +116,7 @@
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\QuizletOperator.cs" />
@@ -136,8 +137,6 @@
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
-    <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
-    <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorModel.cs" />
@@ -291,6 +290,7 @@
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
     <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
@@ -316,6 +316,12 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionDBView.xaml.cs">
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChart.xaml.cs">
+      <DependentUpon>DBFilterChart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChartBar.xaml.cs">
+      <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
@@ -824,6 +830,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionDBView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChartBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

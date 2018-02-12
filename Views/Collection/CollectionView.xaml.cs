@@ -34,32 +34,8 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public int MaxZ { get; set; }
-        Binding _visibilityBinding = null;
 
-        SelectionElement _currentView;
-        public SelectionElement CurrentView {
-            get => _currentView;
-            set { _currentView = value;
-                if (_visibilityBinding != null)
-                    xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
-                _visibilityBinding = null;
-                if (_currentView is CollectionFreeformView)
-                {
-                    var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-                    var datacontext = docView?.DataContext as DocumentViewModel;
-                    if (datacontext != null)
-                    {
-                        _visibilityBinding = new Binding
-                        {
-                            Source = datacontext,
-                            Path = new PropertyPath(nameof(datacontext.IsSelected))
-                        };
-
-                        xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
-                    }
-                }
-            }
-        }
+        public SelectionElement CurrentView { get; set; }
 
         public CollectionViewModel ViewModel
         {
@@ -117,8 +93,6 @@ namespace Dash
 
         public DocumentController GetDocumentGroup(DocumentController document)
         {
-            if (ParentDocument == null)
-                return null;
             var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             if (groupsList == null) return null;
@@ -673,17 +647,17 @@ namespace Dash
         private void xContentControl_Loaded(object sender, RoutedEventArgs e)
         {
             // TODO this method is special cased and therfore hard to debug...
-            //var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-            //var datacontext = docView?.DataContext as DocumentViewModel;
-            //if (datacontext == null) return;
+            var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
+            var datacontext = docView?.DataContext as DocumentViewModel;
+            if (datacontext == null) return;
 
-            //var visibilityBinding = new Binding
-            //{
-            //    Source = datacontext,
-            //    Path = new PropertyPath(nameof(datacontext.IsSelected))
-            //};
+            var visibilityBinding = new Binding
+            {
+                Source = datacontext,
+                Path = new PropertyPath(nameof(datacontext.IsSelected))
+            };
 
-            //xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding);
+            xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding);
         }
     }
 }

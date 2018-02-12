@@ -144,7 +144,6 @@ namespace Dash
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionViewModel.AddDocument(docController, null);
-            collectionViewModel.DocumentViewModels.Last().GroupOnCreate = true;
         }
 
 

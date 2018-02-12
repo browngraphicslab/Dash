@@ -513,20 +513,28 @@ namespace Dash
             return blankDocument;
         }
 
-        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankDoc()
         {
             return BlankDocWithPosition(new Point(0, 0));
         }
 
-        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
+            var colfields = new Dictionary<KeyController, FieldControllerBase>
+            {
+                [KeyStore.CollectionKey] =
+                new ListController<DocumentController>(),
+                [KeyStore.TitleKey] = new TextController("Collection")
+            };
+            var colDoc = new DocumentController(colfields, DocumentType.DefaultType);
+            colDoc.SetActiveLayout(
+                new CollectionBox(
+                    new DocumentReferenceController(colDoc.GetId(),
+                        KeyStore.CollectionKey), 0, 0, 200, 200).Document, true, true);
+            colDoc.SetField(KeyStore.CollectionOutputKey, new DocumentReferenceController(colDoc.GetId(), KeyStore.CollectionKey), true);
+            return colDoc;
         }
 
-        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
             return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;

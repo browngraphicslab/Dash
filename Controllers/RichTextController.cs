@@ -15,7 +15,6 @@ namespace Dash
 {
     public class RichTextController: FieldModelController<RichTextModel>
     {
-        private string _lowerRichText;
         public RichTextController(): base(new RichTextModel()) { }
         public RichTextController(RichTextModel.RTD data):base(new RichTextModel(data)) { }
 
@@ -42,7 +41,6 @@ namespace Dash
                 if (RichTextFieldModel.Data == value) return;
                 RichTextFieldModel.Data = value;
                 OnFieldModelUpdated(null);
-                _lowerRichText = RichTextFieldModel.Data.ReadableString.ToLower();
             }
         }
         public override object GetValue(Context context)
@@ -80,12 +78,12 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             int maxStringSize = 125;
-            int textDecrementForContext = 8;
+            int textDecrementForContext = 15;
 
-            _lowerRichText = string.IsNullOrEmpty(_lowerRichText) ? RichTextFieldModel.Data.ReadableString.ToLower() : _lowerRichText;
-            if (_lowerRichText.Contains(searchString))
+            var lowerData = Data.ReadableString.ToLower();
+            if (lowerData.Contains(searchString))
             {
-                var index = _lowerRichText.IndexOf(searchString);
+                var index = lowerData.IndexOf(searchString);
                 index = Math.Max(0, index - textDecrementForContext);
                 var substring = Data.ReadableString.Substring(index, Math.Min(maxStringSize, Data.ReadableString.Length - index));
                 return new StringSearchModel(substring, true);
@@ -96,12 +94,12 @@ namespace Dash
         public StringSearchModel SearchForStringInRichText(string searchString)
         {
             int maxStringSize = 125;
-            int textDecrementForContext = 8;
+            int textDecrementForContext = 15;
 
             var lowerData = Data.RtfFormatString.ToLower();
-            var index = lowerData.IndexOf(searchString);
-            if (index >= 0)
+            if (lowerData.Contains(searchString))
             {
+                var index = lowerData.IndexOf(searchString);
                 index = Math.Max(0, index - textDecrementForContext);
                 var substring = Data.RtfFormatString.Substring(index, Math.Min(maxStringSize, Data.RtfFormatString.Length - index));
                 return new StringSearchModel(substring);

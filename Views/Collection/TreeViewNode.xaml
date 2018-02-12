@@ -12,26 +12,14 @@
     DataContextChanged="TreeViewNode_OnDataContextChanged">
 
     <StackPanel>
-    <StackPanel.ContextFlyout>
-        <MenuFlyout>
-            <MenuFlyoutItem Text="Open" Click="Open_OnClick"></MenuFlyoutItem>
-            <MenuFlyoutItem Text="Rename" Click="Rename_OnClick"></MenuFlyoutItem>
-            <MenuFlyoutItem Text="Delete" Icon="Delete" Click="Delete_OnClick"></MenuFlyoutItem>
-        </MenuFlyout>
-    </StackPanel.ContextFlyout>
         <Grid x:Name="XHeader">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <SymbolIcon x:Name="XIconBox" Foreground="#EEEEFFFF" Grid.Column="1" Visibility="Collapsed"></SymbolIcon>
-            <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="2" DoubleTapped="XTextBlock_OnDoubleTapped" CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
-            <Border x:Name="xBorder" Grid.Column="1" Background="White" Visibility="Collapsed">
-                <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" KeyUp="XTextBox_OnKeyUp" />
-            </Border>
+            <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="1" DoubleTapped="XTextBlock_OnDoubleTapped" CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
             <TextBlock x:Name="XArrowBlock" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped"></TextBlock>
         </Grid>
-        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{Binding ElementName=Control, Path=FilterString}" Margin="15,0,0,0" ContainingDocument="{x:Bind ContainingDocument}"></local:TreeViewCollectionNode>
+        <local:TreeViewCollectionNode x:Name="CollectionTreeView" Visibility="Collapsed" DataContext="{x:Null}" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}"></local:TreeViewCollectionNode>
     </StackPanel>
 </UserControl>

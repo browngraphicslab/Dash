@@ -12,7 +12,7 @@ namespace Dash
     public static class TypeInfoBrush
     {
         public static SolidColorBrush None = new SolidColorBrush(Colors.Black);
-        public static SolidColorBrush Number = new SolidColorBrush(Colors.LightBlue);
+        public static SolidColorBrush Number = new SolidColorBrush(Colors.LightBlue); //App.Current.Resources["NumberTypeColor"] as SolidColorBrush;
         public static SolidColorBrush Text = new SolidColorBrush(Colors.SteelBlue);
         public static SolidColorBrush Image = new SolidColorBrush(Colors.Indigo);
         public static SolidColorBrush Collection = new SolidColorBrush(Colors.DarkSlateBlue);
