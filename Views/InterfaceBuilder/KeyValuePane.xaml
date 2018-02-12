@@ -40,7 +40,7 @@
         <!--scrolling fields-->
         
         
-        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="200" VerticalScrollMode="Enabled">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="200" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
 
         <!--key value lists-->
         <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" Width="350">
@@ -64,7 +64,8 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:KeyFieldContainer">
-                            <Grid x:Name="xKeyContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60">
+                            <Grid x:Name="xKeyContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited"
+                                  DragStarting="Icon_OnDragStarting" CanDrag="True">
                                 <ScrollViewer VerticalAlignment="Center" HorizontalScrollMode="Enabled"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
                                           VerticalScrollMode="Disabled">
@@ -94,7 +95,8 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:KeyFieldContainer">
-                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="">
+                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" CanDrag="True" DragStarting="Icon_OnDragStarting"
+                                  PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited">
                                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">

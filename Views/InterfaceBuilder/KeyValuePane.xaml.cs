@@ -14,6 +14,8 @@ using DashShared;
 using static Windows.ApplicationModel.Core.CoreApplication;
 using Visibility = DashShared.Visibility;
 using Dash.Models.DragModels;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -465,6 +467,27 @@ namespace Dash
             {
                 AddKeyValuePair();
             }
+        }
+
+        /// <summary>
+        /// changing background color slightly to show that you've moused over this element
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ListItemPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            var container = (Panel)sender;
+            container.Background = new SolidColorBrush(Color.FromArgb(80,180,180,180));
+        }
+        /// <summary>
+        /// changes bg color back
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ListItemPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            var container = (Panel)sender;
+            container.Background = new SolidColorBrush(Color.FromArgb(0,255,255, 255));
         }
     }
 }
