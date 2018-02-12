@@ -21,7 +21,7 @@ namespace Dash
         private bool _isSelected;
         private bool _isLowestSelected;
         private bool _isLoaded;
-        private bool _multiSelectEnabled;
+        private static bool _multiSelectEnabled;
         
         public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
 
@@ -40,7 +40,7 @@ namespace Dash
             }
             _multiSelectEnabled = isOn;
         }
-        public bool MultiSelectEnabled { get { return _multiSelectEnabled; } }
+        public static bool MultiSelectEnabled { get { return _multiSelectEnabled; } }
 
         // single select wraps around the multi select list
         public SelectionElement CurrentSelectedElement {

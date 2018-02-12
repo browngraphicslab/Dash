@@ -57,7 +57,6 @@ namespace Dash
         private static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
         private bool _f1Down;
         private bool _ptrIn;
-        private bool _multiSelected;
 
         /// <summary>
         /// The width of the context preview
@@ -160,9 +159,7 @@ namespace Dash
         /// <param name="isMultiSelectEnabled"></param>
         public void ToggleMultiSelected(bool isMultiSelectEnabled)
         {
-            if (isMultiSelectEnabled == _multiSelected) return;
-            //var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
-            //if (freeformView == null) return;
+            if (isMultiSelectEnabled == MultiSelectEnabled) return;
             if (!isMultiSelectEnabled)
             {
                 //this.CanDrag = false;
@@ -174,7 +171,6 @@ namespace Dash
                 //this.CanDrag = true;
                 // this.DragStarting += freeformView.DocView_OnDragStarting; // todo: this is confusing to me what does this interaction do
             }
-            _multiSelected = isMultiSelectEnabled;
         }
 
         public void ShowLocalContext(bool showContext)
@@ -897,10 +893,10 @@ namespace Dash
             // ctrl + click also allows for multi select
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
-                var freeform = (ParentCollection?.CurrentView as CollectionFreeformView);
                 ToggleMultiSelected(true);
                 BringToForefront();
                 OnSelected();
+                e.Handled = true;
                 return;
             }
 
