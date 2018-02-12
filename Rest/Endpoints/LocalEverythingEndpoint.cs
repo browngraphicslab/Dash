@@ -27,7 +27,7 @@ namespace Dash
         {
             try
             {
-                var doc = GetModel(id);
+                var doc = _modelDictionary[id];
                 var args = new RestRequestReturnArgs()
                 {
                     ReturnedObjects = new List<EntityBase>(await TrackDownReferences(doc.CreateObject<FieldModel>()))
@@ -176,7 +176,7 @@ namespace Dash
                 var list = new List<EntityBase>();
                 foreach (var id in ids)
                 {
-                    var text = GetModel(id);
+                    var text = _modelDictionary[id];
                     var doc = text.CreateObject<FieldModel>();
                     list.AddRange(await TrackDownReferences(doc));
                 }

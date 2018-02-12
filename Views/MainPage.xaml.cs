@@ -114,8 +114,6 @@ namespace Dash
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
                 var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
-                var history =
-                    MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
@@ -130,7 +128,7 @@ namespace Dash
                 }
                 else
                 {
-                    lastWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
+                    lastWorkspace = MainDocument.GetField(KeyStore.LastWorkspaceKey) as DocumentController;
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
@@ -146,7 +144,7 @@ namespace Dash
 
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
-            //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
+            BrowserView.OpenTab("https://en.wikipedia.org/wiki/Special:Random");
         }
 
         public bool SetCurrentWorkspace(DocumentController workspace)
@@ -156,39 +154,14 @@ namespace Dash
             {
                 return false;
             }
-            var currentWorkspace = MainDocument.GetField<DocumentController>(KeyStore.LastWorkspaceKey);
-            if (currentWorkspace.Equals(workspace))
-            {
-                return true;
-            }
             workspace = workspace.MakeDelegate();
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
             documentViewModel.SetSelected(null, true);
-            MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
-        }
-
-        public void GoBack()
-        {
-            var history =
-                MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
-            if (history.Count == 0)
-            {
-                return;
-            }
-            var workspace = history.TypedData.Last();
-            history.Remove(workspace);
-            workspace = workspace.MakeDelegate();
-            workspace.SetWidth(double.NaN);
-            workspace.SetHeight(double.NaN);
-            var documentViewModel = new DocumentViewModel(workspace);
-            xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
@@ -273,52 +246,6 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
-        {
-            var dvm = xMainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-            if (coll != null)
-            {
-                return NavigateToDocumentAnimated(coll, null, coll, document);
-            }
-            return false;
-        }
-
-        public bool NavigateToDocumentAnimated(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
-        {
-            if (collection?.ViewModel?.DocumentViewModels == null)
-            {
-                return false;
-            }
-
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
-                {
-                    var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
-                    var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
-                        new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
-
-                    
-
-                    var pt = canvas.TransformToVisual(xMainDocView).TransformPoint(new Point(0, 0));
-                    var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
-                    var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
-
-                    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    return true;
-                }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
-                {
-                    if (NavigateToDocumentAnimated(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
-                        return true;
-                }
-            return false;
-
-        }
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
             if (collection?.ViewModel?.DocumentViewModels == null)
@@ -518,16 +445,6 @@ namespace Dash
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
-        }
-
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            args.Cancel = true;
-        }
-
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            GoBack();
         }
     }
 }

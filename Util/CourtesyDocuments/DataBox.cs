@@ -23,11 +23,11 @@ namespace Dash
             Document.SetFields(fields, true);
 
             // try to apply a data document to the databox if the passed in refToData was actualyl a reference
-            //var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
-            //if (dataDoc != null)
-            //{
-            //    Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
-            //}
+            var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
+            if (dataDoc != null)
+            {
+                Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            }
         }
 
         public override FrameworkElement makeView(DocumentController documentController, Context context,
@@ -62,13 +62,9 @@ namespace Dash
                     return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
                 }
             }
-            else if (data is TextController)
-            {
-                return TextingBox.MakeView(documentController, context);
-            }
             else
             {
-                return RichTextBox.MakeView(documentController, context);
+                return TextingBox.MakeView(documentController, context);
             }
             return new Grid();
         }

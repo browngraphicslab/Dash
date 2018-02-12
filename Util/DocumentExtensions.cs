@@ -319,13 +319,12 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
-            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new NumberController(DateTime.Now.ToFileTime()), true);
             if (MainPage.Instance.WebContext == null)
             {
                 return;
             }
 
+            var dataDocument = doc.GetDataDocument(null);
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
 
             if (neighboring == null)

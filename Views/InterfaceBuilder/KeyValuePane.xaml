@@ -13,7 +13,7 @@
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
           BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" /> <!--empty header space-->
+            <RowDefinition Height="30" /> <!--empty header space-->
             <RowDefinition Height="7*" /> <!--column values-->
             <RowDefinition Height="*" /> <!--random space-->
             <RowDefinition Height="Auto" /> <!--bottom button-->

@@ -15,11 +15,10 @@ namespace Dash
 {
     public delegate IValueConverter GetConverter<in T>(T field) where T : FieldControllerBase;
 
-    public enum XamlDereferenceLevel
+    public enum XamlDerefernceLevel
     {
         DereferenceToRoot,
-        DereferenceOneLevel,
-        DontDereference
+        DereferenceOneLevel
     };
 
     public class FieldBinding<T, U> where T : FieldControllerBase where U : FieldControllerBase, new()
@@ -28,8 +27,8 @@ namespace Dash
         public DocumentController Document;
         public KeyController Key;
         public GetConverter<T> GetConverter;
-        public XamlDereferenceLevel XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot;
-        public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
+        public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
+        public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;
         public Object FallbackValue;
 
         public Context Context;
@@ -45,7 +44,7 @@ namespace Dash
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
             var refField = Document.GetField(Key) as ReferenceController;
-            if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
+            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
             {
                 element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
             }
@@ -104,11 +103,7 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key, Context);
-            if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference)
-            {
-                field = field as T;
-            }
+            var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key, Context);
             if (field is ReferenceController)
             {
                 xamlData = new Tuple<Context, object>(Context, xamlData);
@@ -211,12 +206,9 @@ namespace Dash
                 };
 
             bool loaded = false;
-            if (element.IsInVisualTree())
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                loaded = true;
-            }
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            loaded = true;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
@@ -289,13 +281,10 @@ namespace Dash
             bool loaded = false;
             long token = -1;
 
-            if (element.IsInVisualTree())
-            {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
-                loaded = true;
-            }
+            binding.ConvertToXaml(element, property, binding.Context);
+            binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            token = element.RegisterPropertyChangedCallback(property, callback);
+            loaded = true;
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {

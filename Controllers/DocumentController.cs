@@ -96,11 +96,10 @@ namespace Dash
         {
             get
             {
-                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
- GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
+                var titleController = GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
                 if (titleController != null)
                 {
-                    return titleController;
+                    return titleController.Data;
                 }
                 return DocumentType.Type;
             }
@@ -600,23 +599,21 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
 
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey) && !key.Equals(KeyStore.DocumentContextKey))
+            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey))
             {
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var newContext = new Context(c);
-                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
-                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                        if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
+                        ) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                             newContext.AddDocumentContext(this);
-                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
-                            reference, args, false);
                         if (ShouldExecute(newContext, reference.FieldKey))
                         {
-                            newContext = Execute(newContext, true, updateArgs);
+                            newContext = Execute(newContext, true);
                         }
                         OnDocumentFieldUpdated(this,
-                            updateArgs,
+                            new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false),
                             newContext, true);
                     };
                 if (oldField != null)
@@ -1020,7 +1017,7 @@ namespace Dash
             return false;
         }
 
-        public Context Execute(Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
+        public Context Execute(Context oldContext, bool update)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1063,47 +1060,13 @@ namespace Dash
                 }
             }
 
-            bool needsToExecute = updatedArgs != null;
-            var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
-            var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
-                "_Cache Access Key");
-
-            //TODO We should get rid of old cache values that aren't necessary at some point
-            var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
-            if (updatedArgs == null)
-            {
-                foreach (var opFieldOutput in opField.Outputs)
-                {
-                    var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
-                    if (field == null)
-                    {
-                        needsToExecute = true;
-                        outputs.Clear();
-                        break;
-                    }
-                    else
-                    {
-                        outputs[opFieldOutput.Key] = field;
-                    }
-                }
-            }
-
-
-            if (needsToExecute)
-            {
-                // execute the operator
-                opField.Execute(inputs, outputs, updatedArgs);
-            }
+            // execute the operator
+            opField.Execute(inputs, outputs);
 
             // pass the updates along 
             // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
-                if (needsToExecute)
-                {
-                    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
-                        .SetField(key, fieldModel.Value, true);
-                }
                 var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)
@@ -1291,6 +1254,10 @@ namespace Dash
             {
                 return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
             }
+            if (DocumentType.Equals(DBFilterOperatorBox.DocumentType))
+            {
+                return DBFilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
@@ -1351,11 +1318,9 @@ namespace Dash
             {
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
             }
-            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
-            {
-                // this invokes listeners which have been added on a per doc level of granularity
-                OnFieldModelUpdated(args, c);
-            }
+
+            // this invokes listeners which have been added on a per doc level of granularity
+            OnFieldModelUpdated(args, c);
 
             if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
             {

@@ -10,7 +10,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -74,10 +73,11 @@ namespace Dash
             }
         }
 
-        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisController = null)
+
+        public DocumentController SearchForFirstMatchingDocument(string text, DocumentController thisDocument)
         {
             var maxSearchResultSize = 75;
-            var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController : thisController);
+            var vms = SearchHelper.SearchOverCollection(text.ToLower());
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
@@ -209,18 +209,18 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
+                return CleanByType(SearchOverCollection(string.Join(' ', searchParts), collectionDocument));
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
-                DocumentController collectionDocument = null, DocumentController thisController = null)
+                DocumentController collectionDocument = null)
             {
                 if (MainPage.Instance.MainDocument == null)
                 {
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString.ToLower(), thisController)
+                return CleanByType(SearchByParts(searchString)
                     .Where(vm => collectionDocument == null ||
                                  (vm?.DocumentCollection != null && vm.DocumentCollection.Equals(collectionDocument))));
             }
@@ -233,7 +233,7 @@ namespace Dash
                     return null;
                 }
 
-                return CleanByType(SearchByParts(searchString.ToLower())
+                return CleanByType(SearchByParts(searchString)
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             }
 
@@ -242,17 +242,12 @@ namespace Dash
             {
                 Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
-                    var type = vm.ViewDocument.GetDataDocument(null).DocumentType?.Type?.ToLower();
-                    if (vm.IsLikelyUsefulContextText|| type == null)
+                    if (vm.IsLikelyUsefulContextText)
                     {
                         return vm;
                     }
 
-                    var docType = vm.ViewDocument.GetDataDocument(null).DocumentType;
-                    if (docType.Type == null)
-                        return vm;
-
-                    switch (docType.Type.ToLower())
+                    switch (vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower())
                     {
                         case "collection box":
                         case "collected docs note":
@@ -262,7 +257,7 @@ namespace Dash
                             //vm.ContextualText = "Found: "+ vm.ContextualText;
                             break;
                     }
-                    //Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
+                    Debug.WriteLine(vm.ViewDocument.GetDataDocument(null).DocumentType.Type.ToLower());
                     return vm;
                 };
                 return vms.Select(convert);
@@ -273,54 +268,12 @@ namespace Dash
             /// </summary>
             /// <param name="text"></param>
             /// <returns></returns>
-            private static List<SearchResultViewModel> SearchByParts(string text, DocumentController thisController = null)
+            private static List<SearchResultViewModel> SearchByParts(string text)
             {
-                var thisControllerId = thisController?.Id?.ToLower();
-
-                var parts = new List<string>();
-                var curr = "";
-                var inQuotes = false;
-                foreach (var character in text)
-                {
-                    if (character.Equals(' '))
-                    {
-                        if (inQuotes)
-                        {
-                            curr += character;
-                        }
-                        else
-                        {
-                            parts.Add(curr);
-                            curr = "";
-                        }
-                    }
-                    else if (character.Equals('"'))
-                    {
-                        if (inQuotes)
-                        {
-                            parts.Add(curr);
-                            curr = "";
-                        }
-                        inQuotes = !inQuotes;
-                    }
-                    else
-                    {
-                        curr += character;
-                    }
-                }
-                parts.Add(curr);
-                parts = parts.Where(i => !string.IsNullOrEmpty(i) && !string.IsNullOrWhiteSpace(i)).ToList();
-
-
                 List<SearchResultViewModel> mainList = null;
-                foreach (var searchPart in parts)//text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var searchPart in text.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var criteria = GetSpecialSearchCriteria(searchPart);
-                    if (criteria != null && criteria.SearchText == "this" && thisController != null)
-                    {
-                        criteria.SearchText = thisControllerId ?? "";
-                    }
-
                     var searchResult = (criteria != null ? SpecialSearch(criteria) : LocalSearch(searchPart)).ToList();
                     mainList = mainList ?? searchResult;
                     if (criteria == null)
@@ -399,9 +352,8 @@ namespace Dash
             private static IEnumerable<SearchResultViewModel> GroupMembershipSearch(SpecialSearchCriteria criteria)
             {
                 var tree = DocumentTree.MainPageTree;
-                var local = LocalSearch(criteria.SearchText).ToArray();
-                return local
-                    .SelectMany(i => (tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0]).Concat(tree.GetNodesFromDataDocumentId(i.ViewDocument.GetDataDocument(null).Id)?.SelectMany(k => k.GroupPeers) ?? new DocumentNode[0]))
+                return LocalSearch(criteria.SearchText)
+                    .SelectMany(i => tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0])
                     .DistinctBy(d => d.Id).SelectMany(i => MakeAdjacentSearchResultViewModels(i, criteria, tree, null));
                 /*
                 var tree = DocumentTree.MainPageTree;
@@ -449,38 +401,19 @@ namespace Dash
             {
                 var documentTree = DocumentTree.MainPageTree;
 
-                var negateCategory = criteria.SearchCategory.StartsWith('!');
-                var searchCategory = criteria.SearchCategory.TrimStart('!');
-
                 List<DocumentController> docControllers = new List<DocumentController>();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
-                    var hasField = false;
                     foreach (var kvp in documentController.EnumFields())
                     {
-                        var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
-                        if (contains)
+                        if (kvp.Key.Name.ToLower().Contains(criteria.SearchCategory))
                         {
-                            hasField = true;
                             var stringSearch = kvp.Value.SearchForString(criteria.SearchText);
-                            if ((stringSearch.StringFound && !negateCategory) || (!stringSearch.StringFound && negateCategory))
+                            if (stringSearch.StringFound)
                             {
                                 docControllers.Add(documentController);
                             }
                         }
-                    }
-                    if (negateCategory && string.IsNullOrEmpty(criteria.SearchText) && !hasField)
-                    {
-                        foreach (var kvp in documentController.GetDataDocument().EnumFields())
-                        {
-                            var contains = kvp.Key.Name.ToLower().Contains(searchCategory);
-                            if (contains)
-                            {
-                                hasField = true;
-                            }
-                        }
-                        if (!hasField)
-                            docControllers.Add(documentController);
                     }
                 }
 
@@ -548,7 +481,7 @@ namespace Dash
             /// <returns></returns>
             private static SpecialSearchCriteria GetSpecialSearchCriteria(string searchText)
             {
-                //searchText = searchText.Replace(" ", "");
+                searchText = searchText.Replace(" ", "");
                 var split = searchText.Split(':');
                 if (split.Count() == 2)
                 {
@@ -632,13 +565,6 @@ namespace Dash
                             countToResults.Add(foundCount, new List<SearchResultViewModel>());
                         }
                         countToResults[foundCount].AddRange(vm);
-                    }else if (documentController.Id.ToLower() == searchString)
-                    {
-                        if (!countToResults.ContainsKey(1))
-                        {
-                            countToResults[1] = new List<SearchResultViewModel>();
-                        }
-                        countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
                     }
                 }
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
@@ -665,16 +591,15 @@ namespace Dash
                 {
                     if (documentNode?.Parents?.FirstOrDefault() != null)
                     {
-                        preTitle = " >  " +
-                            ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+                        preTitle = (string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
                                        .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
                                        ? "?"
                                        : documentNode.Parents.First().DataDocument
-                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
-                                 ;
+                                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data) +
+                                   " >  ";
                     }
 
-                    var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
+                    var vm = new SearchResultViewModel(preTitle + titleText, bottomText ?? "",
                         dataDocumentController.Id,
                         documentNode?.ViewDocument ?? dataDocumentController,
                         documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
@@ -683,36 +608,6 @@ namespace Dash
 
                 return vms.ToArray();
             }
-        }
-
-        private void XAutoSuggestBox_OnDragEnter(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                e.AcceptedOperation = DataPackageOperation.Link;
-            }
-        }
-
-        private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.GetDraggedDocument();
-                var listKeys = doc.EnumDisplayableFields()
-                    .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                if (listKeys.Count == 1)
-                {
-                    var currText = xAutoSuggestBox.Text;
-                    xAutoSuggestBox.Text = "in:" + doc.Title.Split()[0];
-                    if (!string.IsNullOrWhiteSpace(currText))
-                    {
-                        xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
-                    }
-                }
-            }
-
-            e.Handled = true;
         }
     }
 }
