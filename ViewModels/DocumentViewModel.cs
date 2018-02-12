@@ -313,6 +313,8 @@ namespace Dash
             }
         }
 
+        public bool GroupOnCreate = false;
+
         public Brush BorderBrush
         {
             get => _borderBrush;
@@ -336,6 +338,10 @@ namespace Dash
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
+            }
+            set
+            {
+                _content = value;
             }
         }
 

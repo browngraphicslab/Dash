@@ -475,17 +475,13 @@ namespace Dash
         }
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
-            List<CollectionDBSchemaRecordViewModel> recordVMs =
-                xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
-            var docControllerList = new List<DocumentController>();
-            foreach (var vm in recordVMs)
+            foreach (var vm in args.Items.Select((item) => item as CollectionDBSchemaRecordViewModel))
             {
-                docControllerList.Add(vm.Document);
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
-            var dataDoc = docControllerList.FirstOrDefault();
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)

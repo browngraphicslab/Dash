@@ -51,16 +51,19 @@ namespace Dash.Models.DragModels
         {
             return _documentController;
         }
-        public DocumentController GetDropDocument(Point where)
+        public DocumentController GetDropDocument(Point where, bool forceLayoutDoc=false)
         {
             if (_documentKey != null)
             {
-                return new DataBox(new DocumentReferenceController(_documentController.Id, _documentKey), where.X, where.Y).Document;
+                var dbox = new DataBox(new DocumentReferenceController(_documentController.Id, _documentKey), where.X, where.Y).Document;
+                dbox.SetField(KeyStore.DocumentContextKey, _documentController, true);
+                dbox.SetField(KeyStore.TitleKey, new TextController(_documentKey.Name), true);
+                return dbox;
             }
             else
             {
                 var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                    .HasFlag(CoreVirtualKeyStates.Down) || ShowViewModel;
+                    .HasFlag(CoreVirtualKeyStates.Down) || ShowViewModel || forceLayoutDoc;
                 return shiftState ? _documentController.GetViewCopy(where) : _documentController.GetKeyValueAlias(where);
             }
         }

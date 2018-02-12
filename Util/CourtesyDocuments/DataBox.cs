@@ -62,6 +62,10 @@ namespace Dash
                     return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
                 }
             }
+            else if (data is TextController)
+            {
+                return TextingBox.MakeView(documentController, context);
+            }
             else
             {
                 return RichTextBox.MakeView(documentController, context);

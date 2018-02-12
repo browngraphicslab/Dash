@@ -145,6 +145,8 @@ namespace Dash
         }
 
 
+        public bool GroupOnCreate = false;
+
         public override void AddDocument(DocumentController doc, Context context)
         {
             doc.CaptureNeighboringContext();
@@ -162,9 +164,10 @@ namespace Dash
             }
 
 
-
+            GroupOnCreate = true; // bcz: should be set from a flag to AddDocument maybe?
             // just update the collection, the colllection will update our view automatically
             CollectionController.Add(doc);
+            GroupOnCreate = false;
         }
 
         public override void RemoveDocuments(List<DocumentController> documents)
