@@ -168,12 +168,13 @@ namespace Dash
                         if (documentController != null)
                         {
                             outputCollection.Add(documentController);
+                            // place files in a grid 
                             if (count % 5 == 0)
                             {
                                 yPos += CollectionNote.Offset;
                                 xPos = 0;
                             }
-                            documentController.GetPositionField().Data = new Point(xPos, yPos); // place files next to each other 
+                            documentController.GetPositionField().Data = new Point(xPos, yPos); 
                             xPos += CollectionNote.Offset;
                             count++;
                         }
