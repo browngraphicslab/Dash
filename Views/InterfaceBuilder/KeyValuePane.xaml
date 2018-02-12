@@ -40,16 +40,18 @@
         <!--scrolling fields-->
         
         
-        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="200" VerticalScrollMode="Enabled">
 
         <!--key value lists-->
-        <Grid Name="xKeyValueGrid" Grid.Row="1" MaxHeight="500" VerticalAlignment="Stretch">
+        <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"></ColumnDefinition>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <!--key listview-->
-            <ListView Name="xKeyListView" MaxHeight="500" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
+                      MaxHeight="500" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
+                      ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -76,7 +78,9 @@
                 </ListView>
 
             <!--field listview-->
-                <ListView Name="xFieldListView" MaxHeight="500" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
+                          Name="xFieldListView" MaxHeight="500" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                          SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
