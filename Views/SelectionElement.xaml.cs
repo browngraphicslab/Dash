@@ -28,17 +28,17 @@ namespace Dash
         /// <summary>
         /// Enables or disables multi-select mode. Handles overhead.
         /// </summary>
-        /// <param name="val"></param>
-        public void SetMultiSelectEnabled(bool val)
+        /// <param name="isOn">new multi select value</param>
+        public void SetMultiSelectEnabled(bool isOn)
         {
             // going from multiSelect to normal select
-            if (!val)
+            if (_multiSelectEnabled && !isOn)
             {
                 foreach (SelectionElement e in SelectedElements)
                     e.Deactivate();
                 SelectedElements.Clear();
             }
-            _multiSelectEnabled = val;
+            _multiSelectEnabled = isOn;
         }
         public bool MultiSelectEnabled { get { return _multiSelectEnabled; } }
 

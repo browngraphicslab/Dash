@@ -1241,7 +1241,7 @@ namespace Dash
             e.Handled = true;
 
             SelectionCanvas?.Children?.Clear();
-
+            SetMultiSelectEnabled(false);
             _isSelecting = false;
 
             RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));

@@ -157,24 +157,24 @@ namespace Dash
         /// Called when the DocumentView is selected via a click and drag multi-select.
         /// Visually indicated that the document is selected within the canvas.
         /// </summary>
-        /// <param name="isMultiSelected"></param>
-        public void ToggleMultiSelected(bool isMultiSelected)
+        /// <param name="isMultiSelectEnabled"></param>
+        public void ToggleMultiSelected(bool isMultiSelectEnabled)
         {
-            if (isMultiSelected == _multiSelected) return;
-            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
-            if (freeformView == null) return;
-            if (!isMultiSelected)
+            if (isMultiSelectEnabled == _multiSelected) return;
+            //var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
+            //if (freeformView == null) return;
+            if (!isMultiSelectEnabled)
             {
                 //this.CanDrag = false;
                 // this.DragStarting -= freeformView.DocView_OnDragStarting;
-                ParentSelectionElement.SetMultiSelectEnabled(false);
+                ParentSelectionElement?.SetMultiSelectEnabled(false);
             } else
             {
-                ParentSelectionElement.SetMultiSelectEnabled(true);
+                ParentSelectionElement?.SetMultiSelectEnabled(true);
                 //this.CanDrag = true;
                 // this.DragStarting += freeformView.DocView_OnDragStarting; // todo: this is confusing to me what does this interaction do
             }
-            _multiSelected = isMultiSelected;
+            _multiSelected = isMultiSelectEnabled;
         }
 
         public void ShowLocalContext(bool showContext)
@@ -885,6 +885,7 @@ namespace Dash
         /// <param name="e"></param>
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            // what does this do?
             if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
                 CoreVirtualKeyStates.Down &&
                 ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
@@ -897,9 +898,9 @@ namespace Dash
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 var freeform = (ParentCollection?.CurrentView as CollectionFreeformView);
-                freeform?.Select(this);
                 ToggleMultiSelected(true);
-
+                BringToForefront();
+                OnSelected();
                 return;
             }
 
@@ -913,7 +914,8 @@ namespace Dash
 
             if (!IsSelected)
             {
-                SelectAndBringtoForefront();
+                BringToForefront();
+                OnSelected();
             }
 
         }
@@ -922,7 +924,7 @@ namespace Dash
         /// Brings the given DocumentView to the front (Z-index) of its
         /// containing collection. Selects that DocumentView.
         /// </summary>
-        async void SelectAndBringtoForefront()
+        async void BringToForefront()
         {
                 await Task.Delay(100); // allows for double-tap
 
@@ -935,11 +937,6 @@ namespace Dash
                         ParentCollection.MaxZ += 1;
                         Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                     }
-                    OnSelected();
-
-
-                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
                 }
         }
         protected override void OnActivated(bool isSelected)
@@ -950,7 +947,7 @@ namespace Dash
             {
                 ToggleSelectionBorder(false);
             }
-            else
+            else if (isSelected )
             {
                 ToggleSelectionBorder(true);
             }
