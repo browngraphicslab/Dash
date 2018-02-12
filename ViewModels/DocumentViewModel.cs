@@ -289,11 +289,8 @@ namespace Dash
 
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
-
-            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X * scaleAmount.X, currentTranslate.Y + deltaTranslate.Y * scaleAmount.Y);
 
             GroupTransform = new TransformGroupData(translate, scaleAmount);
         }
