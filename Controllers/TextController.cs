@@ -9,6 +9,7 @@ namespace Dash
 {
     public class TextController : FieldModelController<TextModel>
     {
+        private string _lowerData = "";
         public TextController() : this("")
         {
         }
@@ -23,7 +24,7 @@ namespace Dash
 
         public override void Init()
         {
-
+            
         }
 
         /// <summary>
@@ -41,6 +42,7 @@ namespace Dash
             if (value is string)
             {
                 Data = value as string;
+                _lowerData = Data.ToLower();
                 return true;
             }
             return false;
@@ -73,14 +75,15 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             int maxStringSize = 125;
-            int textDecrementForContext = 15;
+            int textDecrementForContext = 8;
+
+            _lowerData = String.IsNullOrEmpty(_lowerData) ? ((Model as TextModel)?.Data?.ToLower() ?? "") : _lowerData;
 
             if (Data != null)
             {
-                var lowerData = Data.ToLower();
-                if (lowerData.Contains(searchString))
+                var index = _lowerData.IndexOf(searchString);
+                if (index >= 0)
                 {
-                    var index = lowerData.IndexOf(searchString);
                     index = Math.Max(0, index - textDecrementForContext);
                     var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
                     return new StringSearchModel(substring, true);

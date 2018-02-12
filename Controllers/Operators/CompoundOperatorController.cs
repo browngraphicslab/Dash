@@ -62,7 +62,7 @@ namespace Dash
         public Dictionary<KeyController, List<ReferenceController>> InputFieldReferences = new Dictionary<KeyController, List<ReferenceController>>();
         public Dictionary<KeyController, ReferenceController> OutputFieldReferences = new Dictionary<KeyController, ReferenceController>();
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             Context c = new Context();
             foreach (var reference in InputFieldReferences)

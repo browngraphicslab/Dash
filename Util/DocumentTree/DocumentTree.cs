@@ -106,6 +106,11 @@ namespace Dash
             //create document nodes and add child-parent relationships
             foreach (var childDoc in childDocuments)
             {
+                if (!groupDict.ContainsKey(childDoc.Id))
+                {
+                    //Debug.WriteLine("FIX ME: DocumentTree has document without group");
+                    continue;
+                }
                 var childNode = CreateNode(childDoc, groupDict[childDoc.Id]);
                 Debug.Assert(childNode != null);
                 node.AddChild(childNode);

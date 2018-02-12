@@ -255,7 +255,15 @@ namespace Dash
             }
             else if (e.Value == "move" && right)
             {
+                var parentCollectionTransform =
+                    ((web.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
+                if (parentCollectionTransform == null) return;
+
                 var translation = new Point(pointerPosition.X - last.X, pointerPosition.Y - last.Y);
+
+                translation.X *= parentCollectionTransform.Matrix.M11;
+                translation.Y *= parentCollectionTransform.Matrix.M22;
+
                 last = pointerPosition;
                 if (parent.ManipulationControls != null)
                 {

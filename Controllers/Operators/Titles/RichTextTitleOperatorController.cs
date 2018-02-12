@@ -35,7 +35,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             string computedTitle = null;
 
@@ -63,7 +63,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return this;
         }
     }
 }

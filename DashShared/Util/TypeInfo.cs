@@ -34,7 +34,6 @@ namespace DashShared
     public enum OperatorType
     {
         Add,
-        DBfilter,
         Zip,
         Filter,
         CollectionMap,

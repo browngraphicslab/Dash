@@ -53,6 +53,7 @@ namespace Gma.CodeCloud.Controls
             return tb.DesiredSize;
         }
 
+        bool _rightMousePressed = false;
         public void Draw(Panel xLayoutGrid, LayoutItem layoutItem)
         {
             var font  = GetFont(layoutItem.Word.Occurrences);
@@ -70,9 +71,10 @@ namespace Gma.CodeCloud.Controls
             tb.Foreground          = new SolidColorBrush(color);
             tb.CanDrag             = true;
             tb.ManipulationMode    = Windows.UI.Xaml.Input.ManipulationModes.All;
+            tb.PointerPressed      += (sender, e) => _rightMousePressed = e.GetCurrentPoint(tb).Properties.IsRightButtonPressed;
             tb.DragStarting        += (sender, e) => _cloud.TriggerDragStarting(tb.Text, e);
-            tb.ManipulationStarted += (sender, e) => { e.Handled = true; e.Complete(); };
-            tb.ManipulationDelta   += (sender, e) => e.Handled = true;
+            tb.ManipulationStarted += (sender, e) => { if (!_rightMousePressed) { e.Handled = true; e.Complete(); } };
+            tb.ManipulationDelta   += (sender, e) => { if (!_rightMousePressed) e.Handled = true; };
             tb.Tapped              += (sender, e) => Debug.WriteLine(tb.Text); 
             tb.PointerEntered      += (sender, e) => tb.FontWeight = FontWeights.ExtraBold; 
             tb.PointerExited       += (sender, e) =>  tb.FontWeight = FontWeights.Normal;
