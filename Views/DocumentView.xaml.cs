@@ -1078,7 +1078,6 @@ namespace Dash
             // if we are by ourself then hide the border
             if (documentGroup.Count < 2) isGroupBorderVisible = false;
 
-
             // iterate over all the documents in the collection
             foreach (var dv in allDocumentViews)
             {
@@ -1090,8 +1089,6 @@ namespace Dash
                     {
                         dv.ToggleSelectionBorderAndChrome(isGroupBorderVisible, false);
                     }
-
-
                     dv.xSelectionBorder.BorderBrush = isGroupBorderVisible
                         ? GroupSelectionBorderColor
                         : SingleSelectionBorderColor;
@@ -1101,10 +1098,7 @@ namespace Dash
                 {
                     dv.ToggleSelectionBorderAndChrome(false);
                 }
-
-
             }
-
             //StackGroup();
         }
         /*
@@ -1257,7 +1251,15 @@ namespace Dash
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            DeleteDocument();
+            if (IsMainCollection)
+            {
+                var collection = this.GetFirstDescendantOfType<CollectionFreeformView>();
+                foreach (var doc in collection.MarqueeSelectedDocs)
+                {
+                    doc.DeleteDocument(); 
+                }
+            }
+            else DeleteDocument(); 
         }
 
         private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)

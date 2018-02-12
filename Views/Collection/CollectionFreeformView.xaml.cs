@@ -197,7 +197,7 @@ namespace Dash
                     }
 
                     SetFreeformTransform(
-                        new MatrixTransform() {Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y)});
+                        new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
                 }
             }
         }
@@ -1362,7 +1362,7 @@ namespace Dash
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
                     var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
-                    cnote.Document.GetDataDocument(null).SetField(CollectionDBView.FilterFieldKey,field, true);
+                    cnote.Document.GetDataDocument(null).SetField(CollectionDBView.FilterFieldKey, field, true);
                 }
 
 
@@ -1389,6 +1389,9 @@ namespace Dash
         private bool _multiSelect;
         private Point _marqueeAnchor;
         private bool _isSelecting;
+
+        private List<DocumentView> _marqueeSelectedDocs;
+        public List<DocumentView> MarqueeSelectedDocs => _marqueeSelectedDocs;
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -1553,8 +1556,7 @@ namespace Dash
                     {
                         var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
                         if (documentView != null)
-                            selectedDocs.Add(
-                                documentView);
+                            selectedDocs.Add(documentView);
                     }
                 }
             }
@@ -1574,6 +1576,8 @@ namespace Dash
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
                 parentView.MakeSelectionModeMultiple();
             }
+
+            _marqueeSelectedDocs = selectedDocs; 
         }
 
         #endregion
