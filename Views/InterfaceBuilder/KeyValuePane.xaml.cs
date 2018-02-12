@@ -321,14 +321,14 @@ namespace Dash
             // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
             var posInKvPane = e.GetPosition(xOuterGrid);
             //var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
-            var columnDefinitions = ((xKeyListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
+            var columnDefinitions = xKeyValueGrid.ColumnDefinitions;
             if (columnDefinitions == null)
             {
                 return;
             }
-            var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
+            //var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
             var keyColumnWidth = columnDefinitions[0].ActualWidth;
-            if (posInKvPane.X > checkboxColumnWidth && posInKvPane.X < keyColumnWidth)
+            if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
                 _editKey = true;
             else
                 _editKey = false;

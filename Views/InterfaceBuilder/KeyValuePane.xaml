@@ -43,7 +43,7 @@
         <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="200" VerticalScrollMode="Enabled">
 
         <!--key value lists-->
-        <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch">
+        <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" Width="350">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"></ColumnDefinition>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
@@ -94,13 +94,12 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:KeyFieldContainer">
-                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60">
+                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="">
                                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                                     <Border MaxWidth="500" VerticalAlignment="Center"
-                                        HorizontalAlignment="Stretch"
-                                        Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
+                                        HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
                                 </ScrollViewer>
                             </Grid>
                         </DataTemplate>
