@@ -339,6 +339,10 @@ namespace Dash
                 }
                 return _content;
             }
+            set
+            {
+                _content = value;
+            }
         }
 
         private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();

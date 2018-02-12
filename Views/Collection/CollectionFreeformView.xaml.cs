@@ -113,6 +113,19 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+            this.LayoutUpdated += CollectionFreeformView_LayoutUpdated;
+        }
+
+        private void CollectionFreeformView_LayoutUpdated(object sender, object e)
+        {
+            foreach (var i in this.xItemsControl.Items)
+                if (i is DocumentViewModel)
+                {
+                    var dv = i as DocumentViewModel;
+                    var b = dv.GroupingBounds;
+                    if (b.Bottom > this.ActualHeight)
+                        this.Height = b.Bottom;
+                }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
@@ -252,6 +265,10 @@ namespace Dash
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
             //ManipulationControls?.FitToParent();
+            if (parentOfFreeFormChild.ViewModel.DocumentController.GetActiveLayout()?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            {
+                ManipulationControls?.FitToParent();
+            }
         }
 
         #endregion
@@ -1076,7 +1093,7 @@ namespace Dash
                 currentScale /= numberOfBackgroundRows;
             }
 
-            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            while (currentScale > 0 && currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
             {
                 currentScale *= numberOfBackgroundRows;
             }

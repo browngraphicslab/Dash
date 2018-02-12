@@ -1206,6 +1206,25 @@ namespace Dash
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument(null));
 
+            // if document is not a known UI View, then see if it contains a Layout view field
+            var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
+            if (fieldModelController != null)
+            {
+                var doc = fieldModelController.DereferenceToRoot<DocumentController>(context);
+
+                if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
+                {
+                    if (isInterfaceBuilder)
+                    {
+                        var activeLayout = this.GetActiveLayout(context);
+                        return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
+                    }
+                    return makeAllViewUI(context);
+                }
+                Debug.Assert(doc != null);
+
+                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
+            }
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
             {
@@ -1310,25 +1329,6 @@ namespace Dash
             if (DocumentType.Equals(DataBox.DocumentType))
             {
                 return DataBox.MakeView(this, context, isInterfaceBuilder);//TODO add keysToFrameworkElementsIn
-            }
-            // if document is not a known UI View, then see if it contains a Layout view field
-            var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
-            if (fieldModelController != null)
-            {
-                var doc = fieldModelController.DereferenceToRoot<DocumentController>(context);
-
-                if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
-                {
-                    if (isInterfaceBuilder)
-                    {
-                        var activeLayout = this.GetActiveLayout(context);
-                        return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
-                    }
-                    return makeAllViewUI(context);
-                }
-                Debug.Assert(doc != null);
-
-                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
             }
             if (isInterfaceBuilder)
             {
