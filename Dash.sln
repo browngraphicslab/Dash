@@ -1,17 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-<<<<<<< HEAD
-VisualStudioVersion = 15.0.27130.2010
-=======
-VisualStudioVersion = 15.0.27130.2020
->>>>>>> cc8108ce59c14b34ae684d00605a45ff5b56994f
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dash", "Dash.csproj", "{7355FA95-4259-465B-8C8D-26DEED418788}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashShared", "DashShared\DashShared.csproj", "{4A1E5C52-06B9-436C-8FE0-8238809C1F57}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashWebServer", "DashWebServer\DashWebServer.csproj", "{2BFFB2FE-1E7B-4936-90E6-2879682466AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,20 +59,6 @@ Global
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x64.Build.0 = Release|Any CPU
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x86.Build.0 = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|ARM.Build.0 = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|x64.Build.0 = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Debug|x86.Build.0 = Debug|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|ARM.ActiveCfg = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|ARM.Build.0 = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|x64.ActiveCfg = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|x64.Build.0 = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|x86.ActiveCfg = Release|Any CPU
-		{2BFFB2FE-1E7B-4936-90E6-2879682466AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

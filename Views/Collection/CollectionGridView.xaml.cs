@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static Dash.NoteDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -152,7 +154,49 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDrop(sender, e);
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            var parentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            if (dragModel != null)
+            {
+                var template       = dragModel.GetDraggedDocument();
+                var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+                foreach (var dvm in ViewModel.DocumentViewModels.ToArray())
+                {
+                    var listOfFields = new List<DocumentController>();
+                    var doc  = dvm.DocumentController;
+                    var maxW = 0.0;
+                    var maxH = 0.0;
+                    foreach (var templateField in templateFields)
+                    {
+                        var p = templateField.GetPositionField(null)?.Data ?? new Point();
+                        var w = templateField.GetWidthField(null)?.Data ?? 10;
+                        var h = templateField.GetHeightField(null)?.Data ?? 10;
+                        if (p.Y + h > maxH)
+                            maxH = p.Y + h;
+                        if (p.X + w > maxW)
+                            maxW = p.X = w;
+                        var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<RichTextController>(RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+                        if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
+                        {
+                            var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
+                            if (k != null)
+                            {
+                                listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().GetId(), k), p.X, p.Y, w, h).Document);
+                            }
+                        }
+                        else
+                            listOfFields.Add(templateField);
+                    }
+                    var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
+                    doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
+                    dvm.Content = null;
+                    parentCollection.ViewModel.DocumentViewModels.Remove(dvm);
+                    parentCollection.ViewModel.DocumentViewModels.Add(dvm);
+                }
+                e.Handled = true;
+            }
+            else ViewModel.CollectionViewOnDrop(sender, e);
         }
 
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
