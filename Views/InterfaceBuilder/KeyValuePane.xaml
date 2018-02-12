@@ -37,8 +37,13 @@
             </Button>
         </Grid>
 
+        <!--scrolling fields-->
+        
+        
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
+
         <!--key value lists-->
-        <Grid Grid.Row="1" VerticalAlignment="Stretch">
+        <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
                 <ColumnDefinition Width="7*"></ColumnDefinition>
@@ -56,11 +61,9 @@
 
         
         
-        <!--scrolling fields--><!--
-        
-        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
+
             
-        --><!--column values--><!--
+        <!--column values--><!--
         
             <ListView x:Name="xKeyValueListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}"
@@ -80,9 +83,9 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 
-        --><!--template for list rows--><!--
+        --><!--template for list rows-->
         
-                <ListView.ItemTemplate>
+                <!--<ListView.ItemTemplate>
                     <DataTemplate x:DataType="local:KeyFieldContainer">
                         <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
                             <Grid.ColumnDefinitions>
@@ -120,8 +123,9 @@
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-            </ListView>
-        </ScrollViewer>-->
+            </ListView>-->
+    
+        </ScrollViewer>
 
         <!--add field ui-->
         <Grid Grid.Row="2" Background="AliceBlue">

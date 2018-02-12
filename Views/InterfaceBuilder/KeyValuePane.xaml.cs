@@ -168,10 +168,19 @@ namespace Dash
             var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
                            ?.TypedData?.ToList() ?? new List<KeyController>();
 
-            for (var i = 0; i < ListItemSource.Count; i++)
-                if (ListItemSource[i].Key.Equals(fieldKey))
-                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
+            //for (var i = 0; i < ListItemSource.Count; i++)
+            //    if (ListItemSource[i].Key.Equals(fieldKey))
+            //        ListItemSource[i] = new KeyFieldContainer(fieldKey,
+            //            new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
+
+            for (var i = 0; i < KeyListItemSource.Count; i++)
+            {
+                if (KeyListItemSource[i].Key.Equals(fieldKey))
+                {
+                    KeyListItemSource[i] = new KeyFieldContainer(fieldKey, new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
+                    FieldListItemSource[i] = new KeyFieldContainer(fieldKey, new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth); ;
+                }
+            }
         }
 
         /// <summary>
@@ -339,7 +348,8 @@ namespace Dash
 
             // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
             var posInKvPane = e.GetPosition(xOuterGrid);
-            var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
+            //var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
+            var columnDefinitions = xKeyValueGrid.ColumnDefinitions;
             if (columnDefinitions == null)
             {
                 return;
