@@ -703,18 +703,14 @@ namespace Dash
             return new Size();
         }
 
-        public void ProporsionalResize(ManipulationDeltaRoutedEventArgs e)
+        public void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
         {
             var pos = Util.PointTransformFromVisual(e.Position, e.Container);
             var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-            Debug.WriteLine(pos);
-            double dx = (pos.X - origin.X) / ViewModel.Width;
-            double dy = (pos.Y - origin.Y) / ViewModel.Height;
-            Debug.WriteLine(pos);
-            Debug.WriteLine(new Point(dx, dy));
-            double scale = Math.Max(Math.Max(dx, dy), 0.1);
-            Debug.WriteLine(scale);
+            var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
+                new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
             var gt = ViewModel.GroupTransform;
+            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * gt.ScaleAmount.X, 5), 0.2);
             ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
         }
 
@@ -744,22 +740,15 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                ProportionalScaling = true;
-            }
-            else
-            {
-                ProportionalScaling = false;
-            }
+            ProportionalScaling = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
 
             if (ProportionalScaling)
             {
-                ProporsionalResize(e);
+                ProportionalResize(e);
             }
             else
             {
-                Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+                var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
                 Resize(p.X, p.Y);
             }
             e.Handled = true;
