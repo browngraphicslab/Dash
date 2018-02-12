@@ -58,7 +58,7 @@ namespace Dash
         }
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
-        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
+        public override KeyController CollectionKey => _collectionRef.FieldKey ?? base.CollectionKey;
 
 
 
@@ -102,6 +102,8 @@ namespace Dash
                     DocumentViewModels.Clear();
                     AddDocuments(args.ChangedDocuments, c);
                     break;
+                default:
+                    break;
             }
         }
 
@@ -143,6 +145,8 @@ namespace Dash
         }
 
 
+        public bool GroupOnCreate = false;
+
         public override void AddDocument(DocumentController doc, Context context)
         {
             doc.CaptureNeighboringContext();
@@ -160,9 +164,10 @@ namespace Dash
             }
 
 
-
+            GroupOnCreate = true; // bcz: should be set from a flag to AddDocument maybe?
             // just update the collection, the colllection will update our view automatically
             CollectionController.Add(doc);
+            GroupOnCreate = false;
         }
 
         public override void RemoveDocuments(List<DocumentController> documents)

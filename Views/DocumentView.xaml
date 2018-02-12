@@ -30,6 +30,7 @@
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">
                     <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+                    <MenuFlyoutItem Text="Open" Click="MenuFlyoutItemOpen_OnClick" />
                     <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
@@ -47,6 +48,7 @@
             <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
+            <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
             <RelativePanel x:Name="xMetadataPanel" 
                   VerticalAlignment="Top"
                   HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
@@ -54,28 +56,11 @@
                 <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" >
                     <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
-                               Foreground="Transparent" 
-                               FontSize="15" 
+                               Foreground="Transparent"
                                Text="{StaticResource DocumentPlainIcon}" 
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
-                <Border                  
-                        x:Name="xContextTitleBorder"
-                        RelativePanel.Below="xTitleBorder"
-                        RelativePanel.AlignRightWithPanel="True"
-                        RelativePanel.AlignLeftWithPanel="True">
-                    <HyperlinkButton                              
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Foreground="CornflowerBlue"
-                        Content=""
-                        Tapped="xContextLinkTapped"
-                        VerticalContentAlignment="Center"
-                        x:Name="xContextTitle"
-                        Margin="0, 0, 15, 0"
-                        Visibility="{Binding Path=ShowLocalContext}"/>
                 </Border>
             </RelativePanel>
 
@@ -84,7 +69,7 @@
 
 
                 <!-- Container for document fields view -->
-                <Grid x:Name="xFieldContainer" x:FieldModifier="public" BorderBrush="Transparent" BorderThickness="2">
+                <Grid x:Name="xFieldContainer" x:FieldModifier="public">
                     <FlyoutBase.AttachedFlyout >
                         <Flyout Placement="Bottom">
                             <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
@@ -114,16 +99,29 @@
             </Grid>
 
             <!--The selection border-->
-            <Border Name="xSelectionBorder" Margin="-3" />
-            <Border Name="xMultiSelectBorder" BorderThickness="2" BorderBrush="DodgerBlue"
-                    Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            <Border Name="xSelectionBorder"/>
 
-            <Border Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+            <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
                 <Ellipse x:Name="OperatorEllipse"  Style="{StaticResource xFieldLinkHandle}"
                          Visibility="Collapsed"
-                         CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" />
+                         CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" 
+                         PointerEntered="OperatorEllipse_OnPointerEntered"
+                         PointerExited="OperatorEllipse_OnPointerExited"/>
             </Border>
 
+            <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <HyperlinkButton                              
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Foreground="CornflowerBlue"
+                    Content=""
+                    Tapped="xContextLinkTapped"
+                    VerticalContentAlignment="Center"
+                    x:Name="xContextTitle"
+                    Margin="0, 0, 15, 0"
+                    Visibility="Collapsed"
+                    SizeChanged="xContextHyperLinkSizechanged"/>
+            </Canvas>
             
             <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
         </Grid>

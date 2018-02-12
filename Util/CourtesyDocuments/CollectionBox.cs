@@ -70,7 +70,8 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), isInterfaceBuilderLayout, context) {InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), isInterfaceBuilderLayout, context)
+            { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
 
             // set the view type (i.e. list, grid, freeform)
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? DefaultCollectionView;
@@ -78,14 +79,14 @@ namespace Dash
             var view       = new CollectionView(collectionViewModel,  viewType);
 
             //add to key to framework element dictionary
-            var reference = data as ReferenceController;
-            if (keysToFrameworkElementsIn != null)
-            {
-                keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-                keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
-                docController.SetField(KeyStore.CollectionOutputKey,
-                    new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
-            }
+            //var reference = data as ReferenceController;
+            //if (keysToFrameworkElementsIn != null)
+            //{
+            //    keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
+            //    keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
+            //    docController.SetField(KeyStore.CollectionOutputKey,
+            //        new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
+            //}
 
             SetupBindings(view, docController, context);
 

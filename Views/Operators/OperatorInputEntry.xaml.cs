@@ -7,7 +7,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -17,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,7 +30,7 @@ namespace Dash
         public FieldReference OperatorFieldReference
         {
             get { return (FieldReference)GetValue(OperatorFieldReferenceProperty); }
-            set { xFieldLabel.Foreground = new SolidColorBrush(Colors.Red); SetValue(OperatorFieldReferenceProperty, value); }
+            set { SetValue(OperatorFieldReferenceProperty, value); }
         }
 
         private DocumentController _refDoc;
@@ -43,87 +43,59 @@ namespace Dash
         public OperatorInputEntry()
         {
             this.InitializeComponent();
-            DataContextChanged += OperatorInputEntry_DataContextChanged;
         }
 
-        private void OperatorInputEntry_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void UIElement_OnDrop(object sender, DragEventArgs e)
         {
-
-            var key = ((DictionaryEntry?)xHandle.DataContext)?.Key as KeyController;
-            
-            var opDoc = OperatorFieldReference?.GetDocumentController(null);
-            if (opDoc == null)
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                ToggleInputUI(false);
-                return;
-            }
-
-            var inputRef = opDoc.GetField(key);
-            if (inputRef != null)
-            {
-                ToggleInputUI(true);
-            }
-        }
-        
-
-        private void ToggleInputUI(bool hasInput)
-        {
-            if (hasInput)
-                xFieldLabel.Foreground = new SolidColorBrush(Colors.Red);
-            else
-                xFieldLabel.Foreground = new SolidColorBrush(Colors.Black);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void InputLinkHandle_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
-            {
-                // we pass a view document, so we get the data document, this is the doc we dragged from
-                var refDoc = (e.DataView.Properties["Operator Document"] as DocumentController)?.GetDataDocument();         
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                // we pass a view document, so we get the data document
+                _refDoc = dragData.GetDraggedDocument()?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                _refDoc = refDoc;
-
-                // if the drag event is associated with a key then set the input using the key
-                if (e.DataView.Properties.ContainsKey("Operator Key"))
+                if (dragData.DraggedKey != null)
                 {
-                    var refKey = (KeyController)e.DataView.Properties["Operator Key"];
-                    opDoc.SetField(key, new DocumentReferenceController(refDoc.Id, refKey), true);
-                    ToggleInputUI(true); // assume setting key works so show input ui
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
                 }
                 else
                 {
-                    // user can manually input a key
-                    SuggestBox.Visibility = Visibility.Visible;
-                    SuggestBox.Focus(FocusState.Programmatic);
+                    // if only one field on the input has the correct type then connect that field
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                    if (fieldsWithCorrectType.Count == 1)
+                    {
+                        var refKey = fieldsWithCorrectType[0];
+                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
+                    }
+                    else // otherwise display the autosuggest box
+                    {
+                        SuggestBox.Visibility = Visibility.Visible;
+                        SuggestBox.Focus(FocusState.Programmatic);
+                    }
                 }
             }
             // if the user dragged from the header of a schema view
-            else if (CollectionDBSchemaHeader.DragModel != null)
+            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-                opDoc.SetField(key, new TextController(CollectionDBSchemaHeader.DragModel.FieldKey.Id), true);
-
-
+                var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
+                var fieldKey = dragData.FieldKey;
+                opDoc.SetField(key, new TextController(fieldKey.Id), true);
             }
-            e.Handled = true;
+
+
+            e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
         }
-        
-        /// <summary>
-        /// When the pointer is hovering over the input handle. TODO: should also have this
-        /// when you're just hovering over the label as well, makes it easier on user / for touch
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void InputLinkHandle_OnDragOver(object sender, DragEventArgs e)
+
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+            UIElement_OnDragEnter(sender, e);
+        }
+        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
             // set the input type
             var el = sender as FrameworkElement;
@@ -131,31 +103,32 @@ namespace Dash
             var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
             _inputType = opField.Inputs[key].Type;
 
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
-                if (e.DataView.Properties.ContainsKey("Operator Key")) //There is a specified key, so check if it's the right type
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                _refDoc = dragData.GetDraggedDocument();
+                if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
                 {
-                    // the key we're dragging from
-                    var refKey = (KeyController)e.DataView.Properties["Operator Key"];
                     // the operator controller the input is going to
                     // the key we're dropping on
                     // the type of the field we're dragging
-                    var fieldType = refDoc.GetRootFieldType(refKey);
+                    var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
                     // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
                 else //There's just a document, and a key needs to be chosen later, so accept for now
                 {
-                    e.AcceptedOperation = DataPackageOperation.Link;
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
                 }
             }
 
             // if the user dragged from the header of a schema view
-            else if (CollectionDBSchemaHeader.DragModel != null)
+            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
+            System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
             e.Handled = true;
         }
 
@@ -171,18 +144,18 @@ namespace Dash
                 var queryText = sender.Text;
 
                 // get the fields that have the same type as the key the user is suggesting for
-                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key);
+                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
 
                 // add all the fields with the correct type to the list of suggestions
                 var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController)).ToList();
 
                 // get all the fields from the connecting document that are collections
                 var collections = _refDoc.EnumDisplayableFields()
-                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key);
+                    .Where(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
 
                 // if the user has entered dot syntax we want to parse that as <collection>.<field>
                 // unfortunatley we don't parse anything nested beyond that
-                if (queryText.EndsWith("."))
+                if (queryText.Contains("."))
                 {
                     // iterate over all collections
                     foreach (var collectionKey in collections)
@@ -194,7 +167,7 @@ namespace Dash
                         {
                             // get the keys for fields that are associated with types we have as input
                             var validHeaderKeys = Util.GetTypedHeaders(docCollection)
-                                .Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti))).Select(kt => kt.Key);
+                                /*.Where(kt => kt.Value.Any(ti => _inputType.HasFlag(ti)))*/.Select(kt => kt.Key);
                             // add the keys as collection field pairs
                             suggestions.AddRange(
                                 validHeaderKeys.Select(fieldKey => new CollectionKeyPair(fieldKey, collectionKey)));
@@ -210,12 +183,12 @@ namespace Dash
                 // set the itemsource to either filtered or unfiltered suggestions
                 if (queryText == string.Empty)
                 {
-                    sender.ItemsSource = suggestions;
+                    sender.ItemsSource = suggestions.ToHashSet();
                 }
                 else
                 {
                     suggestions = suggestions.Where(s => s.ToString().ToLower().Contains(queryText.ToLower())).ToList();
-                    sender.ItemsSource = suggestions;
+                    sender.ItemsSource = suggestions.ToHashSet();
                 }
             }
         }
@@ -240,6 +213,22 @@ namespace Dash
                         .SetField(key, new TextController(chosen.FieldKey.Id), true);
                 }
             }
+            else
+            {
+                // TODO LSM made it so the user has to unambiguously select a key. this can be changed
+                // TODO when we have more robust key parsing
+
+
+                //KeyController refKey = _refDoc.EnumDisplayableFields()
+                //    .Select(kv => kv.Key).FirstOrDefault(k => k.Name == args.QueryText);
+                //if (refKey != null)
+                //{
+                //    OperatorFieldReference.GetDocumentController(null).SetField(key,
+                //        new DocumentReferenceController(_refDoc.Id, refKey), true);
+                //}
+            }
+
+            // hide the suggestion box
             SuggestBox.Visibility = Visibility.Collapsed;
         }
 
@@ -266,6 +255,22 @@ namespace Dash
             {
                 CollectionKey = collectionKey;
                 FieldKey = fieldKey;
+            }
+
+            public override bool Equals(object obj)
+            {
+                var pair = obj as CollectionKeyPair;
+                return pair != null &&
+                       EqualityComparer<KeyController>.Default.Equals(CollectionKey, pair.CollectionKey) &&
+                       EqualityComparer<KeyController>.Default.Equals(FieldKey, pair.FieldKey);
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = 1443636342;
+                hashCode = hashCode * -1521134295 + EqualityComparer<KeyController>.Default.GetHashCode(CollectionKey);
+                hashCode = hashCode * -1521134295 + EqualityComparer<KeyController>.Default.GetHashCode(FieldKey);
+                return hashCode;
             }
 
             public override string ToString()

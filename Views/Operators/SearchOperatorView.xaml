@@ -17,6 +17,10 @@
                         x:Name="xAutoSuggestBox"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Stretch"
+                        DragEnter="XAutoSuggestBox_OnDragEnter"
+                        Drop="XAutoSuggestBox_OnDrop"
+                        AllowDrop="True"
+
                         >
             <AutoSuggestBox.ItemTemplate>
 

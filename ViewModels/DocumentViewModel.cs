@@ -13,6 +13,7 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Globalization;
+using Dash.Models.DragModels;
 
 namespace Dash
 {
@@ -118,7 +119,23 @@ namespace Dash
 
         public double YPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController))?.Data.Y ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get
+            {
+                var posField = LayoutDocument
+                    .GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController));
+                if (posField != null)
+                {
+                    return posField.Data.Y;
+                }
+                var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                if (groupField != null)
+                {
+                    return groupField.TypedData.Min(
+                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                              double.PositiveInfinity);
+                }
+                return double.PositiveInfinity; //Use inf so that sorting works reasonably
+            }
             set
             {
                 var positionController =
@@ -293,6 +310,8 @@ namespace Dash
             }
         }
 
+        public bool GroupOnCreate = false;
+
         public Brush BorderBrush
         {
             get => _borderBrush;
@@ -373,7 +392,16 @@ namespace Dash
                 byte b = byte.Parse(hexColor.Substring(7, 2), NumberStyles.HexNumber);
                 _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
+
+            OnSelectionSet += OnSelectionSetUpdate; // TODO rename this
         }
+
+        private void OnSelectionSetUpdate(bool lowestSelection)
+        {
+            var selectedField = DocumentController.GetFieldOrCreateDefault<NumberController>(KeyStore.SelectedKey);
+            selectedField.Data = lowestSelection ? 1 : 0;
+        }
+
         void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             SetHasTitle(!Undecorated && DocumentController.GetDataDocument(null).HasTitle);
@@ -556,22 +584,6 @@ namespace Dash
             {
                 GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleAmountFieldModelController.Data);
             }
-        }
-
-        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args, BaseCollectionViewModel collectionViewModel)
-        {
-            var docView = sender as DocumentView;
-            DocumentView.DragDocumentView = docView;
-
-            // create border around the doc being dragged
-            if (docView != null)
-                docView.OuterGrid.BorderThickness = new Thickness(5);
-
-            args.Data.Properties.Add(nameof(BaseCollectionViewModel), collectionViewModel);
-            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { DocumentController }));
-            // different sources based on whether it's a collection or a document 
-            if (docView != null)
-                docView.IsHitTestVisible = false; // so that collectionviews can't drop to anything within it 
         }
 
         public void OnCollectionSelectedChanged(bool isCollectionSelected)

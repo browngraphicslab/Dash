@@ -7,9 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.HumanInterfaceDevice;
@@ -31,20 +33,22 @@ using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Xaml.Media.Animation;
+using Dash.Annotations;
 using DashShared.Models;
 using Flurl.Util;
 using NewControls.Geometry;
+using Syncfusion.Pdf.Graphics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView, INotifyPropertyChanged
     {
 
         #region ScalingVariables    
 
-        public double CanvasScale { get; set; } = 1;
         public BaseCollectionViewModel ViewModel { get; private set; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -82,6 +86,17 @@ namespace Dash
         private const float BackgroundOpacity = 1.0f;
 
         #endregion
+
+        /// <summary>
+        /// Transform being updated during animation
+        /// </summary>
+        private MatrixTransform _transformBeingAnimated;
+        /// <summary>
+        /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
+        /// </summary>
+        private Storyboard _storyboard1;
+
+        private Storyboard _storyboard2;
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
@@ -123,6 +138,30 @@ namespace Dash
 
         public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
 
+        private TransformGroupData _transformGroup = new TransformGroupData(new Point(), new Point());
+        public TransformGroupData TransformGroup
+        {
+            get => _transformGroup;
+            set
+            {
+                //TODO possibly handle a scale center not being 0,0 here
+                if (_transformGroup.Equals(value))
+                {
+                    return;
+                }
+                _transformGroup = value;
+                var doc = (ViewModel as CollectionViewModel)?.ContainerDocument;
+                if (doc != null)
+                {
+                    var colCenter = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey);
+                    colCenter.Data = value.Translate;
+                    var colScale = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanZoomKey);
+                    colScale.Data = value.ScaleAmount;
+                }
+                OnPropertyChanged();
+            }
+        }
+
         public IOReference GetCurrentReference()
         {
             return _currReference;
@@ -144,6 +183,22 @@ namespace Dash
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+
+                var cvm = vm as CollectionViewModel;
+                if (cvm != null)
+                {
+                    var doc = cvm.ContainerDocument;
+
+                    var pos = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                    var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                    if (ManipulationControls != null)
+                    {
+                        ManipulationControls.ElementScale = zoom.X;
+                    }
+
+                    SetFreeformTransform(
+                        new MatrixTransform() {Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y)});
+                }
             }
         }
         public bool SuspendGroups = false;
@@ -153,6 +208,11 @@ namespace Dash
             if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
             {
                 DocumentViews = IterateDocumentViews().ToList();
+            }
+            if (e.NewItems != null)
+            {
+                foreach (var d in e.NewItems)
+                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
             }
 
             IEnumerable<DocumentView> IterateDocumentViews()
@@ -166,7 +226,7 @@ namespace Dash
             if (!SuspendGroups)
             {
                 foreach (var dvm in ViewModel.DocumentViewModels)
-                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>());
+                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
             }
         }
 
@@ -180,6 +240,8 @@ namespace Dash
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls.ElementScale = (ViewModel as CollectionViewModel).ContainerDocument
+                                                .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
@@ -854,13 +916,127 @@ namespace Dash
             var composite = new TransformGroup();
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
-
             var compValue = composite.Value;
 
             SetFreeformTransform(new MatrixTransform { Matrix = compValue });
         }
 
 
+        public void MoveAnimated(TranslateTransform translate)
+        {
+            if (!IsHitTestVisible) return;
+
+            var old = (itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
+
+            if (old == null)
+            {
+                return;
+            }
+            _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
+
+
+            Debug.Assert(_transformBeingAnimated != null);
+            var milliseconds = 1000;
+            var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
+            var halfDuration = new Duration(TimeSpan.FromMilliseconds(milliseconds / 2.0));
+
+            //Clear storyboard
+            _storyboard1?.Stop();
+            _storyboard1?.Children.Clear();
+            _storyboard1 = new Storyboard { Duration = duration };
+
+            _storyboard2?.Stop();
+            _storyboard2?.Children.Clear();
+            _storyboard2 = new Storyboard { Duration = duration };
+
+
+            var startX = _transformBeingAnimated.Matrix.OffsetX;
+            var startY = _transformBeingAnimated.Matrix.OffsetY;
+
+            var halfTranslateX = translate.X / 2;
+            var halfTranslateY = translate.Y / 2;
+
+
+
+            // Create a DoubleAnimation for translating
+            var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            translateAnimationX.AutoReverse = false;
+            translateAnimationY.AutoReverse = false;
+
+
+            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
+            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+
+            zoomOutAnimationX.AutoReverse = true;
+            zoomOutAnimationY.AutoReverse = true;
+
+            zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+            zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+
+
+            _storyboard1.Children.Add(translateAnimationX);
+            _storyboard1.Children.Add(translateAnimationY);
+            if (scaleFactor < 0.8)
+            {
+                _storyboard1.Children.Add(zoomOutAnimationX);
+                _storyboard1.Children.Add(zoomOutAnimationY);
+            }
+
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            CompositionTarget.Rendering += CompositionTargetOnRendering;
+
+            // Begin the animation.
+            _storyboard1.Begin();
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+            _storyboard1.Completed += Storyboard1OnCompleted;
+
+
+
+        }
+
+        private void Storyboard1OnCompleted(object sender, object e)
+        {
+            CompositionTarget.Rendering -= CompositionTargetOnRendering;
+            _storyboard1.Completed -= Storyboard1OnCompleted;
+        }
+
+        private void CompositionTargetOnRendering(object sender, object e)
+        {
+            SetFreeformTransform(_transformBeingAnimated); //Update the transform
+        }
+
+        private DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
+        {
+
+            var toReturn = new DoubleAnimation();
+            toReturn.EnableDependentAnimation = true;
+            toReturn.Duration = duration;
+            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
+            Storyboard.SetTargetProperty(toReturn, name);
+
+            toReturn.From = from;
+            toReturn.To = to;
+            /*
+            if (name == "MatrixTransform.Matrix.OffsetX")
+            {
+                toReturn.From = from;
+                toReturn.To = toReturn.From + to;
+            }
+
+            if (name == "MatrixTransform.Matrix.OffsetY")
+            {
+                toReturn.From = _transformBeingAnimated.Matrix.OffsetY;
+                toReturn.To = Math.Min(0.0, _transformBeingAnimated.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
+            }
+            */
+
+            toReturn.EasingFunction = new QuadraticEase();
+            return toReturn;
+
+        }
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -880,8 +1056,8 @@ namespace Dash
             // calculate the scale delta
             var scaleDelta = new ScaleTransform
             {
-                CenterX = 0,
-                CenterY = 0,
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
                 ScaleX = transformationDelta.ScaleAmount.X,
                 ScaleY = transformationDelta.ScaleAmount.Y
             };
@@ -892,14 +1068,8 @@ namespace Dash
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
-            // clamp the y offset so that we can only scrollw down
-            var compValue = composite.Value;
-            if (compValue.OffsetY > 0)
-            {
-                compValue.OffsetY = 0;
-            }
 
-            var matrix = new MatrixTransform { Matrix = compValue };
+            var matrix = new MatrixTransform { Matrix = composite.Value };
             SetFreeformTransform(matrix);
 
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
@@ -909,7 +1079,6 @@ namespace Dash
                     converter.UpdateLine();
             }
         }
-
 
         #endregion
 
@@ -933,7 +1102,12 @@ namespace Dash
 
         private void SetFreeformTransform(MatrixTransform matrixTransform)
         {
+            // clamp the y offset so that we can only scrollw down
             var matrix = matrixTransform.Matrix;
+            if (matrix.OffsetY > 0)
+            {
+                matrix.OffsetY = 0;
+            }
 
             var aliasSafeScale = ClampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
 
@@ -948,24 +1122,22 @@ namespace Dash
                 xBackgroundCanvas.Invalidate();
             }
 
-
-            itemsPanelCanvas.RenderTransform = matrixTransform;
-            InkHostCanvas.RenderTransform = matrixTransform;
+            TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
         private void SetInitialTransformOnBackground()
         {
-            var composite = new TransformGroup();
-            var scale = new ScaleTransform
-            {
-                CenterX = 0,
-                CenterY = 0,
-                ScaleX = CanvasScale,
-                ScaleY = CanvasScale
-            };
+            //var composite = new TransformGroup();
+            //var scale = new ScaleTransform
+            //{
+            //    CenterX = 0,
+            //    CenterY = 0,
+            //    ScaleX = 1,
+            //    ScaleY = 1
+            //};
 
-            composite.Children.Add(scale);
-            SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
+            //composite.Children.Add(scale);
+            //SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
@@ -1051,7 +1223,7 @@ namespace Dash
             }
 
             var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
-            
+
             ListController<DocumentController> group =
                 groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
             if (groupDoc == null || group == null)
@@ -1189,10 +1361,8 @@ namespace Dash
 
                 if (_currReference.FieldReference.FieldKey.Equals(KeyStore.CollectionOutputKey))
                 {
-                    var field = droppedSrcDoc.GetDataDocument(null)
-                        .GetDereferencedField<TextController>(DBFilterOperatorController.FilterFieldKey, null)?.Data;
-                    cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey,
-                        new TextController(field), true);
+                    var field = droppedSrcDoc.GetDataDocument(null).GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
+                    cnote.Document.GetDataDocument(null).SetField(CollectionDBView.FilterFieldKey,field, true);
                 }
 
 
@@ -1212,6 +1382,201 @@ namespace Dash
             }
             CancelDrag(e.Pointer);
         }
+
+        #region Marquee Select
+
+        private Rectangle _marquee;
+        private bool _multiSelect;
+        private Point _marqueeAnchor;
+        private bool _isSelecting;
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_marquee != null)
+            {
+                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
+                MarqueeSelectDocs(marqueeRect);
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+
+            xOuterGrid.ReleasePointerCapture(e.Pointer);
+        }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
+            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
+
+            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
+
+
+            var pos = currentPoint.Position;
+            var dX = pos.X - _marqueeAnchor.X;
+            var dY = pos.Y - _marqueeAnchor.Y;
+
+            //Height and width depend on the difference in position of the current point and the anchor (initial point)
+            double newWidth = (dX > 0) ? dX : -dX;
+            double newHeight = (dY > 0) ? dY : -dY;
+
+            //Anchor point should also be moved if dX or dY are moved
+            var newAnchor = _marqueeAnchor;
+            if (dX < 0) newAnchor.X += dX;
+            if (dY < 0) newAnchor.Y += dY;
+
+
+            if (newWidth > 5 && newHeight > 5 && _marquee == null)
+            {
+                this.Focus(FocusState.Programmatic);
+                if (_marquee == null)
+                {
+                    _marquee = new Rectangle()
+                    {
+                        Stroke = new SolidColorBrush(Colors.Gray),
+                        StrokeThickness = 1.5 / Zoom,
+                        StrokeDashArray = new DoubleCollection { 5, 2 },
+                        CompositeMode = ElementCompositeMode.SourceOver
+                    };
+                    MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                    MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
+                }
+                _marquee.AllowFocusOnInteraction = true;
+                SelectionCanvas.Children.Add(_marquee);
+            }
+
+            if (_marquee == null) return;
+
+            //Adjust the marquee rectangle
+            Canvas.SetLeft(_marquee, newAnchor.X);
+            Canvas.SetTop(_marquee, newAnchor.Y);
+            _marquee.Width = newWidth;
+            _marquee.Height = newHeight;
+
+            args.Handled = true;
+
+        }
+
+        private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
+            if (_marquee != null && e.Key == VirtualKey.Back)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+
+                foreach (var v in viewsinMarquee)
+                    v.DeleteDocument();
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+            if (_marquee != null && e.Key == VirtualKey.G)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var doc = Util.BlankDocWithPosition(where);
+                doc.GetWidthField().Data = _marquee.Width;
+                doc.GetHeightField().Data = _marquee.Height;
+                ViewModel.AddDocument(doc, null);
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+            if (_marquee != null && e.Key == VirtualKey.C)
+            {
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+                var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
+                doc.GetWidthField().Data = _marquee.Width;
+                doc.GetHeightField().Data = _marquee.Height;
+                ViewModel.AddDocument(doc, null);
+
+                foreach (var v in viewsinMarquee)
+                    v.DeleteDocument();
+
+                _multiSelect = false;
+                SelectionCanvas.Children.Remove(_marquee);
+                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
+                _marquee = null;
+                _isSelecting = false;
+                e.Handled = true;
+            }
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                _isSelecting = true;
+                PreviewTextbox_LostFocus(null, null);
+            }
+        }
+
+        private List<DocumentView> DocsInMarquee(Rect marquee)
+        {
+            var selectedDocs = new List<DocumentView>();
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                IEnumerable<DocumentViewModel> docs =
+                    xItemsControl.Items.OfType<DocumentViewModel>();
+                foreach (var docvm in docs)
+                {
+                    var doc = docvm.DocumentController;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    if (double.IsNaN(width)) width = 0;
+                    var height = doc.GetHeightField().Data;
+                    if (double.IsNaN(height)) height = 0;
+                    var rect = new Rect(position, new Size(width, height));
+                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                    {
+                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                        if (documentView != null)
+                            selectedDocs.Add(
+                                documentView);
+                    }
+                }
+            }
+            return selectedDocs;
+
+        }
+        private void MarqueeSelectDocs(Rect marquee)
+        {
+            SelectionCanvas.Children.Clear();
+            if (!_multiSelect) DeselectAll();
+
+            var selectedDocs = DocsInMarquee(marquee);
+
+            //Makes the collectionview's selection mode "Multiple" if documents were selected.
+            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            {
+                var parentView = this.GetFirstAncestorOfType<CollectionView>();
+                parentView.MakeSelectionModeMultiple();
+            }
+        }
+
+        #endregion
 
         #region Flyout
         #endregion
@@ -1258,10 +1623,12 @@ namespace Dash
             e.Handled = true;
 
             SelectionCanvas?.Children?.Clear();
-            SetMultiSelectEnabled(false);
+            DeselectAll();
+
             _isSelecting = false;
 
-            RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
+            //RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
+            RenderPreviewTextbox(e.GetPosition(itemsPanelCanvas));
 
             // so that doubletap is not overrun by tap events 
             _singleTapped = true;
@@ -1331,9 +1698,8 @@ namespace Dash
 
         #endregion
 
-        #region General Selection Util Functions
+        #region SELECTION
 
-        // if the current collectionview's documents can be selected
         private bool _isSelectionEnabled;
         public bool IsSelectionEnabled
         {
@@ -1347,15 +1713,15 @@ namespace Dash
                 }
             }
         }
-        // the selected Document Views and their corresponding Controllers(?)
-        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-        private List<DocumentView> _documentViews = new List<DocumentView>();
-   
-        private bool _isToggleOn;
 
-        /// <summary>
-        /// Selects or deselects all currently selected documents on the collection.
-        /// </summary>
+
+
+        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+
+        private List<DocumentView> _documentViews = new List<DocumentView>();
+
+
+        private bool _isToggleOn;
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
@@ -1366,9 +1732,6 @@ namespace Dash
                     Deselect(docView);
         }
 
-        /// <summary>
-        /// Deselects all selected documents.
-        /// </summary>
         public void DeselectAll()
         {
             foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
@@ -1378,10 +1741,6 @@ namespace Dash
             ViewModel.SelectionGroup.Clear();
         }
 
-        /// <summary>
-        /// Deselects a specific document.
-        /// </summary>
-        /// <param name="docView"></param>
         private void Deselect(DocumentView docView)
         {
             ViewModel.SelectionGroup.Remove(docView.ViewModel);
@@ -1389,30 +1748,26 @@ namespace Dash
 
         }
 
-        /// <summary>
-        /// Selects a specific document.
-        /// </summary>
-        /// <param name="docView"></param>
         public void Select(DocumentView docView)
         {
             ViewModel.SelectionGroup.Add(docView.ViewModel);
             docView.ToggleMultiSelected(true);
-            docView.OnSelected();
         }
 
-        // the following functions propagate drag events to the ViewModels
         private void Collection_DragLeave(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
             ViewModel.CollectionViewOnDragLeave(sender, e);
         }
+
+
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
+            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
             ViewModel.CollectionViewOnDragEnter(sender, e);
+
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
@@ -1426,149 +1781,6 @@ namespace Dash
             e.Data.Properties.Add("View", true);
             e.Data.RequestedOperation = DataPackageOperation.Link;
         }
-        #endregion
-
-        #region Marquee Select
-
-        // variables relating to the marquee selection on a collection view
-        private Rectangle _marquee;
-        private bool _multiSelect;
-        private Point _marqueeAnchor;
-        private bool _isSelecting;
-
-        /// <summary>
-        /// When the mouse is released, selects all the items contained within the
-        /// selection marquee rectangle.
-        /// </summary>
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (_marquee != null)
-            {
-                var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
-                Rect marqueeRect = new Rect(pos, new Size(_marquee.Width, _marquee.Height));
-                MarqueeSelectDocs(marqueeRect);
-                _multiSelect = false;
-                _marquee = null;
-                _isSelecting = false;
-                e.Handled = true;
-            }
-
-            xOuterGrid.ReleasePointerCapture(e.Pointer);
-        }
-
-        /// <summary>
-        /// Updates the selection marquee rectangle if the left button or equivalent
-        /// is vbeing held down.
-        /// </summary>
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
-        {
-            var currentPoint = args.GetCurrentPoint(SelectionCanvas);
-            if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
-
-            if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
-
-            var pos = currentPoint.Position;
-            var dX = pos.X - _marqueeAnchor.X;
-            var dY = pos.Y - _marqueeAnchor.Y;
-
-            //Height and width depend on the difference in position of the current point and the anchor (initial point)
-            double newWidth = (dX > 0) ? dX : -dX;
-            double newHeight = (dY > 0) ? dY : -dY;
-
-            //Anchor point should also be moved if dX or dY are moved
-            var newAnchor = _marqueeAnchor;
-            if (dX < 0) newAnchor.X += dX;
-            if (dY < 0) newAnchor.Y += dY;
-
-
-            if (newWidth > 5 && newHeight > 5 && _marquee == null)
-            {
-                _marquee = new Rectangle()
-                {
-                    Stroke = new SolidColorBrush(Colors.Gray),
-                    StrokeThickness = 1.5 / Zoom,
-                    StrokeDashArray = new DoubleCollection { 5, 2 },
-                    CompositeMode = ElementCompositeMode.SourceOver
-                };
-                SelectionCanvas.Children.Add(_marquee);
-            }
-
-            if (_marquee == null) return;
-
-            //Adjust the marquee rectangle
-            Canvas.SetLeft(_marquee, newAnchor.X);
-            Canvas.SetTop(_marquee, newAnchor.Y);
-            _marquee.Width = newWidth;
-            _marquee.Height = newHeight;
-
-            args.Handled = true;
-
-        }
-
-        /// <summary>
-        /// When the pointer is initially pressed, begins creating
-        /// a marquee selection.
-        /// </summary>
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
-            {
-                xOuterGrid.CapturePointer(args.Pointer);
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                _marqueeAnchor = pos;
-                _isSelecting = true;
-            }
-        }
-
-        /// <summary>
-        /// Given a rectangle, selects all of the documents that intersect
-        /// with the rectangle's area (performs the marquee selection logic.)
-        /// </summary>
-        /// <param name="marquee">the marquee rectangle</param>
-        private void MarqueeSelectDocs(Rect marquee)
-        {
-            SetMultiSelectEnabled(true);
-            SelectionCanvas.Children.Clear();
-            if (!_multiSelect) DeselectAll();
-            var selectedDocs = new List<DocumentView>();
-
-            if (xItemsControl.ItemsPanelRoot != null)
-            {
-                IEnumerable<DocumentViewModel> docs =
-                    xItemsControl.Items.OfType<DocumentViewModel>();
-                foreach (var docvm in docs)
-                {
-                    var doc = docvm.DocumentController;
-                    var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidthField().Data;
-                    if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeightField().Data;
-                    if (double.IsNaN(height)) height = 0;
-                    var rect = new Rect(position, new Size(width, height));
-                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
-                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
-                    {
-                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                        if (documentView != null)
-                        {
-                            Select(documentView);
-
-                        }
-                    }
-                }
-            }
-            
-            //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && selectedDocs.Count > 0)
-            {
-                var parentView = this.GetFirstAncestorOfType<CollectionView>();
-                parentView.MakeSelectionModeMultiple();
-            }
-        }
-
         #endregion
 
         #region Ink
@@ -1619,6 +1831,7 @@ namespace Dash
         }
 
         string previewTextBuffer = "";
+
         private async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
@@ -1650,7 +1863,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
+                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
@@ -1769,6 +1982,11 @@ namespace Dash
                         documentView.OnSelected();
                     }
                 }
+                if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                {
+                    documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
+                    documentView.ViewModel.GroupOnCreate = false;
+                }
             }
 
         }
@@ -1789,5 +2007,12 @@ namespace Dash
         #endregion
 
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

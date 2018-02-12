@@ -26,6 +26,8 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
+        private bool _rightPressed;
+
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
@@ -239,9 +241,9 @@ namespace Dash
             var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm != null)
             {
+                e.Data.Properties["Collection View Model"] = ViewModel;
                 e.Data.Properties["View Doc To Move"] = dvm.DocumentController;
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties["Collection View Model"] = ViewModel;
             }
         }
 
@@ -251,13 +253,16 @@ namespace Dash
             {
                 return;
             }
-            var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
-            if (dvm != null)
+            if (args.DropResult == DataPackageOperation.Move)
             {
-                var pc = this.GetFirstAncestorOfType<CollectionView>();
-                var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
-                GroupManager.RemoveGroup(pc, group);
-                ViewModel.RemoveDocument(dvm.DocumentController);
+                var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
+                if (dvm != null)
+                {
+                    var pc = this.GetFirstAncestorOfType<CollectionView>();
+                    var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
+                    GroupManager.RemoveGroup(pc, group);
+                    ViewModel.RemoveDocument(dvm.DocumentController);
+                }
             }
         }
     }

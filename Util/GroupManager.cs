@@ -24,34 +24,37 @@ namespace Dash
 
         static public void RemoveGroup(CollectionView parentCollection, DocumentController group)
         {
-            var groupsList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-            groupsList.Remove(group);
-            parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groupsList.TypedData), true);
+            var groupDataDocument = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+            var groupsList = groupDataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            if (groupsList != null)
+            {
+                groupsList.Remove(group);
+                groupDataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groupsList.TypedData), true);
+            }
         }
         static public List<DocumentViewModel> SplitupGroupings(DocumentView parentDocument, bool canSplitupDragGroup)
         {
-            if (parentDocument?.ParentCollection == null || parentDocument?.ViewModel?.DocumentController == null)
+            var parentCollection = parentDocument?.ParentCollection;
+            if (parentCollection == null || parentDocument?.ViewModel?.DocumentController == null)
                 return new List<DocumentViewModel>();
-            var groupToSplit = parentDocument.ParentCollection.GetDocumentGroup(parentDocument.ViewModel.DocumentController);
+            var groupToSplit = parentCollection.GetDocumentGroup(parentDocument.ViewModel.DocumentController);
             if (groupToSplit != null && canSplitupDragGroup)
             {
-                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null).TypedData.Select(d => parentCollection.GetDocumentViewModel(d)).ToList();
 
-                var groupsList = parentDocument.ParentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var groupsList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                 groupsList.Remove(groupToSplit);
-
-                var parentCollection = parentDocument.ParentCollection;
-                List<DocumentViewModel> groupings = new List<DocumentViewModel>();
-                foreach (var dv in docsToReassign.TypedData.Select(d => parentCollection.GetDocumentViewModel(d)).ToList())
+                
+                var groupings = new List<DocumentViewModel>();
+                foreach (var dv in docsToReassign)
                 {
                     if (dv != null)
-                        groupings = SetupGroupings(dv, parentDocument.ParentCollection);
+                        groupings = SetupGroupings(dv, parentCollection, true);
                 }
 
-                foreach (var dv in docsToReassign.TypedData.Select((d) => parentCollection.GetDocumentViewModel(d)).ToList())
+                foreach (var dv in docsToReassign.Where((d)=>d != null && !d.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType)).ToList())
                 {
-                    if (dv != null && parentDocument.ParentCollection.GetDocumentGroup(dv.DocumentController) == null &&
-                        !dv.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                    if (parentCollection.GetDocumentGroup(dv.DocumentController) == null)
                         dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
                 }
                 return groupings;
@@ -60,27 +63,40 @@ namespace Dash
             return SetupGroupings(parentDocument.ViewModel, parentDocument.ParentCollection, true);
         }
 
-
-        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite=false)
+        /// Todo: Fix AddConnected to be able to join multiple groups instead of having to iteratively add one group at a time -- then this function can be replaced with SetupGroupings2
+        static public List<DocumentViewModel> SetupGroupings(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceWrite = false)
         {
-            if (parentCollection == null || docViewModel == null || parentCollection.ParentDocument == null)
-                return new List<DocumentViewModel>();
-            var groupsList = GetGroupsList(parentCollection);
-
-            DocumentController dragGroupDocument;
-            var dragDocumentList = GetGroupMembers(parentCollection, docViewModel, out dragGroupDocument);
-
-            if (parentCollection?.CurrentView is CollectionFreeformView freeFormView)
+            var groups = SetupGroupings2(docViewModel, parentCollection, forceWrite);
+            while (true)
             {
-                var groups = AddConnected(parentCollection, dragDocumentList, dragGroupDocument, groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController));
-                if (groups != null || forceWrite) {
-                    parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
+                var groups2 = SetupGroupings2(docViewModel, parentCollection, forceWrite);
+                if (groups2.Count == groups.Count)
+                    return groups2;
+                groups = groups2;
+            }
+            return groups;
+        }
+        static public List<DocumentViewModel> SetupGroupings2(DocumentViewModel docViewModel, CollectionView parentCollection, bool forceUpdate=false)
+        {
+            var groupedViews = new List<DocumentController>();
+            if (parentCollection != null && docViewModel != null && parentCollection.ParentDocument != null && parentCollection?.CurrentView is CollectionFreeformView freeFormView)
+                {
+                DocumentController dragGroupDocument;
+                groupedViews = GetGroupMembers(parentCollection, docViewModel, out dragGroupDocument);
+
+                if (forceUpdate) // recompute groups if forceUpdate is set, otherwise use the groups they way they were
+                {
+                    var groupsList = GetGroupsList(parentCollection);
+                    var groupDataDocument = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+                    var otherGroups = groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController).ToList();
+                    var groups = AddConnected(parentCollection, groupedViews, dragGroupDocument, otherGroups);
+                    groupDataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
+                    
+                    groupedViews = GetGroupMembers(parentCollection, docViewModel, out dragGroupDocument);
                 }
 
-                DocumentController newDragGroupDocument;
-                return GetGroupMembers(parentCollection, docViewModel, out newDragGroupDocument).Select((gd) => parentCollection.GetDocumentViewModel(gd)).ToList();
             }
-            return new List<DocumentViewModel>();
+            return groupedViews.Select((gd) => parentCollection.GetDocumentViewModel(gd)).ToList();
         }
 
         static List<DocumentController> GetGroupMembers(CollectionView parentCollection, DocumentViewModel docViewModel, out DocumentController dragGroupDocument)
@@ -99,12 +115,8 @@ namespace Dash
         {
             if (collectionView.ParentDocument == null)
                 return new ListController<DocumentController>(new List<DocumentController>());
-            var groupsList = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-            if ((groupsList == null || groupsList.Count == 0) && collectionView.ViewModel.DocumentViewModels.Count > 0)
-            {
-                groupsList = new ListController<DocumentController>(collectionView.ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController));
-                collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
-            }
+            var groupDataDoc = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+            var groupsList = groupDataDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
             var addedItems = new List<DocumentController>();
             foreach (var d in collectionView.ViewModel.DocumentViewModels)
                 if (collectionView.GetDocumentGroup(d.DocumentController) == null && !groupsList.Data.Contains(d.DocumentController))
@@ -128,7 +140,7 @@ namespace Dash
                 newGroupsList.AddRange(addedItems);
                 newGroupsList.RemoveAll((r) => removedGroups.Contains(r));
                 groupsList = new ListController<DocumentController>(newGroupsList);
-                collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.GroupingKey, groupsList, true);
+                groupDataDoc.SetField(KeyStore.GroupingKey, groupsList, true);
             }
             return groupsList;
         }
@@ -156,7 +168,7 @@ namespace Dash
             return null;
         }
 
-        static public List<DocumentController> AddConnected(CollectionView parentCollection, List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, IEnumerable<DocumentController> otherGroups)
+        static public List<DocumentController> AddConnected(CollectionView parentCollection, List<DocumentController> dragDocumentList, DocumentController dragGroupDocument, List<DocumentController> otherGroups)
         {
             foreach (var dragDocument in dragDocumentList)
             {
@@ -195,7 +207,7 @@ namespace Dash
                                     dvm.BackgroundBrush = brush;
                                 return newList;
                             }
-                            else
+                            else 
                             {   // add the dragged documents to the otherGroup they overlap with
                                 var groupList = otherGroup.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                                 groupList.AddRange(dragDocumentList);

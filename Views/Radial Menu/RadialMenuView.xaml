@@ -65,15 +65,9 @@
                                 </userControl:RadialMenu>
                             </components:RadialMenuButton.Submenu>
                         </components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="Document" Label="Document" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="Theme" Label="Theme" IconSymbol="{x:Bind ThemeSymbol}"></components:RadialMenuButton>
+                        <components:RadialMenuButton x:Name="Document" Label="Grouping" IconSymbol="{x:Bind DocumentSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Operator" Label="Operator" IconSymbol="{x:Bind OperatorSymbol}"></components:RadialMenuButton>
                         <components:RadialMenuButton x:Name="Collection" Label="Collection" IconSymbol="{x:Bind CollectionSymbol}"></components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="ImportButton" Label="Import" IconSymbol="{x:Bind FilePickerSymbol}"></components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="SearchButton" Label="Search" IconSymbol="{x:Bind SearchSymbol}"></components:RadialMenuButton>
-                        <components:RadialMenuButton x:Name="NotesButton" Label="Notes"
-                                                     IconSymbol="{x:Bind NoteSymbol}">
-                        </components:RadialMenuButton>
                     </userControl:RadialMenu.Buttons>
                 </userControl:RadialMenu>
             </Grid>

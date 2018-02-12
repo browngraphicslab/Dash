@@ -22,6 +22,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
+using Windows.System;
+using Windows.UI.Core;
+using Dash.Models.DragModels;
 
 namespace Dash
 {
@@ -138,6 +141,8 @@ namespace Dash
             foreach (var d in docs.Select((dd) => dd.GetDataDocument(null)))
             {
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
+                if (fieldDict == null)
+                    continue;
                 foreach (var f in d.EnumFields())
                     if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
                     {
@@ -196,9 +201,9 @@ namespace Dash
 
         Dictionary<KeyController, List<object>> setupPivotDoc(KeyController pivotKey, Dictionary<object, Dictionary<KeyController, List<object>>> dictionary, Dictionary<object, DocumentController> pivotDictionary, DocumentController d)
         {
-            var obj = d.GetDataDocument(null).GetDereferencedField(pivotKey, null).GetValue(null);
+            var obj = d.GetDataDocument(null).GetDereferencedField(pivotKey, null)?.GetValue(null);
             DocumentController pivotDoc = null;
-            if (!dictionary.ContainsKey(obj))
+            if (obj != null && !dictionary.ContainsKey(obj))
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
@@ -234,16 +239,19 @@ namespace Dash
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
             }
 
-            d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
-            var fieldDict = dictionary[obj];
-            return fieldDict;
+            if (obj != null)
+            {
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
+                return dictionary[obj];
+            }
+            return null;
         }
         
-        KeyController expandCollection(CollectionDBSchemaHeader.HeaderDragData dragData, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
+        KeyController expandCollection(KeyController fieldKey, FieldControllerBase getDocs, List<DocumentController> subDocs, KeyController showField)
         {
             foreach (var d in (getDocs as ListController<DocumentController>).TypedData)
             {
-                var fieldData = d.GetDataDocument(null).GetDereferencedField(dragData.FieldKey, null);
+                var fieldData = d.GetDataDocument(null).GetDereferencedField(fieldKey, null);
                 if (fieldData is ListController<DocumentController>)
                     foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
                     {
@@ -290,7 +298,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 32)).Document;
+                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -339,43 +347,33 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation;
             }
 
-            // special case for schema view... should be removed
-            if (CollectionDBSchemaHeader.DragModel != null)
-                e.AcceptedOperation = DataPackageOperation.Copy;
-
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
 
-            if (e.DataView != null &&
-                  (e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) || CollectionDBSchemaHeader.DragModel != null))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
             {
-                var dragData = e.DataView.Properties.ContainsKey(nameof(CollectionDBSchemaHeader.HeaderDragData)) == true ?
-                          e.DataView.Properties[nameof(CollectionDBSchemaHeader.HeaderDragData)] as CollectionDBSchemaHeader.HeaderDragData : CollectionDBSchemaHeader.DragModel;
-
-                // bcz: testing stuff out here...
-                var cnote = new CollectionNote(where, dragData.ViewType);
-                var getDocs = (dragData.HeaderColumnReference as DocumentReferenceController).DereferenceToRoot(null);
-
-                var subDocs = new List<DocumentController>();
+                var dragData  = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
+                var getDocs   = dragData.CollectionReference.DereferenceToRoot(null);
+                var subDocs   = new List<DocumentController>();
                 var showField = dragData.FieldKey;
+                var cnote     = new CollectionNote(where, dragData.ViewType);
+
                 if ((getDocs as ListController<DocumentController>).Data.Any())
                 {
                     var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                    if (firstDocValue is ListController<DocumentController> || firstDocValue.GetValue(null) is List<FieldControllerBase>)
-                        showField = expandCollection(dragData, getDocs, subDocs, showField);
+                    if (firstDocValue is ListController<DocumentController> || firstDocValue?.GetValue(null) is List<FieldControllerBase>)
+                        showField = expandCollection(dragData.FieldKey, getDocs, subDocs, showField);
                     else if (firstDocValue is DocumentController)
                         subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
                     else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
                 }
                 if (subDocs != null)
                     cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
-                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.HeaderColumnReference, true);
-                cnote.Document.GetDataDocument(null).SetField(DBFilterOperatorController.FilterFieldKey, new TextController(showField.Name), true);
+                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
+                cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
 
                 AddDocument(cnote.Document, null);
-                DBTest.DBDoc.AddChild(cnote.Document);
-                CollectionDBSchemaHeader.DragModel = null;
                 return;
             }
 
@@ -444,7 +442,7 @@ namespace Dash
                 var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length >0);
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
                 var strings = text.Split(new char[] { '\r' });
-                var htmlNote = new HtmlNote(html, "", where).Document;
+                var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                 foreach (var str in html.Split(new char[] { '\r' }))
                 {
                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
@@ -576,10 +574,11 @@ namespace Dash
 
             // if the user drags the entire collection of documents from the search bar
             if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-                var docs = e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<DocumentController>;
+                var models = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>);
+                var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>().Select((cv) => cv.ParentDocument?.ViewModel?.DocumentController?.GetDataDocument(null));
+                var docs = models.Select((srvm) => srvm.ViewDocument).Where((d) => !parentDocs.Contains(d.GetDataDocument(null)) && d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }
@@ -594,37 +593,41 @@ namespace Dash
             }
 
             // if the user drags a data document
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("Operator Document"))
+            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var refDoc = (DocumentController)e.DataView.Properties["Operator Document"];
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-                //There is a specified key, so check if it's the right type
-                if (e.DataView.Properties.ContainsKey("Operator Key")) 
-                {
-                    var refKey = (KeyController) e.DataView.Properties["Operator Key"];
-                    var doc = new DataBox(new DocumentReferenceController(refDoc.Id, refKey), where.X, where.Y).Document;
-                    AddDocument(doc, null);
-                }
-                else
-                {
-                    var docAlias = refDoc.GetKeyValueAlias(where);
-                    AddDocument(docAlias, null);
-                }
+                if (dragModel.CanDrop(sender as FrameworkElement))
+                    AddDocument(dragModel.GetDropDocument(where), null);
             }
 
-
-            // if the user tries to move a view doucment
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
+            // if the dataview contains this view model then don't accept the drag
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("Collection View Model"))
             {
-
-                var collViewModel = (BaseCollectionViewModel) e.DataView.Properties["Collection View Model"];
-                if (collViewModel == this)
+                var collViewModel = (BaseCollectionViewModel)e.DataView.Properties["Collection View Model"];
+                if (collViewModel.Equals(this))
                 {
                     e.AcceptedOperation = DataPackageOperation.None;
                     return;
                 }
+            }
+
+
+
+            // if the user tries to move a view document
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
+            {
                 var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Move"];
                 Actions.DisplayDocument(this, viewDoc, where);
+                e.AcceptedOperation = DataPackageOperation.Move;
+            }
+
+            // if the user tries to copy a view document
+            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Copy"))
+            {
+                var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Copy"];
+                Actions.DisplayDocument(this, viewDoc.GetViewCopy(where), where);
+                e.AcceptedOperation = DataPackageOperation.Copy;
             }
 
             e.Handled = true;
@@ -645,11 +648,11 @@ namespace Dash
 
 
             // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
             {
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }  else 
@@ -658,8 +661,8 @@ namespace Dash
             }
 
             // special case for schema view... should be removed
-            if (CollectionDBSchemaHeader.DragModel != null)
-                e.AcceptedOperation = DataPackageOperation.Copy;
+            //if (e.DataView.Properties.ContainsKey("CollectionReference"))
+            //    e.AcceptedOperation = DataPackageOperation.Copy;
             
             e.DragUIOverride.IsContentVisible = true;
 

@@ -30,7 +30,9 @@ namespace Dash
                     text = await stream.ReadTextAsync();
                 }
             }
-            var doc = new NoteDocuments.PostitNote(text).Document;
+            var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
+
+            var doc = new NoteDocuments.PostitNote(text, title).Document;
             return doc;
         }
     }
