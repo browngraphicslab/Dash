@@ -47,12 +47,6 @@ namespace Dash
         /// </summary>
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
-        /// <summary>
-        /// separate lists for key and value
-        /// </summary>
-        private ObservableCollection<KeyFieldContainer> KeyListItemSource { get; }
-        private ObservableCollection<KeyFieldContainer> FieldListItemSource { get; }
-
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
         public KeyValuePane()
@@ -60,10 +54,7 @@ namespace Dash
             InitializeComponent();
 
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
-
-            KeyListItemSource = new ObservableCollection<KeyFieldContainer>();
-            FieldListItemSource = new ObservableCollection<KeyFieldContainer>();
-
+            
             DataContextChanged += KeyValuePane_DataContextChanged;
 
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
@@ -128,25 +119,15 @@ namespace Dash
             //                keys.Contains(keyFieldPair.Key), TypeColumnWidth));
             //}
 
-            KeyListItemSource.Clear();
-            FieldListItemSource.Clear();
+            ListItemSource.Clear();
             if (_dataContextDocument != null)
             {
-                var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                    ?.TypedData?.ToList() ?? new List<KeyController>(); // get dereferenced field and if it exists make it a list, if not make a new list
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
-                {
-                    // hidden keys start with an underscore. if not hidden, add to keys list and fields list
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
-                    {
-                        KeyListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundController(keyFieldPair.Value, _dataContextDocument),
-                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
-                        FieldListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundController(keyFieldPair.Value, _dataContextDocument),
-                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
-                    }
-                        
-                }
+                        ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
+                            new BoundController(keyFieldPair.Value, _dataContextDocument), TypeColumnWidth, true));
             }
+
         }
 
         /// <summary>
@@ -168,19 +149,10 @@ namespace Dash
             var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
                            ?.TypedData?.ToList() ?? new List<KeyController>();
 
-            //for (var i = 0; i < ListItemSource.Count; i++)
-            //    if (ListItemSource[i].Key.Equals(fieldKey))
-            //        ListItemSource[i] = new KeyFieldContainer(fieldKey,
-            //            new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
-
-            for (var i = 0; i < KeyListItemSource.Count; i++)
-            {
-                if (KeyListItemSource[i].Key.Equals(fieldKey))
-                {
-                    KeyListItemSource[i] = new KeyFieldContainer(fieldKey, new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
-                    FieldListItemSource[i] = new KeyFieldContainer(fieldKey, new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth); ;
-                }
-            }
+            for (var i = 0; i < ListItemSource.Count; i++)
+                if (ListItemSource[i].Key.Equals(fieldKey))
+                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
+                        new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
         }
 
         /// <summary>
@@ -268,8 +240,8 @@ namespace Dash
             var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
                            ?.TypedData?.ToList() ?? new List<KeyController>();
 
-            //ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
-            //    keys.Contains(key), TypeColumnWidth));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
+                keys.Contains(key), TypeColumnWidth));
 
             // TODO check if adding was succesful
             // reset the fields to the empty values
@@ -349,13 +321,13 @@ namespace Dash
             // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
             var posInKvPane = e.GetPosition(xOuterGrid);
             //var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
-            var columnDefinitions = xKeyValueGrid.ColumnDefinitions;
+            var columnDefinitions = ((xKeyListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
             if (columnDefinitions == null)
             {
                 return;
             }
             var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
-            var keyColumnWidth = columnDefinitions[1].ActualWidth;
+            var keyColumnWidth = columnDefinitions[0].ActualWidth;
             if (posInKvPane.X > checkboxColumnWidth && posInKvPane.X < keyColumnWidth)
                 _editKey = true;
             else
