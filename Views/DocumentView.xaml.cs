@@ -165,12 +165,10 @@ namespace Dash
             if (!isMultiSelected)
             {
                 this.CanDrag = false;
-                this.DragStarting -= freeformView.DocView_OnDragStarting;
                 xFieldContainer.BorderThickness = new Thickness(0);
             } else
             {
                 this.CanDrag = true;
-                this.DragStarting += freeformView.DocView_OnDragStarting;
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
                 xFieldContainer.BorderThickness = new Thickness(2);
             }

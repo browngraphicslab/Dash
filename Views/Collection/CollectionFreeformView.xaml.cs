@@ -1710,13 +1710,7 @@ namespace Dash
                 }
             }
         }
-
-
-
-        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-
-        private List<DocumentView> _documentViews = new List<DocumentView>();
-
+        
 
         private bool _isToggleOn;
         public void ToggleSelectAllItems()
@@ -1764,20 +1758,7 @@ namespace Dash
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
         }
-
-        public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
-        {
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
-            var docControllerList = new List<DocumentController>();
-            foreach (var vm in ViewModel.SelectionGroup)
-            {
-                docControllerList.Add(vm.DocumentController);
-            }
-            e.Data.Properties.Add("DocumentControllerList", docControllerList);
-            e.Data.Properties.Add("View", true);
-            e.Data.RequestedOperation = DataPackageOperation.Link;
-        }
+        
         #endregion
 
         #region Ink
@@ -1786,9 +1767,7 @@ namespace Dash
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
-        private bool loadingPermanentTextbox;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
-        private TextBox previewTextbox { get; set; }
 
 
         private void MakeInkCanvas()
@@ -1805,6 +1784,10 @@ namespace Dash
             InkHostCanvas.Children.Add(XInkCanvas);
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
+
+        private bool loadingPermanentTextbox;
+
+        private TextBox previewTextbox { get; set; }
 
         private void MakePreviewTextbox()
         {
@@ -1829,7 +1812,7 @@ namespace Dash
 
         string previewTextBuffer = "";
 
-        private async void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
                 .HasFlag(CoreVirtualKeyStates.Down);
