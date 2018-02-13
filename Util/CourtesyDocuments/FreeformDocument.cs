@@ -46,17 +46,17 @@ namespace Dash
             return prototypeDocument;
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
 
             var grid = new Grid();
             SetupBindings(grid, docController, context);
-            LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+            LayoutDocuments(docController, context, grid, keysToFrameworkElementsIn);
 
             grid.Clip = new RectangleGeometry();
             grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
@@ -72,11 +72,11 @@ namespace Dash
                 var collFieldArgs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
-                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, keysToFrameworkElementsIn);
                 }
                 else
                 {
-                    LayoutDocuments((DocumentController) sender, c, grid, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController) sender, c, grid, keysToFrameworkElementsIn);
                 }
             }
 
@@ -88,62 +88,28 @@ namespace Dash
             {
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
             };
-            if (isInterfaceBuilderLayout)
-            {
-                
-                var icon = new TextBlock()
-                {
-                    Text = "⊡",
-                    FontSize = 100,
-                    Foreground = new SolidColorBrush(Colors.LightBlue),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                
-                grid.Children.Insert(0, icon);
-                
-                var container = new SelectableContainer(grid, docController, dataDocument);
-                SetupBindings(container, docController, context);
-                return container;
-            }
             
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             grid.Children.Clear();
-            if (isInterfaceBuilder)
-            {
-                
-                var icon = new TextBlock()
-                {
-                    Text = "⊡",
-                    FontSize = 100,
-                    Foreground = new SolidColorBrush(Colors.LightBlue),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                grid.Children.Add(icon);
-                
-            }
-            AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder, keysToFrameworkElementsIn);
+            AddDocuments(layoutDocuments, context, grid, keysToFrameworkElementsIn);
         }
 
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
+        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
         {
             foreach (var layoutDocument in docs)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context, keysToFrameworkElements);
                 // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
                 // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
                 // TODO it helps the freeformdocument position elements correctly
                 layoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
                 layoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
                 BindPosition(layoutView, layoutDocument, context);
-                if (isInterfaceBuilder)
-                    SetupBindings(layoutView, layoutDocument, context);
                 grid.Children.Add(layoutView);
             }
         }

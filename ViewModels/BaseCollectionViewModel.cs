@@ -348,11 +348,8 @@ namespace Dash
 
             // true if dragged from key value pane in interfacebuilder
             var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
-
-            // true if dragged from layoutbar in interfacebuilder
-            var isDraggedFromLayoutBar = (e.DataView?.Properties.ContainsKey(InterfaceBuilder.LayoutDragKey) ?? false) && 
-                e.DataView?.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
-            if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
+            
+            if (isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
 
             //return if it's an operator dragged from compoundoperatoreditor listview 
             if (e.Data?.Properties[CompoundOperatorController.OperationBarDragKey] != null) return;

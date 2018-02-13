@@ -83,8 +83,7 @@ namespace Dash
             SetupTextBinding(element, docController, context);
         }
 
-        public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController,Context context)
         {
             return MakeView(docController, context);
         }
@@ -94,7 +93,7 @@ namespace Dash
         /// </summary>
         /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false, bool isEditable = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isEditable = false)
         {
             // the text field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -108,7 +107,7 @@ namespace Dash
             };
             SetupBindings(tb, docController, context);
 
-            return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(tb, docController) : tb;
+            return tb;
         }
 
         #region Bindings

@@ -48,9 +48,9 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilder)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null, isInterfaceBuilder);
+            return MakeView(docController, context, null);
         }
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,
@@ -107,7 +107,7 @@ namespace Dash
         }
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
 
         {
             context = context ?? new Context();
@@ -121,14 +121,8 @@ namespace Dash
             Debug.Assert(col != null);
             foreach (var documentController in col.GetElements())
             {
-                var element = documentController.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn);
+                var element = documentController.MakeViewUI(context, keysToFrameworkElementsIn);
                 grid.Children.Add(element);
-            }
-            if (isInterfaceBuilder)
-            {                                                                                                   
-                var container = new SelectableContainer(grid, docController, dataDocument);
-                SetupBindings(container, docController, context);
-                return container;
             }
             return grid;
         }

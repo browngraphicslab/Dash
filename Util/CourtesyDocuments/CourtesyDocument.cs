@@ -276,8 +276,7 @@ namespace Dash
             return fields;
         }
 
-        public virtual FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+        public virtual FrameworkElement makeView(DocumentController docController, Context context)
         {
             return new Grid();
         }

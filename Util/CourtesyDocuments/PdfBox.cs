@@ -73,14 +73,12 @@ namespace Dash
             return prototypeDocument;
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             // create the pdf view
             var pdfView = new PdfView();
@@ -93,14 +91,7 @@ namespace Dash
             // set up interactions with operations
             var reference = GetPdfReference(docController);
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = pdf;
-
-            if (isInterfaceBuilderLayout)
-            {
-                pdfView.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(pdfView, docController);
-                //SetupBindings(selectableContainer, docController, context);
-                return selectableContainer;
-            }
+            
             return pdfView;
         }
 

@@ -18,7 +18,7 @@ namespace Dash
         private FieldReference _collectionRef;
         private Context _context;
 
-        public CollectionViewModel(FieldReference refToCollection, bool isInInterfaceBuilder = false, Context context = null) : base()
+        public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
             Debug.Assert(refToCollection != null);
             _collectionRef = refToCollection;
@@ -59,9 +59,7 @@ namespace Dash
 
         public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
         public override KeyController CollectionKey => _collectionRef.FieldKey ?? base.CollectionKey;
-
-
-
+        
 
         #region Event Handlers
 

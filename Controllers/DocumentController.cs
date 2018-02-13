@@ -1154,7 +1154,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
+        private FrameworkElement makeAllViewUI(Context context)
         {
             var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
             if (fields.Count > 15)
@@ -1162,7 +1162,7 @@ namespace Dash
             var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldControllerBase> f)
             {
-                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId());
             }
 
 
@@ -1200,7 +1200,7 @@ namespace Dash
             return sp;
         }
 
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
         {
             context = new Context(context);
             context.AddDocumentContext(this);
@@ -1214,121 +1214,112 @@ namespace Dash
 
                 if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
                 {
-                    if (isInterfaceBuilder)
-                    {
-                        var activeLayout = this.GetActiveLayout(context);
-                        return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
-                    }
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
 
-                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, GetDataDocument());
+                return doc.MakeViewUI(context, keysToFrameworkElementsIn, GetDataDocument());
             }
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
             {
-                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder, true); //
+                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, true); //
             }
             if (DocumentType.Equals(ImageBox.DocumentType))
             {
-                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(PdfBox.DocumentType))
             {
-                return PdfBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return PdfBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DocumentBox.DocumentType))
             {
-                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
+                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn);//
             }
             if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
             {
-                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
+                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);//
             }
             if (DocumentType.Equals(StackLayout.DocumentType))
             {
-                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
+                return StackLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(WebBox.DocumentType))
             {
-                return WebBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return WebBox.MakeView(this, context, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
-                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
+                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);//
             }
             if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
             {
-                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
             {
-                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(InkBox.DocumentType))
             {
-                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(GridViewLayout.DocumentType))
             {
-                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(ListViewLayout.DocumentType))
             {
-                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
             {
-                return ExecuteHtmlOperatorBox.MakeView(this, context, isInterfaceBuilder); //
+                return ExecuteHtmlOperatorBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(RichTextBox.DocumentType))
             {
-                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
+                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
+                return GridLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
             {
-                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
             {
-                return QuizletOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return QuizletOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
             {
-                return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
             {
-                return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
-                return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
+                return DBSearchOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
-                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
+                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn); //I set the framework element as the operator view for now
             }
             if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
             {
-                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(BackgroundBox.DocumentType))
             {
-                return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
+                return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn);
             }
             if (DocumentType.Equals(DataBox.DocumentType))
             {
-                return DataBox.MakeView(this, context, isInterfaceBuilder);//TODO add keysToFrameworkElementsIn
-            }
-            if (isInterfaceBuilder)
-            {
-                return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+                return DataBox.MakeView(this, context);//TODO add keysToFrameworkElementsIn
             }
             return makeAllViewUI(context);
         }

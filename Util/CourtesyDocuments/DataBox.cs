@@ -30,14 +30,12 @@ namespace Dash
             //}
         }
 
-        public override FrameworkElement makeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController documentController, Context context)
         {
-            return MakeView(documentController, context, isInterfaceBuilderLayout);
+            return MakeView(documentController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
@@ -55,11 +53,11 @@ namespace Dash
                 // hack to check if the dc is a view document
                 if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
                 {
-                    return dc.MakeViewUI(context, isInterfaceBuilderLayout);
+                    return dc.MakeViewUI(context);
                 }
                 else
                 {
-                    return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
+                    return dc.GetKeyValueAlias().MakeViewUI(context);
                 }
             }
             else if (data is TextController)

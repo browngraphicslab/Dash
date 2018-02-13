@@ -27,7 +27,6 @@ namespace Dash
         private double _width;
         private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
-        private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
         private Brush _borderBrush;
         private IconTypeEnum iconType;
@@ -181,15 +180,9 @@ namespace Dash
 
         public TransformGroupData GroupTransform
         {
-            get => IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform;
+            get => _normalGroupTransform;
             set
             {
-                if (IsInInterfaceBuilder)
-                {
-                    SetProperty(ref _interfaceBuilderGroupTransform, value);
-                    return;
-                }
-
                 if (SetProperty(ref _normalGroupTransform, value))
                 {
                     // set position
@@ -318,7 +311,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = LayoutDocument.MakeViewUI(null, IsInInterfaceBuilder, KeysToFrameworkElements);
+                    _content = LayoutDocument.MakeViewUI(null, KeysToFrameworkElements);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
@@ -358,7 +351,6 @@ namespace Dash
             BorderBrush = new SolidColorBrush(Colors.LightGray);
 
             SetUpSmallIcon();
-            _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
             OnActiveLayoutChanged(context);
 
             DocumentController.GetDataDocument(context).AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
@@ -450,11 +442,7 @@ namespace Dash
 
             ListenToHeightField();
             ListenToWidthField();
-
-            if (!IsInInterfaceBuilder)
-            {
-                ListenToTransformGroupField();
-            }
+            ListenToTransformGroupField();
 
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections

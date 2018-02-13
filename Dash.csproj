@@ -373,7 +373,6 @@
     <Compile Include="Views\Collection\CollectionPageView.xaml.cs">
       <DependentUpon>CollectionPageView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\DocumentViewModelParameters.cs" />
     <Compile Include="Controllers\RectController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
     <Compile Include="Converters\StringToFontweightConverter.cs" />
@@ -636,9 +635,6 @@
     </Compile>
     <Compile Include="Views\Ink\InkCanvasControl.xaml.cs">
       <DependentUpon>InkCanvasControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
-      <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
@@ -1066,10 +1062,6 @@
     <Page Include="Views\Ink\InkCanvasControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\InterfaceBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\KeyValuePane.xaml">
       <SubType>Designer</SubType>

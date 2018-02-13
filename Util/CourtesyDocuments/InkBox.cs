@@ -29,21 +29,14 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
 
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
             if (fmController != null)
             {
-                var inkCanvas = new InkCanvasControl(fmController, isInterfaceBuilderLayout);
+                var inkCanvas = new InkCanvasControl(fmController);
                 SetupBindings(inkCanvas, docController, context);
-                
-                if (isInterfaceBuilderLayout)
-                {
-                    var selectableContainer = new SelectableContainer(inkCanvas, docController, dataDocument);
-                    //SetupBindings(selectableContainer, docController, context);
-                    return selectableContainer;
-                }
 
                 //add to key to framework element dictionary
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;

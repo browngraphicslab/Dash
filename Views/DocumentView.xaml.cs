@@ -942,11 +942,6 @@ namespace Dash
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
-        private void OpenLayout()
-        {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(10, 10), this);
-        }
-
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
         {
             var tb = sender as TextBox;
@@ -1185,14 +1180,6 @@ namespace Dash
             }
         }
 
-        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
-            var deepestPrototype = prototypes.First.Value;
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
-            var same = deepestPrototype.Equals(ViewModel.DocumentController);
-        }
-
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
@@ -1253,11 +1240,6 @@ namespace Dash
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
             DeleteDocument();
-        }
-
-        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
-        {
-            OpenLayout();
         }
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)

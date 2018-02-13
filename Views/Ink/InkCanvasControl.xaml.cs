@@ -30,7 +30,6 @@ namespace Dash
     public sealed partial class InkCanvasControl : SelectionElement
     {
         public InkController InkFieldModelController;
-        private readonly bool _isInterfaceBuilder;
         private ManipulationControls _controls;
         Symbol SelectIcon = (Symbol) 0xEF20;
 
@@ -48,10 +47,9 @@ namespace Dash
         /// on the canvas in the underlying data.
         /// </summary>
         /// <param name="inkFieldModelController"></param>
-        public InkCanvasControl(InkController inkFieldModelController, bool isInterfaceBuilder)
+        public InkCanvasControl(InkController inkFieldModelController)
         {
             this.InitializeComponent();
-            _isInterfaceBuilder = isInterfaceBuilder;
             XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
@@ -80,11 +78,8 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!_isInterfaceBuilder)
-            {
-                OnSelected();
-                e.Handled = true;
-            }
+            OnSelected();
+            e.Handled = true;
         }
 
         private void InkFieldModelControllerOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
