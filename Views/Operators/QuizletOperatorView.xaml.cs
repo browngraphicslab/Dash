@@ -78,7 +78,6 @@ namespace Dash
 
             // get keys associated with fields we want to send to quizlet
             var termKey = GetKeyFromOp(QuizletOperator.TermKey);
-            var definitionKey = GetKeyFromOp(QuizletOperator.DefinitionKey);
             var imageKey = GetKeyFromOp(QuizletOperator.ImageKey);
 
             if (collection == null) return;
@@ -99,19 +98,15 @@ namespace Dash
                 {
                     term = dataDoc.GetField<TextController>(termKey)?.Data ?? string.Empty;
                 }
-                if (definitionKey != null)
-                {
-                    definition = dataDoc.GetField<TextController>(definitionKey)?.Data ?? string.Empty;
-                }
                 if (imageKey != null)
                 {
-                    image = dataDoc.GetField<ImageController>(imageKey)?.Data?.ToString() ?? string.Empty;
+                    image = dataDoc.GetField<DocumentController>(imageKey)?.GetDataDocument(null)?.GetField<ImageController>(KeyStore.DataKey)?.Data?.ToString() ?? dataDoc.GetField<ImageController>(imageKey)?.Data?.ToString() ?? string.Empty;
                 }
 
                 data.Add((term, definition, image));
             }
 
-            var setTitle = _operatorDoc.GetDereferencedField<TextController>(QuizletOperator.TitleKey, null).Data ?? "Quiz Exported From Dash";
+            var setTitle = _operatorDoc.GetDereferencedField<TextController>(QuizletOperator.TitleKey, null)?.Data ?? "Quiz Exported From Dash";
             ExportToQuizlet(data, setTitle);
         }
 
