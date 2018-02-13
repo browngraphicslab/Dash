@@ -274,9 +274,8 @@ namespace Dash
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = sender as ComboBox;
-            var selectedFontSize = comboBox?.SelectedValue;
-            if (selectedFontSize != null)
-                xRichEditBox.Document.Selection.CharacterFormat.Size = (float) Convert.ToDouble(selectedFontSize.ToString());
+            var selectedFontSize = comboBox.SelectedValue;
+            xRichEditBox.Document.Selection.CharacterFormat.Size = (float) Convert.ToDouble(selectedFontSize.ToString());
         }
 
         #endregion

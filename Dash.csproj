@@ -116,6 +116,7 @@
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
+    <Compile Include="Controllers\Operators\DBFilterOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractKeywordsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\ExtractSentencesOperatorController.cs" />
     <Compile Include="Controllers\Operators\Demo\QuizletOperator.cs" />
@@ -296,6 +297,7 @@
     <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
     <Compile Include="Util\FileTypeToDashParsing\IFileParser.cs" />
+    <Compile Include="Util\CourtesyDocuments\DBFilterOperatorBox.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PdfToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\PptToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\ImageToDashUtil.cs" />
@@ -316,6 +318,12 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionDBView.xaml.cs">
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChart.xaml.cs">
+      <DependentUpon>DBFilterChart.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DBFilterChartBar.xaml.cs">
+      <DependentUpon>DBFilterChartBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
@@ -828,6 +836,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FormattingMenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChart.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DBFilterChartBar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

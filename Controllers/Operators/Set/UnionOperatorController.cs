@@ -34,7 +34,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             ListController<DocumentController> setA = (ListController<DocumentController>) inputs[AKey];
             ListController<DocumentController> setB = (ListController<DocumentController>)inputs[BKey];

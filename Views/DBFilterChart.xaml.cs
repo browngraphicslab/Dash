@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
+
     public sealed partial class DBFilterChart : UserControl
     {
         public DBFilterChart()
@@ -50,13 +51,12 @@ namespace Dash
                     Converter = new DocumentCollectionToStringConverter(true),
                     Context = new Context(OpDoc)
                 });
-                xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<KeyController>()
+                xParameter.AddFieldBinding(TextBox.TextProperty, new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = OpDoc,
                     Key = DBFilterOperatorController.FilterFieldKey,
-                    Context = new Context(OpDoc),
-                    Converter=new ObjectToStringConverter()
+                    Context = new Context(OpDoc)
                 });
                 xAutoFit.AddFieldBinding(CheckBox.IsCheckedProperty, new FieldBinding<NumberController>()
                 {

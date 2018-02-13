@@ -65,13 +65,6 @@ namespace Dash
 
             docController.AddFieldUpdatedListener(KeyStore.DataKey, (sender, args, c) =>
             {
-                //var fargs =
-                //    ((DocumentController.DocumentFieldUpdatedEventArgs) args).FieldArgs as
-                //    DocumentController.DocumentFieldUpdatedEventArgs;//Update came from reference //TODO Make this like DereferenceToRoot
-                //if (fargs != null && fargs.Action == DocumentController.FieldUpdatedAction.Update)
-                //{
-                //    return;
-                //}
                 layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 var innerLayout = dargs.NewValue.DereferenceToRoot<DocumentController>(c);

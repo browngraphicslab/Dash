@@ -34,7 +34,7 @@ namespace Dash
             [ComputedTitle] = TypeInfo.Text,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             TextController output = null;
 
@@ -47,7 +47,7 @@ namespace Dash
             }
 
 
-            outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);
+            outputs[ComputedTitle] = new TextController(Prefix() + ((output ?? new TextController("Untitled")).Data));
         }
 
         public override FieldModelController<OperatorModel> Copy()

@@ -21,10 +21,11 @@
             <TextBlock x:Name="xCollDragIcon" 
                        FontFamily="{StaticResource FontAwesome}" 
                        Foreground="{StaticResource TitleText}" 
-                       FontSize="{StaticResource DefaultFontSize}" 
+                       FontSize="15" 
                        Text="{StaticResource CollectionIcon}" 
                        HorizontalAlignment="Stretch"
                        VerticalAlignment="Center"
+                       Height="32"
             />
         </Border>
 
@@ -35,12 +36,9 @@
                         Name="xAutoSuggestBox"
                         GotFocus="XAutoSuggestBox_OnGotFocus"
                         Grid.Column="1"
-                        TextBoxStyle="{StaticResource AutoFontSize}"
                         Width="300"
+                        Height="32"
                         VerticalAlignment="Center"
-                        DragEnter="XAutoSuggestBox_OnDragEnter"
-                        Drop="XAutoSuggestBox_OnDrop"
-                        AllowDrop="True"
                         >
             <AutoSuggestBox.ItemTemplate>
                 

@@ -57,12 +57,6 @@ namespace Dash
             _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorController.InputCollection, OnInputCollectionChanged);
             _operatorDoc?.AddFieldUpdatedListener(ExtractSentencesOperatorController.TextField, OnTextFieldChanged);
 
-            var keyId = _operatorDoc
-                ?.GetDereferencedField<TextController>(ExtractSentencesOperatorController.TextField, null)?.Data;
-            if (keyId != null)
-            {
-                XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(keyId)?.Name ?? string.Empty;
-            }
         }
 
         private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)

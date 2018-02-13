@@ -17,9 +17,6 @@ namespace Dash
 {
     public class LocalModelEndpoint<T> : IModelEndpoint<T> where T : EntityBase
     {
-
-
-        protected Dictionary<string, bool> _dirtyDict = new Dictionary<string, bool>();
         /// <summary>
         /// private dictionary here to save your objects in memory.  Should be synced with the local dash files
         /// </summary>
@@ -39,19 +36,19 @@ namespace Dash
                 new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                if (File.Exists(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName))
+                if (File.Exists(DashConstants.LocalStorageFolder.Path + "\\" + _fileName))
                 {
-                    var dictionaryText = File.ReadAllText(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName);
+                    var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\" + _fileName);
                     _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
-                    File.Copy(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName, LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
+                    File.Copy(DashConstants.LocalStorageFolder.Path + "\\" + _fileName, DashConstants.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
                 }
                 else
                 {
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
                 }
 
-                Debug.WriteLine("\n\n\n\nDatabase at:   " + LocalKeyEndpoint.LocalStorageFolder.Path + "\n\n\n\n");
+                Debug.WriteLine("Database at:   "+ DashConstants.LocalStorageFolder.Path);
             }
             catch (Exception e)
             {
@@ -71,18 +68,7 @@ namespace Dash
                 if (_modelDictionary != null)
                 {
                     var d = new Dictionary<string, string>(_modelDictionary);
-                    var dirty = new Dictionary<string, bool>(_dirtyDict);
-                    foreach (var b in dirty)
-                    {
-                        if (b.Value)
-                        {
-                            var controller = ContentController<T>.GetModel((b.Key));
-                            var json = controller.Serialize();
-                            d[b.Key] = json;
-                        }
-                    }
-
-                    var file = await LocalKeyEndpoint.LocalStorageFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
+                    var file = await DashConstants.LocalStorageFolder.CreateFileAsync("temp_"+_fileName, CreationCollisionOption.ReplaceExisting);
                     using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
                         using (var outgoingStream = stream.GetOutputStreamAt(0))
@@ -95,9 +81,7 @@ namespace Dash
                             }
                         }
                     }
-                    await file.RenameAsync(_fileName, NameCollisionOption.ReplaceExisting);
-                    _modelDictionary = d;
-                    _dirtyDict = new Dictionary<string, bool>();
+                    await file.RenameAsync(_fileName,NameCollisionOption.ReplaceExisting);
                 }
             }
             catch (Exception e)
@@ -118,50 +102,34 @@ namespace Dash
 
         public virtual void AddDocument(T newDocument, Action<T> success, Action<Exception> error)
         {
-            _dirtyDict[newDocument.Id] = true;
-            //var json = newDocument.Serialize();
-            //if (typeof(T) != typeof(KeyModel) && !_modelDictionary.ContainsKey(newDocument.Id))
-            //{
-
-            //}
-            //_modelDictionary[newDocument.Id] = json;
-            //success?.Invoke(json.CreateObject<T>());
+            var json = newDocument.Serialize();
+            if (typeof(T) != typeof(KeyModel) && !_modelDictionary.ContainsKey(newDocument.Id))
+            {
+                
+            }
+            _modelDictionary[newDocument.Id] = json;
+            success?.Invoke(json.CreateObject<T>());
         }
 
         public virtual void UpdateDocument(T documentToUpdate, Action<T> success, Action<Exception> error)
         {
-            _dirtyDict[documentToUpdate.Id] = true;
-            //if (_modelDictionary.ContainsKey(documentToUpdate.Id))
-            //{
-            //    var json = documentToUpdate.Serialize();
-            //    _modelDictionary[documentToUpdate.Id] = json;
-            //    success?.Invoke(json.CreateObject<T>());
-            //}
-            //else
-            //{
-            //    //error?.Invoke(new Exception("The document didn't exist!"));
-            //}
-        }
-
-        protected string GetModel(string id)
-        {
-           if (_modelDictionary.ContainsKey(id))
-                return _modelDictionary[id];
-
-            if (_dirtyDict.ContainsKey(id))
+            if (_modelDictionary.ContainsKey(documentToUpdate.Id) || true)
             {
-                var model = ContentController<T>.GetModel((id));
-                var json = model.Serialize();
-                _modelDictionary[id] = json;
-                _dirtyDict.Remove((id));
+                var json = documentToUpdate.Serialize();
+                _modelDictionary[documentToUpdate.Id] = json;
+                success?.Invoke(json.CreateObject<T>());
             }
-            return _modelDictionary[id];
+            else
+            {
+                //error?.Invoke(new Exception("The document didn't exist!"));
+            }
         }
+
         public virtual async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
             try
             {
-                var doc = GetModel(id);
+                var doc = _modelDictionary[id];
                 var args = new RestRequestReturnArgs()
                 {
                     ReturnedObjects = new List<EntityBase>()
@@ -184,7 +152,7 @@ namespace Dash
                 var list = new List<T>();
                 foreach (var id in ids)
                 {
-                    var text = GetModel(id);
+                    var text = _modelDictionary[id];
                     var doc = text.CreateObject<T>();
                     list.Add(doc);
                 }
@@ -201,7 +169,6 @@ namespace Dash
             try
             {
                 _modelDictionary.Remove(document.Id);
-                _dirtyDict.Remove(document.Id);
                 success?.Invoke();
             }
             catch (Exception e)
@@ -213,7 +180,6 @@ namespace Dash
         public virtual void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             _modelDictionary = new Dictionary<string, string>();
-            _dirtyDict = new Dictionary<string, bool>();
             success?.Invoke();
         }
 
@@ -244,7 +210,7 @@ namespace Dash
             await GetDocuments(ids, GetCastingFunc(success), error);
         }
 
-        public virtual async Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public virtual async Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V :EntityBase
         {
             await GetDocumentsByQuery(query, GetCastingFunc(success), error);
         }
