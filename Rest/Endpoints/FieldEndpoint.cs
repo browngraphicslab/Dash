@@ -33,9 +33,6 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-<<<<<<< HEAD
-            Task.Run(() =>
-=======
             try
             {
                 //Debug.WriteLine(newField.Id);
@@ -49,7 +46,6 @@ namespace Dash
                 return new Result<FieldModelController>(true, controller);
             }
             catch (ApiException e)
->>>>>>> origin/master
             {
                 AddRequest(AddFields, new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
             });
@@ -58,19 +54,11 @@ namespace Dash
         private async void AddFields(List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batch)
         {
             try
-<<<<<<< HEAD
-             {
-                // convert from field models to DTOs
-                var dtos = batch.Select(x => x.Item1.GetFieldDTO()).ToList();
-                var result = await _connection.Post("api/Field/batch", dtos);
-                var resultDtos = await result.Content.ReadAsAsync<List<FieldModelDTO>>();
-=======
             {
                 //Debug.WriteLine(FieldToUpdate.Id);
                 FieldModelDTO dto = FieldToUpdate.GetFieldDTO();
                 HttpResponseMessage result = _connection.Put("api/Field", dto);
                 FieldModelDTO resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
->>>>>>> origin/master
 
                 var successHandlers = batch.Select(x => x.Item2);
                 successHandlers.Zip(resultDtos, (success, dto) =>
@@ -118,13 +106,9 @@ namespace Dash
 
         public async Task GetField(string id, Func<FieldModelDTO, Task> success, Action<Exception> error)
         {
-<<<<<<< HEAD
-            await Task.Run(async () =>
-=======
             string id = fieldToDelete.Id;
             //Debug.WriteLine(id);
             try
->>>>>>> origin/master
             {
                 try
                 {

@@ -16,6 +16,8 @@ using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using DashShared.Models;
 using Windows.UI.Xaml.Controls;
+using static Dash.CollectionDBSchemaHeader;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -50,7 +52,6 @@ namespace Dash
                     ParentDocument.SetField(HeaderListKey, stuff, true);
                     break;
                 }
-            CollectionDBSchemaHeader.DragModel = null;
         }
 
         //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
@@ -68,11 +69,10 @@ namespace Dash
                 _parentDocument = value;
                 if (value != null)
                 {
-                    _parentDocument = _parentDocument.GetDataDocument(null);
+                    //_parentDocument = _parentDocument.GetDataDocument(null);
                     ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
-                    if (ParentDocument.GetField(DBFilterOperatorController.FilterFieldKey) == null)
-                        ParentDocument.SetField(DBFilterOperatorController.FilterFieldKey,
-                            new TextController(""), true);
+                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
+                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
                 }
             }
@@ -168,6 +168,7 @@ namespace Dash
                     var dc = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                     SetFieldValue(dc);
                     var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    if (column < 0) return;
                     var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                     updateEditBox(recordViewModel.RecordFields[column]);
                 }
@@ -259,12 +260,12 @@ namespace Dash
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
             var dbDocs = ParentDocument
-                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData?.Select((d) => d.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? d);
+                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
             {
-                var str = d.GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                var str = d.GetDataDocument(null).GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
@@ -280,7 +281,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -289,7 +291,7 @@ namespace Dash
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, 
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, 
                                                      FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
@@ -308,7 +310,7 @@ namespace Dash
                     //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 70, FieldKey = f.Key });
+                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
@@ -473,17 +475,26 @@ namespace Dash
         }
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
-            List<CollectionDBSchemaRecordViewModel> recordVMs =
-                xRecordsView.SelectedItems.OfType<CollectionDBSchemaRecordViewModel>().ToList();
-            var docControllerList = new List<DocumentController>();
-            foreach (var vm in recordVMs)
+            foreach (var vm in args.Items.Select((item) => item as CollectionDBSchemaRecordViewModel))
             {
-                docControllerList.Add(vm.Document);
                 GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             }
-            args.Data.Properties.Add("DocumentControllerList", docControllerList);
-            args.Data.Properties.Add("View", true);
-            args.Data.RequestedOperation = DataPackageOperation.Link;
+        }
+
+        private void xHeaderView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            foreach (var m in e.Items)
+            {
+                var viewModel = m as HeaderViewModel;
+                var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                e.Data.Properties.Add(nameof(DragCollectionFieldModel),
+                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
+                    viewModel.FieldKey,
+                    CollectionView.CollectionViewType.DB));
+            }
         }
     }
 }

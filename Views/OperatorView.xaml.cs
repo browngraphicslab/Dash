@@ -18,6 +18,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using DashShared.Models;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -45,15 +46,6 @@ namespace Dash
 
 
         public DocumentView DocumentView { get { return documentView; } }
-
-        public FieldControllerBase GetValue(KeyController key)
-        {
-            DocumentController docController = documentView.ViewModel.DocumentController;
-
-            // check to see if there is an operator on this document, if so it would be stored at the
-            return docController.GetField(key);
-
-        }
 
         /// <summary>
         /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
@@ -389,8 +381,9 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Copy | DataPackageOperation.Link;
             var el = sender as FrameworkElement;
             var docRef = DataContext as DocumentFieldReference;
-            args.Data.Properties["Operator Document"] = docRef.GetDocumentController(null);
-            args.Data.Properties["Operator Key"] = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            args.Data.Properties.Add(nameof(DragDocumentModel),
+                new DragDocumentModel(docRef.GetDocumentController(null),
+                ((DictionaryEntry?)el?.DataContext)?.Key as KeyController));
         }
     }
 }

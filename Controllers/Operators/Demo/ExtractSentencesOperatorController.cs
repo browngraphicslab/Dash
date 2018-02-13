@@ -48,7 +48,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;
@@ -64,17 +64,16 @@ namespace Dash
                 {
                     var sentences = Regex.Split(textInput, @"(?<=[\.!\?])\s+");
 
-                    var protoLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, double.NaN, double.NaN).Document;
 
                     //var sentenceIndex = 0;
-                    foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)))
+                    foreach (var sentence in sentences.Where(s => !string.IsNullOrWhiteSpace(s)).ToList())
                     {
                         var outputDoc = dataDoc.MakeDelegate();
                         outputDoc.SetField(SentenceKey, new RichTextController(new RichTextModel.RTD(sentence)), true);
                         outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
                         outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
 
-                        var docLayout = protoLayout.MakeDelegate();
+                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, 200, 200).Document;
                         docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
                         outputDocs.Add(docLayout);
 
@@ -100,7 +99,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            throw new NotImplementedException();
+            return this;
         }
 
     }

@@ -38,7 +38,7 @@ namespace Dash
 
         public static int numExecutions = 0;
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var numberA = (NumberController)inputs[AKey];
             var numberB = (NumberController)inputs[BKey];

@@ -74,11 +74,10 @@ namespace Dash
             DataReference   = new DocumentReferenceController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
 
             // hack to expand headers if they contain alot of text
-            var tfmc = DataReference.DereferenceToRoot<TextController>(null);
-            if (tfmc != null)
+            var tfmc = DataReference.DereferenceToRoot(null);
+            if (tfmc is TextController || tfmc is RichTextController)
             {
-                var neededWidth = Math.Max(headerViewModel.Width, tfmc.Data.Length * 3.0);
-                HeaderViewModel.Width = Math.Min(300, neededWidth);
+                HeaderViewModel.Width = 300;
             }
 
             BorderThickness = headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks

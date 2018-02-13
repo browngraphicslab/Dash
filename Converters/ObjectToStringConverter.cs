@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dash.Converters;
 using System.Collections;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -27,7 +28,11 @@ namespace Dash
         {
 
             // convert references to a string representation
-            var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) ?? refField;
+            var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context);
+            if (fieldData == null && !(refField is ReferenceController))
+            {
+                fieldData = refField;
+            }
 
             // convert ListControllers to a string representation
             var ilist = fieldData as IList;

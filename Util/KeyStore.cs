@@ -35,17 +35,21 @@ namespace Dash
         public static KeyController UserLinksKey = new KeyController(DashConstants.KeyStore.UserLinksKey);
         public static KeyController CollectionOutputKey = new KeyController(DashConstants.KeyStore.CollectionOutputKey);
         public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
+        public static KeyController OperatorCacheKey = new KeyController(DashConstants.KeyStore.OperatorCacheKey);
         public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
         public static KeyController ParsedFieldKey = new KeyController(DashConstants.KeyStore.ParsedFieldsKey);
         public static KeyController WebContextKey = new KeyController(DashConstants.KeyStore.WebContextKey);
+        public static KeyController ModifiedTimestampKey = new KeyController(DashConstants.KeyStore.ModifiedTimestampKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
+        public static KeyController WorkspaceHistoryKey = new KeyController(DashConstants.KeyStore.WorkspaceHistoryKey);
         public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
         public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
         public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
         public static KeyController ActualHeightKey = new KeyController(DashConstants.KeyStore.ActualHeightKey);
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
+        public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
 
         /// <summary>
         /// Key for collection data
