@@ -30,7 +30,7 @@
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{x:Bind _contextList}"   
-                      IsHitTestVisible="{Binding IsSelected}" Canvas.Top="20">
+                      IsHitTestVisible="{Binding IsSelected}" Canvas.Top="-770">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas x:Name="xCollectionCanvas"

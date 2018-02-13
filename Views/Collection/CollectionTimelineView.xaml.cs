@@ -123,7 +123,7 @@ namespace Dash
         {
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight - 80;
-            Canvas.SetTop(xItemsControl, 17 - ActualHeight / 2);
+           // Canvas.SetTop(xItemsControl, 17 - ActualHeight / 2);
 
             CurrentXPosition = 0;
             Metadata.ActualHeight = ActualHeight;

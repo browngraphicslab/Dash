@@ -32,8 +32,8 @@ namespace Dash
         /// <summary>
         /// The width and height of the context preview
         /// </summary>
-        private const double ContextPreviewActualHeight = 160;
-        private const double ContextPreviewActualWidth = 250;
+        private const double ContextPreviewActualHeight = 250;
+        private const double ContextPreviewActualWidth = 200;
         /// <summary>
         /// A reference to the context preview
         /// </summary>
@@ -85,7 +85,24 @@ namespace Dash
 
             UpdateTimelinePosition();
 
+            LoadContext();
+
             LocalContextVisible = true;
+        }
+
+        private void LoadContext()
+        {
+            if (_contextPreview == null)
+            {
+                _contextPreview = new ContextPreview(ViewModel.DocumentContext)
+                {
+                    Width = ContextPreviewActualWidth,
+                    Height = ContextPreviewActualHeight,
+                };
+                xDocHolder.Children.Add(_contextPreview);
+                //Canvas.SetLeft(_contextPreview, -ContextPreviewActualWidth / 2 - EllipseSize / 2);
+                //if (xDocumentPreview != null) Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
+            }
         }
 
         public static double LastDisplayedPosition= 0;
@@ -165,55 +182,7 @@ namespace Dash
             ViewModel = vm;
         }
 
-        public void DisplayBelow(bool showContext)
-        {
-            if (!showContext)
-            {
-                // TODO hide the context
-                xDocHolder.Children.Remove(_contextPreview);
-                _contextPreview = null;
-                GC.Collect();
-
-                xLowerLine.Visibility = Visibility.Collapsed;
-                xUpperLine.Visibility = Visibility.Visible;
-                Thickness margin = xWebHolderTop.Margin;
-                margin.Top = -40;
-                xWebHolderTop.Margin = margin;
-                xDocumentPreview.Width = 80;
-                xDocumentPreview.Height = 30;
-                Thickness margin2 = xDocGrid.Margin;
-                margin.Left = -40;
-                xDocGrid.Margin = margin;
-            }
-
-            if (showContext)
-            {
-                if (ViewModel == null) return;
-
-                if (_contextPreview == null)
-                {
-                    _contextPreview = new ContextPreview(ViewModel.DocumentContext)
-                    {
-                        Width = ContextPreviewActualWidth,
-                        Height = ContextPreviewActualHeight,
-                    };
-                    xDocHolder.Children.Add(_contextPreview);
-                    Canvas.SetLeft(_contextPreview, - ContextPreviewActualWidth / 2 - EllipseSize / 2);
-                    if (xDocumentPreview != null) Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
-                }
-
-                xLowerLine.Visibility = Visibility.Visible;
-                xUpperLine.Visibility = Visibility.Collapsed;
-                Thickness margin = xWebHolderTop.Margin;
-                margin.Top = 40;
-                xWebHolderTop.Margin = margin;
-                xDocumentPreview.Width = 250;
-                xDocumentPreview.Height = 160;
-                Thickness margin2 = xDocGrid.Margin;
-                margin.Left = -120;
-                xDocGrid.Margin = margin;
-            }
-        }
+       
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -226,58 +195,22 @@ namespace Dash
 
         private void UpdateView()
         {
-            var displayBelow = false;
+            //var displayBelow = false;
             if (_displayState == 0)
             {
-                displayBelow = true;
+                xTopViewGrid.Visibility = Visibility.Collapsed;
+                xBottomViewGrid.Visibility = Visibility.Visible;
             }
-
-            bool displayAll = true;
-            if (_displayState == 2)
+            else if (_displayState == 2)
             {
-                displayAll = false;
+                xTopViewGrid.Visibility = Visibility.Collapsed;
+                xBottomViewGrid.Visibility = Visibility.Collapsed;
             }
-            DisplayAll(displayAll);
-
-            //_localContextVisible = !_localContextVisible;
-            DisplayBelow(displayBelow);
-        }
-
-        private void DisplayAll(bool display)
-        {
-            if(display)
+            else if (_displayState == 1)
             {
-                xDisplay.Visibility = Visibility.Visible;
-                Thickness margin = xEllipse.Margin;
-                margin.Top = -200;
-                xEllipse.Margin = margin;
-            } else
-            {
-                xDisplay.Visibility = Visibility.Collapsed;
-                Thickness margin = xEllipse.Margin;
-                margin.Top = 0;
-                xEllipse.Margin = margin;
+                xTopViewGrid.Visibility = Visibility.Visible;
+                xBottomViewGrid.Visibility = Visibility.Collapsed;
             }
-        }
-
-        private void DocumentPreviewSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-
-            try
-            {
-                if(_contextPreview != null)
-                {
-                    Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
-
-                }
-                Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-                throw;
-            }
-
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -8,36 +8,45 @@
     mc:Ignorable="d"
     d:DesignWidth="50" d:DesignHeight="400" d:DataContext="{d:DesignInstance local:TimelineElementViewModel}">
 
-    <Grid Background="Transparent" >
-        <Grid Name="xDisplay">
-            <Grid x:Name="xUpperDisplay" Margin="0,-95,0,0" Visibility="Visible" Height="315">
+    <Grid>
+        <Grid Width="400" Height="750" Background="Transparent" IsHitTestVisible="False">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3.75*"></RowDefinition>
+                <RowDefinition Height=".5*"></RowDefinition>
+                <RowDefinition Height="6*"></RowDefinition>
+            </Grid.RowDefinitions>
+       
+            <Grid Name="xTopViewGrid" Grid.Row="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="50"></RowDefinition>
-                    <RowDefinition Height="45"></RowDefinition>
-                    <RowDefinition Height="20"></RowDefinition>
-                    <RowDefinition Height="100"></RowDefinition>
-                    <RowDefinition Height="100"></RowDefinition>
-
+                    <RowDefinition Height=".5*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
-
-                <Rectangle Name="xUpperLine" Grid.Row="1" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2" Height="80" Margin="0, 5, 1, 5" Visibility="Visible"></Rectangle>
-
-                <Rectangle Grid.Row="3" Name="xLowerLine" Width="1" Fill="LightGray" Visibility="Collapsed" RadiusY="2" RadiusX="2" Height="80" Margin="0, 10, 1, 5"></Rectangle>
-                <Canvas Grid.Row="4" x:Name="xDocHolder" Margin="15, -30,0,0"/>
+                <TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>
+                <Rectangle Name="xUpperLine" Grid.Row="2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2" Visibility="Visible"></Rectangle>
             </Grid>
-            <Canvas x:Name="xWebHolderTop" Margin="0,-125,0,0">
-                <Grid Name="xDocGrid" BorderBrush="LightGray" BorderThickness="1" Background="White" Opacity=".9" Margin="-120,0,0,0">
-                    <local:DocumentView x:Name="xDocumentPreview" Width="150" Height="30"
-                    DataContext="{Binding DocumentViewModel}" 
-                    SizeChanged="DocumentPreviewSizeChanged" IsHitTestVisible="False">
-                    </local:DocumentView>
-                </Grid>
-                
-            </Canvas>
+            <Grid Name="xBottomViewGrid" Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Rectangle Grid.Row="0" Name="xLowerLine" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2"></Rectangle>
+                <!--<Canvas x:Name="xWebHolderTop" Grid.Row="1">
+                    <Grid Name="xDocGrid" BorderBrush="LightGray" BorderThickness="1" Background="White" Opacity=".9">
+                        <local:DocumentView x:Name="xDocumentPreview" Width="150" Height="30"
+                        DataContext="{Binding DocumentViewModel}" 
+                        SizeChanged="DocumentPreviewSizeChanged" IsHitTestVisible="False">
+                        </local:DocumentView>
+                    </Grid>
+                </Canvas>-->
+                <TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>
+
+                <Canvas Grid.Row="2" x:Name="xDocHolder"/>
+
+            </Grid>
         </Grid>
+        <Ellipse Name="xEllipse" Margin="0,-165,0,0" Width="18" Height="18" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
 
-        <Ellipse Name="xEllipse" Grid.Row="2" Width="18" Height="18" Margin="0,-200,0,0" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
-
-        
     </Grid>
 </UserControl>
