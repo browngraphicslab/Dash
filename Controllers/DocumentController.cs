@@ -1223,7 +1223,7 @@ namespace Dash
                 }
                 Debug.Assert(doc != null);
 
-                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
+                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, GetDataDocument());
             }
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))

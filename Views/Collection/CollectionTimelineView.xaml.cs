@@ -227,8 +227,7 @@ namespace Dash
             foreach (var vm in viewModels)
             {
                 _trackedViewModels.Remove(vm);
-                var dataDocument = vm.DocumentController.GetDataDocument(null);
-                dataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
+                vm.DataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
             }
         }
 
@@ -237,7 +236,7 @@ namespace Dash
             foreach (var vm in viewModels)
             {
                 _trackedViewModels.Add(vm);
-                var dataDocument = vm.DocumentController.GetDataDocument(null);
+                var dataDocument = vm.DataDocument;
 
                 void Handler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
                 {
@@ -273,9 +272,8 @@ namespace Dash
 
         private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)
         {
-            var dataDocument = vm.DocumentController.GetDataDocument(null);
             var webContextList =
-                dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
+                vm.DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             webContextList?.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
             return webContextList;
         }

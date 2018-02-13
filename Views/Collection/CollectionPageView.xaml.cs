@@ -131,22 +131,22 @@ namespace Dash
             if (captionKey != null && CurPage != null)
             {
 
-                var bodyDoc = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
+                var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
 
                 var currPageBinding = new FieldBinding<FieldControllerBase>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Document = CurPage.DataDocument,
                     Key = CaptionKey,
                     Converter = new ObjectToStringConverter()
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
 
-                if (bodyDoc?.Equals(CurPage.DocumentController.GetDataDocument(null)) == false)
+                if (bodyDoc?.Equals(CurPage.DataDocument) == false)
                     bodyDoc?.SetField(CaptionKey,
-                        new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
+                        new DocumentReferenceController(CurPage.DataDocument.GetId(),
                             CaptionKey), true);
 
                 xDocTitle.Height = 50;
@@ -160,7 +160,7 @@ namespace Dash
                 DisplayString = keyasgn;
                 DisplayKey = documentKey;
                 xDocView.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                var data = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField(DisplayKey,null);
+                var data = CurPage.DataDocument.GetDereferencedField(DisplayKey,null);
                 if (!string.IsNullOrEmpty(DisplayString))
                 {
                     var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
@@ -170,12 +170,12 @@ namespace Dash
                         var k = KeyController.LookupKeyByName(keyToReplace.ToString().Substring(1));
                         if (k != null)
                         {
-                            var value = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<TextController>(k, null)?.Data;
+                            var value = CurPage.DataDocument.GetDereferencedField<TextController>(k, null)?.Data;
                             if (value != null)
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DataDocument);
                     if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
                         var imgView = img.GetViewCopy();
@@ -186,7 +186,7 @@ namespace Dash
                 }
                 if (data != null)
                 {
-                    CurPage.DocumentController.GetDataDocument(null).SetField(DisplayKey, data, true);
+                    CurPage.DataDocument.SetField(DisplayKey, data, true);
                     var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
                     xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
@@ -204,7 +204,7 @@ namespace Dash
                 var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.OneWay,
-                    Document = value.DocumentController.GetDataDocument(null),
+                    Document = value.DataDocument,
                     Key = KeyStore.TitleKey,
                     Tag = "CurPage Title Binding"
                 };

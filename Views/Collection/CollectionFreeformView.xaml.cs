@@ -265,10 +265,10 @@ namespace Dash
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
             //ManipulationControls?.FitToParent();
-            //if (parentOfFreeFormChild.ViewModel.DocumentController.GetActiveLayout()?.GetField(KeyStore.CollectionFitToParentKey) != null)
-            //{
-            //    ManipulationControls?.FitToParent();
-            //}
+            if (parentOfFreeFormChild.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            {
+                ManipulationControls?.FitToParent();
+            }
         }
 
         #endregion
@@ -1541,7 +1541,7 @@ namespace Dash
                     xItemsControl.Items.OfType<DocumentViewModel>();
                 foreach (var docvm in docs)
                 {
-                    var doc = docvm.DocumentController;
+                    var doc = docvm.LayoutDocument;
                     var position = doc.GetPositionField().Data;
                     var width = doc.GetWidthField().Data;
                     if (double.IsNaN(width)) width = 0;
@@ -1982,7 +1982,7 @@ namespace Dash
                         documentView.OnSelected();
                     }
                 }
-                if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                 {
                     documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
                     documentView.ViewModel.GroupOnCreate = false;

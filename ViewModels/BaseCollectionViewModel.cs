@@ -104,34 +104,7 @@ namespace Dash
 
 
         #region DragAndDrop
-
-
-        DateTime _dragStart = DateTime.MinValue;
-        /// <summary>
-        /// fired by the starting collection when a drag event is initiated
-        /// </summary>
-        public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            SetGlobalHitTestVisiblityOnSelectedItems(true);       
-            e.Data.Properties.Add("DocumentControllerList", e.Items.Cast<DocumentViewModel>().Select(dvmp => dvmp.DocumentController).ToList());
-            e.Data.RequestedOperation = DateTime.Now.Subtract(_dragStart).TotalMilliseconds > 1000 ? DataPackageOperation.Move : DataPackageOperation.Copy;
-        }
-        public void XGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            _dragStart = DateTime.Now;
-        }
-
-        /// <summary>
-        /// fired by the starting collection when a drag event is over
-        /// </summary>
-        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs e)
-        {
-            SetGlobalHitTestVisiblityOnSelectedItems(false);
-            
-            if (e.DropResult == DataPackageOperation.Move)
-                RemoveDocuments(e.Items.Select((i)=>(i as DocumentViewModel).DocumentController).ToList());
-        }
-
+        
 
         List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
         {
@@ -333,6 +306,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
             {
@@ -577,7 +551,7 @@ namespace Dash
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var models = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>);
-                var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>().Select((cv) => cv.ParentDocument?.ViewModel?.DocumentController?.GetDataDocument(null));
+                var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>().Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
                 var docs = models.Select((srvm) => srvm.ViewDocument).Where((d) => !parentDocs.Contains(d.GetDataDocument(null)) && d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
@@ -598,7 +572,17 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
                 if (dragModel.CanDrop(sender as FrameworkElement))
-                    AddDocument(dragModel.GetDropDocument(where), null);
+                {
+                    var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+                    if (dragModel != null && dragModel.GetDraggedDocument().DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                    {
+                        HandleTemplateLayoutDrop(dragModel);
+                        e.Handled = true;
+                        return;
+                    }
+                    else
+                        AddDocument(dragModel.GetDropDocument(where), null);
+                }
             }
 
             // if the dataview contains this view model then don't accept the drag
@@ -634,6 +618,48 @@ namespace Dash
 
             // return global hit test visibility to be false, 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
+        }
+
+        /// <summary>
+        /// If you drop a collection, the collection serves as a layout template for all the documents in the collection and changes the way they are displayed.
+        /// TODO: This needs an explicit GUI drop target for setting a template...
+        /// </summary>
+        /// <param name="dragModel"></param>
+        private void HandleTemplateLayoutDrop(DragDocumentModel dragModel)
+        {
+            var template = dragModel.GetDraggedDocument();
+            var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            foreach (var dvm in DocumentViewModels.ToArray())
+            {
+                var listOfFields = new List<DocumentController>();
+                var doc = dvm.DocumentController;
+                var maxW = 0.0;
+                var maxH = 0.0;
+                foreach (var templateField in templateFields)
+                {
+                    var p = templateField.GetPositionField(null)?.Data ?? new Point();
+                    var w = templateField.GetWidthField(null)?.Data ?? 10;
+                    var h = templateField.GetHeightField(null)?.Data ?? 10;
+                    if (p.Y + h > maxH)
+                        maxH = p.Y + h;
+                    if (p.X + w > maxW)
+                        maxW = p.X = w;
+                    var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<RichTextController>(RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+                    if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
+                    {
+                        var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
+                        if (k != null)
+                        {
+                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().GetId(), k), p.X, p.Y, w, h).Document);
+                        }
+                    }
+                    else
+                        listOfFields.Add(templateField);
+                }
+                var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
+                doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
+                dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
+            }
         }
 
         /// <summary>

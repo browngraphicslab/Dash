@@ -191,9 +191,9 @@ namespace Dash
                 if (listOfCollectedDocs.Any())
                 {
                     Document.SetField(KeyStore.ThumbnailFieldKey,  listOfCollectedDocs.FirstOrDefault(), true);
+                    Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
                 }
 
-                Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
             }
         }
         public class RichTextNote : NoteDocument

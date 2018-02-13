@@ -119,7 +119,7 @@ namespace Dash
         {
             if (ParentDocument == null)
                 return null;
-            var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupsList = ParentDocument.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
             if (groupsList == null) return null;
             foreach (var g in groupsList.TypedData)
@@ -475,7 +475,7 @@ namespace Dash
         private void FireEllipseInteraction(object sender, PointerRoutedEventArgs e, bool isInput, bool isPressed)
         {
             if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetDataDocument(null).GetId();
+            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DataDocument.GetId();
             var el = (sender as Grid).Children[0] as Ellipse;
             KeyController refKey;
             if (!isInput)
@@ -503,9 +503,8 @@ namespace Dash
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
+            
             ViewModes?.HighlightAction(SetFreeformView);
         }
 
@@ -514,9 +513,8 @@ namespace Dash
             if (CurrentView is CollectionTextView) return;
             CurrentView = new CollectionTextView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
+           
             ViewModes?.HighlightAction(SetTextView);
         }
 
@@ -525,9 +523,8 @@ namespace Dash
             if (CurrentView is CollectionDBView) return;
             CurrentView = new CollectionDBView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
+            
             ViewModes?.HighlightAction(SetDBView);
         }
         private void SetSchemaView()
@@ -535,9 +532,8 @@ namespace Dash
             if (CurrentView is CollectionDBSchemaView) return;
             CurrentView = new CollectionDBSchemaView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
+           
             ViewModes?.HighlightAction(SetSchemaView);
         }
 
@@ -546,9 +542,8 @@ namespace Dash
             if (CurrentView is CollectionTimelineView) return;
             CurrentView = new CollectionTimelineView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
+           
             ViewModes?.HighlightAction(SetTimelineView);
         }
 
@@ -564,9 +559,8 @@ namespace Dash
             if (CurrentView is CollectionPageView) return;
             CurrentView = new CollectionPageView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
+            
             ViewModes?.HighlightAction(SetBrowseView);
         }
 
@@ -575,9 +569,8 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.DocumentController?.GetActiveLayout()?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
-            ParentDocument?.ViewModel?.DocumentController?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
-
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
+            
             ViewModes?.HighlightAction(SetGridView);
         }
 

@@ -34,8 +34,7 @@ namespace Dash.Models.DragModels
         /// <returns></returns>
         public bool CanDrop(FrameworkElement sender)
         {
-            var parentDocDataDoc = sender?.GetFirstAncestorOfType<CollectionView>()?
-                .ParentDocument?.ViewModel?.DocumentController?.GetDataDocument();
+            var parentDocDataDoc = sender?.GetFirstAncestorOfType<CollectionView>()?.ParentDocument?.ViewModel?.DataDocument;
             if (parentDocDataDoc != null && _documentController.GetDataDocument().Equals(parentDocDataDoc))
             {
                 return false;

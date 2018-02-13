@@ -149,7 +149,7 @@ namespace Dash
                                       e.VirtualKey.Equals(VirtualKey.Enter)))
             {
                 // don't shift enter on key value documents
-                if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
                     ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
                     return;
 
@@ -856,11 +856,6 @@ namespace Dash
             {
                 updateIcon();
                 // binds the display title of the document to the back end representation
-                var context = new Context(ViewModel.DocumentController);
-                var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
-                context.AddDocumentContext(dataDoc);
-
-
                 ViewModel.SetHasTitle(this.IsLowestSelected);
             }
         }
@@ -1212,7 +1207,7 @@ namespace Dash
             foreach (var nestedDocument in overlappedViews)
             {
                 CollectionView nestedCollection = null;
-                if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                if (nestedDocument.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                     nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
                 if (nestedCollection != null)
                 {
@@ -1340,14 +1335,14 @@ namespace Dash
 
 
             // special case for search operators
-            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+            if (ViewModel.DataDocument.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
             {
-                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) is SearchOperatorController)
+                if (ViewModel.DataDocument.GetField(KeyStore.OperatorKey) is SearchOperatorController)
                 {
                     var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
 
                     operatorDoc.SetField(SearchOperatorController.InputCollection,
-                        new DocumentReferenceController(ViewModel.DocumentController.Id,
+                        new DocumentReferenceController(ViewModel.DataDocument.Id,
                             SearchOperatorController.ResultsKey), true);
 
                     // TODO connect output to input

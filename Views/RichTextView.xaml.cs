@@ -333,7 +333,7 @@ namespace Dash
             foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
             {
                 var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData?.Id)
+                if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
                 {
                     var mprect = dvm.GetBoundingRect(MainPage.Instance);
                     var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -507,8 +507,8 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
-                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DataDocument?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
             }
             return null;
         }
@@ -517,7 +517,7 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+                parentDoc.ViewModel?.DataDocument?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
             }
         }
 
@@ -526,8 +526,7 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                var doc = parentDoc.ViewModel.DocumentController;
-                return doc.GetActiveLayout() ?? doc;
+                return parentDoc.ViewModel.LayoutDocument;
             }
             return null;
         }
@@ -561,7 +560,7 @@ namespace Dash
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
             var docParent = this.GetFirstAncestorOfType<DocumentView>();
-            docParent.ViewModel.DocumentController.GetDataDocument(null).AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            docParent.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
