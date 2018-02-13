@@ -352,7 +352,7 @@ namespace Dash
         public bool Undecorated { get; set; }
 
         // == CONSTRUCTOR ==
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
             BorderBrush = new SolidColorBrush(Colors.LightGray);

@@ -69,7 +69,7 @@ namespace Dash
             _editingDocument = docController;
             xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
             xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
-            var freeFormView = new SimpleCollectionViewModel(true);
+            var freeFormView = new SimpleCollectionViewModel();
             xDocumentPane.DataContext = freeFormView;
             freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
             //xKeyValuePane.SetDataContextToDocumentController(docController); // TODO replace with just setting the DataContext to the docController with the fields you want to display

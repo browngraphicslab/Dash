@@ -98,23 +98,9 @@ namespace Dash
             if (vm != null)
             {
                 // remove events from current view model if there is a current view model
-                if (ViewModel != null)
-                {
-                    //xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-                    //xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-                    //xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
-                    xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-                    //xGridView.PointerPressed -= ViewModel.XGridView_PointerPressed;
-                    //xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
-                }
-
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
-                //xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-                //xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-                //xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
-                xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
-                //xGridView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed), true);
+
                 var style = new Style(typeof(GridViewItem));
                 style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
                 style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
@@ -186,8 +172,6 @@ namespace Dash
         {
             var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
             OnSelected();
         }
 

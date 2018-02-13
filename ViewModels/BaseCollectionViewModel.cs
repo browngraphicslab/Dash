@@ -32,30 +32,20 @@ namespace Dash
     {
         private bool _canDragItems;
         private double _cellSize;
-        private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
         private static SelectionElement _previousDragEntered;
 
         public virtual KeyController CollectionKey => KeyStore.CollectionKey;
-        public KeyController OutputKey
-        {
-            get; set;
-        }
+        public KeyController OutputKey { get; set;}
 
-        protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
+        protected BaseCollectionViewModel() : base()
         {
-            IsInterfaceBuilder = isInInterfaceBuilder;
             SelectionGroup = new List<DocumentViewModel>();
             //BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true);
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) {Filter = o => true};
             //BindableDocumentViewModels = new AdvancedCollectionView(new List<DocumentViewModel>());
         }
-
-        public bool IsInterfaceBuilder
-        {
-            get { return _isInterfaceBuilder; }
-            private set { SetProperty(ref _isInterfaceBuilder, value); }
-        }
+        
 
         public void UpdateDocumentsOnSelection(bool isSelected)
         {
@@ -91,7 +81,6 @@ namespace Dash
         {
             get { return _canDragItems; }
             set { SetProperty(ref _canDragItems, value); }
-            // 
         }
 
         public ListViewSelectionMode ItemSelectionMode
@@ -446,7 +435,7 @@ namespace Dash
                     {
                         var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
                         var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                        var i = new AnnotatedImage(new Uri(src), null, null, "", 100, double.NaN, where.X, where.Y);
+                        var i = new AnnotatedImage(new Uri(src), "", 100, double.NaN, where.X, where.Y);
                         related.Add(i.Document);
                     }
                     var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, collectedDocuments: related).Document;
@@ -574,7 +563,8 @@ namespace Dash
                 if (dragModel.CanDrop(sender as FrameworkElement))
                 {
                     var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-                    if (dragModel != null && dragModel.GetDraggedDocument().DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                    if (dragModel != null && dragModel.GetDraggedDocument().DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) && 
+                        parentCollection.ViewModel != this)
                     {
                         HandleTemplateLayoutDrop(dragModel);
                         e.Handled = true;
@@ -769,7 +759,6 @@ namespace Dash
         {
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
-            (element as CollectionListView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
 
         #endregion
@@ -785,82 +774,7 @@ namespace Dash
             else
                 listView.SelectedItems.Clear();
         }
-
-        public void ToggleSelectFreeformView()
-        {
-
-        }
-
-        public void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var listViewBase = sender as ListViewBase;
-            SelectionGroup.Clear();
-            SelectionGroup.AddRange(listViewBase?.SelectedItems.Cast<DocumentViewModel>());
-        }
-
-        #endregion
-
-        #region Virtualization
-
-        public void ContainerContentChangingPhaseZero(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            //args.Handled = true;
-            //if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            //var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            //var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            //var border = (Viewbox)rootGrid?.FindName("xBorder");
-            //Debug.Assert(backdrop != null, "backdrop != null");
-            //backdrop.Visibility = Visibility.Visible;
-            //backdrop.ClearValue(FrameworkElement.WidthProperty);
-            //backdrop.ClearValue(FrameworkElement.HeightProperty);
-            //backdrop.Width = backdrop.Height = 250;
-            //backdrop.xProgressRing.Visibility = Visibility.Visible;
-            //backdrop.xProgressRing.IsActive = true;
-            //Debug.Assert(border != null, "border != null");
-            //border.Visibility = Visibility.Collapsed;
-            //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
-
-            //if (args.Phase != 0)
-            //{
-            //    throw new Exception("We should be in phase 0 but we are not");
-            //}
-
-            //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
-            //args.Handled = true;
-        }
-
-        private void ContainerContentChangingPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            //if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            //var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            //var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            //var border = (Viewbox)rootGrid?.FindName("xBorder");
-            //var document = (DocumentView)border?.FindName("xDocumentDisplay");
-            //Debug.Assert(backdrop != null, "backdrop != null");
-            //Debug.Assert(border != null, "border != null");
-            //Debug.Assert(document != null, "document != null");
-            //backdrop.Visibility = Visibility.Collapsed;
-            //backdrop.xProgressRing.IsActive = false;
-            //border.Visibility = Visibility.Visible;
-            //document.IsHitTestVisible = false;
-            //var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
-
-            //if (document.ViewModel == null)
-            //{
-            //    document.DataContext =
-            //        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);               
-            //}
-            //else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
-            //{
-            //    document.ViewModel.Dispose();
-            //    document.DataContext =
-            //        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            //}
-            //else
-            //{
-            //    document.ViewModel.Dispose();
-            //}
-        }
+        
 
         #endregion
 

@@ -192,7 +192,6 @@ namespace DashShared
             public static DocumentType MapOperatorBoxType = new DocumentType("AC7E7026-0522-4E8C-8F05-83AE7AB4000C", "Collection Map Box");
             public static DocumentType OperatorBoxType = new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
             public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
-            public static DocumentType FilterOperatorDocumentType = new DocumentType("30651C8A-C3EC-4CF6-999B-F8F1ED094D65", "Filter Operator Box");
             public static DocumentType MeltOperatorBoxDocumentType = new DocumentType("8A0E72A1-0FF4-4AAB-9C12-9DF09DCF39CA", "Melt Operator Box");
             public static DocumentType ExtractSentencesDocumentType = new DocumentType("3B6B9420-FD08-4CBA-99AA-5FAA261266AE", "Extract Sentences Operator Box");
             public static DocumentType SearchOperatorType = new DocumentType("7A83F04B-7715-40B3-A867-B29E7812B8C4", "Search Operator");

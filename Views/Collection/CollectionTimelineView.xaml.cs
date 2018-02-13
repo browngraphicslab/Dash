@@ -296,8 +296,6 @@ namespace Dash
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
             OnSelected();
         }
 

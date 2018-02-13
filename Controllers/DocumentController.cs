@@ -1290,10 +1290,6 @@ namespace Dash
             {
                 return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
             }
-            if (DocumentType.Equals(DashConstants.TypeStore.FilterOperatorDocumentType))
-            {
-                return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
             if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
             {
                 return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);

@@ -19,7 +19,6 @@
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
-        <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter" />
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>

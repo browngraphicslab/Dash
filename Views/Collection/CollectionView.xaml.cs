@@ -84,7 +84,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid, Page, Text, DB, Schema, TreeView, Timeline
+            Freeform, Grid, Page, DB, Schema, TreeView, Timeline
         }
 
         private CollectionViewType _viewType;
@@ -179,12 +179,6 @@ namespace Dash
                     break;
                 case CollectionViewType.Schema:
                     SetSchemaView();
-                    break;
-                case CollectionViewType.List:
-                    SetListView();
-                    break;
-                case CollectionViewType.Text:
-                    SetTextView();
                     break;
                 case CollectionViewType.TreeView:
                     break;
@@ -508,16 +502,6 @@ namespace Dash
             ViewModes?.HighlightAction(SetFreeformView);
         }
 
-        private void SetTextView()
-        {
-            if (CurrentView is CollectionTextView) return;
-            CurrentView = new CollectionTextView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Text.ToString()), true);
-           
-            ViewModes?.HighlightAction(SetTextView);
-        }
-
         public void SetDBView()
         {
             if (CurrentView is CollectionDBView) return;
@@ -546,14 +530,7 @@ namespace Dash
            
             ViewModes?.HighlightAction(SetTimelineView);
         }
-
-        private void SetListView()
-        {
-            if (CurrentView is CollectionListView) return;
-            CurrentView = new CollectionListView();
-            xContentControl.Content = CurrentView;
-            ViewModes?.HighlightAction(SetListView);
-        }
+        
         private void SetBrowseView()
         {
             if (CurrentView is CollectionPageView) return;

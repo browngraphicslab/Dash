@@ -8,9 +8,6 @@ namespace Dash
 {
     public interface ICollectionViewModel
     {
-
-        bool IsInterfaceBuilder { get; }
-
         ObservableCollection<DocumentViewModel> DocumentViewModels { get; }
 
         bool IsSelected { get; }

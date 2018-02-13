@@ -55,7 +55,7 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
-        protected BaseSelectionElementViewModel(bool isInInterfaceBuilder)
+        protected BaseSelectionElementViewModel(bool isInInterfaceBuilder=false)
         {
             IsInInterfaceBuilder = isInInterfaceBuilder;
 

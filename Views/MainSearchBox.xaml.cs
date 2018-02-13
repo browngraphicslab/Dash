@@ -532,7 +532,7 @@ namespace Dash
                 var results = new List<SearchResultViewModel>();
                 foreach (var docController in docControllers)
                 {
-                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey,
+                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.ImageFieldKey,
                         null);
                     var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
                     results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));

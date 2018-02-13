@@ -1636,10 +1636,7 @@ namespace Dash
             if (!_singleTapped) return;
 
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
-
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-
+            
             if (!IsLowestSelected) OnSelected();
 
         }

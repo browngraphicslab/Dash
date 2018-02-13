@@ -139,7 +139,6 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
@@ -374,11 +373,7 @@
     <Compile Include="Views\Collection\CollectionPageView.xaml.cs">
       <DependentUpon>CollectionPageView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Collection\CollectionTextView.xaml.cs">
-      <DependentUpon>CollectionTextView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
-    <Compile Include="Controllers\Operators\Set\FilterOperatorController.cs" />
     <Compile Include="Controllers\RectController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
     <Compile Include="Converters\StringToFontweightConverter.cs" />
@@ -392,7 +387,6 @@
     <Compile Include="Rest\Exceptions\ApiException.cs" />
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Util\FieldBinding.cs" />
     <Compile Include="Util\EditableImage.xaml.cs">
       <DependentUpon>EditableImage.xaml</DependentUpon>
@@ -434,9 +428,6 @@
     </Compile>
     <Compile Include="Views\DocumentSelectionPolygon.xaml.cs">
       <DependentUpon>DocumentSelectionPolygon.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Operators\FilterView.xaml.cs">
-      <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Util\InkRecognitionHelper.cs" />
@@ -543,9 +534,6 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionGridView.xaml.cs">
       <DependentUpon>CollectionGridView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Collection\CollectionListView.xaml.cs">
-      <DependentUpon>CollectionListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\IController.cs" />
@@ -887,10 +875,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Collection\CollectionTextView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -950,10 +934,6 @@
     <Page Include="Views\DocumentSelectionPolygon.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Operators\FilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Ink\InkSelectionRect.xaml">
       <SubType>Designer</SubType>
@@ -1040,10 +1020,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionGridView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Collection\CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

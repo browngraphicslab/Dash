@@ -18,7 +18,7 @@ namespace Dash
         private FieldReference _collectionRef;
         private Context _context;
 
-        public CollectionViewModel(FieldReference refToCollection, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public CollectionViewModel(FieldReference refToCollection, bool isInInterfaceBuilder = false, Context context = null) : base()
         {
             Debug.Assert(refToCollection != null);
             _collectionRef = refToCollection;
@@ -113,7 +113,7 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    var documentViewModel = new DocumentViewModel(documentController, IsInInterfaceBuilder, c);
+                    var documentViewModel = new DocumentViewModel(documentController, c);
                     documentViewModel.IsDraggerVisible = this.IsSelected;
                     DocumentViewModels.Add(documentViewModel);
                 }
@@ -149,8 +149,6 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
-            doc.CaptureNeighboringContext();
-
             if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
             {
                 var coll = doc.GetDereferencedField<ListController<DocumentController>>(CollectionKey, context);
@@ -162,6 +160,7 @@ namespace Dash
             {
                 return;
             }
+            doc.CaptureNeighboringContext();
 
 
             GroupOnCreate = true; // bcz: should be set from a flag to AddDocument maybe?

@@ -44,14 +44,32 @@ namespace Dash
                 //element.AddFieldBinding(DocumentView.DataContextProperty, binding);
             }
         }
-        protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
-        {
-            if (fieldModelController is DocumentController)
-            {
-                return new DocumentToViewModelConverter();
-            }
-            return null;
-        }
+
+        //public class DocumentToViewModelConverter : SafeDataToXamlConverter<DocumentController, DocumentViewModel>
+        //{
+        //    public DocumentToViewModelConverter()
+        //    {
+        //    }
+
+
+        //    public override DocumentViewModel ConvertDataToXaml(DocumentController data, object parameter = null)
+        //    {
+        //        return new DocumentViewModel(data);
+        //    }
+
+        //    public override DocumentController ConvertXamlToData(DocumentViewModel xaml, object parameter = null)
+        //    {
+        //        return xaml.DocumentController;
+        //    }
+        //}
+        //protected static Windows.UI.Xaml.Data.IValueConverter GetFieldConverter(FieldControllerBase fieldModelController)
+        //{
+        //    if (fieldModelController is DocumentController)
+        //    {
+        //        return new DocumentToViewModelConverter();
+        //    }
+        //    return null;
+        //}
 
 
         public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
@@ -76,7 +94,7 @@ namespace Dash
             //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
             //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
 
-            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController, isInterfaceBuilderLayout, context));
+            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController, context));
 
             var border = new Border();
             border.Child = docView;
