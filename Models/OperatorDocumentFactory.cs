@@ -35,6 +35,12 @@ namespace Dash
             return doc;
         }
 
+        // TODO fix DB special case
+        public static DocumentController CreateDBFilterDocumentController()
+        {
+            return DBFilterOperatorController.CreateFilter(new DocumentReferenceController(DBTest.DBDoc.GetId(), KeyStore.DataKey), "");
+        }
+
         /// <summary>
         /// Helper method to set the layout of the operator, sets the layout to the output of a courtesy document
         /// </summary>

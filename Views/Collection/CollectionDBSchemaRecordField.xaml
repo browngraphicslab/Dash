@@ -9,12 +9,12 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    Height="50"
     Width="{Binding Width}"
     Padding="{Binding BorderThickness}"
+    Height="25"
     Tapped="UserControl_Tapped" 
     FontWeight="{Binding Selected,Converter={StaticResource BoolToBoldConverter}}"
     
     >
-    <TextBlock VerticalAlignment="Center"  Foreground ="DarkSlateGray"  Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
+    <TextBlock Foreground ="DarkSlateGray"  Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
 </UserControl>

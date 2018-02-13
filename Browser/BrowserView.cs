@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -214,34 +212,12 @@ namespace Dash
         {
             await SendToServer(req.Serialize());
         }
-
-        private static string GetLocalIPAddress()
-        {
-            try
-            {
-                var host = Dns.GetHostEntry(Dns.GetHostName());
-                foreach (var ip in host.AddressList)
-                {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return ip.ToString();
-                    }
-                }
-                throw new Exception("No network adapters with an IPv4 address in the system!");
-            }
-            catch (Exception e)
-            {
-                return "123";
-            }
-        }
-
         private static async Task SendToServer(string message)
         {
             if (_socket == null)
             {
                 await InitSocket();
-                var ip = "123";
-                _dataMessageWriter.WriteString("dash:"+ ip);
+                _dataMessageWriter.WriteString("dash:123");
                 await _dataMessageWriter.StoreAsync();
                 _ready = true;
             }
@@ -405,7 +381,7 @@ namespace Dash
         public string GetUrlHash()
         {
             var hash =  UtilShared.GetDeterministicGuid(_url);
-            //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
+            Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }
 

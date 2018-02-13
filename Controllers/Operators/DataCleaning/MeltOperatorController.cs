@@ -71,7 +71,7 @@ namespace Dash
         }
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+            Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;;
             var variableName = inputs[VariableName] as TextController;

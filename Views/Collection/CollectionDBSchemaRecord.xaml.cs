@@ -17,7 +17,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Controllers;
-using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,36 +35,23 @@ namespace Dash
         
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
-            {
-                _downPt = e.GetCurrentPoint(null);
-                e.Handled = true;
-            }
-            else
-                _downPt = null;
+            _downPt = e.GetCurrentPoint(null);
+            e.Handled = true;
         }
 
         private void CollectionDBSchemaRecordField_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (_downPt != null)
-            {
-                e.Complete();
-                StartDragAsync(_downPt);
-                e.Handled = true;
-            }
+            e.Complete();
+            StartDragAsync(_downPt);
+            e.Handled = true;
         }
 
         private void UserControl_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
             var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-
-            //var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            //args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
-            //args.Data.Properties.Add("View", true);
-            //args.Data.RequestedOperation = DataPackageOperation.Link;
+            args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
+            args.Data.Properties.Add("View", true);
+            args.Data.RequestedOperation = DataPackageOperation.Link;
             GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
         }
 

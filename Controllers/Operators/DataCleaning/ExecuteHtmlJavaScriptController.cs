@@ -67,7 +67,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var html    = (inputs[HtmlInputKey] as TextController).Data;
             var script  = (inputs[ScriptKey] as TextController).Data;

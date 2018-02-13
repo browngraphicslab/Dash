@@ -15,7 +15,6 @@ namespace Dash
 {
     public class LocalKeyEndpoint : IKeyEndpoint
     {
-        public static StorageFolder LocalStorageFolder = ApplicationData.Current.LocalFolder;
         /// <summary>
         /// private dictionary here to save your objects in memory.  Should be synced with the local dash files
         /// </summary>
@@ -30,7 +29,7 @@ namespace Dash
             _saveTimer = new Timer(SaveTimerCallback, null, new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond), new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                var dictionaryText = File.ReadAllText(LocalKeyEndpoint.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerKeyFilepath);
+                var dictionaryText = File.ReadAllText(DashConstants.LocalStorageFolder.Path + "\\"+ DashConstants.LocalServerKeyFilepath);
                 _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                 _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
             }
@@ -47,7 +46,7 @@ namespace Dash
         /// <param name="state"></param>
         private async void SaveTimerCallback(object state)
         {
-            var file = await LocalKeyEndpoint.LocalStorageFolder.CreateFileAsync(DashConstants.LocalServerKeyFilepath,CreationCollisionOption.OpenIfExists);
+            var file = await DashConstants.LocalStorageFolder.CreateFileAsync(DashConstants.LocalServerKeyFilepath,CreationCollisionOption.OpenIfExists);
             using (var stream = await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
             {
                 using (var outgoingStream = stream.GetOutputStreamAt(0))

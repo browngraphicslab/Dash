@@ -176,11 +176,10 @@ namespace Dash
         {
             foreach (var dvm in viewModel.DocumentViewModels)
             {
-                var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
+                var docContexts = GetWebContextFromDocViewModel(dvm).TypedData
                     .Select(i => i.Data.CreateObject<DocumentContext>());
-                if (docContexts != null)
-                    foreach (var dc in docContexts)
-                        _contextList.Add(new TimelineElementViewModel(dc, dvm));
+                foreach (var dc in docContexts)
+                    _contextList.Add(new TimelineElementViewModel(dc, dvm));
             }
             UpdateMetadataMinAndMax();
         }
@@ -276,7 +275,7 @@ namespace Dash
             var dataDocument = vm.DocumentController.GetDataDocument(null);
             var webContextList =
                 dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            webContextList?.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
+            webContextList.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
             return webContextList;
         }
 

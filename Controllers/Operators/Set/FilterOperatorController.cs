@@ -57,7 +57,7 @@ namespace Dash
             };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+            Dictionary<KeyController, FieldControllerBase> outputs)
         {
             var docs = (inputs[InputCollection] as ListController<DocumentController>)?.GetElements();
             Debug.Assert(docs != null);

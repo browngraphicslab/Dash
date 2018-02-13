@@ -21,7 +21,7 @@ using System.Collections.ObjectModel;
 namespace Dash
 {
 
-    public struct ManipulationDeltaData
+    public class ManipulationDeltaData
     {
         public ManipulationDeltaData(Point position, Point translation, float scale)
         {
@@ -434,8 +434,7 @@ namespace Dash
                         var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
                         if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
                             GroupManager.RemoveGroup(pc, group);
-                        if (canSplitupDragGroup)
-                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+                        GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
                     }));
 
             if (manipulationCompletedRoutedEventArgs != null)
@@ -447,7 +446,7 @@ namespace Dash
         {
             var collectionFreeFormChildren = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
             // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
-            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping != null && _grouping.Contains(dv?.ViewModel));
+            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping != null && _grouping.Contains(dv.ViewModel));
             return groupings?.ToList() ?? new List<DocumentView>();
         }
         public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
@@ -467,7 +466,7 @@ namespace Dash
             }
             var docRoot = ParentDocument;
 
-            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
+            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection);
             var groupViews = GroupViews(_grouping);
             foreach (var gv in groupViews)
                 gv.ToFront();
@@ -592,7 +591,7 @@ namespace Dash
             }
 
             TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
-            //DetectShake(sender, e);
+            DetectShake(sender, e);
 
             if (_grouping == null || _grouping.Count < 2)
                 Snap(true);
@@ -696,7 +695,7 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount)));
             }
             else
             {
@@ -777,8 +776,7 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
-                    new Point(scaleFactor, scaleFactor), e.Position);
+                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y), new Point(scaleFactor, scaleFactor));
                 if (grouped != null && grouped.Any())
                 {
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();

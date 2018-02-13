@@ -172,6 +172,9 @@ namespace Dash
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
+                case OperatorType.DBfilter:
+                    controller = new DBFilterOperatorController(model as DBFilterOperatorFieldModel);
+                    break;
                 case OperatorType.Zip:
                     controller = new ZipOperatorController(model);
                     break;
