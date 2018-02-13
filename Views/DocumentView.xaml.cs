@@ -1042,6 +1042,13 @@ namespace Dash
             }
         }
 
+        public void MarqueeSelectBorder(bool selected)
+        {
+            xSelectionBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xSelectionBorder.BorderBrush = selected ?
+                SingleSelectionBorderColor : new SolidColorBrush(Colors.Transparent); 
+        }
+
         /// <summary>
         /// Sets whther the selection border is on, all other chrome can be turned off or on independently
         /// so that we don't see huge amounts of chrome when we hover over groups
@@ -1251,15 +1258,16 @@ namespace Dash
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (IsMainCollection)
-            {
-                var collection = this.GetFirstDescendantOfType<CollectionFreeformView>();
-                foreach (var doc in collection.MarqueeSelectedDocs)
-                {
-                    doc.DeleteDocument(); 
-                }
-            }
-            else DeleteDocument(); 
+            //if (IsMainCollection)
+            //{
+            //    var collection = this.GetFirstDescendantOfType<CollectionFreeformView>();
+            //    foreach (var doc in collection.MarqueeSelectedDocs)
+            //    {
+            //        doc.DeleteDocument(); 
+            //    }
+            //} else {
+            DeleteDocument();
+            //}
         }
 
         private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)

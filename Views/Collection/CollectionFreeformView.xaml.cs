@@ -1577,7 +1577,11 @@ namespace Dash
                 parentView.MakeSelectionModeMultiple();
             }
 
-            _marqueeSelectedDocs = selectedDocs; 
+            _marqueeSelectedDocs = selectedDocs;
+            foreach (var doc in selectedDocs)
+            {
+                doc.MarqueeSelectBorder(true);
+            }
         }
 
         #endregion
