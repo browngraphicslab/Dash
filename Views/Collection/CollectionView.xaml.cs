@@ -558,14 +558,6 @@ namespace Dash
                 (CurrentView as CollectionFreeformView).IsSelectionEnabled = true;
             }
         }
-
-        private void SelectAllItems()
-        {
-            var view = CurrentView as ICollectionView;
-            Debug.Assert(view != null, "make the view implement ICollectionView");
-            view.ToggleSelectAllItems();
-        }
-
         private void MakeSelectionModeSingle()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
