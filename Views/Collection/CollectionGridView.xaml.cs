@@ -161,7 +161,6 @@ namespace Dash
         {
             var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
             e.Handled = true;
-            OnSelected();
         }
 
         #endregion

@@ -538,7 +538,6 @@ namespace Dash
 
         public DocumentController Choose()
         {
-            OnSelected();
             // bring document to center? 
             var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
             if (mainView != null)
@@ -993,11 +992,6 @@ namespace Dash
                     ParentCollection.MaxZ += 1;
                     Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                 }
-                OnSelected();
-                    
-
-                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
             }
         }
         

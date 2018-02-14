@@ -660,13 +660,13 @@ namespace Dash
             {
                 var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
                 this.ChangeIndicationColor(element, color);
-                element.HasDragLeft = true;
-                var parent = element.ParentSelectionElement;
-                // if the current collection fires a dragleave event and its parent hasn't
-                if (parent != null && !parent.HasDragLeft)
-                {
-                    this.ChangeIndicationColor(parent, color);
-                }
+                //element.HasDragLeft = true;
+                //var parent = element.ParentSelectionElement;
+                //// if the current collection fires a dragleave event and its parent hasn't
+                //if (parent != null && !parent.HasDragLeft)
+                //{
+                //    this.ChangeIndicationColor(parent, color);
+                //}
             }
             this.RemoveDragDropIndication(sender as SelectionElement);
             e.Handled = true;
@@ -686,7 +686,7 @@ namespace Dash
                     this.ChangeIndicationColor(_previousDragEntered, Colors.Transparent);
                 }
                 var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
-                element.HasDragLeft = false;
+                //element.HasDragLeft = false;
                 _previousDragEntered = element;
                 this.ChangeIndicationColor(element, color);
             }

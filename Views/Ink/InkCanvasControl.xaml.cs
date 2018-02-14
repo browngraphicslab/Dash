@@ -77,7 +77,6 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnSelected();
             e.Handled = true;
         }
 

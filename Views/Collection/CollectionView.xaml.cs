@@ -193,7 +193,7 @@ namespace Dash
             {
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
-                CurrentView.InitializeAsRoot();
+                //CurrentView.InitializeAsRoot();
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
         }

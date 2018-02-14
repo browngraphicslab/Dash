@@ -1654,8 +1654,6 @@ namespace Dash
             if (!_singleTapped) return;
 
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
-            
-            OnSelected();
         }
 
         public void RenderPreviewTextbox(Point where)
@@ -1976,7 +1974,6 @@ namespace Dash
                         richEditBox.GotFocus -= RichEditBox_GotFocus;
                         richEditBox.GotFocus += RichEditBox_GotFocus;
                         richEditBox.Focus(FocusState.Programmatic);
-                        documentView.OnSelected();
                     }
                 }
                 if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))

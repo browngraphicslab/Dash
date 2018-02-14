@@ -285,7 +285,6 @@ namespace Dash
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            OnSelected();
         }
 
         // TODO not sure how this should be implemented or if it would ever get called (part of the interface...)
