@@ -27,7 +27,7 @@ using Dash.Views;
 
 namespace Dash
 {
-    public sealed partial class InkCanvasControl : SelectionElement
+    public sealed partial class InkCanvasControl 
     {
         public InkController InkFieldModelController;
         private ManipulationControls _controls;

@@ -33,7 +33,7 @@ namespace Dash
         private bool _canDragItems;
         private double _cellSize;
         private ListViewSelectionMode _itemSelectionMode;
-        private static SelectionElement _previousDragEntered;
+        private static UserControl _previousDragEntered;
 
         public virtual KeyController CollectionKey => KeyStore.CollectionKey;
         public KeyController OutputKey { get; set;}
@@ -336,7 +336,7 @@ namespace Dash
             //restore previous conditions 
             if (DocumentView.DragDocumentView != null)
                 DocumentView.DragDocumentView.IsHitTestVisible = true;
-            this.RemoveDragDropIndication(sender as SelectionElement);
+            this.RemoveDragDropIndication(sender as UserControl);
 
             // true if dragged from key value pane in interfacebuilder
             var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
@@ -617,7 +617,7 @@ namespace Dash
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
             Debug.WriteLine("CollectionViewOnDragEnter Base");
-            this.HighlightPotentialDropTarget(sender as SelectionElement);
+            this.HighlightPotentialDropTarget(sender as UserControl);
 
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
@@ -655,7 +655,7 @@ namespace Dash
             var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
             parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
-            var element = sender as SelectionElement;
+            var element = sender as UserControl;
             if (element != null)
             {
                 var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
@@ -668,14 +668,14 @@ namespace Dash
                 //    this.ChangeIndicationColor(parent, color);
                 //}
             }
-            this.RemoveDragDropIndication(sender as SelectionElement);
+            this.RemoveDragDropIndication(sender as UserControl);
             e.Handled = true;
         }
 
         /// <summary>
         /// Highlight a collection when drag enters it to indicate which collection would the document move to if the user were to drop it now
         /// </summary>
-        private void HighlightPotentialDropTarget(SelectionElement element)
+        private void HighlightPotentialDropTarget(UserControl element)
         {
             // change background of collection to indicate which collection is the potential drop target, determined by the drag entered event
             if (element != null)
@@ -696,7 +696,7 @@ namespace Dash
         /// Remove highlight from target drop collection and border from DocumentView being dragged
         /// </summary>
         /// <param name="element"></param>
-        private void RemoveDragDropIndication(SelectionElement element)
+        private void RemoveDragDropIndication(UserControl element)
         {
             // remove drop target indication when doc is dropped
             if (element != null)
@@ -711,7 +711,7 @@ namespace Dash
             DocumentView.DragDocumentView = null;
         }
 
-        public void ChangeIndicationColor(SelectionElement element, Color fill)
+        public void ChangeIndicationColor(UserControl element, Color fill)
         {
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));

@@ -1,4 +1,4 @@
-﻿<local:SelectionElement
+﻿<UserControl
     x:Name="This"
     x:Class="Dash.DocumentView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -127,4 +127,4 @@
         </Grid>
 
     </Grid>
-</local:SelectionElement>
+</UserControl>

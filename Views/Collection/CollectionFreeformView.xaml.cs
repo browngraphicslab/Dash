@@ -44,7 +44,7 @@ using Syncfusion.Pdf.Graphics;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView, INotifyPropertyChanged
+    public sealed partial class CollectionFreeformView : ICollectionView, INotifyPropertyChanged
     {
 
         #region ScalingVariables    

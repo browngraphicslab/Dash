@@ -26,7 +26,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionPageView : SelectionElement, ICollectionView
+    public sealed partial class CollectionPageView : ICollectionView
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;

@@ -29,7 +29,7 @@ using Dash.Models.DragModels;
 namespace Dash
 {
 
-    public sealed partial class DocumentView : SelectionElement
+    public sealed partial class DocumentView
     {
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); // TODO document views should not be assumed to be in a collection this!
 

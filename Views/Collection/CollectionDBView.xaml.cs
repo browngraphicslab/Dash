@@ -23,7 +23,7 @@ using Dash.Controllers;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBView : ICollectionView
     {
         public CollectionDBView()
         {

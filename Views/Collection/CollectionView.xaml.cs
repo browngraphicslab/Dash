@@ -36,8 +36,8 @@ namespace Dash
         public int MaxZ { get; set; }
         Binding _visibilityBinding = null;
 
-        SelectionElement _currentView;
-        public SelectionElement CurrentView {
+        UserControl _currentView;
+        public UserControl CurrentView {
             get => _currentView;
             set { _currentView = value;
                 if (_visibilityBinding != null)

@@ -53,7 +53,7 @@ namespace Dash
     }
 
 
-    public sealed partial class CollectionTimelineView : SelectionElement, ICollectionView
+    public sealed partial class CollectionTimelineView : ICollectionView
     {
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
 

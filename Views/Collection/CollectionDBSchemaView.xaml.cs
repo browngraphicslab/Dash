@@ -23,7 +23,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         private DocumentController _parentDocument;
 

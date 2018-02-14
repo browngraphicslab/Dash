@@ -24,7 +24,7 @@ using static Dash.NoteDocuments;
 
 namespace Dash
 {
-    public sealed partial class CollectionGridView : SelectionElement, ICollectionView
+    public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
         private bool _rightPressed;
 
