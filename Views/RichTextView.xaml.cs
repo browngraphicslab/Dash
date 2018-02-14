@@ -56,7 +56,6 @@ namespace Dash
         private bool CanSizeToFit = false;
         long TextChangedCallbackToken;
         
-        private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
         private Point _rightDragLastPosition, _rightDragStartPosition;
@@ -590,6 +589,7 @@ namespace Dash
 
         #region DocView manipulation on right click
 
+        ManipulationControlHelper manipulationHelper = null;
         /// <summary>
         /// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
         /// </summary>
@@ -597,9 +597,9 @@ namespace Dash
         /// <param name="e"></param>
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
+            var rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (_rightPressed)
+            if (rightPressed)
             {
                 if (moveHdlr == null)
                     moveHdlr = RichTextView_PointerMoved;
@@ -609,17 +609,9 @@ namespace Dash
                 this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
                 this.RemoveHandler(PointerMovedEvent, moveHdlr);
                 this.AddHandler(PointerMovedEvent, moveHdlr, true);
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                docView?.ToFront();
-                var parent = this.GetFirstAncestorOfType<DocumentView>();
-                var pointerPosition = MainPage.Instance
-                    .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
-                        .CoreWindow.GetForCurrentThread().PointerPosition);
-                _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
+                manipulationHelper = new ManipulationControlHelper(this);
+                manipulationHelper.ForcePointerPressed();
                 this.CapturePointer(e.Pointer);
-                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
-                parent.DocumentView_PointerEntered(null, null);
-
             }
         }
 
@@ -631,29 +623,7 @@ namespace Dash
         /// <param name="e"></param>
         private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var parentCollectionTransform =
-                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null) return;
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            if (parent.ManipulationControls == null)
-                return;
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-
-            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
-
-            translation.X *= parentCollectionTransform.Matrix.M11;
-            translation.Y *= parentCollectionTransform.Matrix.M22;
-
-            _rightDragLastPosition = pointerPosition;
-            parent.ManipulationControls.TranslateAndScale(new
-                ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                    translation,
-                    1.0f), parent.ManipulationControls._grouping);
-
-            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-            if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                parent.ManipulationControls.Snap(true);
+            manipulationHelper.ForcePointerMove();
         }
 
         private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -661,24 +631,8 @@ namespace Dash
             this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
             this.RemoveHandler(PointerMovedEvent, moveHdlr);
 
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-            //if (parent != null)
-            //    parent.MoveToContainingCollection();
-            if (_rightPressed)
-            {
-                var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
-                var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-                if (dist < 100)
-                    parent.OnTapped(sender, new TappedRoutedEventArgs());
-                else
-                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-                var dvm = parent.ViewModel;
-                parent.DocumentView_PointerExited(null, null);
-                parent.DocumentView_ManipulationCompleted(null, null);
-
-            }
+            manipulationHelper.ForcePointerReleased();
+            manipulationHelper = null;
         }
 
         #endregion

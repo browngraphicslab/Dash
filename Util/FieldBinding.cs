@@ -325,10 +325,10 @@ namespace Dash
 
             void RemoveBinding()
             {
+                element.Loaded -= OnElementOnLoaded;
+                element.Unloaded -= OnElementOnUnloaded;
                 if (loaded)
                 {
-                    element.Loaded -= OnElementOnLoaded;
-                    element.Unloaded -= OnElementOnUnloaded;
                     binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
                     if (token != -1)
                     {

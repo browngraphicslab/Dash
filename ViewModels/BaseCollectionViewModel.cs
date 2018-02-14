@@ -436,7 +436,8 @@ namespace Dash
                         related.Add(i.Document);
                     }
                     var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, collectedDocuments: related).Document;
-                    htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);
+                    htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), cnote, true);//
+                    //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
                     htmlNote.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     foreach (var str in strings)
                     {
@@ -559,9 +560,10 @@ namespace Dash
 
                 if (dragModel.CanDrop(sender as FrameworkElement))
                 {
-                    var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-                    if (dragModel != null && dragModel.GetDraggedDocument().DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) && 
-                        parentCollection.ViewModel != this)
+                    var draggedDocument = dragModel.GetDraggedDocument();
+                    if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
+                        (sender as DependencyObject).GetFirstAncestorOfType<DocumentView>()?.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == false &&
+                        this.DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(draggedDocument)).Count() == 0)
                     {
                         HandleTemplateLayoutDrop(dragModel);
                         e.Handled = true;
@@ -602,9 +604,6 @@ namespace Dash
             }
 
             e.Handled = true;
-
-            // return global hit test visibility to be false, 
-            SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
         /// <summary>
@@ -656,9 +655,6 @@ namespace Dash
         {
             Debug.WriteLine("CollectionViewOnDragEnter Base");
             this.HighlightPotentialDropTarget(sender as SelectionElement);
-
-            SetGlobalHitTestVisiblityOnSelectedItems(true);
-
 
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))

@@ -195,8 +195,6 @@ namespace Dash
                     if (scaleAmountFieldModelController != null)
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
-
-                UpdateGroupingBounds();
             }
         }
         public double GroupMargin
@@ -236,32 +234,35 @@ namespace Dash
             _actualHeight = actualheight;
             LayoutDocument.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
             LayoutDocument.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
-            UpdateGroupingBounds();
 
-        }
-
-        private void UpdateGroupingBounds()
-        {
-            _groupingBounds = new TranslateTransform
-            {
-                X = GroupTransform.Translate.X,
-                Y = GroupTransform.Translate.Y
-            }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
-                _actualHeight + 2 * GroupMargin));
-
-            _bounds = new TranslateTransform
-            {
-                X = GroupTransform.Translate.X,
-                Y = GroupTransform.Translate.Y
-            }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
         }
 
         /// <summary>
         /// Bounds that include the group margin
         /// </summary>
-        public Rect GroupingBounds => _groupingBounds;
+        public Rect GroupingBounds {
+            get
+            {
+                return new TranslateTransform
+                {
+                    X = GroupTransform.Translate.X,
+                    Y = GroupTransform.Translate.Y
+                }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
+                _actualHeight + 2 * GroupMargin));
+            }
+        }
 
-        public Rect Bounds => _bounds;
+        public Rect Bounds
+        {
+            get
+            {
+                return new TranslateTransform
+                {
+                    X = GroupTransform.Translate.X,
+                    Y = GroupTransform.Translate.Y
+                }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+            }
+        }
         public void TransformDelta(TransformGroupData delta)
         {
             var currentTranslate = GroupTransform.Translate;

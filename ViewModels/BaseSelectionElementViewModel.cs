@@ -6,28 +6,12 @@ namespace Dash
 {
     public abstract class BaseSelectionElementViewModel : ViewModelBase
     {
-        private static event Action<bool> GlobalHitTestVisibilityChanged;
-
         private bool _isSelected;
         private bool _isLowestSelected;
         private bool _previousIsSelected;
-        private static bool _globalHitTestVisibility;
 
         public event Action<bool> OnSelectionSet;
         public event Action<bool> OnLowestSelectionSet;
-
-        /// <summary>
-        /// Controls the global hit test visibility on all SelectionElements
-        /// </summary>
-        public static bool GlobalHitTestVisibility
-        {
-            get { return _globalHitTestVisibility; }
-            private set {
-                if (_globalHitTestVisibility == value) return;
-                _globalHitTestVisibility = value;
-                GlobalHitTestVisibilityChanged?.Invoke(_globalHitTestVisibility);
-            }
-        }
 
         public bool IsSelected
         {
@@ -55,19 +39,6 @@ namespace Dash
 
         protected BaseSelectionElementViewModel()
         {
-
-            GlobalHitTestVisibilityChanged += newVisibility =>
-            {
-                if (newVisibility)
-                {
-                    _previousIsSelected = IsSelected;
-                    IsSelected = true;
-                }
-                else
-                {
-                    IsSelected = _previousIsSelected;
-                }
-            };
         }
 
         //  This has to be public but should only be called by views who have this instance as their DataContext
@@ -81,11 +52,6 @@ namespace Dash
         {
             IsLowestSelected = isLowestSelected;
         }
-
-        public void SetGlobalHitTestVisiblityOnSelectedItems(bool isHitTestVisible)
-        {
-            GlobalHitTestVisibility = isHitTestVisible;
-            //Debug.WriteLine($"Global hit test visibility : {isHitTestVisible}");
-        }
+        
     }
 }

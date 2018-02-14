@@ -36,8 +36,7 @@
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
-                      ItemsSource="{Binding DocumentViewModels}"   
-                      IsHitTestVisible="{Binding IsSelected}">
+                      ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="xCollectionCanvas"

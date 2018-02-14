@@ -43,21 +43,21 @@ namespace Dash
                 if (_visibilityBinding != null)
                     xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
                 _visibilityBinding = null;
-                if (_currentView is CollectionFreeformView)
-                {
-                    var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-                    var datacontext = docView?.DataContext as DocumentViewModel;
-                    if (datacontext != null)
-                    {
-                        _visibilityBinding = new Binding
-                        {
-                            Source = datacontext,
-                            Path = new PropertyPath(nameof(datacontext.IsSelected))
-                        };
+                //if (_currentView is CollectionFreeformView)
+                //{
+                //    var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
+                //    var datacontext = docView?.DataContext as DocumentViewModel;
+                //    if (datacontext != null)
+                //    {
+                //        _visibilityBinding = new Binding
+                //        {
+                //            Source = datacontext,
+                //            Path = new PropertyPath(nameof(datacontext.IsSelected))
+                //        };
 
-                        xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
-                    }
-                }
+                //        xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
+                //    }
+                //}
             }
         }
 

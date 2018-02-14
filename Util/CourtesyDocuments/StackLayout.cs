@@ -106,10 +106,10 @@ namespace Dash
             }
             if (horizontal)
             {
-                stack.Height = docController.GetHeightField(context).Data;
+                stack.Height = docController.GetHeightField(context)?.Data ?? stack.Height; ;
             } else
             {
-                stack.Width = docController.GetWidthField(context).Data;
+                stack.Width = docController.GetWidthField(context)?.Data ?? stack.Width;
             }
             SetupBindings(stack, docController, context);
 

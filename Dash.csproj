@@ -182,6 +182,7 @@
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\GroupManager.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
+    <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />

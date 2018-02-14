@@ -51,14 +51,19 @@ namespace Dash
             } else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document
+                FrameworkElement view = null;
                 if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
                 {
-                    return dc.MakeViewUI(context);
+                    view =  dc.MakeViewUI(context);
                 }
                 else
                 {
-                    return dc.GetKeyValueAlias().MakeViewUI(context);
+                    view = dc.GetKeyValueAlias().MakeViewUI(context);
                 }
+                //bcz: this is odd -- the DocumentViewModel is bound to the DataBox, so we have to transfer the
+                //   "container-like" bindings from the contained data view to the DataBox
+                SetupBindings(view, documentController, context);
+                return view;
             }
             else if (data is TextController)
             {

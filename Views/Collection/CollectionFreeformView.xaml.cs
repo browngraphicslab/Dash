@@ -617,7 +617,6 @@ namespace Dash
             {
                 _converter = LineToConverter[line];
                 //set up to manipulate connection line again 
-                ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                 _connectionLine = line;
                 _converter.Element2 = null;
                 _converter.Pos2 = dropPoint;
@@ -663,8 +662,6 @@ namespace Dash
             {
                 return;
             }
-
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
             //itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
@@ -742,7 +739,6 @@ namespace Dash
 
         public void CancelDrag(Pointer p)
         {
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
             ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             if (p != null) _currentPointers.Remove(p.PointerId);
@@ -1392,6 +1388,14 @@ namespace Dash
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (manipulationHelper != null)
+            {
+                manipulationHelper.ForcePointerReleased();
+                this.ManipulationMode = ManipulationModes.All;
+                manipulationHelper = null;
+                this.ReleasePointerCapture(e.Pointer);
+                e.Handled = true;
+            }
             if (_marquee != null)
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
@@ -1409,8 +1413,15 @@ namespace Dash
             xOuterGrid.ReleasePointerCapture(e.Pointer);
         }
 
+        private Point _rightDragLastPosition, _rightDragStartPosition;
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
+            if (manipulationHelper != null)
+            {
+                manipulationHelper.ForcePointerMove();
+                args.Handled = true;
+                return;
+            }
             var currentPoint = args.GetCurrentPoint(SelectionCanvas);
             if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
 
@@ -1517,9 +1528,22 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
+        ManipulationControlHelper manipulationHelper = null;
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
+            var forceDrag = (args.KeyModifiers & VirtualKeyModifiers.Shift) == 0 && (args.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
+                                   .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
+            if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
+            {
+                Debug.WriteLine("Forec Drag");
+                manipulationHelper = new ManipulationControlHelper(this);
+                manipulationHelper.ForcePointerPressed();
+                args.Handled = true;
+                xOuterGrid.CapturePointer(args.Pointer);
+                this.ManipulationMode = ManipulationModes.None;
+                return;
+            }
+            Debug.WriteLine("Manip Mode = " + ManipulationMode);
             if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                 (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
@@ -1532,6 +1556,7 @@ namespace Dash
             }
         }
 
+
         private List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
@@ -1542,19 +1567,22 @@ namespace Dash
                 foreach (var docvm in docs)
                 {
                     var doc = docvm.LayoutDocument;
-                    var position = doc.GetPositionField().Data;
-                    var width = doc.GetWidthField().Data;
-                    if (double.IsNaN(width)) width = 0;
-                    var height = doc.GetHeightField().Data;
-                    if (double.IsNaN(height)) height = 0;
-                    var rect = new Rect(position, new Size(width, height));
-                    if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
-                            .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                    if (doc.GetPositionField() != null)
                     {
-                        var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                        if (documentView != null)
-                            selectedDocs.Add(
-                                documentView);
+                        var position = doc.GetPositionField().Data;
+                        var width = doc.GetWidthField().Data;
+                        if (double.IsNaN(width)) width = 0;
+                        var height = doc.GetHeightField().Data;
+                        if (double.IsNaN(height)) height = 0;
+                        var rect = new Rect(position, new Size(width, height));
+                        if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
+                                .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
+                        {
+                            var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                            if (documentView != null)
+                                selectedDocs.Add(
+                                    documentView);
+                        }
                     }
                 }
             }

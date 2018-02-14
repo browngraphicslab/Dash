@@ -490,7 +490,11 @@ namespace Dash
         private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             foreach (var m in e.Items)
-                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((m as DocumentViewModel).DocumentController, true);
+            {
+                var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
+                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
+                   // (m as DocumentViewModel).DocumentController, true);
+            }
         }
     }
 }
