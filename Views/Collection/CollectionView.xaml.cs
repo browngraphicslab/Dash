@@ -194,7 +194,6 @@ namespace Dash
                 ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 //CurrentView.InitializeAsRoot();
-                ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -394,100 +393,6 @@ namespace Dash
 
         #endregion
 
-
-
-
-        #region Operator connection output
-        private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Complete();
-        }
-
-
-
-        #endregion
-
-
-
-
-        #region Connection input and output 
-        private void ConnectionEllipseOutput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            FireEllipseInteraction(sender, e, isInput: false, isPressed: true);
-            //if (ParentCollection == null) return;
-            //// containing documents docId
-            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            //// the ellipse which the link should attatch to
-            //var el = (sender as Grid)?.Children[0] as Ellipse;
-            //var outputKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
-
-            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            //freeform.CanLink = true;
-            //freeform.StartDrag(ioRef);
-        }
-
-        private void ConnectionEllipseOutput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            FireEllipseInteraction(sender, e, isInput: false, isPressed: false);
-        }
-
-
-        private void ConnectionEllipseInput_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            FireEllipseInteraction(sender, e, isInput: true, isPressed: true);
-            //if (ParentCollection == null) return;
-            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            //var el = ConnectionEllipseInput;
-            //var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
-
-            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            //freeform.CanLink = true;
-            //freeform.StartDrag(ioRef);
-        }
-
-        private void ConnectionEllipseInput_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            FireEllipseInteraction(sender, e, isInput: true, isPressed: false);
-            //if (ParentCollection == null) return;
-            //var docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            //var el = ConnectionEllipseInput;
-            //var outputKey = /*ViewModel.OutputKey ?? */ ViewModel.CollectionKey;
-            //var ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
-
-            //var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            //if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-            //freeform?.EndDrag(ioRef, false);
-        }
-
-        private void FireEllipseInteraction(object sender, PointerRoutedEventArgs e, bool isInput, bool isPressed)
-        {
-            if (ParentCollection == null) return;
-            var docId = (ParentDocument.DataContext as DocumentViewModel)?.DataDocument.GetId();
-            var el = (sender as Grid).Children[0] as Ellipse;
-            KeyController refKey;
-            if (!isInput)
-                refKey = ViewModel.OutputKey ?? ViewModel.CollectionKey;
-            else
-                refKey = ViewModel.CollectionKey;
-
-            var ioRef = new IOReference(new DocumentFieldReference(docId, refKey), !isInput, TypeInfo.List, e, el, ParentDocument);
-
-            var freeform = ParentCollection.CurrentView as CollectionFreeformView;
-            if (CompoundFreeform != null) freeform = CompoundFreeform.xFreeFormEditor;
-
-            freeform.CanLink = isPressed;
-            if (!isPressed)
-                freeform.EndDrag(ioRef, false);
-            else
-                freeform.StartDrag(ioRef);
-        }
-
-        #endregion
-
         #region Menu
         private void SetFreeformView()
         {
@@ -604,33 +509,6 @@ namespace Dash
             Util.ExportAsImage(xOuterGrid);
         }
 
-        private void EnterCollection()
-        {
-            var rootFrame = Window.Current.Content as Frame;
-            Debug.Assert(rootFrame != null);
-            rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
-        }
-
         #endregion
-
-        /// <summary>
-        /// Binds the hit test visibility of xContentControl to the IsSelected of DocumentVieWModel as opposed to CollectionVieWModel 
-        /// in order to make ellipses hit test visible and the rest not 
-        /// </summary>
-        private void xContentControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            // TODO this method is special cased and therfore hard to debug...
-            //var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-            //var datacontext = docView?.DataContext as DocumentViewModel;
-            //if (datacontext == null) return;
-
-            //var visibilityBinding = new Binding
-            //{
-            //    Source = datacontext,
-            //    Path = new PropertyPath(nameof(datacontext.IsSelected))
-            //};
-
-            //xContentControl.SetBinding(IsHitTestVisibleProperty, visibilityBinding);
-        }
     }
 }

@@ -26,8 +26,6 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
-        private bool _rightPressed;
-
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
@@ -61,35 +59,6 @@ namespace Dash
         {
             DataContext = viewModel;
         }
-        //private void XGridView_OnLoaded(object sender, RoutedEventArgs e)
-        //{
-        //    //_scrollViewer = xGridView.GetFirstDescendantOfType<ScrollViewer>();
-        //    //_scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
-        //    //UpdateVisibleIndices(true);
-        //}
-
-        //private int _prevOffset;
-        //private void ScrollViewerOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
-        //{
-        //    UpdateVisibleIndices();
-        //}
-
-        //private void UpdateVisibleIndices(bool forceUpdate = false)
-        //{
-        //    var source = ViewModel.DocumentViewModels;
-        //    _scrollViewer.UpdateLayout();
-        //    var displayableOnRow = (int)(_scrollViewer.ActualWidth / ViewModel.CellSize);
-        //    var displayableOnCol = (int)(_scrollViewer.ActualHeight / ViewModel.CellSize) + 1;
-        //    var verticalOffset = (int)(_scrollViewer.VerticalOffset / ViewModel.CellSize);
-        //    if (_prevOffset == verticalOffset && !forceUpdate) return;
-        //    _prevOffset = verticalOffset;
-        //    var firstIndex = verticalOffset * displayableOnRow;
-        //    for (var i = firstIndex; i < firstIndex + displayableOnRow * displayableOnCol; i++)
-        //    {
-        //        Debug.WriteLine(i);
-        //        source[i].VisibleOnView = true;
-        //    }
-        //}
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -107,25 +76,7 @@ namespace Dash
             }
         }
 
-        //private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
-        //{
-        //    if (ViewModel != null)
-        //    {
-        //        //xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-        //        //xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-        //        //xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
-        //        xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-        //        //xGridView.RemoveHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ViewModel.XGridView_PointerPressed));
-        //        //xGridView.Loaded -= XGridView_OnLoaded;
-        //        //_scrollViewer.ViewChanging -= ScrollViewerOnViewChanging;
-        //    }
-        //    Unloaded -= CollectionGridView_Unloaded;
-        //}
-
-        
-
         #region DragAndDrop
-
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {

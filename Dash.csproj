@@ -456,7 +456,6 @@
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\IOReference.cs" />
     <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
