@@ -28,7 +28,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public abstract class BaseCollectionViewModel : BaseSelectionElementViewModel, ICollectionViewModel
+    public abstract class BaseCollectionViewModel : ViewModelBase, ICollectionViewModel
     {
         private bool _canDragItems;
         private double _cellSize;
@@ -46,14 +46,6 @@ namespace Dash
             //BindableDocumentViewModels = new AdvancedCollectionView(new List<DocumentViewModel>());
         }
         
-
-        public void UpdateDocumentsOnSelection(bool isSelected)
-        {
-            foreach (var doc in DocumentViewModels)
-            {
-                doc.IsDraggerVisible = isSelected;
-            }
-        }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -573,36 +565,7 @@ namespace Dash
                         AddDocument(dragModel.GetDropDocument(where), null);
                 }
             }
-
-            // if the dataview contains this view model then don't accept the drag
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("Collection View Model"))
-            {
-                var collViewModel = (BaseCollectionViewModel)e.DataView.Properties["Collection View Model"];
-                if (collViewModel.Equals(this))
-                {
-                    e.AcceptedOperation = DataPackageOperation.None;
-                    return;
-                }
-            }
-
-
-
-            // if the user tries to move a view document
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Move"))
-            {
-                var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Move"];
-                Actions.DisplayDocument(this, viewDoc, where);
-                e.AcceptedOperation = DataPackageOperation.Move;
-            }
-
-            // if the user tries to copy a view document
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("View Doc To Copy"))
-            {
-                var viewDoc = (DocumentController)e.DataView.Properties["View Doc To Copy"];
-                Actions.DisplayDocument(this, viewDoc.GetViewCopy(where), where);
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            }
-
+            
             e.Handled = true;
         }
 

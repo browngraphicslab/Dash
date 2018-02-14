@@ -112,7 +112,6 @@ namespace Dash
                 foreach (var documentController in documents)
                 {
                     var documentViewModel = new DocumentViewModel(documentController, c);
-                    documentViewModel.IsDraggerVisible = this.IsSelected;
                     DocumentViewModels.Add(documentViewModel);
                 }
             }

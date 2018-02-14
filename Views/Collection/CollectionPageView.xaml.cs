@@ -217,16 +217,7 @@ namespace Dash
 
                 SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
-
-
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
-                if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)
-                {
-                    var thumb = ViewModel.ThumbDocumentViewModels[ind];
-                    foreach (var t in ViewModel.ThumbDocumentViewModels)
-                        t.SetSelected(null, false);
-                    thumb.SetSelected(null, true);
-                }
+                
                 var cview = (CurPage?.Content as CollectionView);
                 if (cview != null)
                 {
@@ -360,23 +351,6 @@ namespace Dash
         public void SetDropIndicationFill(Brush fill)
         {
         }
-        #endregion
-
-        #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-        }
-
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-            Focus(FocusState.Keyboard);
-        }
-
         #endregion
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)

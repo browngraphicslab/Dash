@@ -71,7 +71,8 @@ namespace Dash
             {
                 // if we're on the lowest selecting document view then we can resize it with pointer wheel
                 var docView = _element as DocumentView;
-                if (docView != null) return docView.IsLowestSelected;
+                if (docView != null)
+                    return true;
 
                 /*
                 var colView = _element as CollectionFreeformView;
@@ -770,7 +771,7 @@ namespace Dash
             ElementScale *= scaleFactor;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Translation, handleControl);
+            var translate = e.Translation;// Util.TranslateInCanvasSpace(e.Translation, handleControl);
 
 
 

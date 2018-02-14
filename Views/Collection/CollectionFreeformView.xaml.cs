@@ -181,7 +181,6 @@ namespace Dash
 
                 // add new events
                 ViewModel = vm;
-                ViewModel.SetSelected(this, IsSelected);
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
 
                 var cvm = vm as CollectionViewModel;
@@ -1393,7 +1392,6 @@ namespace Dash
                 manipulationHelper.ForcePointerReleased();
                 this.ManipulationMode = ManipulationModes.All;
                 manipulationHelper = null;
-                this.ReleasePointerCapture(e.Pointer);
                 e.Handled = true;
             }
             if (_marquee != null)
@@ -1413,7 +1411,6 @@ namespace Dash
             xOuterGrid.ReleasePointerCapture(e.Pointer);
         }
 
-        private Point _rightDragLastPosition, _rightDragStartPosition;
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (manipulationHelper != null)
@@ -1625,24 +1622,17 @@ namespace Dash
 
         #region Activation
 
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-            if (InkController != null)
-            {
-                InkHostCanvas.IsHitTestVisible = isSelected;
-                if (XInkCanvas != null)
-                {
-                    XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
-                }
-            }
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        //protected override void OnActivated(bool isSelected)
+        //{
+        //    if (InkController != null)
+        //    {
+        //        InkHostCanvas.IsHitTestVisible = isSelected;
+        //        if (XInkCanvas != null)
+        //        {
+        //            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+        //        }
+        //    }
+        //}
 
         private bool _singleTapped;
 
@@ -1665,8 +1655,7 @@ namespace Dash
 
             if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
             
-            if (!IsLowestSelected) OnSelected();
-
+            OnSelected();
         }
 
         public void RenderPreviewTextbox(Point where)

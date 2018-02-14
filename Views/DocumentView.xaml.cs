@@ -144,9 +144,8 @@ namespace Dash
             }
             
 
-            if (ViewModel != null && (ViewModel.IsLowestSelected && 
-                                      (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
-                                      e.VirtualKey.Equals(VirtualKey.Enter)))
+            if (ViewModel != null && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                                      e.VirtualKey.Equals(VirtualKey.Enter))
             {
                 // don't shift enter on key value documents
                 if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
@@ -186,7 +185,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_localContextPreview);
                 _localContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ViewModel.IsSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_selectedContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -232,7 +231,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_selectedContextPreview);
                 _selectedContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ViewModel.IsSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_localContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -316,11 +315,7 @@ namespace Dash
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (IsSelected == false)
-            {
-                ToggleSelectionBorderAndChrome(false);
-            }
-
+            ToggleSelectionBorderAndChrome(false);
             ToggleGroupSelectionBorderColor(false);
 
 
@@ -785,12 +780,6 @@ namespace Dash
                 ProportionalScaling = false;
             }
             _draggerButtonBeingManipulated = false;
-            Debug.WriteLine("Dragger Manipulation Completed");
-            if (!IsSelected)
-            {
-                DraggerButton.Visibility = Visibility.Collapsed;
-            }
-
         }
 
         /// <summary>
@@ -854,7 +843,7 @@ namespace Dash
             {
                 updateIcon();
                 // binds the display title of the document to the back end representation
-                ViewModel.SetHasTitle(this.IsLowestSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
         }
 
@@ -987,49 +976,31 @@ namespace Dash
                 CoreVirtualKeyStates.Down &&
                 ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
-                ViewModel.SetSelected(null, true);
                 return;
             }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
 
-            if (!IsSelected)
-            {
-                await Task.Delay(100); // allows for double-tap
+            await Task.Delay(100); // allows for double-tap
 
-                //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
+            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
+            {
+                var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
+                if (zindex > -100)
                 {
-                    var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
-                    if (zindex > -100)
-                    {
-                        ParentCollection.MaxZ += 1;
-                        Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-                    }
-                    OnSelected();
+                    ParentCollection.MaxZ += 1;
+                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+                }
+                OnSelected();
                     
 
-                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
-                }
+                // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
+                this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
             }
         }
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel?.SetSelected(this, isSelected);
-            // if we are being deselected
-            if (!isSelected)
-            {
-                ToggleSelectionBorderAndChrome(false);
-            }
-            else
-            {
-                ToggleSelectionBorderAndChrome(true);
-            }
-        }
-
+        
         /// <summary>
         /// Sets whther the selection border is on, all other chrome can be turned off or on independently
         /// so that we don't see huge amounts of chrome when we hover over groups
@@ -1059,6 +1030,7 @@ namespace Dash
             // get all the document views that are in the same collection as ourself
             var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
+            return;
 
             // get all the document views connected to ourself (forming a group)
             var documentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
@@ -1140,13 +1112,7 @@ namespace Dash
             
             return grouped;
         }
-
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel?.SetLowestSelected(this, isLowestSelected);
-            ViewModel?.SetHasTitle(isLowestSelected);
-        }
+        
 
         #endregion
 
@@ -1302,11 +1268,6 @@ namespace Dash
 
         public void HandleShiftEnter()
         {
-            if (ViewModel.IsLowestSelected == false) return;
-
-
-
-
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;

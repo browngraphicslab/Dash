@@ -612,6 +612,7 @@ namespace Dash
                 manipulationHelper = new ManipulationControlHelper(this);
                 manipulationHelper.ForcePointerPressed();
                 this.CapturePointer(e.Pointer);
+                UpdateDocument();
             }
         }
 

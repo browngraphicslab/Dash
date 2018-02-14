@@ -78,7 +78,6 @@ namespace Dash
             else
                 parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
             var dvm = parent.ViewModel;
-            parent.DocumentView_PointerExited(null, null);
             parent.DocumentView_ManipulationCompleted(null, null);
         }
         public void ForcePointerMove()
@@ -89,10 +88,7 @@ namespace Dash
             var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
 
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
-
-            translation.X *= parentCollectionTransform.Matrix.M11;
-            translation.Y *= parentCollectionTransform.Matrix.M22;
-
+            
             _rightDragLastPosition = pointerPosition;
             parent.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),

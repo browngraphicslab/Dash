@@ -48,11 +48,8 @@
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
             <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
-            <RelativePanel x:Name="xMetadataPanel" 
-                  VerticalAlignment="Top"
-                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
-                  >
-                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" >
+           
+                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
                     <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="Transparent"
@@ -60,7 +57,11 @@
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
+            </Border>
+            <RelativePanel x:Name="xMetadataPanel" 
+                  VerticalAlignment="Top"
+                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
+                  >
             </RelativePanel>
 
             <!--grid to hold the inner content of the document-->
@@ -85,7 +86,7 @@
                         AllowFocusWhenDisabled="False"
                         VerticalAlignment="Bottom"
                         ManipulationMode="TranslateX, TranslateY"
-                        Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+                        Visibility="Collapsed">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                         </ControlTemplate>

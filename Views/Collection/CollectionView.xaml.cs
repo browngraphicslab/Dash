@@ -146,7 +146,6 @@ namespace Dash
         {
             Loaded -= CollectionView_Loaded;
             Unloaded -= CollectionView_Unloaded;
-            ViewModel.OnLowestSelectionSet -= OnLowestSelectionSet;
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
@@ -197,8 +196,6 @@ namespace Dash
                 CurrentView.InitializeAsRoot();
                 ConnectionEllipseInput.Visibility = Visibility.Collapsed;
             }
-
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
         }
 
 
@@ -620,18 +617,6 @@ namespace Dash
             var rootFrame = Window.Current.Content as Frame;
             Debug.Assert(rootFrame != null);
             rootFrame.Navigate(typeof(MainPage), ParentDocument.ViewModel.DocumentController);
-        }
-
-        #endregion
-
-        #region Collection Activation
-
-        public void OnLowestSelectionSet(bool isLowestSelected)
-        {
-            // if we're the lowest selected then open the menu
-            if (isLowestSelected)
-            {
-            }
         }
 
         #endregion

@@ -19,7 +19,7 @@ namespace Dash
 {
     public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
 
-    public class DocumentViewModel : BaseSelectionElementViewModel, IDisposable
+    public class DocumentViewModel : ViewModelBase, IDisposable
     {
 
         // == MEMBERS, GETTERS, SETTERS ==
@@ -83,12 +83,6 @@ namespace Dash
                 Width = width;
                 MenuOpen = menuOpen;
             }
-        }
-
-        public bool IsDraggerVisible
-        {
-            get => _isDraggerVisible;
-            set => SetProperty(ref _isDraggerVisible, value);
         }
 
         public bool MenuOpen
@@ -329,8 +323,7 @@ namespace Dash
             get => keysToFrameworkElements;
             set => keysToFrameworkElements = value;
         }
-
-        private bool _isDraggerVisible = true;
+        
         private double _actualWidth;
         private double _actualHeight;
 
@@ -367,14 +360,6 @@ namespace Dash
                 byte b = byte.Parse(hexColor.Substring(7, 2), NumberStyles.HexNumber);
                 _backgroundBrush = new SolidColorBrush(Color.FromArgb(a, r, g, b));
             }
-
-            OnSelectionSet += OnSelectionSetUpdate; // TODO rename this
-        }
-
-        private void OnSelectionSetUpdate(bool lowestSelection)
-        {
-            var selectedField = LayoutDocument.GetFieldOrCreateDefault<NumberController>(KeyStore.SelectedKey);
-            selectedField.Data = lowestSelection ? 1 : 0;
         }
 
         void titleChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)

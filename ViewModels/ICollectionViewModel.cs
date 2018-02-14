@@ -9,10 +9,7 @@ namespace Dash
     public interface ICollectionViewModel
     {
         ObservableCollection<DocumentViewModel> DocumentViewModels { get; }
-
-        bool IsSelected { get; }
-
-        bool IsLowestSelected { get; }
+        
 
         List<DocumentViewModel> SelectionGroup { get;  }
 
@@ -25,9 +22,5 @@ namespace Dash
         void AddDocument(DocumentController document, Context context);
         void RemoveDocuments(List<DocumentController> documents);
         void RemoveDocument(DocumentController document);
-        
-
-        void SetSelected(FrameworkElement setter, bool isSelected);
-        void SetLowestSelected(FrameworkElement setter, bool isLowestSelected);
     }
 }

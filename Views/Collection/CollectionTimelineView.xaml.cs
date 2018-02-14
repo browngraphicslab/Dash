@@ -165,7 +165,6 @@ namespace Dash
 
             // update the ViewModel variable to the current view model and set its selection
             ViewModel = vm;
-            ViewModel.SetSelected(this, IsSelected);
 
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
@@ -281,18 +280,8 @@ namespace Dash
         #endregion
 
         #region Selection
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
-
+        
+        
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;

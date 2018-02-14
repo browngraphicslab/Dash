@@ -99,7 +99,6 @@ namespace Dash
             {
                 // remove events from current view model if there is a current view model
                 ViewModel = vm;
-                ViewModel.SetSelected(this, IsSelected);
 
                 var style = new Style(typeof(GridViewItem));
                 style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
@@ -157,17 +156,7 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var cv = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument;
@@ -183,9 +172,8 @@ namespace Dash
             var dvm = e.Items.Cast<DocumentViewModel>().FirstOrDefault();
             if (dvm != null)
             {
-                e.Data.Properties["Collection View Model"] = ViewModel;
-                e.Data.Properties["View Doc To Move"] = dvm.DocumentController;
-                e.Data.RequestedOperation = DataPackageOperation.Move;
+                var drag = new DragDocumentModel(dvm.DocumentController, true);
+                e.Data.Properties[nameof(DragDocumentModel)] = drag;
             }
         }
 
