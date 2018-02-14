@@ -425,14 +425,7 @@ namespace Dash
             }
             return null;
         }
-
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
 

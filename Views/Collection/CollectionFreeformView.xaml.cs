@@ -1728,15 +1728,6 @@ namespace Dash
         
 
         private bool _isToggleOn;
-        public void ToggleSelectAllItems()
-        {
-            _isToggleOn = !_isToggleOn;
-            foreach (var docView in DocumentViews)
-                if (_isToggleOn)
-                    Select(docView);
-                else
-                    Deselect(docView);
-        }
 
         public void DeselectAll()
         {

@@ -122,14 +122,7 @@ namespace Dash
         //    Unloaded -= CollectionGridView_Unloaded;
         //}
 
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-            ViewModel.ToggleSelectAllItems(xGridView);
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
 

@@ -287,12 +287,6 @@ namespace Dash
             e.Handled = true;
         }
 
-        // TODO not sure how this should be implemented or if it would ever get called (part of the interface...)
-        public void ToggleSelectAllItems()
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
     }
 }

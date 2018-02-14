@@ -267,14 +267,7 @@ namespace Dash
                 _element.Loaded -= _element_Loaded;
             }
         }
-
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
 
