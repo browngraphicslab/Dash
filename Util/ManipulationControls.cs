@@ -513,8 +513,12 @@ namespace Dash
             {
                 return;
             }
+            var pointerPosition = MainPage.Instance.TransformToVisual(_element.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+            var pointerPosition2 = MainPage.Instance.TransformToVisual(_element.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
 
-            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
+            var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+
+            TranslateAndScale(new ManipulationDeltaData(e.Position, delta, e.Delta.Scale));
             Snap(true);
 
             e.Handled = true;
