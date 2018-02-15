@@ -35,8 +35,10 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl
     {
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
+
+        CollectionViewType _viewType;
         public int MaxZ { get; set; }
-        
         public UserControl CurrentView { get; set; }
         public CollectionViewModel ViewModel
         {
@@ -47,21 +49,18 @@ namespace Dash
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
-        public CollectionView ParentCollection;
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); 
 
         /// <summary>
         /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
+        /// // in case the collection is added to a compoundoperatorview
         /// </summary>
-        public CompoundOperatorEditor CompoundFreeform;
+        public CompoundOperatorEditor CompoundFreeform   => this.GetFirstAncestorOfType<CompoundOperatorEditor>(); 
 
         /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
-
-        public enum CollectionViewType  { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
-
-        CollectionViewType _viewType;
 
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
@@ -86,12 +85,7 @@ namespace Dash
                 args.Handled = true;
             }
         }
-
-        public void TryBindToParentDocumentSize()
-        {
-            Util.ForceBindHeightToParentDocumentHeight(this);
-        }
-
+        
         public DocumentViewModel GetDocumentViewModel(DocumentController document)
         {
             foreach (var dv in ViewModel.DocumentViewModels)
@@ -135,144 +129,102 @@ namespace Dash
             Unloaded -= CollectionView_Unloaded;
         }
 
-        private void CollectionView_Loaded(object sender, RoutedEventArgs e)
-        {
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            CompoundFreeform = this.GetFirstAncestorOfType<CompoundOperatorEditor>();  // in case the collection is added to a compoundoperatorview 
+        private void CollectionView_Loaded(object s, RoutedEventArgs args)
+        { 
             ParentDocument.StyleCollection(this);
+            
+            #region CollectionView context menu 
 
+            /// <summary>
+            /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
+            /// view the collection as different formats).
+            /// </summary>
+            void UpdateContextMenu()
+            {
+                var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
+
+                // add a horizontal separator in context menu
+                var contextMenu = ParentDocument.MenuFlyout;
+                var separatorOne = new MenuFlyoutSeparator();
+                contextMenu.Items.Add(separatorOne);
+                elementsToBeRemoved.Add(separatorOne);
+
+                // add the item to create a new collection
+                var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
+                newCollection.Click += (sender, e) => addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
+                contextMenu.Items.Add(newCollection);
+                elementsToBeRemoved.Add(newCollection);
+
+                var tagMode = new MenuFlyoutItem() { Text = "Tag Notes" };
+
+                void EnterTagMode(object sender, RoutedEventArgs e)
+                {
+                    tagMode.Click -= EnterTagMode;
+                    tagMode.Click += ExitTagMode;
+
+                    tagMode.Text = "Exit Tag Mode";
+                    
+                    (CurrentView as CollectionFreeformView)?.ShowTagKeyBox();
+                }
+
+                void ExitTagMode(object sender, RoutedEventArgs e)
+                {
+                    tagMode.Click -= ExitTagMode;
+                    tagMode.Click += EnterTagMode;
+
+                    tagMode.Text = "Tag Notes";
+                    var view = CurrentView as CollectionFreeformView;
+                    if (view != null)
+                    {
+                        view.HideTagKeyBox();
+                        view.TagMode = false;
+                    }
+                }
+
+                tagMode.Click += EnterTagMode;
+                contextMenu.Items.Add(tagMode);
+                elementsToBeRemoved.Add(tagMode);
+
+                // add another horizontal separator
+                var separatorTwo = new MenuFlyoutSeparator();
+                contextMenu.Items.Add(separatorTwo);
+                elementsToBeRemoved.Add(separatorTwo);
+
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
+                contextMenu.Items.Add(viewCollectionAs);
+                elementsToBeRemoved.Add(viewCollectionAs);
+
+                foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
+                {
+                    var vtype = new MenuFlyoutItem() { Text = n.ToString() };
+                    vtype.Click += (sender, e) => SetView(n);
+                    viewCollectionAs.Items.Add(vtype);
+                }
+
+
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
+                viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+                contextMenu.Items.Add(viewCollectionPreview);
+                elementsToBeRemoved.Add(viewCollectionPreview);
+
+                Unloaded += (sender, e) =>
+                {
+                    foreach (var flyoutItem in elementsToBeRemoved)
+                    {
+                        contextMenu.Items.Remove(flyoutItem);
+                    }
+                };
+
+            }
+            #endregion
             UpdateContextMenu();
-
 
             // set the top-level viewtype to be freeform by default
             SetView(ParentDocument == MainPage.Instance.MainDocView ? CollectionViewType.Freeform : _viewType);
-
-            // TODO remove this arbtirary styling here
-            if (ParentDocument == MainPage.Instance.MainDocView)
-            {
-                ParentDocument.IsMainCollection = true;
-                xOuterGrid.BorderThickness = new Thickness(0);
-                //CurrentView.InitializeAsRoot();
-            }
         }
-
-
-
-        #endregion
-
-        #region CollectionView context menu 
-
-        /// <summary>
-        /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
-        /// view the collection as different formats).
-        /// </summary>
-        void UpdateContextMenu()
-        {
-
-            var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
-
-            // add a horizontal separator in context menu
-            var contextMenu = ParentDocument.MenuFlyout;
-            var separatorOne = new MenuFlyoutSeparator();
-            contextMenu.Items.Add(separatorOne);
-            elementsToBeRemoved.Add(separatorOne);
-
-            // add the item to create a new document
-            var newDocument = new MenuFlyoutItem() { Text = "Add new document", Icon = new FontIcon() { Glyph = "\uf016;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
-            newDocument.Click += MenuFlyoutItemNewDocument_Click;
-            contextMenu.Items.Add(newDocument);
-            elementsToBeRemoved.Add(newDocument);
-
-            // add the item to create a new collection
-            var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
-            newCollection.Click += MenuFlyoutItemNewCollection_Click;
-            contextMenu.Items.Add(newCollection);
-            elementsToBeRemoved.Add(newCollection);
-
-            var tagMode = new MenuFlyoutItem() {Text = "Tag Notes"};
-
-            void EnterTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= EnterTagMode;
-                tagMode.Click += ExitTagMode;
-
-                tagMode.Text = "Exit Tag Mode";
-
-                var view = CurrentView as CollectionFreeformView;
-                view?.ShowTagKeyBox();
-            }
-
-            void ExitTagMode(object sender, RoutedEventArgs e)
-            {
-                tagMode.Click -= ExitTagMode;
-                tagMode.Click += EnterTagMode;
-
-                tagMode.Text = "Tag Notes";
-            ;
-                var view = CurrentView as CollectionFreeformView;
-                if (view != null)
-                {
-                    view.HideTagKeyBox();
-                    view.TagMode = false;
-                }
-                
-            }
-
-
-            tagMode.Click += EnterTagMode;
-            contextMenu.Items.Add(tagMode);
-            elementsToBeRemoved.Add(tagMode);
-
-            // add another horizontal separator
-            var separatorTwo = new MenuFlyoutSeparator();
-            contextMenu.Items.Add(separatorTwo);
-            elementsToBeRemoved.Add(separatorTwo);
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
-            contextMenu.Items.Add(viewCollectionAs);
-            elementsToBeRemoved.Add(viewCollectionAs);
-
-            var freeform = new MenuFlyoutItem() { Text = CollectionViewType.Freeform.ToString() };
-            freeform.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(freeform);
-
-            var grid = new MenuFlyoutItem() { Text = CollectionViewType.Grid.ToString() };
-            grid.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(grid);
-
-            var browse = new MenuFlyoutItem() { Text = CollectionViewType.Page.ToString() };
-            browse.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(browse);
-
-            var db = new MenuFlyoutItem() { Text = CollectionViewType.DB.ToString() };
-            db.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(db);
-
-            var schema = new MenuFlyoutItem() { Text = CollectionViewType.Schema.ToString() };
-            schema.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(schema);
-
-            var timeline = new MenuFlyoutItem() { Text = CollectionViewType.Timeline.ToString() };
-            timeline.Click += MenuFlyoutItemView_Click;
-            viewCollectionAs.Items.Add(timeline);
-
-
-            // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-            var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
-            viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
-            contextMenu.Items.Add(viewCollectionPreview);
-            elementsToBeRemoved.Add(viewCollectionPreview);
-
-            Unloaded += (sender, args) =>
-            {
-                foreach (var flyoutItem in elementsToBeRemoved)
-                {
-                    contextMenu.Items.Remove(flyoutItem);
-                }
-            };
-
-        }
+        
         #endregion
 
         /// <summary>
@@ -280,7 +232,7 @@ namespace Dash
         /// </summary>
         /// <param name="screenPoint"></param>
         /// <param name="opController"></param>
-        private void addElement(Point screenPoint, DocumentController opController)
+        void addElement(Point screenPoint, DocumentController opController)
         {
             var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
@@ -307,21 +259,6 @@ namespace Dash
         {
             var firstFlyoutItem = ParentDocument.MenuFlyout.Items.FirstOrDefault();
             return Util.PointTransformFromVisual(new Point(), firstFlyoutItem);
-        }
-
-        private void MenuFlyoutItemNewDocument_Click(object sender, RoutedEventArgs e)
-        {
-            addElement(GetFlyoutOriginCoordinates(), Util.BlankDoc());
-        }
-
-        private void MenuFlyoutItemNewCollection_Click(object sender, RoutedEventArgs e)
-        {
-            addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
-        }
-
-        void MenuFlyoutItemView_Click(object sender, RoutedEventArgs e)
-        {
-            SetView((CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), (sender as MenuFlyoutItem).Text));
         }
 
         #endregion
@@ -364,7 +301,6 @@ namespace Dash
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
-
         public void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
@@ -380,7 +316,6 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
             ViewModel.CanDragItems = true;
         }
-
         private void MakeSelectionModeNone()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
@@ -391,18 +326,11 @@ namespace Dash
                 (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
             }
         }
-        
-        private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
-        {
-            // TODO fill this in
-        }
-
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
             //Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
-
         private void ScreenCap()
         {
             Util.ExportAsImage(xOuterGrid);

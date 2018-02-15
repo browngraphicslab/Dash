@@ -48,9 +48,9 @@
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
             <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
-           
-                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
-                    <TextBlock x:Name="xTitleIcon" 
+
+            <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
+                <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="Transparent"
                                Text="{StaticResource DocumentPlainIcon}" 
@@ -58,11 +58,6 @@
                                Height="32"
                     />
             </Border>
-            <RelativePanel x:Name="xMetadataPanel" 
-                  VerticalAlignment="Top"
-                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
-                  >
-            </RelativePanel>
 
             <!--grid to hold the inner content of the document-->
             <Grid Name="xTargetContentGrid">

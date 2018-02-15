@@ -49,8 +49,6 @@ namespace Dash
 
         public static int dvCount = 0;
 
-        private Storyboard _storyboard;
-
         public MenuFlyout MenuFlyout;
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -477,6 +475,12 @@ namespace Dash
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
+            // TODO remove this arbtirary styling here
+            if (this == MainPage.Instance.MainDocView)
+            {
+                IsMainCollection = true;
+                view.xOuterGrid.BorderThickness = new Thickness(0);
+            }
         }
 
         public void StyleKeyValuePane()
@@ -492,15 +496,8 @@ namespace Dash
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-
-
-        MenuButton copyButton;
-
-        DispatcherTimer _moveTimer = new DispatcherTimer()
-        {
-            Interval = new TimeSpan(0, 0, 0, 0, 600),
-        };
-
+        
+        
         private bool _draggerButtonBeingManipulated;
 
 
@@ -710,9 +707,6 @@ namespace Dash
 
         private void CopyDocument()
         {
-            _moveTimer.Stop();
-
-
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
@@ -720,8 +714,6 @@ namespace Dash
         }
         private void CopyViewDocument()
         {
-            _moveTimer.Stop();
-
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
@@ -1084,11 +1076,6 @@ namespace Dash
         private void xContextLinkTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             ShowContext();
-        }
-
-        private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
         }
 
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
