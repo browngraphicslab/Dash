@@ -24,7 +24,7 @@
     </UserControl.Resources>
     <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
         <!-- Main document view -->
-        <Grid x:Name="OuterGrid" x:FieldModifier="public">
+        <Grid x:Name="OuterGrid" PointerEntered="DocumentView_PointerEntered" x:FieldModifier="public">
             <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name = "xMenuFlyout">

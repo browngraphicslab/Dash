@@ -28,18 +28,14 @@ using Dash.Models.DragModels;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-
     public sealed partial class DocumentView
     {
-        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); // TODO document views should not be assumed to be in a collection this!
-
-        public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
-
+        public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
+       
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
         public ManipulationControls ManipulationControls;
-
         public DocumentViewModel ViewModel { get; set; }
 
         // the document view that is being dragged
@@ -120,8 +116,23 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Checks if this DocumentView is the root Document (on MainPage)
+        /// </summary>
+        /// <returns></returns>
+        public bool IsMainCollection()
+        {
+            return this == MainPage.Instance.MainDocView;
+        }
+
+        /// <summary>
+        /// Handles keypress events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            // gets the states of various keys
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
                 .HasFlag(CoreVirtualKeyStates.Down);
             var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
@@ -132,6 +143,8 @@ namespace Dash
                 .HasFlag(CoreVirtualKeyStates.Down);
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
             var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
+
+            // shortcuts to show contexts
             if (f1State.HasFlag(CoreVirtualKeyStates.Down))
             {
                 if (_ptrIn) ShowLocalContext(true);
@@ -140,14 +153,15 @@ namespace Dash
             {
                 if (_ptrIn) ShowSelectedContext();
             }
-
-
+            
+            // check we are the focused element
             var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
 
+            // shift + enter to add key/value fields to document
             if (ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
                                       e.VirtualKey.Equals(VirtualKey.Enter))
             {
-                // don't shift enter on key value documents
+                // don't shift enter on KeyValue documents (since they already display the key/value adding)
                 if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
                     ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
                     return;
@@ -324,14 +338,14 @@ namespace Dash
             var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
             if (f1State.HasFlag(CoreVirtualKeyStates.None)) ShowLocalContext(false);
         }
-
-
-
+        
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ToggleSelectionBorderAndChrome(true);
+            ToggleSelectionBorderAndChrome(true); // this is broken
             ToggleGroupSelectionBorderColor(true);
+
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
 
             _ptrIn = true;
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
@@ -413,12 +427,10 @@ namespace Dash
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
-            IsMainCollection = (this == MainPage.Instance.MainDocView);
 
             // add corresponding instance of this to hierarchical view
-            if (!IsMainCollection && ViewModel != null)
+            if (!IsMainCollection() && ViewModel != null)
             {
-
                 if (double.IsNaN(ViewModel.Width) &&
                     (ParentCollection?.CurrentView is CollectionFreeformView))
                 {
@@ -483,17 +495,19 @@ namespace Dash
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             // TODO remove this arbtirary styling here
-            if (this == MainPage.Instance.MainDocView)
+            if (IsMainCollection())
             {
-                IsMainCollection = true;
                 view.xOuterGrid.BorderThickness = new Thickness(0);
             }
         }
 
+        /// <summary>
+        /// Applies custom override styles to the KeyValuePane view. 
+        /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
+        /// </summary>
         public void StyleKeyValuePane()
         {
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
-
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         #endregion
@@ -803,6 +817,7 @@ namespace Dash
 
         public async void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            //
             if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
                 CoreVirtualKeyStates.Down &&
                 ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
@@ -811,8 +826,7 @@ namespace Dash
             }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
-
-
+            
             await Task.Delay(100); // allows for double-tap
 
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
@@ -883,26 +897,7 @@ namespace Dash
 
             }
 
-            //StackGroup();
         }
-        /*
-        public void StackGroup()
-        {
-            if (DocumentGroup == null)
-            {
-                return;
-            }
-            var ordered = DocumentGroup.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
-            var length = ordered.Length;
-            for (int i = 1; i < length; i++)
-            {
-                ordered[i].GroupTransform = new TransformGroupData(
-                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
-                    , ordered[i].GroupTransform.ScaleCenter
-                    , ordered[i].GroupTransform.ScaleAmount);
-            }
-        }
-        */
 
         public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
         {
@@ -916,25 +911,12 @@ namespace Dash
                 grouped.Add(doc);
                 doc.AddConnected(grouped, documentViews);
             }
-
-            /*
-            var ordered = grouped.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
-            var length = ordered.Length;
-            for (int i = 1; i < length; i++)
-            {
-                ordered[i].GroupTransform = new TransformGroupData(
-                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
-                    , ordered[i].GroupTransform.ScaleCenter
-                    , ordered[i].GroupTransform.ScaleAmount);
-            }*/
             
             return grouped;
         }
         
 
         #endregion
-
-
         private void DocumentView_OnDragOver(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -966,7 +948,7 @@ namespace Dash
         {
             ToFront();
         }
-
+        
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
         {
             var collection = this.GetFirstAncestorOfType<CollectionView>();
@@ -1085,9 +1067,7 @@ namespace Dash
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
-
-
-
+            
             // special case for search operators
             if (ViewModel.DataDocument.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
             {
